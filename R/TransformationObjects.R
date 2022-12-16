@@ -151,7 +151,47 @@ setMethod(
   signature("transformationYeoJohnson"),
   function(object, x, ...){
 
-    # Optimise lambda for Box-Cox transformations.
+    # Optimise lambda for Yeo-Johnson transformations.
+    if(object@robust){
+      # Robust method based on Raymaekers J, Rousseeuw PJ. Transforming
+      # variables to central normality. Mach Learn. 2021.
+      # doi:10.1007/s10994-021-05960-5
+      lambda <- .transformation_robust_optimisation(
+        x=data,
+        type="yeo_johnson")
+
+    } else {
+      # Standard method based on optimising log-likelihood of the normal
+      # distribution.
+      optimal_lambda <- suppressWarnings(
+        stats::optimise(
+          ..yeo_johnson_loglik,
+          interval=c(-10, 10),
+          x=data,
+          maximum=TRUE))
+
+      lambda <- ifelse(
+        is.finite(optimal_lambda$objective),
+        optimal_lambda$maximum,
+        1.0)
+    }
+
+    # Set lambda parameter.
+    object@lambda <- lambda
+    object@complete <- TRUE
+
+    return(object)
+  }
+)
+
+
+#### .set_transformation_parameters (transformationYeoJohnson) -----------------
+setMethod(
+  ".set_transformation_parameters",
+  signature("transformationYeoJohnsonShift"),
+  function(object, x, ...){
+
+    # Optimise lambda for Yeo-Johnson transformations.
     if(object@robust){
       # Robust method based on Raymaekers J, Rousseeuw PJ. Transforming
       # variables to central normality. Mach Learn. 2021.
