@@ -56,10 +56,21 @@ find_transformation_parameters <- function(
       robust=robust)
 
     if(shift){
-
+      object <- methods::new(
+        "transformationBoxCoxShift",
+        object)
     }
 
   } else if(transformation_method == "yeo_johnson"){
+    object <- methods::new(
+      "transformationYeoJohnson",
+      robust=robust)
+
+    if(shift){
+      object <- methods::new(
+        "transformationYeoJohnsonShift",
+        object)
+    }
 
   } else {
     stop(
@@ -67,4 +78,9 @@ find_transformation_parameters <- function(
              transformation_method)
     )
   }
+
+  # Set transformation parameters.
+  object <- .set_transformation_parameters(object)
+
+  return(object)
 }
