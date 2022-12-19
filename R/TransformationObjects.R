@@ -58,7 +58,7 @@ setGeneric(
 
 
 
-#### .set_transformation_parameters (transformationPowerTransform) -------------
+#### .set_transformation_parameters (general) ----------------------------------
 setMethod(
   ".set_transformation_parameters",
   signature("transformationPowerTransform"),
@@ -74,7 +74,7 @@ setMethod(
 
 
 
-#### .set_transformation_parameters (transformationBoxCox) ---------------------
+#### .set_transformation_parameters (Box-Cox) ----------------------------------
 setMethod(
   ".set_transformation_parameters",
   signature("transformationBoxCox"),
@@ -88,11 +88,12 @@ setMethod(
 
       # Find the (negative or zero) minimum value. We need to increment slightly
       # to avoid x containing 0s.
-      min_value <- min(x)
+      min_value <- min(x, na.rm=TRUE)
       min_value_dx <- 1.0
 
-      # Find the typical, non-zero, distance between values.
-      dx <- unique(diff(sort(x)))
+      # Find the typical, non-zero, distance between values. NA values should be
+      # removed.
+      dx <- unique(diff(sort(x, na.last=NA)))
       dx <- dx[dx > 0.0]
 
       # It shouldn't happen that all values are the same - but better check it.
@@ -116,7 +117,7 @@ setMethod(
       # variables to central normality. Mach Learn. 2021.
       # doi:10.1007/s10994-021-05960-5
       lambda <- .transformation_robust_optimisation(
-        x=data,
+        x=x,
         type="box_cox")
 
     } else {
@@ -126,7 +127,7 @@ setMethod(
         stats::optimise(
           ..box_cox_loglik,
           interval=c(-10, 10),
-          x=data,
+          x=x,
           maximum=TRUE))
 
       lambda <- ifelse(
@@ -145,7 +146,70 @@ setMethod(
 
 
 
-#### .set_transformation_parameters (transformationYeoJohnson) -----------------
+#### .set_transformation_parameters (Box-Cox (shift)) --------------------------
+setMethod(
+  ".set_transformation_parameters",
+  signature("transformationBoxCoxShift"),
+  function(object, x, ...){
+
+    # Get range for shift parameters.
+    shift_range <- box_cox_shift_range(x)
+
+    # Optimise shift and lambda for Box-Cox transformations. Choose mean
+    # shift and no transformation as initial values.
+    if(object@robust){
+
+      # Robust transformation.
+      results <- stats::optim(
+        par=c(mean(shift_range), 1.0),
+        fn=.transformation_robust_shifted_optimisation,
+        gr=NULL,
+        x=x,
+        type="box_cox",
+        shift_range=shift_range,
+        lambda_range=c(-6, 4),
+        control=list(
+          "fnscale"=-1.0,
+          "abstol"=1E-5,
+          "reltol"=1E-5))
+
+    } else {
+
+      # Conventional transformation.
+      results <- stats::optim(
+        par=c(mean(shift_range), 1.0),
+        fn=.transform_shifted_optimisation,
+        gr=NULL,
+        x=x,
+        type="box_cox",
+        shift_range=shift_range,
+        lambda_range=c(-6, 4),
+        control=list(
+          "fnscale"=-1.0,
+          "abstol"=1E-5,
+          "reltol"=1E-5))
+    }
+
+    shift <- results$par[1]
+    lambda <- results$par[2]
+
+    if(!is.finite(results$value) || !is.finite(shift) || !is.finite(lambda)){
+      shift <- 0.0
+      lambda <- 1.0
+    }
+
+    # Set parameters.
+    object@shift <- shift
+    object@lambda <- lambda
+    object@complete <- TRUE
+
+    return(object)
+  }
+)
+
+
+
+#### .set_transformation_parameters (Yeo-Johnson) ------------------------------
 setMethod(
   ".set_transformation_parameters",
   signature("transformationYeoJohnson"),
@@ -157,7 +221,7 @@ setMethod(
       # variables to central normality. Mach Learn. 2021.
       # doi:10.1007/s10994-021-05960-5
       lambda <- .transformation_robust_optimisation(
-        x=data,
+        x=x,
         type="yeo_johnson")
 
     } else {
@@ -167,7 +231,7 @@ setMethod(
         stats::optimise(
           ..yeo_johnson_loglik,
           interval=c(-10, 10),
-          x=data,
+          x=x,
           maximum=TRUE))
 
       lambda <- ifelse(
@@ -185,45 +249,66 @@ setMethod(
 )
 
 
-#### .set_transformation_parameters (transformationYeoJohnson) -----------------
+#### .set_transformation_parameters (Yeo-Johnson (shift)) ----------------------
 setMethod(
   ".set_transformation_parameters",
   signature("transformationYeoJohnsonShift"),
   function(object, x, ...){
 
-    # Optimise lambda for Yeo-Johnson transformations.
+    # Get range for shift parameters.
+    shift_range <- yeo_johnson_shift_range(x)
+
+    # Optimise shift and lambda for Yeo-Johnson transformations. Choose mean
+    # shift and no transformation as initial values.
     if(object@robust){
-      # Robust method based on Raymaekers J, Rousseeuw PJ. Transforming
-      # variables to central normality. Mach Learn. 2021.
-      # doi:10.1007/s10994-021-05960-5
-      lambda <- .transformation_robust_optimisation(
-        x=data,
-        type="yeo_johnson")
+
+      # Robust transformation.
+      results <- stats::optim(
+        par=c(mean(shift_range), 1.0),
+        fn=.transformation_robust_shifted_optimisation,
+        gr=NULL,
+        x=x,
+        type="yeo_johnson",
+        shift_range=shift_range,
+        lambda_range=c(-6, 4),
+        control=list(
+          "fnscale"=-1.0,
+          "abstol"=1E-5,
+          "reltol"=1E-5))
 
     } else {
-      # Standard method based on optimising log-likelihood of the normal
-      # distribution.
-      optimal_lambda <- suppressWarnings(
-        stats::optimise(
-          ..yeo_johnson_loglik,
-          interval=c(-10, 10),
-          x=data,
-          maximum=TRUE))
 
-      lambda <- ifelse(
-        is.finite(optimal_lambda$objective),
-        optimal_lambda$maximum,
-        1.0)
+      # Conventional transformation.
+      results <- stats::optim(
+        par=c(mean(shift_range), 1.0),
+        fn=.transform_shifted_optimisation,
+        gr=NULL,
+        x=x,
+        type="yeo_johnson",
+        shift_range=shift_range,
+        lambda_range=c(-6, 4),
+        control=list(
+          "fnscale"=-1.0,
+          "abstol"=1E-5,
+          "reltol"=1E-5))
     }
 
-    # Set lambda parameter.
+    shift <- results$par[1]
+    lambda <- results$par[2]
+
+    if(!is.finite(results$value) || !is.finite(shift) || !is.finite(lambda)){
+      shift <- 0.0
+      lambda <- 1.0
+    }
+
+    # Set parameters.
+    object@shift <- shift
     object@lambda <- lambda
     object@complete <- TRUE
 
     return(object)
   }
 )
-
 
 
 
@@ -234,7 +319,7 @@ setGeneric(
 
 
 
-#### .apply_transformation_parameters (transformationPowerTransform) -----------
+#### .apply_transformation_parameters (general) --------------------------------
 setMethod(
   ".apply_transformation_parameters",
   signature("transformationPowerTransform"),
@@ -246,10 +331,11 @@ setMethod(
 )
 
 
+
 #### .apply_transformation_parameters (Box-Cox) --------------------------------
 setMethod(
   ".apply_transformation_parameters",
-  signature(object="transformationYeoJohnson"),
+  signature(object="transformationBoxCox"),
   function(object, x, ...){
 
     # Apply shift.
@@ -258,13 +344,12 @@ setMethod(
     # Perform transformation.
     x <- ..box_cox_transform(
       lambda=object@lambda,
-      x=x)
-
-    # Remove shift.
-    x <- x + object@shift
+      x=x,
+      invert=FALSE)
 
     return(x)
   })
+
 
 
 #### .apply_transformation_parameters (Yeo-Johnson) ----------------------------
@@ -276,7 +361,8 @@ setMethod(
     # Perform transformation.
     x <- ..yeo_johnson_transform(
       lambda=object@lambda,
-      x=x)
+      x=x,
+      invert=FALSE)
 
     return(x)
   })
@@ -295,9 +381,84 @@ setMethod(
     # Perform transformation.
     x <- ..yeo_johnson_transform(
       lambda=object@lambda,
-      x=x)
+      x=x,
+      invert=FALSE)
 
-    # Remove shift.
+    return(x)
+  })
+
+
+
+#### .invert_transformation (generic) ------------------------------------------
+setGeneric(
+  ".invert_transformation",
+  function(object, ...) standardGeneric(".invert_transformation"))
+
+
+
+#### .invert_transformation (general) ------------------------------------------
+setMethod(
+  ".invert_transformation",
+  signature("transformationPowerTransform"),
+  function(object, x, ...){
+    # Default method.
+
+    return(x)
+  }
+)
+
+
+
+#### .invert_transformation (Box-Cox) ------------------------------------------
+setMethod(
+  ".invert_transformation",
+  signature(object="transformationBoxCox"),
+  function(object, x, ...){
+
+    # Perform transformation.
+    x <- ..box_cox_transform(
+      lambda=object@lambda,
+      x=x,
+      invert=TRUE)
+
+    # Apply shift.
+    x <- x + object@shift
+
+    return(x)
+  })
+
+
+
+#### .invert_transformation (Yeo-Johnson) --------------------------------------
+setMethod(
+  ".invert_transformation",
+  signature(object="transformationYeoJohnson"),
+  function(object, x, ...){
+
+    # Perform transformation.
+    x <- ..yeo_johnson_transform(
+      lambda=object@lambda,
+      x=x,
+      invert=TRUE)
+
+    return(x)
+  })
+
+
+
+#### .invert_transformation (Yeo-Johnson (shift)) ------------------------------
+setMethod(
+  ".invert_transformation",
+  signature(object="transformationYeoJohnsonShift"),
+  function(object, x, ...){
+
+    # Perform transformation.
+    x <- ..yeo_johnson_transform(
+      lambda=object@lambda,
+      x=x,
+      invert=TRUE)
+
+    # Apply shift.
     x <- x + object@shift
 
     return(x)

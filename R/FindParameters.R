@@ -1,5 +1,25 @@
 #' @include TransformationObjects.R
+NULL
 
+#' Set transformation parameters
+#'
+#' @param x A numerical vector.
+#' @param transformation_method One of the following methods for power
+#'   transformation:
+#'
+#'   * `yeo_johnson`:
+#'
+#'   * `box_cox`:
+#'
+#'   * `none`: A fall-back method that will not transform values.
+#'
+#' @param robust
+#' @param shift
+#'
+#' @return
+#' @export
+#'
+#' @examples
 find_transformation_parameters <- function(
     x,
     transformation_method="yeo_johnson",
@@ -83,4 +103,68 @@ find_transformation_parameters <- function(
   object <- .set_transformation_parameters(object)
 
   return(object)
+}
+
+
+
+power_transform <- function(
+    x,
+    transformer=NULL,
+    ...){
+
+  # Create a transformer.
+  if(is.null(transformer)){
+    transformer <- do.call(
+      find_transformation_parameters,
+      c(list("x"=x),
+        list(...)))
+  }
+
+  # Check that the transformer is a transformer.
+  if(!is(transformer, "transformationPowerTransform")){
+    stop(paste0(
+      "The transformer object does not have the expected class. ",
+      "Expected: transformationPowerTransform (or subclass). ",
+      "Found: ", class(transformer)[1]))
+  }
+
+  # Check that transformer is complete.
+  if(!transformer@complete) stop(paste0("Parameters for the transformer object were not fully set."))
+
+  y <- .apply_transformation_parameters(
+    object=transformer,
+    x=x)
+
+  return(y)
+}
+
+
+
+revert_power_transform <- function(
+    y,
+    transformer){
+
+  if(missing(transformer)){
+    stop(paste0(
+      "A transformer object is required to revert the transformation."
+    ))
+  }
+
+  # Check that the transformer is a transformer.
+  if(!is(transformer, "transformationPowerTransform")){
+    stop(paste0(
+      "The transformer object does not have the expected class. ",
+      "Expected: transformationPowerTransform (or subclass). ",
+      "Found: ", class(transformer)[1]))
+  }
+
+  # Check that transformer is complete.
+  if(!transformer@complete) stop(paste0("Parameters for the transformer object were not fully set."))
+
+  # Revert transformation.
+  x <- .invert_transformation(
+    object=transformer,
+    x=y)
+
+  return(x)
 }

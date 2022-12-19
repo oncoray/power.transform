@@ -4,7 +4,7 @@
   # doi:10.1007/s10994-021-05960-5
 
   # Sort x.
-  x <- x[order(x)]
+  x <- sort(x)
 
   # Compute z-values according to the inverse cumulative density function.
   z_expected <- stats::qnorm(p=(seq_along(x) - 1/3) / (length(x) + 1/3))

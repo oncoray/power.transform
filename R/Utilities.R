@@ -37,3 +37,48 @@ huber_estimate <- function(x, k=1.28, tol=1E-4){
 
   return(list("mu"=mu_0, "sigma"=sigma_0))
 }
+
+
+apply_boundary <- function(
+    llf,
+    shift,
+    shift_range,
+    lambda,
+    lambda_range){
+  # Apply boundary conditions to steer optimisation algorithms away from the
+  # boundaries.
+
+  if(shift < shift_range[1] || shift > shift_range[2] || lambda < lambda_range[1] || lambda > lambda_range[2]){
+    # Build a gradient that increases the further shift and/or lambda parameters
+    # deviate from the boundary.
+
+    # Initial values.
+    lambda_gradient <- 0.0
+    shift_gradient <- 0.0
+
+    shift_norm <- shift_range[2] - shift_range[1]
+    if(shift_norm == 0.0) shift_norm <- 1.0
+
+    if(shift < shift_range[1]){
+      shift_gradient <- abs(shift - shift_range[1]) / shift_norm
+
+    } else if(shift > shift_range[2]){
+      shift_gradient <- abs(shift_range[2] - shift) / shift_norm
+    }
+
+    lambda_norm <- lambda_range[2] - lambda_range[1]
+    if(lambda_norm == 0.0) lambda_norm <- 1.0
+
+    if(lambda < lambda_range[1]){
+      lambda_gradient <- abs(lambda - lambda_range[1]) / lambda_norm
+
+    } else if(lambda > lambda_range[2]){
+      lambda_gradient <- abs(lambda_range[2] - lambda) / lambda_norm
+    }
+
+    # Reduce llf.
+    llf <- llf - shift_gradient - lambda_gradient
+  }
+
+  return(llf)
+}

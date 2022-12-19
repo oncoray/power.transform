@@ -1,3 +1,17 @@
+yeo_johnson_shift_range <- function(x){
+  # Default range would be any shift between all-positive (shift by lowest
+  # value) and all-negative (shift by highest value).
+
+  # Find the (negative or zero) minimum value. We need to increment slightly
+  # to avoid x containing 0s.
+  min_value <- min(x, na.rm=TRUE)
+  max_value <- max(x, na.rm=TRUE)
+
+  return(c(min_value, max_value))
+}
+
+
+
 ..yeo_johnson_transform <- function(lambda, x, invert=FALSE){
   # After Yeo, I. K., & Johnson, R. A. (2000). A new family of power
   # transformations to improve normality or symmetry. Biometrika, 87(4),

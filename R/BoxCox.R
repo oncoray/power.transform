@@ -1,3 +1,38 @@
+box_cox_shift_range <- function(x){
+  # Default range would be any shift between all-positive, limit on 0 (shift by lowest
+  # value) and default (0).
+
+  # Find the minimum value. We need to increment slightly
+  # to avoid x containing 0s.
+  min_value <- min(x, na.rm=TRUE)
+  min_value_dx <- 1.0
+
+  # Find the typical, non-zero, distance between values. NA values should be
+  # removed.
+  dx <- unique(diff(sort(x, na.last=NA)))
+  dx <- dx[dx > 0.0]
+
+  # It shouldn't happen that all values are the same - but better check it.
+  if(length(dx) > 0) min_value_dx <- stats::median(dx)
+
+  # The increment should not grow too much.
+  if(min_value_dx > 1.0) min_value_dx <- 1.0
+
+  # Set minimum value.
+  min_value <- min_value - min_value_dx
+
+  # Set maximum value.
+  max_value <- 0.0
+  if(any(x <= 0)) max_value <- min_value - stats::median(x, na.rm=TRUE)
+
+  # Usually, min_value will be higher than max_value.
+  shift_range <- c(
+    min(c(min_value, max_value)),
+    max(c(min_value, max_value)))
+
+  return(shift_range)
+}
+
 
 ..box_cox_transform <- function(lambda, x, invert=FALSE){
   # After Box, G. E., & Cox, D. R. (1964). An analysis of transformations.
