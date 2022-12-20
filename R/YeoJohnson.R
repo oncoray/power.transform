@@ -1,7 +1,7 @@
 yeo_johnson_shift_range <- function(x){
   # Default range would be any shift between all-positive (shift by lowest
   # value) and all-negative (shift by highest value).
-
+  browser()
   # Find the (negative or zero) minimum value. We need to increment slightly
   # to avoid x containing 0s.
   min_value <- min(x, na.rm=TRUE)

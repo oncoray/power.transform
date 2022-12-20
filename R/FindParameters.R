@@ -3,40 +3,70 @@ NULL
 
 #' Set transformation parameters
 #'
-#' @param x A numerical vector.
-#' @param transformation_method One of the following methods for power
+#' `find_transformation_parameters` is used to find optimal parameters for
+#' univariate transformation to normality.
+#'
+#' @param x A vector with numeric values.
+#' @param method One of the following methods for power
 #'   transformation:
 #'
-#'   * `yeo_johnson`:
+#'   * `box_cox`: Transformation using the Box-Cox transformation (Box and Cox,
+#'   1964). The Box-Cox transformation requires that all data are strictly
+#'   positive. Features that contain zero or negative values cannot be
+#'   transformed using this transformation. In their work, Box and Cox define a
+#'   shifted variant. We use this variant to shift values to a strictly positive
+#'   range, when negative values are present. The Box-Cox transformation relies
+#'   on a single parameter lambda, which is estimated through maximisation of
+#'   the log-likelihood function corresponding to a normal distribution.
 #'
-#'   * `box_cox`:
+#'   * `yeo_johnson`:Transformation using the Yeo-Johnson
+#'   transformation (Yeo and Johnson, 2000). Unlike the Box-Cox transformation,
+#'   the Yeo-Johnson transformation allows for negative and positive values.
+#'   Like the Box-Cox transformation, this transformation relies on a single
+#'   parameter lambda, which is estimated through maximisation of the
+#'   log-likelihood function corresponding to a normal distribution.
 #'
 #'   * `none`: A fall-back method that will not transform values.
 #'
-#' @param robust
-#' @param shift
+#' @param robust Flag for using a robust version of Box-Cox or Yeo-Johnson
+#'   transformation, as defined by Raymaekers and Rousseeuw (2021). This version
+#'   is less sensitive in the presence outliers.
+#' @param shift Flag for using a version of Box-Cox or Yeo-Johnson
+#'   transformation that simultaneously optimises location in addition to the
+#'   lambda parameter.
 #'
-#' @return
+#' @return A transformer object that can be used to transform values.
 #' @export
 #'
+#' @references 1. Yeo, I. & Johnson, R. A. A new family of power transformations
+#'   to improve normality or symmetry. Biometrika 87, 954–959 (2000).
+#'
+#'   1. Box, G. E. P. & Cox, D. R. An analysis of transformations. J. R. Stat.
+#'   Soc. Series B Stat. Methodol. 26, 211–252 (1964).
+#'
+#'   1. Raymaekers, J., Rousseeuw,  P. J. Transforming variables to central
+#'   normality. Mach Learn. (2021).
+#'
 #' @examples
+#' x <- exp(stats::rnorm(1000))
+#' transformer <- find_transformation_parameters(x=x, method="box_cox")
 find_transformation_parameters <- function(
     x,
-    transformation_method="yeo_johnson",
+    method="yeo_johnson",
     robust=TRUE,
     shift=TRUE){
 
   # Check transformation methods.
-  if(!transformation_method %in% c("box_cox", "yeo_johnson", "none")){
+  if(!method %in% c("box_cox", "yeo_johnson", "none")){
     stop(paste0(
-      "The transformation_method argument should be one of \"box_cox\", \"yeo_johnson\" or \"none\". ",
-      "Found: ", transformation_method))
+      "The method argument should be one of \"box_cox\", \"yeo_johnson\" or \"none\". ",
+      "Found: ", method))
   }
 
   # Perform checks on x.
-  if(is.factor(x) && transformation_method != "none"){
+  if(is.factor(x) && method != "none"){
     warning("Power transformations are not applicable to categorical data.")
-    transformation_method <- "none"
+    method <- "none"
   }
 
   if(length(x) == 0){
@@ -57,9 +87,9 @@ find_transformation_parameters <- function(
 
   # Check number of unique values.
   n_unique_values <- length(unique(x))
-  if(n_unique_values <= 3 && transformation_method != "none"){
+  if(n_unique_values <= 3 && method != "none"){
     warning("x contains three or fewer unique values, and power transformation is not performed.")
-    transformation_method <- "none"
+    method <- "none"
   }
 
   if(n_unique_values > 3 && n_unique_values <= 10){
@@ -67,10 +97,10 @@ find_transformation_parameters <- function(
   }
 
   # Create transformation objects.
-  if(transformation_method == "none"){
+  if(method == "none"){
     object <- methods::new("transformationNone")
 
-  } else if(transformation_method == "box_cox"){
+  } else if(method == "box_cox"){
     object <- methods::new(
       "transformationBoxCox",
       robust=robust)
@@ -81,7 +111,7 @@ find_transformation_parameters <- function(
         object)
     }
 
-  } else if(transformation_method == "yeo_johnson"){
+  } else if(method == "yeo_johnson"){
     object <- methods::new(
       "transformationYeoJohnson",
       robust=robust)
@@ -95,18 +125,39 @@ find_transformation_parameters <- function(
   } else {
     stop(
       paste0("Encountered an unknown transformation method: ",
-             transformation_method)
+             method)
     )
   }
 
   # Set transformation parameters.
-  object <- .set_transformation_parameters(object)
+  object <- .set_transformation_parameters(
+    object=object,
+    x=x)
 
   return(object)
 }
 
 
 
+#' Transform values
+#'
+#' `power_transform` transforms numeric values to normality.
+#'
+#' @param x A vector with numeric values that should be transformed to
+#'   normality.
+#' @param transformer A transformer object created using
+#'   `find_transformation_parameters`. If `NULL`, a transformer is generated
+#'   internally.
+#' @param ... Parameters passed on to `find_transformation_parameters`.
+#'
+#' @inheritDotParams find_transformation_parameters
+#'
+#' @return A vector of transformed values of `x`.
+#' @export
+#'
+#' @examples
+#' x <- exp(stats::rnorm(1000))
+#' y <- power_transformed(x=x, method="box_cox")
 power_transform <- function(
     x,
     transformer=NULL,
@@ -140,6 +191,25 @@ power_transform <- function(
 
 
 
+#' Revert transformation
+#'
+#' `revert_power_transform` reverts the transformation of numeric values to
+#' normality.
+#'
+#' @param x A vector with numeric values that were previously transformed to
+#'   normality.
+#' @param transformer A transformer object created using
+#'   `find_transformation_parameters` that was used to transform the values to
+#'   normality previously. Cannot be `NULL`.
+#'
+#' @return A vector of values.
+#' @export
+#'
+#' @examples
+#' x0 <- exp(stats::rnorm(1000))
+#' transformer <- find_transformation_parameters(x=x0, method="box_cox")
+#' y <- power_transformed(x=x, transformer=transformer)
+#' x1 <- revert_power_transform(y=y, transformer=transformer)
 revert_power_transform <- function(
     y,
     transformer){

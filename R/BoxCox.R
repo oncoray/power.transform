@@ -1,7 +1,7 @@
 box_cox_shift_range <- function(x){
   # Default range would be any shift between all-positive, limit on 0 (shift by lowest
   # value) and default (0).
-
+  browser()
   # Find the minimum value. We need to increment slightly
   # to avoid x containing 0s.
   min_value <- min(x, na.rm=TRUE)

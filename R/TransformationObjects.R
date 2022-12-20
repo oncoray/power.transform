@@ -20,7 +20,7 @@ setClass(
     "lambda" = "numeric",
     "shift" = "numeric"),
   prototype=list(
-    "method" = NA_character_,
+    "method" = "box_cox",
     "robust" = FALSE,
     "lambda" = NA_real_,
     "shift" = 0.0))
@@ -37,7 +37,7 @@ setClass(
     "robust" = "logical",
     "lambda" = "numeric"),
   prototype=list(
-    "method" = NA_character_,
+    "method" = "yeo_johnson",
     "robust" = FALSE,
     "lambda" = NA_real_))
 
@@ -463,3 +463,88 @@ setMethod(
 
     return(x)
   })
+
+
+
+#### show (general) ------------------------------------------------------------
+setMethod(
+  "show",
+  signature("transformationPowerTransform"),
+  function(object){
+    cat(paste0("A generic power transformation object."))
+  }
+)
+
+
+
+#### show (Box-Cox) ------------------------------------------------------------
+setMethod(
+  "show",
+  signature("transformationBoxCox"),
+  function(object){
+
+    str <- paste0(
+      "A ", ifelse(object@robust, "robust ", ""),
+      ifelse(object@shift != 0.0, "shifted ", ""),
+      "Box-Cox transformation object"
+    )
+
+    if(object@complete){
+      cat(paste0(str, ".\n"))
+      cat("  lambda: ", object@lambda, "\n")
+
+      if(object@shift != 0.0) cat(paste0("  shift: ", object@shift, "\n"))
+
+    } else {
+      cat(paste0(str, " with unset transformation parameters.\n"))
+    }
+  }
+)
+
+
+
+#### show (Yeo-Johnson) --------------------------------------------------------
+setMethod(
+  "show",
+  signature("transformationYeoJohnson"),
+  function(object){
+
+    str <- paste0(
+      "A ", ifelse(object@robust, "robust ", ""),
+      "Yeo-Johnson transformation object"
+    )
+
+    if(object@complete){
+      cat(paste0(str, ".\n"))
+      cat("  lambda: ", object@lambda, "\n")
+
+    } else {
+      cat(paste0(str, " with unset transformation parameters.\n"))
+    }
+  }
+)
+
+
+
+#### show (Yeo-Johnson (shift)) ------------------------------------------------
+setMethod(
+  "show",
+  signature("transformationYeoJohnsonShift"),
+  function(object){
+
+    str <- paste0(
+      "A ", ifelse(object@robust, "robust ", ""),
+      ifelse(object@shift != 0.0, "shifted ", ""),
+      "Yeo-Johnson transformation object"
+    )
+
+    if(object@complete){
+      cat(paste0(str, ".\n"))
+      cat("  lambda: ", object@lambda, "\n")
+      cat("  shift: ", object@shift, "\n")
+
+    } else {
+      cat(paste0(str, " with unset transformation parameters.\n"))
+    }
+  }
+)
