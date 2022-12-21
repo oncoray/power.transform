@@ -326,7 +326,24 @@ setMethod(
   function(object, x, ...){
     # Default method.
 
-    return(x)
+    # Set up vector to copy new values to.
+    y <- numeric(length(x))
+
+    # Find non-finite instances.
+    na_entries <- which(!is.finite(x))
+    if(length(na_entries) > 0){
+      warning("One or more NA or infinite values were found.")
+
+      y[na_entries] <- NA_real_
+    }
+
+    # Find remaining valid instances.
+    valid_entries <- setdiff(seq_along(x), na_entries)
+
+    # Perform transformation.
+    if(length(valid_entries) > 0) y[valid_entries] <- x[valid_entries]
+
+    return(y)
   }
 )
 
@@ -341,13 +358,31 @@ setMethod(
     # Apply shift.
     x <- x - object@shift
 
-    # Perform transformation.
-    x <- ..box_cox_transform(
-      lambda=object@lambda,
-      x=x,
-      invert=FALSE)
+    # Set up vector to copy new values to.
+    y <- numeric(length(x))
 
-    return(x)
+    # Find non-positive and non-finite instances.
+    na_entries <- which(x <= 0.0 | !is.finite(x))
+    if(length(na_entries) > 0){
+      warning(paste0(
+        "Box-cox power transforms are only defined for strictly positive values. ",
+        "One or more zero, negative, NA or infinite values were found."))
+
+      y[na_entries] <- NA_real_
+    }
+
+    # Find remaining valid instances.
+    valid_entries <- setdiff(seq_along(x), na_entries)
+
+    # Perform transformation.
+    if(length(valid_entries) > 0){
+      y[valid_entries] <- ..box_cox_transform(
+        lambda=object@lambda,
+        x=x[valid_entries],
+        invert=FALSE)
+    }
+
+    return(y)
   })
 
 
@@ -358,13 +393,29 @@ setMethod(
   signature(object="transformationYeoJohnson"),
   function(object, x, ...){
 
-    # Perform transformation.
-    x <- ..yeo_johnson_transform(
-      lambda=object@lambda,
-      x=x,
-      invert=FALSE)
+    # Set up vector to copy new values to.
+    y <- numeric(length(x))
 
-    return(x)
+    # Find non-finite instances.
+    na_entries <- which(!is.finite(x))
+    if(length(na_entries) > 0){
+      warning("One or more NA or infinite values were found.")
+
+      y[na_entries] <- NA_real_
+    }
+
+    # Find remaining valid instances.
+    valid_entries <- setdiff(seq_along(x), na_entries)
+
+    # Perform transformation.
+    if(length(valid_entries) > 0){
+      y[valid_entries] <- ..yeo_johnson_transform(
+        lambda=object@lambda,
+        x=x[valid_entries],
+        invert=FALSE)
+    }
+
+    return(y)
   })
 
 
@@ -378,13 +429,29 @@ setMethod(
     # Apply shift.
     x <- x - object@shift
 
-    # Perform transformation.
-    x <- ..yeo_johnson_transform(
-      lambda=object@lambda,
-      x=x,
-      invert=FALSE)
+    # Set up vector to copy new values to.
+    y <- numeric(length(x))
 
-    return(x)
+    # Find non-finite instances.
+    na_entries <- which(!is.finite(x))
+    if(length(na_entries) > 0){
+      warning("One or more NA or infinite values were found.")
+
+      y[na_entries] <- NA_real_
+    }
+
+    # Find remaining valid instances.
+    valid_entries <- setdiff(seq_along(x), na_entries)
+
+    # Perform transformation.
+    if(length(valid_entries) > 0){
+      y[valid_entries] <- ..yeo_johnson_transform(
+        lambda=object@lambda,
+        x=x[valid_entries],
+        invert=FALSE)
+    }
+
+    return(y)
   })
 
 

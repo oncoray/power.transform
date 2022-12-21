@@ -64,13 +64,12 @@ find_transformation_parameters <- function(
   }
 
   # Perform checks on x.
-  if(is.factor(x) && method != "none"){
-    warning("Power transformations are not applicable to categorical data.")
-    method <- "none"
-  }
-
   if(length(x) == 0){
     stop("x does not contain any values.")
+  }
+
+  if(is.factor(x)){
+    stop("x is categorical, and power transformations are not applicable.")
   }
 
   if(!is.numeric(x)){
@@ -82,7 +81,7 @@ find_transformation_parameters <- function(
 
   # Check length again.
   if(length(x) == 0){
-    stop("x only contained NA or inf values.")
+    stop("x only contains NA or inf values.")
   }
 
   # Check number of unique values.
@@ -181,6 +180,11 @@ power_transform <- function(
 
   # Check that transformer is complete.
   if(!transformer@complete) stop(paste0("Parameters for the transformer object were not fully set."))
+
+  # Check that x is numeric.
+  if(!is.numeric(x)){
+    stop("x does not contain numeric values.")
+  }
 
   y <- .apply_transformation_parameters(
     object=transformer,
