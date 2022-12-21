@@ -1,4 +1,7 @@
-.transform_shifted_optimisation <- function(shift, lambda, shift_range, lambda_range, x, type){
+.transform_shifted_optimisation <- function(parameters, shift_range, lambda_range, x, type){
+
+  shift <- parameters[1]
+  lambda <- parameters[2]
 
   # Set log-likelihood function.
   loglik_FUN <- switch(
@@ -11,12 +14,11 @@
   x <- x - shift
 
   # Compute log-likelihood.
-  llf <- do.call(
+  llf <- suppressWarnings(do.call(
     loglik_FUN,
     args=list(
       "lambda"=lambda,
-      "x"=x,
-      "w"=weights))
+      "x"=x)))
 
   # Check boundary conditions and update llf, if necessary. This function steers
   # the optimiser away from the boundary.
@@ -32,7 +34,7 @@
 
 
 
-.transformation_robust_shifted_optimisation <- function(shift, lambda, shift_range, lambda_range, x, type){
+.transformation_robust_shifted_optimisation <- function(parameters, shift_range, lambda_range, x, type){
   # This follows the algorithm from Raymaekers J, Rousseeuw PJ. Transforming
   # variables to central normality. Mach Learn. 2021.
   # doi:10.1007/s10994-021-05960-5. However, because we are optimising over
@@ -40,6 +42,9 @@
   # lambda-0 value using rectified optimisation and a first re-weighted
   # optimisation step. We directly use lambda to compute weighted
   # log-likelihood.
+
+  shift <- parameters[1]
+  lambda <- parameters[2]
 
   # Set transformation function.
   transform_FUN <- switch(
@@ -59,11 +64,11 @@
   x <- x - shift
 
   # Perform transformation for lambda.
-  y <- do.call(
+  y <- suppressWarnings(do.call(
     transform_FUN,
     args=list(
       "lambda"=lambda,
-      "x"=x))
+      "x"=x)))
 
   # Compute M-estimates for locality and scale
   robust_estimates <- huber_estimate(y)
@@ -74,15 +79,16 @@
 
   # Compute weights.
   weights <- as.numeric(abs(y - robust_estimates$mu) / robust_estimates$sigma <= stats::qnorm(0.99))
+  if(!all(is.finite(weights))) return(NA_real_)
   if(sum(weights) == 0.0) return(NA_real_)
 
   # Compute log-likelihood.
-  llf <- do.call(
+  llf <- suppressWarnings(do.call(
     loglik_FUN,
     args=list(
       "lambda"=lambda,
       "x"=x,
-      "w"=weights))
+      "w"=weights)))
 
   # Check boundary conditions and update llf, if necessary. This function steers
   # the optimiser away from the boundary.

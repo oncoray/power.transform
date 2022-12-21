@@ -126,7 +126,7 @@ setMethod(
       optimal_lambda <- suppressWarnings(
         stats::optimise(
           ..box_cox_loglik,
-          interval=c(-10, 10),
+          interval=c(-4.0, 4.0),
           x=x,
           maximum=TRUE))
 
@@ -159,9 +159,23 @@ setMethod(
     # shift and no transformation as initial values.
     if(object@robust){
 
-      # Robust transformation.
+      # Approximate first.
       results <- stats::optim(
         par=c(mean(shift_range), 1.0),
+        fn=.transform_shifted_optimisation,
+        gr=NULL,
+        x=x,
+        type="box_cox",
+        shift_range=shift_range,
+        lambda_range=c(-6, 4),
+        control=list(
+          "fnscale"=-1.0,
+          "abstol"=1E-5,
+          "reltol"=1E-5))
+
+      # Robust transformation.
+      results <- stats::optim(
+        par=results$par,
         fn=.transformation_robust_shifted_optimisation,
         gr=NULL,
         x=x,
@@ -230,7 +244,7 @@ setMethod(
       optimal_lambda <- suppressWarnings(
         stats::optimise(
           ..yeo_johnson_loglik,
-          interval=c(-10, 10),
+          interval=c(-4.0, 4.0),
           x=x,
           maximum=TRUE))
 
@@ -258,19 +272,42 @@ setMethod(
     # Get range for shift parameters.
     shift_range <- yeo_johnson_shift_range(x)
 
+    # Set up initial search grid for shift and optimisation parameters to narrow
+    # down the search area.
+
+    # Then compute the log-likelihood at each grid node.
+
+    # Select the node with the highest llf.
+
+    # Select the direct neighbourhood of the llf (neighbouring lambda, x).
+
     # Optimise shift and lambda for Yeo-Johnson transformations. Choose mean
     # shift and no transformation as initial values.
     if(object@robust){
 
-      # Robust transformation.
+      # Initial approximation.
       results <- stats::optim(
         par=c(mean(shift_range), 1.0),
+        fn=.transform_shifted_optimisation,
+        gr=NULL,
+        x=x,
+        type="yeo_johnson",
+        shift_range=shift_range,
+        lambda_range=c(-4, 4),
+        control=list(
+          "fnscale"=-1.0,
+          "abstol"=1E-5,
+          "reltol"=1E-5))
+
+      # Robust transformation.
+      results <- stats::optim(
+        par=results$par,
         fn=.transformation_robust_shifted_optimisation,
         gr=NULL,
         x=x,
         type="yeo_johnson",
         shift_range=shift_range,
-        lambda_range=c(-6, 4),
+        lambda_range=c(-4, 4),
         control=list(
           "fnscale"=-1.0,
           "abstol"=1E-5,
@@ -286,7 +323,7 @@ setMethod(
         x=x,
         type="yeo_johnson",
         shift_range=shift_range,
-        lambda_range=c(-6, 4),
+        lambda_range=c(-4, 4),
         control=list(
           "fnscale"=-1.0,
           "abstol"=1E-5,

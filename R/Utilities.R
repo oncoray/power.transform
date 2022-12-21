@@ -52,6 +52,8 @@ apply_boundary <- function(
     # Build a gradient that increases the further shift and/or lambda parameters
     # deviate from the boundary.
 
+    return(NA_real_)
+
     # Initial values.
     lambda_gradient <- 0.0
     shift_gradient <- 0.0

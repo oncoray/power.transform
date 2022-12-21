@@ -12,6 +12,15 @@ yeo_johnson_shift_range <- function(x){
 
 
 
+yeo_johnson_parameter_grid <- function(x){
+  points_x <- unique(stats::quantile(x, c(0.05, 0.2, 0.35, 0.5, 0.65, 0.8, 0.95), names=FALSE))
+  points_lambda <- seq(-4, 4)
+
+  return(expand.grid(points_x, points_lambda))
+}
+
+
+
 ..yeo_johnson_transform <- function(lambda, x, invert=FALSE){
   # After Yeo, I. K., & Johnson, R. A. (2000). A new family of power
   # transformations to improve normality or symmetry. Biometrika, 87(4),

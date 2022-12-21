@@ -1,11 +1,12 @@
 box_cox_shift_range <- function(x){
   # Default range would be any shift between all-positive, limit on 0 (shift by lowest
   # value) and default (0).
-  browser()
-  # Find the minimum value. We need to increment slightly
-  # to avoid x containing 0s.
-  min_value <- min(x, na.rm=TRUE)
-  min_value_dx <- 1.0
+
+  # Find the value that brings the entire distribution to 0. We need to
+  # increment slightly to avoid x containing 0s.
+  max_value <- min(x, na.rm=TRUE)
+  max_value_offset <- 1.0
+  min_value_offset <- 1.0
 
   # Find the typical, non-zero, distance between values. NA values should be
   # removed.
@@ -13,22 +14,23 @@ box_cox_shift_range <- function(x){
   dx <- dx[dx > 0.0]
 
   # It shouldn't happen that all values are the same - but better check it.
-  if(length(dx) > 0) min_value_dx <- stats::median(dx)
+  if(length(dx) > 0) max_value_offset <- stats::median(dx)
 
   # The increment should not grow too much.
-  if(min_value_dx > 1.0) min_value_dx <- 1.0
+  if(max_value_offset > 0.5) max_value_offset <- 0.5
 
-  # Set minimum value.
-  min_value <- min_value - min_value_dx
+  # Update min_value_offset.
+  min_value_offset <- stats::median(x - max_value, na.rm=TRUE)
+  if(min_value_offset < 1.0) min_value_offset <- 1.0
 
-  # Set maximum value.
-  max_value <- 0.0
-  if(any(x <= 0)) max_value <- min_value - stats::median(x, na.rm=TRUE)
+  # Set minimum shift value.
+  min_value <- max_value - min_value_offset
 
-  # Usually, min_value will be higher than max_value.
-  shift_range <- c(
-    min(c(min_value, max_value)),
-    max(c(min_value, max_value)))
+  # Set maximum shift value.
+  max_value <- max_value - max_value_offset
+
+  # Set shift range. Occasionally, the values not be sorted.
+  shift_range <- sort(c(min_value, max_value))
 
   return(shift_range)
 }
@@ -77,6 +79,8 @@ box_cox_shift_range <- function(x){
 
   # Transform x under the provided lambda.
   y <- ..box_cox_transform(lambda=lambda, x=x)
+
+  if(any(!is.finite(y))) return(NA_real_)
 
   # Compute the sum of the weights.
   sum_w <- sum(w)

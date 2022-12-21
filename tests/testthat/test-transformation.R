@@ -18,7 +18,7 @@ for(method in c("box_cox", "yeo_johnson", "none")){
 set.seed(19L)
 
 # Draw 1000 normally
-x <- stats::rnorm(1000)
+x <- stats::rnorm(10000)
 
 # Iterate over all parameter sets.
 for(ii in seq_along(parameter_list)){
@@ -43,10 +43,16 @@ for(ii in seq_along(parameter_list)){
                parameter_set))
 
       if(parameter_set$method == "box_cox"){
-        testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.2)
+        if(parameter_set$shift){
+          testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.1)
+          testthat::expect_equal(transformer@shift, 0.0, tolerance=0.1)
+
+        } else {
+          testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.2)
+        }
+
 
       } else if(parameter_set$method == "yeo_johnson"){
-
         if(parameter_set$shift){
           testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.2)
 
@@ -189,7 +195,8 @@ for(ii in seq_along(parameter_list)){
       if(parameter_set$method == "box_cox"){
 
         if(parameter_set$shift){
-          testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.2)
+          testthat::expect_equal(transformer@lambda, 0.2, tolerance=0.1)
+          testthat::expect_equal(transformer@shift, -1.0, tolerance=0.1)
 
         } else {
           testthat::expect_equal(transformer@lambda, 0.1, tolerance=0.2)
@@ -253,7 +260,8 @@ for(ii in seq_along(parameter_list)){
       if(parameter_set$method == "box_cox"){
 
         if(parameter_set$shift){
-          testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.2)
+          testthat::expect_equal(transformer@lambda, -0.4, tolerance=0.1)
+          testthat::expect_equal(transformer@shift, -exp(max(x)) - 1E-8, tolerance=1.0)
 
         } else {
           testthat::expect_equal(transformer@lambda, 0.1, tolerance=0.2)
@@ -308,7 +316,8 @@ for(ii in seq_along(parameter_list)){
       if(parameter_set$method == "box_cox"){
 
         if(parameter_set$shift){
-          testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.2)
+          estthat::expect_equal(transformer@lambda, 0.0, tolerance=0.1)
+          testthat::expect_equal(transformer@shift, 0.0, tolerance=0.1)
 
         } else {
           testthat::expect_equal(transformer@lambda, 0.1, tolerance=0.2)
@@ -366,7 +375,8 @@ for(ii in seq_along(parameter_list)){
       if(parameter_set$method == "box_cox"){
 
         if(parameter_set$shift){
-          testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.2)
+          estthat::expect_equal(transformer@lambda, 0.0, tolerance=0.1)
+          testthat::expect_equal(transformer@shift, 0.0, tolerance=0.1)
 
         } else {
           testthat::expect_equal(transformer@lambda, 0.1, tolerance=0.2)
@@ -590,6 +600,7 @@ for(ii in seq_along(parameter_list)){
 
         if(parameter_set$shift){
           testthat::expect_equal(transformer@lambda, 1.0, tolerance=0.2)
+          testthat::expect_equal(transformer@shift, -1.0, tolerance=0.5)
 
         } else if(parameter_set$robust){
           testthat::expect_equal(transformer@lambda, 0.6, tolerance=0.2)
@@ -601,6 +612,7 @@ for(ii in seq_along(parameter_list)){
       } else if(parameter_set$method == "yeo_johnson"){
         if(parameter_set$shift){
           testthat::expect_equal(transformer@lambda, 1.0, tolerance=0.2)
+          testthat::expect_equal(transformer@shift, 5.0, tolerance=0.5)
 
         } else if(parameter_set$robust){
           testthat::expect_equal(transformer@lambda, 0.6, tolerance=0.2)

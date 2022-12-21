@@ -16,7 +16,7 @@
   optimal_lambda <- suppressWarnings(
     stats::optimise(
       ..transformation_rectified_optimisation,
-      interval=c(-10, 10),
+      interval=c(-4, 4),
       x=x,
       z=z_expected,
       type=type,
@@ -138,7 +138,7 @@
   optimal_lambda <- suppressWarnings(
     stats::optimise(
       loglik_FUN,
-      interval=c(-10, 10),
+      interval=c(-4.0, 4.0),
       x=x,
       w=weights,
       maximum=TRUE))
