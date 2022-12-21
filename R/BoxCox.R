@@ -40,7 +40,7 @@ box_cox_shift_range <- function(x){
   # 211-252.
 
   if(invert){
-    # Inverse transformations: From transformed value to original value
+    # Inverse transformations: From transformed value to original value.
     if(lambda==0){
       y <- exp(x)
 
@@ -49,13 +49,7 @@ box_cox_shift_range <- function(x){
     }
 
   } else {
-    # From original value to transformed value
-
-    # Find any non-positive entries and replace them (this may happen in new
-    # applications).
-    neg_index <- x <= 0 & is.finite(x)
-    if(any(neg_index)) x[neg_index] <- min(x[x>0 & is.finite(x)])
-
+    # From original value to transformed value.
     if(lambda==0){
       y <- log(x)
 
