@@ -13,10 +13,25 @@ yeo_johnson_shift_range <- function(x){
 
 
 yeo_johnson_parameter_grid <- function(x){
+  browser()
+  # Set up grid positions.
   points_x <- unique(stats::quantile(x, c(0.05, 0.2, 0.35, 0.5, 0.65, 0.8, 0.95), names=FALSE))
   points_lambda <- seq(-4, 4)
 
-  return(expand.grid(points_x, points_lambda))
+  # Create parameter pairs that form the grid nodes.
+  parameters <- mapply(
+    function(x, lambda) (c(x, lambda)),
+    x=rep(points_x, each=length(points_lambda)),
+    lambda=rep(points_lambda, times=length(points_x)),
+    SIMPLIFY=FALSE,
+    USE.NAMES=FALSE)
+
+  return(list(
+    "x"=points_x,
+    "x_range"=c(min(points_x), max(points_x)),
+    "lambda"=points_lambda,
+    "lambda_range"=c(min(points_lambda), max(points_lambda)),
+    "parameter"=parameters))
 }
 
 

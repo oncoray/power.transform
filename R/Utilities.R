@@ -54,33 +54,60 @@ apply_boundary <- function(
 
     return(NA_real_)
 
-    # Initial values.
-    lambda_gradient <- 0.0
-    shift_gradient <- 0.0
-
-    shift_norm <- shift_range[2] - shift_range[1]
-    if(shift_norm == 0.0) shift_norm <- 1.0
-
-    if(shift < shift_range[1]){
-      shift_gradient <- abs(shift - shift_range[1]) / shift_norm
-
-    } else if(shift > shift_range[2]){
-      shift_gradient <- abs(shift_range[2] - shift) / shift_norm
-    }
-
-    lambda_norm <- lambda_range[2] - lambda_range[1]
-    if(lambda_norm == 0.0) lambda_norm <- 1.0
-
-    if(lambda < lambda_range[1]){
-      lambda_gradient <- abs(lambda - lambda_range[1]) / lambda_norm
-
-    } else if(lambda > lambda_range[2]){
-      lambda_gradient <- abs(lambda_range[2] - lambda) / lambda_norm
-    }
-
-    # Reduce llf.
-    llf <- llf - shift_gradient - lambda_gradient
+    # # Initial values.
+    # lambda_gradient <- 0.0
+    # shift_gradient <- 0.0
+    #
+    # shift_norm <- shift_range[2] - shift_range[1]
+    # if(shift_norm == 0.0) shift_norm <- 1.0
+    #
+    # if(shift < shift_range[1]){
+    #   shift_gradient <- abs(shift - shift_range[1]) / shift_norm
+    #
+    # } else if(shift > shift_range[2]){
+    #   shift_gradient <- abs(shift_range[2] - shift) / shift_norm
+    # }
+    #
+    # lambda_norm <- lambda_range[2] - lambda_range[1]
+    # if(lambda_norm == 0.0) lambda_norm <- 1.0
+    #
+    # if(lambda < lambda_range[1]){
+    #   lambda_gradient <- abs(lambda - lambda_range[1]) / lambda_norm
+    #
+    # } else if(lambda > lambda_range[2]){
+    #   lambda_gradient <- abs(lambda_range[2] - lambda) / lambda_norm
+    # }
+    #
+    # # Reduce llf.
+    # llf <- llf - shift_gradient - lambda_gradient
   }
 
   return(llf)
+}
+
+
+
+select_neighbourhood <- function(x, x_range){
+  neighbourhood_range <- c(0.0, 0.0)
+
+  # Find coordinates.
+  ii <- which(x_range == x)
+
+  # Lower bound.
+  if(ii == 1){
+    neighbourhood_range[1] <- x
+
+  } else {
+    neighbourhood_range[1] <- x_range[ii - 1L]
+  }
+
+  # Upper bound.
+  if(ii == length(x_range)){
+    neighbourhood_range[2] <- x
+
+  } else {
+    neighbourhood_range[2] <- x_range[ii + 1L]
+  }
+
+  return(neighbourhood_range)
 }
