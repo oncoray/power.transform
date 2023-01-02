@@ -1,7 +1,7 @@
 yeo_johnson_shift_range <- function(x){
   # Default range would be any shift between all-positive (shift by lowest
   # value) and all-negative (shift by highest value).
-  browser()
+
   # Find the (negative or zero) minimum value. We need to increment slightly
   # to avoid x containing 0s.
   min_value <- min(x, na.rm=TRUE)
@@ -13,7 +13,7 @@ yeo_johnson_shift_range <- function(x){
 
 
 yeo_johnson_parameter_grid <- function(x){
-  browser()
+
   # Set up grid positions.
   points_x <- unique(stats::quantile(x, c(0.05, 0.2, 0.35, 0.5, 0.65, 0.8, 0.95), names=FALSE))
   points_lambda <- seq(-4, 4)

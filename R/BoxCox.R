@@ -36,6 +36,31 @@ box_cox_shift_range <- function(x){
 }
 
 
+
+box_cox_parameter_grid <- function(x){
+
+  # Set up grid positions.
+  points_x <- unique(stats::quantile(x, c(0.05, 0.2, 0.35, 0.5, 0.65, 0.8, 0.95), names=FALSE))
+  points_lambda <- seq(-4, 4)
+
+  # Create parameter pairs that form the grid nodes.
+  parameters <- mapply(
+    function(x, lambda) (c(x, lambda)),
+    x=rep(points_x, each=length(points_lambda)),
+    lambda=rep(points_lambda, times=length(points_x)),
+    SIMPLIFY=FALSE,
+    USE.NAMES=FALSE)
+
+  return(list(
+    "x"=points_x,
+    "x_range"=c(min(points_x), max(points_x)),
+    "lambda"=points_lambda,
+    "lambda_range"=c(min(points_lambda), max(points_lambda)),
+    "parameter"=parameters))
+}
+
+
+
 ..box_cox_transform <- function(lambda, x, invert=FALSE){
   # After Box, G. E., & Cox, D. R. (1964). An analysis of transformations.
   # Journal of the Royal Statistical Society. Series B (Methodological),
