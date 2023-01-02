@@ -1,4 +1,4 @@
-.transform_shifted_optimisation <- function(parameters, shift_range, lambda_range, x, type){
+.transform_shifted_optimisation <- function(parameters, shift_range, lambda_range, x, type, ...){
 
   shift <- parameters[1]
   lambda <- parameters[2]
@@ -34,14 +34,14 @@
 
 
 
-.transformation_robust_shifted_optimisation <- function(parameters, shift_range, lambda_range, x, type){
+.transformation_robust_shifted_optimisation <- function(parameters, shift_range, lambda_range, x, z, type, ...){
   # This follows the algorithm from Raymaekers J, Rousseeuw PJ. Transforming
   # variables to central normality. Mach Learn. 2021.
   # doi:10.1007/s10994-021-05960-5. However, because we are optimising over
-  # shift and lambda directly, we don't really need to select an initial
-  # lambda-0 value using rectified optimisation and a first re-weighted
+  # shift and lambda directly, we can't select an initial
+  # lambda-0 value using reweighted optimisation and a first re-weighted
   # optimisation step. We directly use lambda to compute weighted
-  # log-likelihood.
+  # log-likelihood using Tukey's bisquare function as a weight.
 
   shift <- parameters[1]
   lambda <- parameters[2]

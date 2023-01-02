@@ -153,55 +153,63 @@ setMethod(
     # Get range for shift parameters.
     shift_range <- box_cox_shift_range(x)
 
-    # Optimise shift and lambda for Box-Cox transformations. Choose mean
-    # shift and no transformation as initial values.
+    # Set up initial search grid for shift and optimisation parameters to narrow
+    # down the search area.
+    search_grid <- box_cox_parameter_grid(x)
+
     if(object@robust){
+      # Sort values
+      x <- sort(x)
 
-      # Approximate first.
-      results <- stats::optim(
-        par=c(mean(shift_range), 1.0),
-        fn=.transform_shifted_optimisation,
-        gr=NULL,
-        x=x,
-        type="box_cox",
-        shift_range=shift_range,
-        lambda_range=c(-6, 4),
-        control=list(
-          "fnscale"=-1.0,
-          "abstol"=1E-5,
-          "reltol"=1E-5))
+      # Compute z-values according to the inverse cumulative density function.
+      z_expected <- stats::qnorm(p=(seq_along(x) - 1/3) / (length(x) + 1/3))
 
-      # Robust transformation.
-      results <- stats::optim(
-        par=results$par,
-        fn=.transformation_robust_shifted_optimisation,
-        gr=NULL,
-        x=x,
-        type="box_cox",
-        shift_range=shift_range,
-        lambda_range=c(-6, 4),
-        control=list(
-          "fnscale"=-1.0,
-          "abstol"=1E-5,
-          "reltol"=1E-5))
+      # Optimisation function.
+      opt_fun <- .transformation_robust_shifted_optimisation
 
     } else {
+      # No z required.
+      z_expected <- NULL
 
-      # Conventional transformation.
-      results <- stats::optim(
-        par=c(mean(shift_range), 1.0),
-        fn=.transform_shifted_optimisation,
-        gr=NULL,
-        x=x,
-        type="box_cox",
-        shift_range=shift_range,
-        lambda_range=c(-6, 4),
-        control=list(
-          "fnscale"=-1.0,
-          "abstol"=1E-5,
-          "reltol"=1E-5))
+      # Optimisation function.
+      opt_fun <- .transform_shifted_optimisation
     }
 
+    # Then compute the log-likelihood at each grid node.
+    llf <- sapply(
+      search_grid$parameter,
+      opt_fun,
+      x=x,
+      z=z_expected,
+      type="box_cox",
+      shift_range=search_grid$x_range,
+      lambda_range=search_grid$lambda_range)
+
+    # Select the node with the highest llf.
+    ii <- which.max(llf)
+
+    # Select the direct neighbourhood of the llf (neighbouring lambda, x).
+    initial_parameter <- search_grid$parameter[[ii]]
+
+    shift_range <- select_neighbourhood(initial_parameter[1], search_grid$x)
+    lambda_range <- select_neighbourhood(initial_parameter[2], search_grid$lambda)
+
+    # Local approximation.
+    results <- stats::optim(
+      par=initial_parameter,
+      fn=opt_fun,
+      gr=NULL,
+      x=x,
+      z=z_expected,
+      type="box_cox",
+      shift_range=shift_range,
+      lambda_range=lambda_range,
+      control=list(
+        "fnscale"=-1.0,
+        "abstol"=1E-5,
+        "reltol"=1E-5))
+
+    # Extract optimal values.
     shift <- results$par[1]
     lambda <- results$par[2]
 
@@ -274,29 +282,50 @@ setMethod(
     # down the search area.
     search_grid <- yeo_johnson_parameter_grid(x)
 
+    if(object@robust){
+      # Sort values
+      x <- sort(x)
+
+      # Compute z-values according to the inverse cumulative density function.
+      z_expected <- stats::qnorm(p=(seq_along(x) - 1/3) / (length(x) + 1/3))
+
+      # Optimisation function.
+      opt_fun <- .transformation_robust_shifted_optimisation
+
+    } else {
+      # No z required.
+      z_expected <- NULL
+
+      # Optimisation function.
+      opt_fun <- .transform_shifted_optimisation
+    }
+
     # Then compute the log-likelihood at each grid node.
     llf <- sapply(
       search_grid$parameter,
-      .transform_shifted_optimisation,
+      opt_fun,
       x=x,
-      shift_range=parameter_list$x_range,
-      lambda_range=parameter_list$lambda_range)
+      z=z_expected,
+      type="yeo_johnson",
+      shift_range=search_grid$x_range,
+      lambda_range=search_grid$lambda_range)
 
     # Select the node with the highest llf.
     ii <- which.max(llf)
 
     # Select the direct neighbourhood of the llf (neighbouring lambda, x).
-    initial_parameter <- search_grid$parameter[ii]
+    initial_parameter <- search_grid$parameter[[ii]]
 
     shift_range <- select_neighbourhood(initial_parameter[1], search_grid$x)
     lambda_range <- select_neighbourhood(initial_parameter[2], search_grid$lambda)
 
-    # Initial local approximation.
+    # Local approximation.
     results <- stats::optim(
       par=initial_parameter,
-      fn=.transform_shifted_optimisation,
+      fn=opt_fun,
       gr=NULL,
       x=x,
+      z=z_expected,
       type="yeo_johnson",
       shift_range=shift_range,
       lambda_range=lambda_range,
@@ -304,23 +333,6 @@ setMethod(
         "fnscale"=-1.0,
         "abstol"=1E-5,
         "reltol"=1E-5))
-
-    # Search locally for better and more robust solution.
-    if(object@robust){
-
-      results <- stats::optim(
-        par=results$par,
-        fn=.transformation_robust_shifted_optimisation,
-        gr=NULL,
-        x=x,
-        type="yeo_johnson",
-        shift_range=shift_range,
-        lambda_range=lambda_range,
-        control=list(
-          "fnscale"=-1.0,
-          "abstol"=1E-5,
-          "reltol"=1E-5))
-    }
 
     # Extract optimal values.
     shift <- results$par[1]
