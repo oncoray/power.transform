@@ -78,7 +78,20 @@
   if(robust_estimates$sigma == 0.0) return(NA_real_)
 
   # Compute weights.
-  weights <- as.numeric(abs(y - robust_estimates$mu) / robust_estimates$sigma <= stats::qnorm(0.99))
+  residual <- (y - robust_estimates$mu) / robust_estimates$sigma - z
+
+  # Compute Tukey bisquare function to truncate weights of outlier residuals. We
+  # use c=0.5 after Rousseeuw and Raymaekers.
+  weights <- numeric(length(residual)) + 1.0
+  valid_residuals <- which(abs(residual) <= 0.5)
+
+  if(length(valid_residuals) > 0){
+    weights[valid_residuals] <- 1.0 - (1.0 - (residual[valid_residuals] / 0.5)^2)^3
+  }
+
+  # We want to maximise log-likelihood, so we need to invert the weights.
+  weights <- 1.0 - weights
+
   if(!all(is.finite(weights))) return(NA_real_)
   if(sum(weights) == 0.0) return(NA_real_)
 
