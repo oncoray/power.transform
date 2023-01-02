@@ -35,19 +35,17 @@ setClass(
   slots=list(
     "method" = "character",
     "robust" = "logical",
-    "lambda" = "numeric"),
+    "lambda" = "numeric",
+    "shift" = "numeric"),
   prototype=list(
     "method" = "yeo_johnson",
     "robust" = FALSE,
-    "lambda" = NA_real_))
+    "lambda" = NA_real_,
+    "shift" = 0.0))
 
 setClass(
   "transformationYeoJohnsonShift",
-  contains="transformationYeoJohnson",
-  slots=list(
-    "shift" = "numeric"),
-  prototype=list(
-    "shift" = NA_real_))
+  contains="transformationYeoJohnson")
 
 
 
@@ -425,39 +423,6 @@ setMethod(
   signature(object="transformationYeoJohnson"),
   function(object, x, ...){
 
-    # Set up vector to copy new values to.
-    y <- numeric(length(x))
-
-    # Find non-finite instances.
-    na_entries <- which(!is.finite(x))
-    if(length(na_entries) > 0){
-      warning("One or more NA or infinite values were found.")
-
-      y[na_entries] <- NA_real_
-    }
-
-    # Find remaining valid instances.
-    valid_entries <- setdiff(seq_along(x), na_entries)
-
-    # Perform transformation.
-    if(length(valid_entries) > 0){
-      y[valid_entries] <- ..yeo_johnson_transform(
-        lambda=object@lambda,
-        x=x[valid_entries],
-        invert=FALSE)
-    }
-
-    return(y)
-  })
-
-
-
-#### .apply_transformation_parameters (Yeo-Johnson (shift)) --------------------
-setMethod(
-  ".apply_transformation_parameters",
-  signature(object="transformationYeoJohnsonShift"),
-  function(object, x, ...){
-
     # Apply shift.
     x <- x - object@shift
 
@@ -540,23 +505,6 @@ setMethod(
       x=x,
       invert=TRUE)
 
-    return(x)
-  })
-
-
-
-#### .invert_transformation (Yeo-Johnson (shift)) ------------------------------
-setMethod(
-  ".invert_transformation",
-  signature(object="transformationYeoJohnsonShift"),
-  function(object, x, ...){
-
-    # Perform transformation.
-    x <- ..yeo_johnson_transform(
-      lambda=object@lambda,
-      x=x,
-      invert=TRUE)
-
     # Apply shift.
     x <- x + object@shift
 
@@ -610,12 +558,15 @@ setMethod(
 
     str <- paste0(
       "A ", ifelse(object@robust, "robust ", ""),
+      ifelse(object@shift != 0.0, "shifted ", ""),
       "Yeo-Johnson transformation object"
     )
 
     if(object@complete){
       cat(paste0(str, ".\n"))
       cat("  lambda: ", object@lambda, "\n")
+
+      if(object@shift != 0.0) cat(paste0("  shift: ", object@shift, "\n"))
 
     } else {
       cat(paste0(str, " with unset transformation parameters.\n"))
