@@ -53,3 +53,4 @@ rsconnect/
 
 # Package documentation
 man/
+*.Rd
