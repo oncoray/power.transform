@@ -39,8 +39,11 @@ box_cox_shift_range <- function(x){
 
 box_cox_parameter_grid <- function(x){
 
+  # Set up x-range.
+  x_range <- box_cox_shift_range(x)
+
   # Set up grid positions.
-  points_x <- unique(stats::quantile(x, c(0.05, 0.2, 0.35, 0.5, 0.65, 0.8, 0.95), names=FALSE))
+  points_x <- x_range[1] + (seq_len(5)-1.0) * (x_range[2] - x_range[1]) / 4
   points_lambda <- seq(-4, 4)
 
   # Create parameter pairs that form the grid nodes.
