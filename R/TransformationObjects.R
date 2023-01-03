@@ -69,6 +69,7 @@ setClass(
     "shift" = 0.0))
 
 #' @rdname transformation_box_cox
+#' @export
 setClass(
   "transformationBoxCoxShift",
   contains="transformationBoxCox")
@@ -109,6 +110,7 @@ setClass(
     "shift" = 0.0))
 
 #' @rdname transformation_yeo_johnson
+#' @export
 setClass(
   "transformationYeoJohnsonShift",
   contains="transformationYeoJohnson")
