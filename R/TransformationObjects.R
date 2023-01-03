@@ -227,7 +227,7 @@ setMethod(
       x <- sort(x)
 
       # Compute z-values according to the inverse cumulative density function.
-      z_expected <- stats::qnorm(p=(seq_along(x) - 1/3) / (length(x) + 1/3))
+      z_expected <- compute_expected_z(x=x)
 
       # Optimisation function.
       opt_fun <- .transformation_robust_shifted_optimisation
@@ -349,7 +349,7 @@ setMethod(
       x <- sort(x)
 
       # Compute z-values according to the inverse cumulative density function.
-      z_expected <- stats::qnorm(p=(seq_along(x) - 1/3) / (length(x) + 1/3))
+      z_expected <- compute_expected_z(x=x)
 
       # Optimisation function.
       opt_fun <- .transformation_robust_shifted_optimisation
