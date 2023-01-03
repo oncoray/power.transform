@@ -150,9 +150,6 @@ setMethod(
   signature("transformationBoxCoxShift"),
   function(object, x, ...){
 
-    # Get range for shift parameters.
-    shift_range <- box_cox_shift_range(x)
-
     # Set up initial search grid for shift and optimisation parameters to narrow
     # down the search area.
     search_grid <- box_cox_parameter_grid(x)
@@ -274,9 +271,6 @@ setMethod(
   ".set_transformation_parameters",
   signature("transformationYeoJohnsonShift"),
   function(object, x, ...){
-
-    # Get range for shift parameters.
-    shift_range <- yeo_johnson_shift_range(x)
 
     # Set up initial search grid for shift and optimisation parameters to narrow
     # down the search area.
