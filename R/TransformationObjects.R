@@ -1,3 +1,12 @@
+#' Generic transformation object
+#'
+#' This is the superclass for transformation objects.
+#'
+#' @slot method Main transformation method.
+#' @slot complete Indicates whether transformation parameters were set.
+#'
+#' @export
+
 setClass(
   "transformationPowerTransform",
   slots=list(
@@ -7,9 +16,43 @@ setClass(
     "method" = "none",
     "complete" = FALSE))
 
+
+
+#' No transformation object
+#'
+#' This class is for transformers that do not alter the data.
+#'
+#' @slot method Main transformation method, i.e. `"none"`.
+#' @slot complete Indicates whether transformation parameters were set.
+#'
+#' @export
+
 setClass(
   "transformationNone",
   contains="transformationPowerTransform")
+
+
+
+#' Box-Cox transformation object
+#'
+#' This class is used for Box-Cox transformations.
+#'
+#' @slot method Main transformation method, i.e. `"box_cox"`.
+#' @slot robust Indicates whether a robust version of the Box-Cox transformation
+#'   is used to set transformation parameters. The value depends on the `robust`
+#'   argument of the `find_transformation_parameters` function.
+#' @slot lambda Numeric lambda parameter for the Box-Cox transformation.
+#' @slot shift Numeric shift parameter for the Box-Cox transformation. The value
+#'   depends on the data used for setting transformation parameters. If all data
+#'   are strictly positive, `shift` has a value of `0.0`. When negative or zero
+#'   values are present, data are shifted to be strictly positive. If
+#'   `shift=TRUE` in the `find_transformation_parameters` function, `lambda` and
+#'   `shift` parameters are optimised simultaneously.
+#' @slot complete Indicates whether transformation parameters were set.
+#'
+#' @seealso [find_transformation_parameters]
+#' @export
+#' @rdname transformation_box_cox
 
 setClass(
   "transformationBoxCox",
@@ -25,9 +68,31 @@ setClass(
     "lambda" = NA_real_,
     "shift" = 0.0))
 
+#' @rdname transformation_box_cox
 setClass(
   "transformationBoxCoxShift",
   contains="transformationBoxCox")
+
+
+
+#' Yeo-Johnson transformation object
+#'
+#' This class is used for Yeo-Johnson transformations.
+#'
+#' @slot method Main transformation method, i.e. `"yeo_johnson"`.
+#' @slot robust Indicates whether a robust version of the Yeo-Johnson
+#'   transformation is used to set transformation parameters. The value depends
+#'   on the `robust` argument of the `find_transformation_parameters` function.
+#' @slot lambda Numeric lambda parameter for the Yeo-Johnson transformation.
+#' @slot shift Numeric shift parameter for the Yeo-Johnson transformation.If
+#'   `shift=TRUE` in the `find_transformation_parameters` function, `lambda` and
+#'   `shift` parameters are optimised simultaneously. Otherwise, the `shift`
+#'   parameter has a value of `0.0`.
+#' @slot complete Indicates whether transformation parameters were set.
+#'
+#' @seealso [find_transformation_parameters]
+#' @export
+#' @rdname transformation_yeo_johnson
 
 setClass(
   "transformationYeoJohnson",
@@ -43,6 +108,7 @@ setClass(
     "lambda" = NA_real_,
     "shift" = 0.0))
 
+#' @rdname transformation_yeo_johnson
 setClass(
   "transformationYeoJohnsonShift",
   contains="transformationYeoJohnson")

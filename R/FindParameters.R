@@ -154,6 +154,7 @@ find_transformation_parameters <- function(
 #' @return A vector of transformed values of `x`.
 #' @export
 #'
+#' @seealso [find_transformation_parameters]
 #' @examples
 #' x <- exp(stats::rnorm(1000))
 #' y <- power_transformed(x=x, method="box_cox")
