@@ -6,6 +6,7 @@
 #'
 #' @docType package
 #' @name power.transform
+#' @import data.table
 #' @import methods
 "_PACKAGE"
 
