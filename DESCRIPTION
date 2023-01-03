@@ -1,5 +1,5 @@
 Package: power.transform
-Title: What the Package Does (One Line, Title Case)
+Title: Transform Data to Normality using Power Transformations
 Version: 0.0.0.9000
 Authors@R: 
     c(
@@ -19,6 +19,7 @@ Collate:
     'BoxCox.R'
     'TransformationObjects.R'
     'FindParameters.R'
+    'GoodnessOfFit.R'
     'ModifiedTransformation.R'
     'RobustTransformation.R'
     'Utilities.R'

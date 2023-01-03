@@ -54,3 +54,6 @@ A vector of transformed values of \code{x}.
 x <- exp(stats::rnorm(1000))
 y <- power_transformed(x=x, method="box_cox")
 }
+\seealso{
+\link{find_transformation_parameters}
+}
