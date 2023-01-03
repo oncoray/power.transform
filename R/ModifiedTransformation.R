@@ -34,7 +34,7 @@
 
 
 
-.transformation_robust_shifted_optimisation <- function(parameters, shift_range, lambda_range, x, z, type, ...){
+.transformation_robust_shifted_optimisation <- function(parameters, shift_range, lambda_range, x, z, type, weight_method="huber", k=0.5, central_weight=0.80, ...){
   # This follows the algorithm from Raymaekers J, Rousseeuw PJ. Transforming
   # variables to central normality. Mach Learn. 2021.
   # doi:10.1007/s10994-021-05960-5. However, because we are optimising over
@@ -42,6 +42,10 @@
   # lambda-0 value using reweighted optimisation and a first re-weighted
   # optimisation step. We directly use lambda to compute weighted
   # log-likelihood using Tukey's bisquare function as a weight.
+
+  if(!weight_method %in% c("huber", "tukey", "step")){
+    stop(paste0("DEV: The weight_method argument was not recognised: ", weight_method))
+  }
 
   shift <- parameters[1]
   lambda <- parameters[2]
@@ -80,17 +84,32 @@
   # Compute weights.
   residual <- (y - robust_estimates$mu) / robust_estimates$sigma - z
 
-  # Compute Tukey bisquare function to truncate weights of outlier residuals. We
-  # use c=0.5 after Rousseeuw and Raymaekers.
-  weights <- numeric(length(residual)) + 1.0
-  valid_residuals <- which(abs(residual) <= 0.5)
+  if(weight_method == "huber"){
+    # Huber weights using k=0.5 after Rousseuw and Raymaekers.
+    weights <- numeric(length(residual)) + 1.0
+    outlier_residuals <- which(abs(residual) > k)
 
-  if(length(valid_residuals) > 0){
-    weights[valid_residuals] <- 1.0 - (1.0 - (residual[valid_residuals] / 0.5)^2)^3
+    if(length(outlier_residuals) > 0){
+      weights[outlier_residuals] <- k / abs(residual[outlier_residuals])
+    }
+
+  } else if(weight_method == "tukey"){
+    # Compute Tukey bisquare function to truncate weights of outlier residuals.
+    # We use k=0.5 after Rousseeuw and Raymaekers.
+    weights <- numeric(length(residual)) + 1.0
+    valid_residuals <- which(abs(residual) <= k)
+
+    if(length(valid_residuals) > 0){
+      weights[valid_residuals] <- 1.0 - (1.0 - (residual[valid_residuals] / k)^2)^3
+    }
+
+    # We want to maximise log-likelihood, so we need to invert the weights.
+    weights <- 1.0 - weights
+
+  } else if(weight_method == "step"){
+    weights <- as.numeric(abs(residual) < stats::qnorm(0.90))
   }
 
-  # We want to maximise log-likelihood, so we need to invert the weights.
-  weights <- 1.0 - weights
 
   if(!all(is.finite(weights))) return(NA_real_)
   if(sum(weights) == 0.0) return(NA_real_)
