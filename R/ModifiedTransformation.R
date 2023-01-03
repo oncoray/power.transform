@@ -110,6 +110,17 @@
     weights <- as.numeric(abs(residual) < stats::qnorm(0.90))
   }
 
+  # Assign full weight to central elements. We do this to ensure that poor fits
+  # don't get down-weighted in the centre, and in that way produce
+  # log-likelihood values that are too optimistic.
+  if(!is.null(central_weight)){
+    if(central_weight < 0.0 || central_weight > 1.0){
+      stop(paste0("DEV: central_weight should be NULL or between 0.0 and 1.0. Found: ", central_weight))
+    }
+
+    central_values <- which(abs(z) < stats::qnorm(0.50 + central_weight / 2))
+    weights[central_values] <- 1.0
+  }
 
   if(!all(is.finite(weights))) return(NA_real_)
   if(sum(weights) == 0.0) return(NA_real_)
