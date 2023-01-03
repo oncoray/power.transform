@@ -53,33 +53,6 @@ apply_boundary <- function(
     # deviate from the boundary.
 
     return(NA_real_)
-
-    # # Initial values.
-    # lambda_gradient <- 0.0
-    # shift_gradient <- 0.0
-    #
-    # shift_norm <- shift_range[2] - shift_range[1]
-    # if(shift_norm == 0.0) shift_norm <- 1.0
-    #
-    # if(shift < shift_range[1]){
-    #   shift_gradient <- abs(shift - shift_range[1]) / shift_norm
-    #
-    # } else if(shift > shift_range[2]){
-    #   shift_gradient <- abs(shift_range[2] - shift) / shift_norm
-    # }
-    #
-    # lambda_norm <- lambda_range[2] - lambda_range[1]
-    # if(lambda_norm == 0.0) lambda_norm <- 1.0
-    #
-    # if(lambda < lambda_range[1]){
-    #   lambda_gradient <- abs(lambda - lambda_range[1]) / lambda_norm
-    #
-    # } else if(lambda > lambda_range[2]){
-    #   lambda_gradient <- abs(lambda_range[2] - lambda) / lambda_norm
-    # }
-    #
-    # # Reduce llf.
-    # llf <- llf - shift_gradient - lambda_gradient
   }
 
   return(llf)
