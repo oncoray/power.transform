@@ -17,7 +17,7 @@ for(method in c("box_cox", "yeo_johnson", "none")){
 # Set seed.
 set.seed(19L)
 
-# Draw 1000 normally
+# Draw 10000 normally
 x <- stats::rnorm(10000)
 
 # Iterate over all parameter sets.
