@@ -39,6 +39,32 @@ huber_estimate <- function(x, k=1.28, tol=1E-4){
 }
 
 
+
+compute_expected_z <- function(x){
+
+  # Check if x is sorted, and sort otherwise.
+  if(is.unsorted(x)) stop(paste0("DEV: x is expected to be sorted in ascending order."))
+
+  # Compute expected quantile.
+  q <- (seq_along(x) - 1/3) / (length(x) + 1/3)
+
+  # Set up a data.table.
+  data <- data.table::data.table(
+    "x"=x,
+    "q"=q)
+
+  # Average quantile for when x has multiple values. Though this necessitates
+  # using the data.table package, this is by far the fastest implementation.
+  data[, "q_group":=mean(q), by="x"]
+
+  # Compute z-scores.
+  z <- stats::qnorm(p=data$q_group)
+
+  return(z)
+}
+
+
+
 apply_boundary <- function(
     llf,
     shift,
