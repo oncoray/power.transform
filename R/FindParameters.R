@@ -64,25 +64,10 @@ find_transformation_parameters <- function(
   }
 
   # Perform checks on x.
-  if(length(x) == 0){
-    stop("x does not contain any values.")
-  }
-
-  if(is.factor(x)){
-    stop("x is categorical, and power transformations are not applicable.")
-  }
-
-  if(!is.numeric(x)){
-    stop("x does not contain numeric values.")
-  }
+  .check_data(x)
 
   # Remove NA or inf values.
   x <- x[is.finite(x)]
-
-  # Check length again.
-  if(length(x) == 0){
-    stop("x only contains NA or inf values.")
-  }
 
   # Check number of unique values.
   n_unique_values <- length(unique(x))
@@ -171,22 +156,15 @@ power_transform <- function(
         list(...)))
   }
 
-  # Check that the transformer is a transformer.
-  if(!is(transformer, "transformationPowerTransform")){
-    stop(paste0(
-      "The transformer object does not have the expected class. ",
-      "Expected: transformationPowerTransform (or subclass). ",
-      "Found: ", class(transformer)[1]))
-  }
-
-  # Check that transformer is complete.
-  if(!transformer@complete) stop(paste0("Parameters for the transformer object were not fully set."))
+  # Check the transformer.
+  .check_transformer(transformer)
 
   # Check that x is numeric.
   if(!is.numeric(x)){
     stop("x does not contain numeric values.")
   }
 
+  # Transform data using the transformer.
   y <- .apply_transformation_parameters(
     object=transformer,
     x=x)
@@ -225,16 +203,8 @@ revert_power_transform <- function(
     ))
   }
 
-  # Check that the transformer is a transformer.
-  if(!is(transformer, "transformationPowerTransform")){
-    stop(paste0(
-      "The transformer object does not have the expected class. ",
-      "Expected: transformationPowerTransform (or subclass). ",
-      "Found: ", class(transformer)[1]))
-  }
-
-  # Check that transformer is complete.
-  if(!transformer@complete) stop(paste0("Parameters for the transformer object were not fully set."))
+  # Check the transformer.
+  .check_transformer(transformer)
 
   # Revert transformation.
   x <- .invert_transformation(
