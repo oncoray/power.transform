@@ -18,10 +18,12 @@ Imports:
     methods
 Collate: 
     'BoxCox.R'
+    'Checks.R'
     'TransformationObjects.R'
     'FindParameters.R'
     'GoodnessOfFit.R'
     'ModifiedTransformation.R'
+    'PlotUtilities.R'
     'RobustTransformation.R'
     'Utilities.R'
     'YeoJohnson.R'
