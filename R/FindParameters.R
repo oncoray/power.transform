@@ -49,7 +49,9 @@ NULL
 #'
 #' @examples
 #' x <- exp(stats::rnorm(1000))
-#' transformer <- find_transformation_parameters(x=x, method="box_cox")
+#' transformer <- find_transformation_parameters(
+#'   x = x,
+#'   method = "box_cox")
 find_transformation_parameters <- function(
     x,
     method="yeo_johnson",
@@ -142,7 +144,9 @@ find_transformation_parameters <- function(
 #' @seealso [find_transformation_parameters]
 #' @examples
 #' x <- exp(stats::rnorm(1000))
-#' y <- power_transformed(x=x, method="box_cox")
+#' y <- power_transformed(
+#'   x = x,
+#'   method = "box_cox")
 power_transform <- function(
     x,
     transformer=NULL,
@@ -190,9 +194,18 @@ power_transform <- function(
 #'
 #' @examples
 #' x0 <- exp(stats::rnorm(1000))
-#' transformer <- find_transformation_parameters(x=x0, method="box_cox")
-#' y <- power_transformed(x=x, transformer=transformer)
-#' x1 <- revert_power_transform(y=y, transformer=transformer)
+#'
+#' transformer <- find_transformation_parameters(
+#'   x = x0,
+#'   method = "box_cox")
+#'
+#' y <- power_transform(
+#'   x = x,
+#'   transformer = transformer)
+#'
+#' x1 <- revert_power_transform(
+#'   y = y,
+#'   transformer = transformer)
 revert_power_transform <- function(
     y,
     transformer){
