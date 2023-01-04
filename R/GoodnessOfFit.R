@@ -1,5 +1,37 @@
 #' @include TransformationObjects.R
 
+#' Compute residuals of transformation to normality
+#'
+#' @inheritParams assess_transformation
+#'
+#' @return A `data.table` containing the expected (according to a normal
+#'   distribution) and observed z-scores, and their difference as residuals.
+#' @export
+#'
+#' @examples
+#' x <- exp(stats::rnorm(1000))
+#' transformer <- find_transformation_parameters(
+#'   x = x,
+#'   method = "box_cox")
+#'
+#' residual_data <- get_residuals(
+#'   x = x,
+#'   transformer = transformer)
+get_residuals <- function(
+    x,
+    transformer,
+    ...){
+
+  # Perform checks on x.
+  .check_data(x)
+
+  # Check the transformer.
+  .check_transformer(transformer)
+
+  return(.get_fit_data(
+    object = transformer,
+    x = x))
+}
 
 
 
