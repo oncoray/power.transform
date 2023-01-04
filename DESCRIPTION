@@ -23,6 +23,7 @@ Collate:
     'FindParameters.R'
     'GoodnessOfFit.R'
     'ModifiedTransformation.R'
+    'PlotQQPlot.R'
     'PlotUtilities.R'
     'RobustTransformation.R'
     'Utilities.R'
