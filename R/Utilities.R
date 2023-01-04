@@ -113,25 +113,73 @@ select_neighbourhood <- function(x, x_range){
 
 
 
-compute_expected_z <- function(x){
+is_package_installed <- function(name){
+  # Try to obtain the package version. This perhaps the cleanest way to check
+  # whether a package exists. require and requireNameSpace attach and load
+  # packages, which is not required here. The find.package documentation
+  # actively discourages its use to identify whether a package is installed.
+  #
+  # Originally from the familiar R package, under the EUPL license.
 
-  # Check if x is sorted, and sort otherwise.
-  if(is.unsorted(x)) stop(paste0("DEV: x is expected to be sorted in ascending order."))
+  if(length(name) == 0) return(TRUE)
 
-  # Compute expected quantile.
-  q <- (seq_along(x) - 1/3) / (length(x) + 1/3)
+  installed_version <- tryCatch(
+    utils::packageVersion(name),
+    error=identity)
 
-  # Set up a data.table.
-  data <- data.table::data.table(
-    "x"=x,
-    "q"=q)
+  return(!inherits(installed_version, "error"))
+}
 
-  # Average quantile for when x has multiple values. Though this necessitates
-  # using the data.table package, this is by far the fastest implementation.
-  data[, "q_group":=mean(q), by="x"]
 
-  # Compute z-scores.
-  z <- stats::qnorm(p=data$q_group)
 
-  return(z)
+require_package <- function(x, purpose=NULL, ...){
+
+  # Check whether packages are installed, without loading the
+  # packages.
+  package_loaded <- sapply(x, is_package_installed)
+
+  # Skip further analysis if all packages are present.
+  if(all(package_loaded)) return(invisible(TRUE))
+
+  # Find all packages that are missing.
+  x <- x[!package_loaded]
+
+  # Select unique packages.
+  x <- unique(x)
+
+  # Write error message.
+  message_str <- paste0(
+    "The following package",
+    ifelse(length(x) > 1, "s have", " has"),
+    " to be installed",
+    ifelse(is.null(purpose), ": ", paste0(" ", purpose, ": ")),
+    paste_s(x), ".")
+
+  stop(message_str)
+}
+
+
+
+paste_s <- function(...){
+  # Function to collapse a series of strings into a summation in the form
+  # "element_1, element_2, ..., and element_n".
+  #
+  # Originally from the familiar R package, under the EUPL license.
+  dots <- c(...)
+
+  if(length(dots) > 2){
+    # For more than 2 elements, split into an initial and final section.
+    initial_string <- paste0(head(dots, n=length(dots)-2), collapse=", ")
+    final_string <- paste0(tail(dots, n=2), collapse=" and ")
+
+    return(paste0(c(initial_string, final_string), collapse=", "))
+
+  } else if(length(dots) == 2){
+    # For exactly 2 elements, combine with "and".
+    return(paste0(dots, collapse=" and "))
+
+  } else {
+    # For only one element, return as is.
+    return(paste0(dots))
+  }
 }
