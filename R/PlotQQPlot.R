@@ -12,7 +12,7 @@
 #' @param ggtheme `ggplot2` theme to use for the plot. If not provided,
 #'   `ggplot2::theme_light` is used.
 #'
-#' @inheritParams find_transformation_parameters
+#' @inheritParams assess_transformation
 #'
 #' @return A `ggplot2` plot object for a Q-Q plot.
 #' @export
@@ -104,9 +104,6 @@ plot_qq_plot <- function(
         x = .data$z_expected,
         y = .data$z_observed,
         colour = .data$type,
-        # x = rlang::`!!`(rlang::sym("z_expected")),
-        # y = rlang::`!!`(rlang::sym("z_observed")),
-        # colour = rlang::`!!`(rlang::sym("type")),
         alpha = point_alpha))
 
     # Add colour scale.
@@ -122,8 +119,6 @@ plot_qq_plot <- function(
       mapping = ggplot2::aes(
         x = .data$z_expected,
         y = .data$z_observed,
-        # x = rlang::`!!`(rlang::sym("z_expected")),
-        # y = rlang::`!!`(rlang::sym("z_observed")),
         alpha=point_alpha))
   }
 
@@ -142,8 +137,8 @@ plot_qq_plot <- function(
     xlim=c(-3.0, 3.0))
 
   # Set labels.
-  p <- p + ggplot2::xlab("Normal theoretical quantiles")
-  p <- p + ggplot2::ylab("Normal observed quantiles")
+  p <- p + ggplot2::xlab("Expected normal quantiles")
+  p <- p + ggplot2::ylab("Observed normal quantiles")
 
   return(p)
 }

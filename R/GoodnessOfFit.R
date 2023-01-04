@@ -9,8 +9,6 @@ NULL
 #' cannot be transformed to normality. This function computes a score expressing
 #' deviation from normal distributions.
 #'
-#' @param x A vector with numeric values that should be transformed to
-#'   normality.
 #' @param transformer A transformer object created using
 #'   `find_transformation_parameters`.
 #' @param threshold A numeric value corresponding to the upper limit of the
@@ -20,6 +18,8 @@ NULL
 #'   width of the centre of the data. Only instances within this centre are
 #'   compared against the threshold. Can be `NULL` to use all instances.
 #' @param ... Unused arguments.
+#'
+#' @inheritParams power_transform
 #'
 #' @return Fraction of instances whose residual exceeds the threshold.
 #' @export
