@@ -24,6 +24,7 @@ Collate:
     'GoodnessOfFit.R'
     'ModifiedTransformation.R'
     'PlotQQPlot.R'
+    'PlotResidualPlot.R'
     'PlotUtilities.R'
     'RobustTransformation.R'
     'Utilities.R'
