@@ -36,7 +36,7 @@ NULL
 assess_transformation <- function(
     x,
     transformer,
-    threshold = 0.50,
+    threshold = 0.15,
     centre_width = 0.80,
     ...){
 
