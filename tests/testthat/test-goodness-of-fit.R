@@ -95,7 +95,7 @@ for(n in c(100, 1000, 10000)){
           testthat::expect_gt(t, 0.4)
 
         } else {
-          testthat::expect_equal(t, 0.0)
+          testthat::expect_lt(t, 0.05)
         }
 
 

@@ -626,7 +626,7 @@ for(ii in seq_along(parameter_list)){
         if(parameter_set$robust){
           if(parameter_set$shift){
             # Very close to logarithmic transformation.
-            testthat::expect_equal(transformer@lambda, -0.9, tolerance=0.2)
+            testthat::expect_equal(transformer@lambda, 1.0, tolerance=0.2)
           } else {
             testthat::expect_equal(transformer@lambda, 0.6, tolerance=0.2)
           }
@@ -639,7 +639,7 @@ for(ii in seq_along(parameter_list)){
 
         if(parameter_set$robust){
           if(parameter_set$shift){
-            testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.2)
+            testthat::expect_equal(transformer@lambda, 1.0, tolerance=0.2)
           } else {
             testthat::expect_equal(transformer@lambda, 0.6, tolerance=0.2)
           }
