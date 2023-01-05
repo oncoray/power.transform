@@ -34,7 +34,7 @@
 
 
 
-.transformation_robust_shifted_optimisation <- function(parameters, shift_range, lambda_range, x, z, type, weight_method="huber", k=0.5, central_weight=0.80, ...){
+.transformation_robust_shifted_optimisation <- function(parameters, shift_range, lambda_range, x, z, type, weight_method="tailed", k=0.5, central_weight=0.80, ...){
   # This follows the algorithm from Raymaekers J, Rousseeuw PJ. Transforming
   # variables to central normality. Mach Learn. 2021.
   # doi:10.1007/s10994-021-05960-5. However, because we are optimising over
@@ -43,8 +43,12 @@
   # optimisation step. We directly use lambda to compute weighted
   # log-likelihood using Tukey's bisquare function as a weight.
 
-  if(!weight_method %in% c("huber", "tukey", "step")){
+  if(!weight_method %in% c("tailed", "huber", "tukey", "step")){
     stop(paste0("DEV: The weight_method argument was not recognised: ", weight_method))
+  }
+
+  if(weight_method == "tailed" && is.null(central_weight)){
+    stop(paste0("The central_weight argument cannot be NULL if the weigh_method is \"tailed\"."))
   }
 
   shift <- parameters[1]
@@ -63,6 +67,9 @@
     "box_cox"=..box_cox_loglik,
     "yeo_johnson"=..yeo_johnson_loglik
   )
+
+  # Make sure that x is sorted.
+  if(is.unsorted(x)) x <- sort(x)
 
   # Apply shift.
   x <- x - shift
@@ -84,8 +91,21 @@
   # Compute weights.
   residual <- (y - robust_estimates$mu) / robust_estimates$sigma - z
 
-  if(weight_method == "huber"){
-    # Huber weights using k=0.5 after Rousseuw and Raymaekers.
+  if(weight_method == "tailed"){
+    # Use Tukey window (also cosine-tapered window) for downweighting based on
+    # expected quantile (not on residual!). The Tukey window has a flat top, and
+    # then tapers off. The alpha parameter is related to central_weight: alpha =
+    # 1 - central_weight.
+    weights <- numeric(length(z)) + 1.0
+
+    # Generate tail:
+    tail_width <- ceiling(0.5 * length(z) * (1.0 - central_weight))
+    tail_weights <- 0.5 * (1.0 - cos(2.0 * pi * seq_len(tail_width) / (length(z) * (1.0 - central_weight))))
+    weights[seq_len(tail_width)] <- tail_weights
+    weights[length(z) - seq_len(tail_width) + 1L] <- tail_weights
+
+  } else if(weight_method == "huber"){
+    # Huber weights using k=0.5 after Rousseuw and Raymaekers. This
     weights <- numeric(length(residual)) + 1.0
     outlier_residuals <- which(abs(residual) > k)
 
@@ -113,7 +133,7 @@
   # Assign full weight to central elements. We do this to ensure that poor fits
   # don't get down-weighted in the centre, and in that way produce
   # log-likelihood values that are too optimistic.
-  if(!is.null(central_weight)){
+  if(!is.null(central_weight) && weight_method %in% c("huber", "tukey", "step")){
     if(central_weight < 0.0 || central_weight > 1.0){
       stop(paste0("DEV: central_weight should be NULL or between 0.0 and 1.0. Found: ", central_weight))
     }
