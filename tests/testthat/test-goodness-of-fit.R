@@ -14,154 +14,191 @@ for(method in c("box_cox", "yeo_johnson", "none")){
   }
 }
 
-# Set seed.
-set.seed(19L)
+# Iterate over different sample numbers.
+for(n in c(100, 1000, 10000)){
 
-# Draw 10000 samples according to a normal distribution.
-x_normal <- stats::rnorm(10000)
+  # Set seed.
+  set.seed(19L)
 
-# Make exponentially distributed.
-x_exponential <- exp(x_normal)
+  # Draw 10000 samples according to a normal distribution.
+  x_normal <- stats::rnorm(n)
 
-# Draw bimodal with large separation
-x_bimodal_large <- c(
-  stats::rnorm(5000, mean=0.0),
-  stats::rnorm(5000, mean=6.0))
+  # Make exponentially distributed.
+  x_exponential <- exp(x_normal)
 
-# Draw bimodal with intermediate separation
-x_bimodal_intermediate <- c(
-  stats::rnorm(5000, mean=0.0),
-  stats::rnorm(5000, mean=3.0))
+  # Draw bimodal with large separation
+  x_bimodal_large <- c(
+    stats::rnorm(n / 2, mean=0.0),
+    stats::rnorm(n / 2, mean=6.0))
 
-# Draw bimodal with small separation
-x_bimodal_small <- c(
-  stats::rnorm(5000, mean=0.0),
-  stats::rnorm(5000, mean=1.0))
+  # Draw bimodal with intermediate separation
+  x_bimodal_intermediate <- c(
+    stats::rnorm(n / 2, mean=0.0),
+    stats::rnorm(n / 2, mean=3.0))
 
-# Draw uniform.
-x_uniform <- stats::runif(10000, min=1E-5)
+  # Draw bimodal with small separation
+  x_bimodal_small <- c(
+    stats::rnorm(n / 2, mean=0.0),
+    stats::rnorm(n / 2, mean=1.0))
 
-# Draw Gamma (left skewed)
-x_gamma_left <- stats::rgamma(10000, shape=2.0, scale=2.0)
+  # Draw uniform.
+  x_uniform <- stats::runif(n, min=1E-5)
 
-# Draw Gamma (monotonic decreasing)
-x_gamma_monotonic <- stats::rgamma(10000, shape=1.0, scale=2.0)
+  # Draw Gamma (left skewed)
+  x_gamma_left <- stats::rgamma(n, shape=2.0, scale=2.0)
 
-# Iterate over all parameter sets.
-for(ii in seq_along(parameter_list)){
+  # Draw Gamma (monotonic decreasing)
+  x_gamma_monotonic <- stats::rgamma(n, shape=1.0, scale=2.0)
 
-  testthat::test_that(
-    paste0(
-      "Assessing transformation goodness generates the correct results. ",
-      "(", ii,
-      "; method: ", parameter_set$method,
-      "; robust: ", parameter_set$robust,
-      "; shift: ", parameter_set$shift, ")"),
-    {
+  # Iterate over all parameter sets.
+  for(ii in seq_along(parameter_list)){
 
-      #### Normally distributed data -----------------------------------------------
+    testthat::test_that(
+      paste0(
+        "Assessing transformation goodness generates the correct results. ",
+        "(", ii,
+        "; n: ", n,
+        "; method: ", parameter_list[[ii]]$method,
+        "; robust: ", parameter_list[[ii]]$robust,
+        "; shift: ", parameter_list[[ii]]$shift, ")"),
+      {
 
-      # Create the transformer.
-      transformer <- suppressWarnings(do.call(
-        power.transform::find_transformation_parameters,
-        args=c(list("x"=x_normal),
-               parameter_list[[ii]])))
+        #### Normally distributed data -----------------------------------------------
 
-      # Compute the fraction of instances which exceed the threshold.
-      power.transform::assess_transformation(
-        x = x_exponential,
-        transformer = transformer)
+        # Create the transformer.
+        transformer <- suppressWarnings(do.call(
+          power.transform::find_transformation_parameters,
+          args=c(list("x"=x_normal),
+                 parameter_list[[ii]])))
 
-      #### Exponentially distributed data ------------------------------------------
+        # Compute the fraction of instances which exceed the threshold.
+        t <- power.transform::assess_transformation(
+          x = x_normal,
+          transformer = transformer)
 
-      # Create the transformer.
-      transformer <- suppressWarnings(do.call(
-        power.transform::find_transformation_parameters,
-        args=c(list("x"=x_exponential),
-               parameter_list[[ii]])))
+        testthat::expect_equal(t, 0.0)
 
-      # Compute the fraction of instances which exceed the threshold.
-      power.transform::assess_transformation(
-        x = x_exponential,
-        transformer = transformer)
+        #### Exponentially distributed data ------------------------------------------
 
-      #### Left-skewed gamma distribution ------------------------------------------
+        # Create the transformer.
+        transformer <- suppressWarnings(do.call(
+          power.transform::find_transformation_parameters,
+          args=c(list("x"=x_exponential),
+                 parameter_list[[ii]])))
 
-      # Create the transformer.
-      transformer <- suppressWarnings(do.call(
-        power.transform::find_transformation_parameters,
-        args=c(list("x"=x_gamma_left),
-               parameter_list[[ii]])))
+        # Compute the fraction of instances which exceed the threshold.
+        t <- power.transform::assess_transformation(
+          x = x_exponential,
+          transformer = transformer)
 
-      # Compute the fraction of instances which exceed the threshold.
-      power.transform::assess_transformation(
-        x = x_gamma_left,
-        transformer = transformer)
+        if(parameter_list[[ii]]$method == "none"){
+          testthat::expect_gt(t, 0.4)
 
-      #### Monotonically decreasing gamma distribution -----------------------------
+        } else {
+          testthat::expect_equal(t, 0.0)
+        }
 
-      # Create the transformer.
-      transformer <- suppressWarnings(do.call(
-        power.transform::find_transformation_parameters,
-        args=c(list("x"=x_gamma_monotonic),
-               parameter_list[[ii]])))
 
-      # Compute the fraction of instances which exceed the threshold.
-      power.transform::assess_transformation(
-        x = x_gamma_monotonic,
-        transformer = transformer)
+        #### Left-skewed gamma distribution ------------------------------------------
 
-      #### Bi-modal distribution (large separation) --------------------------------
+        # Create the transformer.
+        transformer <- suppressWarnings(do.call(
+          power.transform::find_transformation_parameters,
+          args=c(list("x"=x_gamma_left),
+                 parameter_list[[ii]])))
 
-      # Create the transformer.
-      transformer <- suppressWarnings(do.call(
-        power.transform::find_transformation_parameters,
-        args=c(list("x"=x_bimodal_large),
-               parameter_list[[ii]])))
+        # Compute the fraction of instances which exceed the threshold.
+        t <- power.transform::assess_transformation(
+          x = x_gamma_left,
+          transformer = transformer)
 
-      # Compute the fraction of instances which exceed the threshold.
-      power.transform::assess_transformation(
-        x = x_bimodal_large,
-        transformer = transformer)
+        if(parameter_list[[ii]]$method == "none"){
+          testthat::expect_gt(t, 0.05)
 
-      #### Bi-modal distribution (intermediate separation) -------------------------
+        } else {
+          testthat::expect_equal(t, 0.0)
+        }
 
-      # Create the transformer.
-      transformer <- suppressWarnings(do.call(
-        power.transform::find_transformation_parameters,
-        args=c(list("x"=x_bimodal_intermediate),
-               parameter_list[[ii]])))
+        #### Monotonically decreasing gamma distribution -----------------------------
 
-      # Compute the fraction of instances which exceed the threshold.
-      power.transform::assess_transformation(
-        x = x_bimodal_intermediate,
-        transformer = transformer)
+        # Create the transformer.
+        transformer <- suppressWarnings(do.call(
+          power.transform::find_transformation_parameters,
+          args=c(list("x"=x_gamma_monotonic),
+                 parameter_list[[ii]])))
 
-      #### Bi-modal distribution (small separation) --------------------------------
+        # Compute the fraction of instances which exceed the threshold.
+        t <- power.transform::assess_transformation(
+          x = x_gamma_monotonic,
+          transformer = transformer)
 
-      # Create the transformer.
-      transformer <- suppressWarnings(do.call(
-        power.transform::find_transformation_parameters,
-        args=c(list("x"=x_bimodal_small),
-               parameter_list[[ii]])))
+        if(parameter_list[[ii]]$method == "none"){
+          testthat::expect_gt(t, 0.4)
 
-      # Compute the fraction of instances which exceed the threshold.
-      power.transform::assess_transformation(
-        x = x_bimodal_small,
-        transformer = transformer)
+        } else {
+          testthat::expect_equal(t, 0.0)
+        }
 
-      #### Uniform distribution ----------------------------------------------------
+        #### Bi-modal distribution (large separation) --------------------------------
 
-      # Create the transformer.
-      transformer <- suppressWarnings(do.call(
-        power.transform::find_transformation_parameters,
-        args=c(list("x"=x_uniform),
-               parameter_list[[ii]])))
+        # Create the transformer.
+        transformer <- suppressWarnings(do.call(
+          power.transform::find_transformation_parameters,
+          args=c(list("x"=x_bimodal_large),
+                 parameter_list[[ii]])))
 
-      # Compute the fraction of instances which exceed the threshold.
-      power.transform::assess_transformation(
-        x = x_uniform,
-        transformer = transformer)
-    }
-  )
+        # Compute the fraction of instances which exceed the threshold.
+        t <- power.transform::assess_transformation(
+          x = x_bimodal_large,
+          transformer = transformer)
+
+        testthat::expect_gt(t, 0.4)
+
+        #### Bi-modal distribution (intermediate separation) -------------------------
+
+        # Create the transformer.
+        transformer <- suppressWarnings(do.call(
+          power.transform::find_transformation_parameters,
+          args=c(list("x"=x_bimodal_intermediate),
+                 parameter_list[[ii]])))
+
+        # Compute the fraction of instances which exceed the threshold.
+        t <- power.transform::assess_transformation(
+          x = x_bimodal_intermediate,
+          transformer = transformer)
+
+        testthat::expect_lt(t, 0.2)
+
+        #### Bi-modal distribution (small separation) --------------------------------
+
+        # Create the transformer.
+        transformer <- suppressWarnings(do.call(
+          power.transform::find_transformation_parameters,
+          args=c(list("x"=x_bimodal_small),
+                 parameter_list[[ii]])))
+
+        # Compute the fraction of instances which exceed the threshold.
+        t <- power.transform::assess_transformation(
+          x = x_bimodal_small,
+          transformer = transformer)
+
+        testthat::expect_gte(t, 0.0)
+
+        #### Uniform distribution ----------------------------------------------------
+
+        # Create the transformer.
+        transformer <- suppressWarnings(do.call(
+          power.transform::find_transformation_parameters,
+          args=c(list("x"=x_uniform),
+                 parameter_list[[ii]])))
+
+        # Compute the fraction of instances which exceed the threshold.
+        t <- power.transform::assess_transformation(
+          x = x_uniform,
+          transformer = transformer)
+
+        testthat::expect_gte(t, 0.0)
+      }
+    )
+  }
 }
