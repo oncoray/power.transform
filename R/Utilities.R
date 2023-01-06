@@ -27,6 +27,9 @@ huber_estimate <- function(x, k=1.28, tol=1E-4){
     mu_1 <- sum(xx) / length(xx)
     sigma_1 <- sqrt(sum((xx - mu_1)^2) / (beta * (length(xx) - 1)))
 
+    # Check that mu_1 and sigma_1 are finite.
+    if(!is.finite(mu_1) || !is.finite(sigma_1)) return(list("mu"=NA_real_, "sigma"=NA_real_))
+
     # Check convergence.
     if(abs(mu_0 - mu_1) < tol * mu_0 && abs(sigma_0 - sigma_1) < tol * sigma_0) break
 
