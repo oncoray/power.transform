@@ -119,6 +119,9 @@ box_cox_parameter_grid <- function(x, lambda_range){
   mu_hat <- sum(w * y) / sum_w
   sigma_hat_squared <- sum(w * (y - mu_hat)^2) / sum_w
 
+  # Log-likelihood cannot be estimated if sigma is NaN.
+  if(!is.finite(sigma_hat_squared)) return(NA_real_)
+
   # Log-likelihood cannot be determined if the sigma estimate equals 0.0
   if(sigma_hat_squared == 0) return(NA_real_)
 
