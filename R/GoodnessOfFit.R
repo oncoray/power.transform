@@ -130,7 +130,7 @@ setMethod(
     z_expected <- compute_expected_z(x=x)
 
     # Compute M-estimates for locality and scale
-    robust_estimates <- huber_estimate(y)
+    robust_estimates <- huber_estimate(y, tol=1E-3)
 
     # Compute the observed z-score.
     z_observed <- (y - robust_estimates$mu) / robust_estimates$sigma

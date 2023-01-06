@@ -69,7 +69,7 @@
       "x"=x))
 
   # Compute M-estimates for locality and scale
-  robust_estimates <- huber_estimate(y)
+  robust_estimates <- huber_estimate(y, tol=1E-3)
 
   # Check problematic values.
   if(!is.finite(robust_estimates$sigma)) return(NA_real_)
@@ -129,7 +129,7 @@
   )
 
   # Compute M-estimates for locality and scale
-  robust_estimates <- huber_estimate(y)
+  robust_estimates <- huber_estimate(y, tol=1E-3)
 
   # Check problematic values.
   if(!is.finite(robust_estimates$sigma)) return(NA_real_)
