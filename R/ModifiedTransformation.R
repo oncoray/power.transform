@@ -3,6 +3,9 @@
   shift <- parameters[1]
   lambda <- parameters[2]
 
+  # Check boundary conditions.
+  if(shift < shift_range[1] || shift > shift_range[2] || lambda < lambda_range[1] || lambda > lambda_range[2]) return(NA_real_)
+
   # Set log-likelihood function.
   loglik_FUN <- switch(
     type,
@@ -20,14 +23,7 @@
       "lambda"=lambda,
       "x"=x)))
 
-  # Check boundary conditions and update llf, if necessary. This function steers
-  # the optimiser away from the boundary.
-  llf <- apply_boundary(
-    llf=llf,
-    shift=shift,
-    shift_range=shift_range,
-    lambda=lambda,
-    lambda_range=lambda_range)
+
 
   return(llf)
 }
@@ -53,6 +49,9 @@
 
   shift <- parameters[1]
   lambda <- parameters[2]
+
+  # Check boundary conditions.
+  if(shift < shift_range[1] || shift > shift_range[2] || lambda < lambda_range[1] || lambda > lambda_range[2]) return(NA_real_)
 
   # Set transformation function.
   transform_FUN <- switch(
@@ -98,7 +97,7 @@
     # 1 - central_weight.
     weights <- numeric(length(z)) + 1.0
 
-    # Generate tail:
+    # Generate tails.
     tail_width <- ceiling(0.5 * length(z) * (1.0 - central_weight))
     tail_weights <- 0.5 * (1.0 - cos(2.0 * pi * seq_len(tail_width) / (length(z) * (1.0 - central_weight))))
     weights[seq_len(tail_width)] <- tail_weights
@@ -152,15 +151,6 @@
       "lambda"=lambda,
       "x"=x,
       "w"=weights)))
-
-  # Check boundary conditions and update llf, if necessary. This function steers
-  # the optimiser away from the boundary.
-  llf <- apply_boundary(
-    llf=llf,
-    shift=shift,
-    shift_range=shift_range,
-    lambda=lambda,
-    lambda_range=lambda_range)
 
   return(llf)
 }
