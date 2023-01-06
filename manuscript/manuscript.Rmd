@@ -1,0 +1,85 @@
+---
+title: "Shift-sensitive Power Transformations for Transforming Data to Normality"
+author: "Alex Zwanenburg"
+date: "2023-01-06"
+output: 
+  pdf_document:
+    latex_engine: lualatex
+bibliography: "refs.bib"
+header-includes:
+   - \usepackage{amsmath}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Abstract
+
+# Introduction
+
+Numerical features in datasets may strongly deviate from normal distributions, e.g. by being skewed. This may complicate further analysis. Power transformations [@Tukey1957-rt] can help improve normality of such features. The two most commonly used transformations are that of @Box1964-mz and @Yeo2000-vw. The Box-Cox transformation of a feature $x$ under the transformation parameter $\lambda$ is defined as:
+
+```{=latex}
+\begin{equation}
+\phi_{\text{BC}}^\lambda (x) = 
+\begin{cases}
+\left(x^\lambda - 1 \right) / \lambda & \text{if } \lambda \neq 0\\
+\log(x) & \text{if } \lambda = 0
+\end{cases}
+\end{equation}
+```
+One limitation of th Box-Cox transformation is that it is only defined for $x > 0$. In contrast, the Yeo-Johnson transformation under the transformation parameter $\lambda$ is defined for any $x \in \mathbb{R}$:
+
+```{=latex}
+\begin{equation}
+\phi_{\text{YJ}}^\lambda (x) = 
+\begin{cases}
+\left( \left( 1 + x \right)^\lambda - 1\right) / \lambda & \text{if } \lambda \neq 0 \text{ and } x \geq 0\\
+\log(1 + x) & \text{if } \lambda = 0 \text{ and } x \geq 0\\
+-\left( \left( 1 - x\right)^{2 - \lambda} - 1 \right) / \left(2 - \lambda \right) & \text{if } \lambda \neq 2 \text{ and } x < 0\\
+-\log(1 - x) & \text{if } \lambda = 2 \text{ and } x < 0
+\end{cases}
+\end{equation}
+```
+The $\lambda$-parameter is typically optimised using maximum likelihood optimisation under the assumption that the transformed feature is normally distributed. As noted by Raymaekers and Rousseeuw, this approach is very sensitive to the presence of outliers, and robust versions of Box-Cox and Yeo-Johnson transformations were devised [@Raymaekers2021-kq].
+
+Power transformation does not always
+
+Figure showing Ames dataset feature "Year_Built". Panels: Histogram of feature; Q-Q plot of original feature, normal Box-Cox, robust Box-Cox, normal Yeo-Johnson, robust Yeo-Johnson.
+
+# Methods
+
+# Simulation
+
+# Experimental Results
+
+# Discussion
+
+# Conclusion
+
+# Code availability
+
+Shift-sensitive power transformations are implemented in the `power.transform` package.
+
+# Appendix A.
+
+# References
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

@@ -54,3 +54,4 @@ rsconnect/
 # Package documentation
 man/
 *.Rd
+manuscript/manuscript.pdf
