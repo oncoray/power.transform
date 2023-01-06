@@ -37,14 +37,14 @@ box_cox_shift_range <- function(x){
 
 
 
-box_cox_parameter_grid <- function(x){
+box_cox_parameter_grid <- function(x, lambda_range){
 
   # Set up x-range.
   x_range <- box_cox_shift_range(x)
 
   # Set up grid positions.
   points_x <- x_range[1] + (seq_len(5)-1.0) * (x_range[2] - x_range[1]) / 4
-  points_lambda <- seq(-4, 4)
+  points_lambda <- lambda_range[1] + (seq_len(11L) - 1.0) * (lambda_range[2] - lambda_range[1]) / 10.0
 
   # Create parameter pairs that form the grid nodes.
   parameters <- mapply(

@@ -7,8 +7,7 @@ NULL
 #' univariate transformation to normality.
 #'
 #' @param x A vector with numeric values.
-#' @param method One of the following methods for power
-#'   transformation:
+#' @param method One of the following methods for power transformation:
 #'
 #'   * `box_cox`: Transformation using the Box-Cox transformation (Box and Cox,
 #'   1964). The Box-Cox transformation requires that all data are strictly
@@ -34,6 +33,9 @@ NULL
 #' @param shift Flag for using a version of Box-Cox or Yeo-Johnson
 #'   transformation that simultaneously optimises location in addition to the
 #'   lambda parameter.
+#' @param lambda_range Range of lambda values that should be considered.
+#'   Default: c(4.0, 6.0). Can be `NULL` to force optimisation without a
+#'   constraint in lambda values.
 #'
 #' @return A transformer object that can be used to transform values.
 #' @export
@@ -57,7 +59,7 @@ find_transformation_parameters <- function(
     method = "yeo_johnson",
     robust = TRUE,
     shift = TRUE,
-    lambda_range = c(-4.0, 4.0)){
+    lambda_range = c(-4.0, 6.0)){
 
   # Check transformation methods.
   if(!method %in% c("box_cox", "yeo_johnson", "none")){
@@ -98,6 +100,9 @@ find_transformation_parameters <- function(
         object)
     }
 
+    # Check lambda-range.
+    .check_lambda_range(lambda_range)
+
   } else if(method == "yeo_johnson"){
     object <- methods::new(
       "transformationYeoJohnson",
@@ -108,6 +113,9 @@ find_transformation_parameters <- function(
         "transformationYeoJohnsonShift",
         object)
     }
+
+    # Check lambda-range.
+    .check_lambda_range(lambda_range)
 
   } else {
     stop(
@@ -152,24 +160,17 @@ find_transformation_parameters <- function(
 power_transform <- function(
     x,
     transformer = NULL,
-    lambda_range = c(-4.0, 4.0),
     ...){
 
   # Create a transformer.
   if(is.null(transformer)){
     transformer <- do.call(
       find_transformation_parameters,
-      c(
-        list(
-          "x"=x,
-          "lambda_range"=lambda_range),
-        list(...)))
+      c(list("x"=x), list(...)))
   }
 
   # Check the transformer.
   .check_transformer(transformer)
-
-  .check_lambda_range(lambda_range)
 
   # Check that x is numeric.
   if(!is.numeric(x)){

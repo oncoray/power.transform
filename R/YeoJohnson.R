@@ -12,11 +12,11 @@ yeo_johnson_shift_range <- function(x){
 
 
 
-yeo_johnson_parameter_grid <- function(x){
+yeo_johnson_parameter_grid <- function(x, lambda_range){
 
   # Set up grid positions.
   points_x <- unique(stats::quantile(x, c(0.05, 0.2, 0.35, 0.5, 0.65, 0.8, 0.95), names=FALSE))
-  points_lambda <- seq(-4, 4)
+  points_lambda <- lambda_range[1] + (seq_len(11L) - 1.0) * (lambda_range[2] - lambda_range[1]) / 10.0
 
   # Create parameter pairs that form the grid nodes.
   parameters <- mapply(

@@ -4,7 +4,7 @@
   lambda <- parameters[2]
 
   # Check boundary conditions.
-  if(shift < shift_range[1] || shift > shift_range[2] || lambda < lambda_range[1] || lambda > lambda_range[2]) return(NA_real_)
+  # if(shift < shift_range[1] || shift > shift_range[2] || lambda < lambda_range[1] || lambda > lambda_range[2]) return(NA_real_)
 
   # Set log-likelihood function.
   loglik_FUN <- switch(
@@ -22,8 +22,6 @@
     args=list(
       "lambda"=lambda,
       "x"=x)))
-
-
 
   return(llf)
 }

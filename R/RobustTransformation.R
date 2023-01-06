@@ -1,10 +1,13 @@
-.transformation_robust_optimisation <- function(x, type){
+.transformation_robust_optimisation <- function(x, type, lambda_range){
   # This follows the algorithm from Raymaekers J, Rousseeuw PJ. Transforming
   # variables to central normality. Mach Learn. 2021.
   # doi:10.1007/s10994-021-05960-5
 
-  # Sort x.
-  x <- sort(x)
+  # Pick very wide lambda-range, if lambda_range is NULL.
+  if(is.null(lambda_range)) lambda_range <- c(-100.0, 100.0)
+
+  # Sort x if necessary.
+  if(is.unsorted(x)) x <- sort(x)
 
   # Compute z-values according to the inverse cumulative density function.
   z_expected <- compute_expected_z(x=x)
@@ -16,7 +19,7 @@
   optimal_lambda <- suppressWarnings(
     stats::optimise(
       ..transformation_rectified_optimisation,
-      interval=c(-4, 4),
+      interval=lambda_range,
       x=x,
       z=z_expected,
       type=type,
@@ -32,14 +35,16 @@
     lambda_0=optimal_lambda,
     x=x,
     type=type,
-    ii=1L)
+    ii=1L,
+    lambda_range=lambda_range)
 
   # Step 3: Compute lambda from reweighted maximum likelihood again.
   optimal_lambda <- ..transformation_reweighted_optimisation(
     lambda_0=optimal_lambda,
     x=x,
     type=type,
-    ii=2L)
+    ii=2L,
+    lambda_range=lambda_range)
 
   if(!is.finite(optimal_lambda)) return(1.0)
 
@@ -86,7 +91,7 @@
 
 
 
-..transformation_reweighted_optimisation <- function(lambda_0, x, type, ii){
+..transformation_reweighted_optimisation <- function(lambda_0, x, type, ii, lambda_range){
 
   if(!is.finite(lambda_0)) return(NA_real_)
 
@@ -138,7 +143,7 @@
   optimal_lambda <- suppressWarnings(
     stats::optimise(
       loglik_FUN,
-      interval=c(-4.0, 4.0),
+      interval=lambda_range,
       x=x,
       w=weights,
       maximum=TRUE))

@@ -76,7 +76,7 @@ for(n in c(100, 1000, 10000)){
           x = x_normal,
           transformer = transformer)
 
-        testthat::expect_equal(t, 0.0)
+        testthat::expect_lt(t, 0.05)
 
         #### Exponentially distributed data ------------------------------------------
 

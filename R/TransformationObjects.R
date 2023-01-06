@@ -144,7 +144,10 @@ setMethod(
 setMethod(
   ".set_transformation_parameters",
   signature("transformationBoxCox"),
-  function(object, x, ...){
+  function(object, x, lambda_range, ...){
+
+    # Pick very wide lambda-range, if lambda_range is NULL.
+    if(is.null(lambda_range)) lambda_range <- c(-100.0, 100.0)
 
     if(any(x <= 0.0)){
       warning(paste0(
@@ -184,7 +187,8 @@ setMethod(
       # doi:10.1007/s10994-021-05960-5
       lambda <- .transformation_robust_optimisation(
         x=x,
-        type="box_cox")
+        type="box_cox",
+        lambda_range=lambda_range)
 
     } else {
       # Standard method based on optimising log-likelihood of the normal
@@ -192,7 +196,7 @@ setMethod(
       optimal_lambda <- suppressWarnings(
         stats::optimise(
           ..box_cox_loglik,
-          interval=c(-4.0, 4.0),
+          interval=lambda_range,
           x=x,
           maximum=TRUE))
 
@@ -216,11 +220,16 @@ setMethod(
 setMethod(
   ".set_transformation_parameters",
   signature("transformationBoxCoxShift"),
-  function(object, x, ...){
+  function(object, x, lambda_range, ...){
+
+    # Pick very wide lambda-range, if lambda_range is NULL.
+    if(is.null(lambda_range)) lambda_range <- c(-100.0, 100.0)
 
     # Set up initial search grid for shift and optimisation parameters to narrow
     # down the search area.
-    search_grid <- box_cox_parameter_grid(x)
+    search_grid <- box_cox_parameter_grid(
+      x=x,
+      lambda_range=lambda_range)
 
     if(object@robust){
       # Sort values
@@ -298,7 +307,10 @@ setMethod(
 setMethod(
   ".set_transformation_parameters",
   signature("transformationYeoJohnson"),
-  function(object, x, ...){
+  function(object, x, lambda_range, ...){
+
+    # Pick very wide lambda-range, if lambda_range is NULL.
+    if(is.null(lambda_range)) lambda_range <- c(-100.0, 100.0)
 
     # Optimise lambda for Yeo-Johnson transformations.
     if(object@robust){
@@ -306,8 +318,9 @@ setMethod(
       # variables to central normality. Mach Learn. 2021.
       # doi:10.1007/s10994-021-05960-5
       lambda <- .transformation_robust_optimisation(
-        x=x,
-        type="yeo_johnson")
+        x = x,
+        type = "yeo_johnson",
+        lambda_range = lambda_range)
 
     } else {
       # Standard method based on optimising log-likelihood of the normal
@@ -315,7 +328,7 @@ setMethod(
       optimal_lambda <- suppressWarnings(
         stats::optimise(
           ..yeo_johnson_loglik,
-          interval=c(-4.0, 4.0),
+          interval=lambda_range,
           x=x,
           maximum=TRUE))
 
@@ -338,11 +351,16 @@ setMethod(
 setMethod(
   ".set_transformation_parameters",
   signature("transformationYeoJohnsonShift"),
-  function(object, x, ...){
+  function(object, x, lambda_range, ...){
+
+    # Pick very wide lambda-range, if lambda_range is NULL.
+    if(is.null(lambda_range)) lambda_range <- c(-100.0, 100.0)
 
     # Set up initial search grid for shift and optimisation parameters to narrow
     # down the search area.
-    search_grid <- yeo_johnson_parameter_grid(x)
+    search_grid <- yeo_johnson_parameter_grid(
+      x = x,
+      lambda_range = lambda_range)
 
     if(object@robust){
       # Sort values
