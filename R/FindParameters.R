@@ -54,9 +54,10 @@ NULL
 #'   method = "box_cox")
 find_transformation_parameters <- function(
     x,
-    method="yeo_johnson",
-    robust=TRUE,
-    shift=TRUE){
+    method = "yeo_johnson",
+    robust = TRUE,
+    shift = TRUE,
+    lambda_range = c(-4.0, 4.0)){
 
   # Check transformation methods.
   if(!method %in% c("box_cox", "yeo_johnson", "none")){
@@ -117,8 +118,9 @@ find_transformation_parameters <- function(
 
   # Set transformation parameters.
   object <- .set_transformation_parameters(
-    object=object,
-    x=x)
+    object = object,
+    x = x,
+    lambda_range = lambda_range)
 
   return(object)
 }
@@ -149,19 +151,25 @@ find_transformation_parameters <- function(
 #'   method = "box_cox")
 power_transform <- function(
     x,
-    transformer=NULL,
+    transformer = NULL,
+    lambda_range = c(-4.0, 4.0),
     ...){
 
   # Create a transformer.
   if(is.null(transformer)){
     transformer <- do.call(
       find_transformation_parameters,
-      c(list("x"=x),
+      c(
+        list(
+          "x"=x,
+          "lambda_range"=lambda_range),
         list(...)))
   }
 
   # Check the transformer.
   .check_transformer(transformer)
+
+  .check_lambda_range(lambda_range)
 
   # Check that x is numeric.
   if(!is.numeric(x)){
