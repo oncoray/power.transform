@@ -78,15 +78,17 @@
       "lambda"=lambda,
       "x"=x)))
 
-  # Compute M-estimates for locality and scale
-  robust_estimates <- huber_estimate(y)
+  if(weight_method %in% c("huber", "tukey", "step")){
+    # Compute M-estimates for locality and scale
+    robust_estimates <- huber_estimate(y, tol=1E-3)
 
-  # Check problematic values.
-  if(!is.finite(robust_estimates$sigma)) return(NA_real_)
-  if(robust_estimates$sigma == 0.0) return(NA_real_)
+    # Check problematic values.
+    if(!is.finite(robust_estimates$sigma)) return(NA_real_)
+    if(robust_estimates$sigma == 0.0) return(NA_real_)
 
-  # Compute weights.
-  residual <- (y - robust_estimates$mu) / robust_estimates$sigma - z
+    # Compute weights.
+    residual <- (y - robust_estimates$mu) / robust_estimates$sigma - z
+  }
 
   if(weight_method == "tailed"){
     # Use Tukey window (also cosine-tapered window) for downweighting based on
