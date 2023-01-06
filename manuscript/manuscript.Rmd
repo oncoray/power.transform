@@ -44,9 +44,17 @@ One limitation of th Box-Cox transformation is that it is only defined for $x > 
 ```
 The $\lambda$-parameter is typically optimised using maximum likelihood optimisation under the assumption that the transformed feature is normally distributed. As noted by Raymaekers and Rousseeuw, this approach is very sensitive to the presence of outliers, and robust versions of Box-Cox and Yeo-Johnson transformations were devised [@Raymaekers2021-kq].
 
-Power transformation does not always
+Power transformation does not always yield transformed variables that
 
 Figure showing Ames dataset feature "Year_Built". Panels: Histogram of feature; Q-Q plot of original feature, normal Box-Cox, robust Box-Cox, normal Yeo-Johnson, robust Yeo-Johnson.
+
+We make the following contributions:
+
+-   We devise shift-sensitive versions of the Box-Cox and Yeo-Johnson transformation, including versions robust to outliers.
+
+-   We define an empirical measure of the goodness of fit for detecting cases when power transformations fail to yield a normally distributed transformed feature.
+
+-   We assess the effect of power transformations on the performance of machine learning models.
 
 # Methods
 
