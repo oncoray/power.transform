@@ -128,7 +128,7 @@ The $\lambda$-parameter is typically optimised using maximum likelihood estimati
 
 Power transformation does not guarantee that transformed variables are normally distributed. In fact, depending on location and scale of the variable, power transformation may reduce normality, as shown in Figure \@ref(fig:reduced-normality).
 
-``` {r reduced-normality, echo="FALSE", include="FALSE", fig.cap="Power transformations may reduce normality depending on location. Variable $x$ consists of $10000$ values are randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$. For both Box-Cox and Yeo-Johnson transformations, we would expect $\\lambda = 1$, since $x$ is already normally distributed. Panel A and B show the $\\lambda$ value found through maximum likelihood estimation for Box-Cox and Yeo-Johnson transformations, respectively."}
+``` {r reduced-normality, echo=FALSE, fig.cap="Power transformations may reduce normality depending on location. Variable $x$ consists of $10000$ values are randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$. For both Box-Cox and Yeo-Johnson transformations, we would expect $\\lambda = 1$, since $x$ is already normally distributed. Panel A and B show the $\\lambda$ value found through maximum likelihood estimation for Box-Cox and Yeo-Johnson transformations, respectively."}
 
 compute_lambda <- function(mu, x, method){
   # Create transformer object.
