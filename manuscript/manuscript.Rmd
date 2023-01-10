@@ -20,6 +20,9 @@ library(power.transform)
 # Base font size.
 base_size <- 10
 
+# Set seed.
+set.seed(19L)
+
 get_annotation_settings <- function(ggtheme=NULL){
   # Import formatting settings from the provided ggtheme.
   
