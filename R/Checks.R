@@ -40,30 +40,32 @@
 
 
 
-.check_lambda_range <- function(x){
+.check_lambda <- function(x){
 
   # NULL is a valid value.
   if(is.null(x)) return(invisible(TRUE))
 
   # Otherwise, must be length 2, numeric, finite and sorted.
-  if(length(x) != 2){
-    stop(paste0("lambda_range should consist of 2 numeric values. ", length(x), " values were found."))
+  if(!length(x) %in% c(1L, 2L)){
+    stop(paste0("lambda should consist of 1 or 2 numeric values. ", length(x), " values were found."))
   }
 
   if(!is.numeric(x)){
-    stop("lambda_range should consist of 2 numeric values. The values are not numeric.")
+    stop("lambda should consist of 1 or 2 numeric values. The values are not numeric.")
   }
 
   if(any(!is.finite(x))){
-    stop("lambda_range should consist of 2 numeric values. One or both values are not finite.")
+    stop("lambda should consist of 1 or 2 numeric values. One or both values are not finite.")
   }
 
-  if(diff(x) == 0.0){
-    stop("lambda_range should consist of 2 numeric values. The values can not be identical.")
-  }
+  if(length(x) == 2){
+    if(diff(x) == 0.0){
+      stop("If lambda consists of 2 numeric values, these can not be identical.")
+    }
 
-  if(is.unsorted(x)){
-    stop("lambda_range should consist of 2 numeric values. The values are not sorted by increasing value.")
+    if(is.unsorted(x)){
+      stop("If lambda consists of 2 numeric values, the values should be ordered by increasing value.")
+    }
   }
 
   return(invisible(TRUE))

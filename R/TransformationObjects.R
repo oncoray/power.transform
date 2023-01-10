@@ -144,10 +144,15 @@ setMethod(
 setMethod(
   ".set_transformation_parameters",
   signature("transformationBoxCox"),
-  function(object, x, lambda_range, ...){
+  function(object, x, lambda, ...){
 
-    # Pick very wide lambda-range, if lambda_range is NULL.
-    if(is.null(lambda_range)) lambda_range <- c(-100.0, 100.0)
+    if(is.null(lambda)){
+      # Pick very wide lambda-range, if lambda is NULL.
+      lambda_range <- c(-100.0, 100.0)
+
+    } else if(length(lambda) == 2){
+      lambda_range <- lambda
+    }
 
     if(any(x <= 0.0)){
       warning(paste0(
@@ -180,8 +185,14 @@ setMethod(
       x <- x - object@shift
     }
 
-    # Optimise lambda for Box-Cox transformations.
-    if(object@robust){
+    if(length(lambda) == 1){
+      # Set lambda parameter. Since we don't use any robust algorithm, set
+      # robust to FALSE.
+      object@lambda <- lambda
+      object@robust <- FALSE
+      object@complete <- TRUE
+
+    } else if(object@robust){
       # Robust method based on Raymaekers J, Rousseeuw PJ. Transforming
       # variables to central normality. Mach Learn. 2021.
       # doi:10.1007/s10994-021-05960-5
@@ -189,6 +200,10 @@ setMethod(
         x=x,
         type="box_cox",
         lambda_range=lambda_range)
+
+      # Set lambda parameter.
+      object@lambda <- lambda
+      object@complete <- TRUE
 
     } else {
       # Standard method based on optimising log-likelihood of the normal
@@ -204,11 +219,11 @@ setMethod(
         is.finite(optimal_lambda$objective),
         optimal_lambda$maximum,
         1.0)
-    }
 
-    # Set lambda parameter.
-    object@lambda <- lambda
-    object@complete <- TRUE
+      # Set lambda parameter.
+      object@lambda <- lambda
+      object@complete <- TRUE
+    }
 
     return(object)
   }
@@ -220,10 +235,18 @@ setMethod(
 setMethod(
   ".set_transformation_parameters",
   signature("transformationBoxCoxShift"),
-  function(object, x, lambda_range, ...){
+  function(object, x, lambda, ...){
 
-    # Pick very wide lambda-range, if lambda_range is NULL.
-    if(is.null(lambda_range)) lambda_range <- c(-100.0, 100.0)
+    if(is.null(lambda)){
+      # Pick very wide lambda-range, if lambda is NULL.
+      lambda_range <- c(-100.0, 100.0)
+
+    } else if(length(lambda) == 2){
+      lambda_range <- lambda
+
+    } else {
+      return(methods::callNextMethod())
+    }
 
     # Set up initial search grid for shift and optimisation parameters to narrow
     # down the search area.
@@ -307,13 +330,24 @@ setMethod(
 setMethod(
   ".set_transformation_parameters",
   signature("transformationYeoJohnson"),
-  function(object, x, lambda_range, ...){
+  function(object, x, lambda, ...){
 
-    # Pick very wide lambda-range, if lambda_range is NULL.
-    if(is.null(lambda_range)) lambda_range <- c(-100.0, 100.0)
+    if(is.null(lambda)){
+      # Pick very wide lambda-range, if lambda is NULL.
+      lambda_range <- c(-100.0, 100.0)
 
-    # Optimise lambda for Yeo-Johnson transformations.
-    if(object@robust){
+    } else if(length(lambda) == 2){
+      lambda_range <- lambda
+    }
+
+    if(length(lambda) == 1){
+      # Set lambda parameter. Since we don't use any robust algorithm, set
+      # robust to FALSE.
+      object@lambda <- lambda
+      object@robust <- FALSE
+      object@complete <- TRUE
+
+    } else if(object@robust){
       # Robust method based on Raymaekers J, Rousseeuw PJ. Transforming
       # variables to central normality. Mach Learn. 2021.
       # doi:10.1007/s10994-021-05960-5
@@ -321,6 +355,10 @@ setMethod(
         x = x,
         type = "yeo_johnson",
         lambda_range = lambda_range)
+
+      # Set lambda parameter.
+      object@lambda <- lambda
+      object@complete <- TRUE
 
     } else {
       # Standard method based on optimising log-likelihood of the normal
@@ -336,11 +374,11 @@ setMethod(
         is.finite(optimal_lambda$objective),
         optimal_lambda$maximum,
         1.0)
-    }
 
-    # Set lambda parameter.
-    object@lambda <- lambda
-    object@complete <- TRUE
+      # Set lambda parameter.
+      object@lambda <- lambda
+      object@complete <- TRUE
+    }
 
     return(object)
   }
@@ -351,10 +389,18 @@ setMethod(
 setMethod(
   ".set_transformation_parameters",
   signature("transformationYeoJohnsonShift"),
-  function(object, x, lambda_range, ...){
+  function(object, x, lambda, ...){
 
-    # Pick very wide lambda-range, if lambda_range is NULL.
-    if(is.null(lambda_range)) lambda_range <- c(-100.0, 100.0)
+    if(is.null(lambda)){
+      # Pick very wide lambda-range, if lambda is NULL.
+      lambda_range <- c(-100.0, 100.0)
+
+    } else if(length(lambda) == 2){
+      lambda_range <- lambda
+
+    } else {
+      return(methods::callNextMethod())
+    }
 
     # Set up initial search grid for shift and optimisation parameters to narrow
     # down the search area.

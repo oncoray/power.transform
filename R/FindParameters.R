@@ -33,9 +33,9 @@ NULL
 #' @param shift Flag for using a version of Box-Cox or Yeo-Johnson
 #'   transformation that simultaneously optimises location in addition to the
 #'   lambda parameter.
-#' @param lambda_range Range of lambda values that should be considered.
-#'   Default: c(4.0, 6.0). Can be `NULL` to force optimisation without a
-#'   constraint in lambda values.
+#' @param lambda Single lambda value, or range of lambda values that should be
+#'   considered. Default: c(4.0, 6.0). Can be `NULL` to force optimisation
+#'   without a constraint in lambda values.
 #'
 #' @return A transformer object that can be used to transform values.
 #' @export
@@ -59,7 +59,7 @@ find_transformation_parameters <- function(
     method = "yeo_johnson",
     robust = TRUE,
     shift = TRUE,
-    lambda_range = c(-4.0, 6.0)){
+    lambda = c(-4.0, 6.0)){
 
   # Check transformation methods.
   if(!method %in% c("box_cox", "yeo_johnson", "none")){
@@ -100,8 +100,8 @@ find_transformation_parameters <- function(
         object)
     }
 
-    # Check lambda-range.
-    .check_lambda_range(lambda_range)
+    # Check lambda.
+    .check_lambda(lambda)
 
   } else if(method == "yeo_johnson"){
     object <- methods::new(
@@ -114,8 +114,8 @@ find_transformation_parameters <- function(
         object)
     }
 
-    # Check lambda-range.
-    .check_lambda_range(lambda_range)
+    # Check lambda.
+    .check_lambda(lambda)
 
   } else {
     stop(
@@ -128,7 +128,7 @@ find_transformation_parameters <- function(
   object <- .set_transformation_parameters(
     object = object,
     x = x,
-    lambda_range = lambda_range)
+    lambda = lambda)
 
   return(object)
 }
