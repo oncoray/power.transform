@@ -11,14 +11,93 @@ header-includes:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(
+  echo = TRUE,
+  fig.align= "center")
+
+library(power.transform)
+
+# Base font size.
+base_size <- 10
+
+get_annotation_settings <- function(ggtheme=NULL){
+  # Import formatting settings from the provided ggtheme.
+  
+  # Find the text size for the table. This is based on text sizes in the
+  # ggtheme.
+  fontsize <- ggtheme$text$size
+  fontsize_rel <- 1.0
+  
+  # Attempt to base the text size on the general axis.text attribute.
+  if(!is.null(ggtheme$axis.text$size)){
+    if(inherits(ggtheme$axis.text$size, "rel")){
+      # Find the relative text size of axis text.
+      fontsize_rel <- as.numeric(ggtheme$axis.text$size)
+      
+    } else {
+      # Set absolute text size.
+      fontsize <- ggtheme$axis.text$size
+      fontsize_rel <- 1.0
+    }
+  }
+  
+  # Attempt to refine the text size using the axis.text.y attribute in
+  # particular.
+  if(!is.null(ggtheme$axis.text.y$size)){
+    if(inherits(ggtheme$axis.text.y$size, "rel")){
+      # Set relative text size of axis text
+      fontsize_rel <- as.numeric(ggtheme$axis.text.y$size)
+      
+    } else {
+      # Set absolute text size.
+      fontsize <- as.numeric(ggtheme$axis.text.y$size)
+      fontsize_rel <- 1.0
+    }
+  }
+  
+  # Update the text size using the magical ggplot2 point size (ggplot2:::.pt).
+  geom_text_size <- fontsize * fontsize_rel / 2.845276
+  
+  # Obtain lineheight
+  lineheight <- ggtheme$text$lineheight
+  if(!is.null(ggtheme$axis.text$lineheight)) lineheight <- ggtheme$axis.text$lineheight
+  if(!is.null(ggtheme$axis.text.y$lineheight)) lineheight <- ggtheme$axis.text.y$lineheight
+  
+  # Obtain family
+  fontfamily <- ggtheme$text$family
+  if(!is.null(ggtheme$axis.text$family)) fontfamily <- ggtheme$axis.text$family
+  if(!is.null(ggtheme$axis.text.y$family)) fontfamily <- ggtheme$axis.text.y$family
+  if(!is.null(ggtheme$axis.text.x$family)) fontfamily <- ggtheme$axis.text.x$family
+  
+  # Obtain face
+  fontface <- ggtheme$text$face
+  if(!is.null(ggtheme$axis.text$face)) fontface <- ggtheme$axis.text$face
+  if(!is.null(ggtheme$axis.text.y$face)) fontface <- ggtheme$axis.text.y$face
+  if(!is.null(ggtheme$axis.text.x$face)) fontface <- ggtheme$axis.text.x$face
+  
+  # Obtain colour
+  colour <- ggtheme$text$colour
+  if(!is.null(ggtheme$axis.text$colour)) colour <- ggtheme$axis.text$colour
+  if(!is.null(ggtheme$axis.text.y$colour)) colour <- ggtheme$axis.text.y$colour
+  if(!is.null(ggtheme$axis.text.x$colour)) colour <- ggtheme$axis.text.x$colour
+  
+  return(list(
+    "geom_text_size"=geom_text_size,
+    "fontsize"=fontsize,
+    "fontsize_rel"=fontsize_rel,
+    "colour"=colour,
+    "family"=fontfamily,
+    "face"=fontface,
+    "lineheight"=lineheight))
+}
+
 ```
 
 # Abstract
 
 # Introduction
 
-Numerical features in datasets may strongly deviate from normal distributions, e.g. by being skewed. This may complicate further analysis. Power transformations [@Tukey1957-rt] can help improve normality of such features. The two most commonly used transformations are that of @Box1964-mz and @Yeo2000-vw. The Box-Cox transformation of a feature $x$ under the transformation parameter $\lambda$ is defined as:
+Numerical variables in datasets may strongly deviate from normal distributions, e.g. by being skewed. This may complicate further analysis. Power transformations [@Tukey1957-rt] can help improve normality of such features. The two most commonly used transformations are that of @Box1964-mz and @Yeo2000-vw. The Box-Cox transformation of a feature $x$ under the transformation parameter $\lambda$ is defined as:
 
 ```{=latex}
 \begin{equation}
@@ -42,9 +121,74 @@ One limitation of th Box-Cox transformation is that it is only defined for $x > 
 \end{cases}
 \end{equation}
 ```
-The $\lambda$-parameter is typically optimised using maximum likelihood optimisation under the assumption that the transformed feature is normally distributed. As noted by Raymaekers and Rousseeuw, this approach is very sensitive to the presence of outliers, and robust versions of Box-Cox and Yeo-Johnson transformations were devised [@Raymaekers2021-kq].
+The $\lambda$-parameter is typically optimised using maximum likelihood estimation under the assumption that the transformed feature is normally distributed. As noted by Raymaekers and Rousseeuw, this approach is very sensitive to the presence of outliers, and robust versions of Box-Cox and Yeo-Johnson transformations were devised [@Raymaekers2021-kq].
 
-Power transformation does not always yield transformed variables that
+Power transformation does not guarantee that transformed variables are normally distributed. In fact, depending on location and scale of the variable, power transformation may reduce normality, as shown in Figure \@ref(fig:reduced-normality).
+
+``` {r reduced-normality, echo="FALSE", include="FALSE", fig.cap="Power transformations may reduce normality depending on location. Variable $x$ consists of $10000$ values are randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$. For both Box-Cox and Yeo-Johnson transformations, we would expect $\\lambda = 1$, since $x$ is already normally distributed. Panel A and B show the $\\lambda$ value found through maximum likelihood estimation for Box-Cox and Yeo-Johnson transformations, respectively."}
+
+compute_lambda <- function(mu, x, method){
+  # Create transformer object.
+  transformer <- suppressWarnings(
+    power.transform::find_transformation_parameters(
+      x = x + mu,
+      method = method,
+      robust = FALSE,
+      shift = FALSE,
+      lambda = NULL))
+  
+  # Return lambda value.
+  return(transformer@lambda)
+}
+
+x <- stats::rnorm(10000L)
+shift_range <- 10^seq(from=0, to=6, by=0.1)
+
+box_cox_values <- sapply(
+  shift_range,
+  compute_lambda,
+  x = x,
+  method = "box_cox")
+
+yeo_johnson_values <- sapply(
+  shift_range,
+  compute_lambda,
+  x = x,
+  method = "yeo_johnson")
+
+data <- data.table::data.table(
+  "mu" = log10(c(shift_range, shift_range)),
+  "lambda" = c(box_cox_values, yeo_johnson_values),
+  "method" = factor(x=rep(c("Box-Cox", "Yeo-Johnson"), each = length(shift_range), levels=c("Box-Cox", "Yeo-Johnson"))))
+
+annotation_settings <- get_annotation_settings(ggplot2::theme_light(base_size = base_size))
+
+p <- ggplot2::ggplot(
+  data = data,
+  mapping = ggplot2::aes(
+    x = mu,
+    y = lambda,
+    colour = method))
+p <- p + ggplot2::theme_light(base_size=base_size)
+p <- p + ggplot2::geom_point()
+p <- p + ggplot2::geom_hline(yintercept = 1.0, linetype="longdash", colour="grey40")
+p <- p + ggplot2::annotate(
+  geom = "text",
+  x = 6,
+  y = 1,
+  label = "expected",
+  colour=annotation_settings$colour,
+  family=annotation_settings$family,
+  fontface=annotation_settings$face,
+  size=annotation_settings$geom_text_size,
+  vjust=1.5,
+  hjust=1.0)
+p <- p + ggplot2::scale_x_continuous(labels = scales::math_format())
+
+p
+```
+
+
 
 Figure showing Ames dataset feature "Year_Built". Panels: Histogram of feature; Q-Q plot of original feature, normal Box-Cox, robust Box-Cox, normal Yeo-Johnson, robust Yeo-Johnson.
 
