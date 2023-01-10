@@ -15,7 +15,14 @@ knitr::opts_chunk$set(
   echo = TRUE,
   fig.align= "center")
 
-library(power.transform)
+# Allow for defining figure captions within a chunk.
+knitr::opts_knit$set(
+  eval.after = "fig.cap")
+
+require(power.transform)
+require(ggplot2)
+require(data.table)
+require(latex2exp)
 
 # Base font size.
 base_size <- 10
@@ -126,9 +133,15 @@ One limitation of th Box-Cox transformation is that it is only defined for $x > 
 ```
 The $\lambda$-parameter is typically optimised using maximum likelihood estimation under the assumption that the transformed feature is normally distributed. As noted by Raymaekers and Rousseeuw, this approach is very sensitive to the presence of outliers, and robust versions of Box-Cox and Yeo-Johnson transformations were devised [@Raymaekers2021-kq].
 
-Power transformation does not guarantee that transformed variables are normally distributed. In fact, depending on location and scale of the variable, power transformation may reduce normality, as shown in Figure \@ref(fig:reduced-normality).
+Power transformation does not guarantee that transformed variables are normally distributed. In fact, depending on location and scale of the variable, power transformation may reduce normality, as shown in Figure.
 
-``` {r reduced-normality, echo=FALSE, fig.cap="Power transformations may reduce normality depending on location. Variable $x$ consists of $10000$ values are randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$. For both Box-Cox and Yeo-Johnson transformations, we would expect $\\lambda = 1$, since $x$ is already normally distributed. Panel A and B show the $\\lambda$ value found through maximum likelihood estimation for Box-Cox and Yeo-Johnson transformations, respectively."}
+``` {r reduced-normality, echo=FALSE, fig.cap=cap}
+cap <- paste0(
+  "Power transformations may reduce normality depending on location. ",
+  "Variable $x$ consists of $10000$ values are randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$. ",
+  "For both Box-Cox and Yeo-Johnson transformations, we would expect $\\lambda = 1$, since $x$ is already normally distributed. ",
+  "The figure shows that instead, $\\lambda$ is strongly dependent on the location $\\mu$, ",
+  "and even breaks down due to numerical issues for $\\mu > 10^3$.")
 
 compute_lambda <- function(mu, x, method){
   # Create transformer object.
@@ -186,7 +199,12 @@ p <- p + ggplot2::annotate(
   size=annotation_settings$geom_text_size,
   vjust=1.5,
   hjust=1.0)
-p <- p + ggplot2::scale_x_continuous(labels = scales::math_format())
+p <- p + ggplot2::scale_x_continuous(
+  name = latex2exp::TeX("$\\mu$"),
+  labels = scales::math_format())
+
+p <- p + ggplot2::scale_y_continuous(
+  name = latex2exp::TeX("$\\lambda$"))
 
 p
 ```
@@ -221,20 +239,3 @@ Shift-sensitive power transformations are implemented in the `power.transform` p
 
 # References
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
