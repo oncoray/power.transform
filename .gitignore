@@ -55,3 +55,4 @@ rsconnect/
 man/
 *.Rd
 manuscript/manuscript.pdf
+manuscript/manuscript.log
