@@ -154,7 +154,7 @@ find_transformation_parameters <- function(
 #' @seealso [find_transformation_parameters]
 #' @examples
 #' x <- exp(stats::rnorm(1000))
-#' y <- power_transformed(
+#' y <- power_transform(
 #'   x = x,
 #'   method = "box_cox")
 power_transform <- function(
@@ -192,7 +192,7 @@ power_transform <- function(
 #' `revert_power_transform` reverts the transformation of numeric values to
 #' normality.
 #'
-#' @param x A vector with numeric values that were previously transformed to
+#' @param y A vector with numeric values that was previously transformed to
 #'   normality.
 #' @param transformer A transformer object created using
 #'   `find_transformation_parameters` that was used to transform the values to
@@ -209,7 +209,7 @@ power_transform <- function(
 #'   method = "box_cox")
 #'
 #' y <- power_transform(
-#'   x = x,
+#'   x = x0,
 #'   transformer = transformer)
 #'
 #' x1 <- revert_power_transform(

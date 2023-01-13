@@ -151,8 +151,8 @@ paste_s <- function(...){
 
   if(length(dots) > 2){
     # For more than 2 elements, split into an initial and final section.
-    initial_string <- paste0(head(dots, n=length(dots)-2), collapse=", ")
-    final_string <- paste0(tail(dots, n=2), collapse=" and ")
+    initial_string <- paste0(utils::head(dots, n=length(dots)-2), collapse=", ")
+    final_string <- paste0(utils::tail(dots, n=2), collapse=" and ")
 
     return(paste0(c(initial_string, final_string), collapse=", "))
 

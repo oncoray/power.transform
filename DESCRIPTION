@@ -16,6 +16,7 @@ RoxygenNote: 7.2.3
 Imports: 
     data.table,
     methods,
+    rlang (>= 1.0.0),
     nloptr
 Collate: 
     'BoxCox.R'
@@ -33,6 +34,5 @@ Collate:
     'power.transform-package.R'
 Suggests: 
     ggplot2 (>= 3.4.0),
-    rlang (>= 1.0.0),
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

@@ -9,6 +9,7 @@
 #' @import data.table
 #' @import methods
 #' @importFrom rlang .data
+#' @importFrom nloptr nl.opts
 "_PACKAGE"
 
 ## usethis namespace: start
