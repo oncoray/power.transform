@@ -15,7 +15,8 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Imports: 
     data.table,
-    methods
+    methods,
+    nloptr
 Collate: 
     'BoxCox.R'
     'Checks.R'

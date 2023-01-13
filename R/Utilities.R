@@ -68,27 +68,6 @@ compute_expected_z <- function(x){
 
 
 
-apply_boundary <- function(
-    llf,
-    shift,
-    shift_range,
-    lambda,
-    lambda_range){
-  # Apply boundary conditions to steer optimisation algorithms away from the
-  # boundaries.
-
-  if(shift < shift_range[1] || shift > shift_range[2] || lambda < lambda_range[1] || lambda > lambda_range[2]){
-    # Build a gradient that increases the further shift and/or lambda parameters
-    # deviate from the boundary.
-
-    return(NA_real_)
-  }
-
-  return(llf)
-}
-
-
-
 select_neighbourhood <- function(x, x_range){
   neighbourhood_range <- c(0.0, 0.0)
 

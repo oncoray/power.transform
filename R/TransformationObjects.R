@@ -235,7 +235,7 @@ setMethod(
 setMethod(
   ".set_transformation_parameters",
   signature("transformationBoxCoxShift"),
-  function(object, x, lambda, ...){
+  function(object, x, lambda, optimiser="subplex", ...){
 
     if(is.null(lambda)){
       # Pick very wide lambda-range, if lambda is NULL.
@@ -262,49 +262,98 @@ setMethod(
       z_expected <- compute_expected_z(x=x)
 
       # Optimisation function.
-      opt_fun <- .transformation_robust_shifted_optimisation
+      opt_fun <- function(...) -.transformation_robust_shifted_optimisation(...)
 
     } else {
       # No z required.
       z_expected <- NULL
 
       # Optimisation function.
-      opt_fun <- .transform_shifted_optimisation
+      # opt_fun <- .transform_shifted_optimisation
+      opt_fun <- function(...) -.transform_shifted_optimisation(...)
     }
 
-    # Then compute the log-likelihood at each grid node.
-    llf <- sapply(
-      search_grid$parameter,
-      opt_fun,
-      x=x,
-      z=z_expected,
-      type="box_cox",
-      shift_range=search_grid$x_range,
-      lambda_range=search_grid$lambda_range)
+    if(!is_package_installed("nloptr") & optimiser %in% c("direct-l", "subplex", "nelder-mead")){
+      warning(paste0(
+        "The nloptr package is required to optimise power transformation parameters using the ",
+        optimiser, " algoritm. stats::optim is used as a fallback option."))
 
-    # Select the node with the highest llf.
-    ii <- which.max(llf)
+      optimiser <- "optim-nelder-mead"
+    }
 
-    # Select the direct neighbourhood of the llf (neighbouring lambda, x).
-    initial_parameter <- search_grid$parameter[[ii]]
+    if(optimiser == "direct-l"){
+      # DIRECT-L algorithm
+      #
+      # D. R. Jones, C. D. Perttunen, and B. E. Stuckmann, “Lipschitzian
+      # optimization without the lipschitz constant,” J. Optimization Theory and
+      # Applications, vol. 79, p. 157 (1993).
+      #
+      # J. M. Gablonsky and C. T. Kelley, “A locally-biased form of the DIRECT
+      # algorithm," J. Global Optimization, vol. 21 (1), p. 27-37 (2001).
 
-    shift_range <- select_neighbourhood(initial_parameter[1], search_grid$x)
-    lambda_range <- select_neighbourhood(initial_parameter[2], search_grid$lambda)
+      results <- nloptr::directL(
+        fn=opt_fun,
+        lower=c(search_grid$x_range[1], search_grid$lambda_range[1]),
+        upper=c(search_grid$x_range[2], search_grid$lambda_range[2]),
+        control=list("xtol_rel"=1e-3, ftol_rel=1e-4),
+        x=x,
+        z=z_expected,
+        type="box_cox")
 
-    # Local approximation.
-    results <- stats::optim(
-      par=initial_parameter,
-      fn=opt_fun,
-      gr=NULL,
-      x=x,
-      z=z_expected,
-      type="box_cox",
-      shift_range=shift_range,
-      lambda_range=lambda_range,
-      control=list(
-        "fnscale"=-1.0,
-        "abstol"=1E-5,
-        "reltol"=1E-5))
+    } else if(optimiser == "subplex"){
+      # SUBPLEX algorithm
+      #
+      # T. Rowan, “Functional Stability Analysis of Numerical
+      # Algorithms”, Ph.D. thesis, Department of Computer Sciences, University
+      # of Texas at Austin, 1990.
+
+      results <- nloptr::sbplx(
+        x0=c(search_grid$x_range[1], mean(search_grid$lambda_range)),
+        fn=opt_fun,
+        lower=c(search_grid$x_range[1], search_grid$lambda_range[1]),
+        upper=c(search_grid$x_range[2], search_grid$lambda_range[2]),
+        control=list("xtol_rel"=1e-3, ftol_rel=1e-4),
+        x=x,
+        z=z_expected,
+        type="box_cox")
+
+    } else if(optimiser == "nelder-mead"){
+      # Nelder-Mead simplex algorithm
+      #
+      # J. A. Nelder and R. Mead, “A simplex method for function minimization,”
+      # The Computer Journal 7, p. 308-313 (1965).
+      #
+      # M. J. Box, “A new method of constrained optimization and a comparison
+      # with other methods,” Computer J. 8 (1), 42-52 (1965).
+
+      results <- nloptr::neldermead(
+        x0=c(search_grid$x_range[1], mean(search_grid$lambda_range)),
+        fn=opt_fun,
+        lower=c(search_grid$x_range[1], search_grid$lambda_range[1]),
+        upper=c(search_grid$x_range[2], search_grid$lambda_range[2]),
+        control=list("xtol_rel"=1e-3, ftol_rel=1e-4),
+        x=x,
+        z=z_expected,
+        type="box_cox")
+
+    } else if(optimiser == "optim-nelder-mead"){
+      # Fall-back optimiser in case nloptr is not available. The Nelder-Mead
+      # algorithm in stats::optim does not yield results as consistent as the
+      # nloptr optimisers.
+      results <- stats::optim(
+        par=c(search_grid$x_range[1], mean(search_grid$lambda_range)),
+        fn=opt_fun,
+        gr=NULL,
+        x=x,
+        z=z_expected,
+        type="box_cox",
+        control=list(
+          "abstol"=1E-5,
+          "reltol"=1E-5))
+
+    } else {
+      stop(paste0("Optimiser not recognised: ", optimiser))
+    }
 
     # Extract optimal values.
     shift <- results$par[1]
@@ -389,7 +438,7 @@ setMethod(
 setMethod(
   ".set_transformation_parameters",
   signature("transformationYeoJohnsonShift"),
-  function(object, x, lambda, ...){
+  function(object, x, lambda, optimiser="subplex", ...){
 
     if(is.null(lambda)){
       # Pick very wide lambda-range, if lambda is NULL.
@@ -416,49 +465,98 @@ setMethod(
       z_expected <- compute_expected_z(x=x)
 
       # Optimisation function.
-      opt_fun <- .transformation_robust_shifted_optimisation
+      opt_fun <- function(...) -.transformation_robust_shifted_optimisation(...)
 
     } else {
       # No z required.
       z_expected <- NULL
 
       # Optimisation function.
-      opt_fun <- .transform_shifted_optimisation
+      # opt_fun <- .transform_shifted_optimisation
+      opt_fun <- function(...) -.transform_shifted_optimisation(...)
     }
 
-    # Then compute the log-likelihood at each grid node.
-    llf <- sapply(
-      search_grid$parameter,
-      opt_fun,
-      x=x,
-      z=z_expected,
-      type="yeo_johnson",
-      shift_range=search_grid$x_range,
-      lambda_range=search_grid$lambda_range)
+    if(!is_package_installed("nloptr") & optimiser %in% c("direct-l", "subplex", "nelder-mead")){
+      warning(paste0(
+        "The nloptr package is required to optimise power transformation parameters using the ",
+        optimiser, " algoritm. stats::optim is used as a fallback option."))
 
-    # Select the node with the highest llf.
-    ii <- which.max(llf)
+      optimiser <- "optim-nelder-mead"
+    }
 
-    # Select the direct neighbourhood of the llf (neighbouring lambda, x).
-    initial_parameter <- search_grid$parameter[[ii]]
+    if(optimiser == "direct-l"){
+      # DIRECT-L algorithm
+      #
+      # D. R. Jones, C. D. Perttunen, and B. E. Stuckmann, “Lipschitzian
+      # optimization without the lipschitz constant,” J. Optimization Theory and
+      # Applications, vol. 79, p. 157 (1993).
+      #
+      # J. M. Gablonsky and C. T. Kelley, “A locally-biased form of the DIRECT
+      # algorithm," J. Global Optimization, vol. 21 (1), p. 27-37 (2001).
 
-    shift_range <- select_neighbourhood(initial_parameter[1], search_grid$x)
-    lambda_range <- select_neighbourhood(initial_parameter[2], search_grid$lambda)
+      results <- nloptr::directL(
+        fn=opt_fun,
+        lower=c(search_grid$x_range[1], search_grid$lambda_range[1]),
+        upper=c(search_grid$x_range[2], search_grid$lambda_range[2]),
+        control=list("xtol_rel"=1e-3, ftol_rel=1e-4),
+        x=x,
+        z=z_expected,
+        type="yeo_johnson")
 
-    # Local approximation.
-    results <- stats::optim(
-      par=initial_parameter,
-      fn=opt_fun,
-      gr=NULL,
-      x=x,
-      z=z_expected,
-      type="yeo_johnson",
-      shift_range=shift_range,
-      lambda_range=lambda_range,
-      control=list(
-        "fnscale"=-1.0,
-        "abstol"=1E-5,
-        "reltol"=1E-5))
+    } else if(optimiser == "subplex"){
+      # SUBPLEX algorithm
+      #
+      # T. Rowan, “Functional Stability Analysis of Numerical
+      # Algorithms”, Ph.D. thesis, Department of Computer Sciences, University
+      # of Texas at Austin, 1990.
+
+      results <- nloptr::sbplx(
+        x0=c(search_grid$x_range[1], mean(search_grid$lambda_range)),
+        fn=opt_fun,
+        lower=c(search_grid$x_range[1], search_grid$lambda_range[1]),
+        upper=c(search_grid$x_range[2], search_grid$lambda_range[2]),
+        control=list("xtol_rel"=1e-3, ftol_rel=1e-4),
+        x=x,
+        z=z_expected,
+        type="yeo_johnson")
+
+    } else if(optimiser == "nelder-mead"){
+      # Nelder-Mead simplex algorithm
+      #
+      # J. A. Nelder and R. Mead, “A simplex method for function minimization,”
+      # The Computer Journal 7, p. 308-313 (1965).
+      #
+      # M. J. Box, “A new method of constrained optimization and a comparison
+      # with other methods,” Computer J. 8 (1), 42-52 (1965).
+
+      results <- nloptr::neldermead(
+        x0=c(search_grid$x_range[1], mean(search_grid$lambda_range)),
+        fn=opt_fun,
+        lower=c(search_grid$x_range[1], search_grid$lambda_range[1]),
+        upper=c(search_grid$x_range[2], search_grid$lambda_range[2]),
+        control=list("xtol_rel"=1e-3, ftol_rel=1e-4),
+        x=x,
+        z=z_expected,
+        type="yeo_johnson")
+
+    } else if(optimiser == "optim-nelder-mead"){
+      # Fall-back optimiser in case nloptr is not available. The Nelder-Mead
+      # algorithm in stats::optim does not yield results as consistent as the
+      # nloptr optimisers.
+      results <- stats::optim(
+        par=c(search_grid$x_range[1], mean(search_grid$lambda_range)),
+        fn=opt_fun,
+        gr=NULL,
+        x=x,
+        z=z_expected,
+        type="yeo_johnson",
+        control=list(
+          "abstol"=1E-5,
+          "reltol"=1E-5))
+
+    } else {
+      stop(paste0("Optimiser not recognised: ", optimiser))
+    }
 
     # Extract optimal values.
     shift <- results$par[1]

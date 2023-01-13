@@ -1,10 +1,7 @@
-.transform_shifted_optimisation <- function(parameters, shift_range, lambda_range, x, type, ...){
+.transform_shifted_optimisation <- function(parameters, x, type, ...){
 
   shift <- parameters[1]
   lambda <- parameters[2]
-
-  # Check boundary conditions.
-  # if(shift < shift_range[1] || shift > shift_range[2] || lambda < lambda_range[1] || lambda > lambda_range[2]) return(NA_real_)
 
   # Set log-likelihood function.
   loglik_FUN <- switch(
@@ -28,7 +25,7 @@
 
 
 
-.transformation_robust_shifted_optimisation <- function(parameters, shift_range, lambda_range, x, z, type, weight_method="tailed", k=0.5, central_weight=0.80, ...){
+.transformation_robust_shifted_optimisation <- function(parameters, x, z, type, weight_method="tailed", k=0.5, central_weight=0.80, ...){
   # This follows the algorithm from Raymaekers J, Rousseeuw PJ. Transforming
   # variables to central normality. Mach Learn. 2021.
   # doi:10.1007/s10994-021-05960-5. However, because we are optimising over
@@ -47,9 +44,6 @@
 
   shift <- parameters[1]
   lambda <- parameters[2]
-
-  # Check boundary conditions.
-  if(shift < shift_range[1] || shift > shift_range[2] || lambda < lambda_range[1] || lambda > lambda_range[2]) return(NA_real_)
 
   # Set transformation function.
   transform_FUN <- switch(
