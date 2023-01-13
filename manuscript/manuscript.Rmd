@@ -8,6 +8,8 @@ output:
 bibliography: "refs.bib"
 header-includes:
    - \usepackage{amsmath}
+   - \DeclareMathOperator*{\argmax}{argmax}
+   - \DeclareMathOperator{\sgn}{sgn}
 ---
 
 ```{r setup, include=FALSE}
@@ -133,9 +135,9 @@ One limitation of th Box-Cox transformation is that it is only defined for $x > 
 ```
 The $\lambda$-parameter is typically optimised using maximum likelihood estimation under the assumption that the transformed feature is normally distributed. As noted by Raymaekers and Rousseeuw, this approach is very sensitive to the presence of outliers, and robust versions of Box-Cox and Yeo-Johnson transformations were devised [@Raymaekers2021-kq].
 
-Power transformation does not guarantee that transformed variables are normally distributed. In fact, depending on location and scale of the variable, power transformation may reduce normality, as shown in Figure.
+Power transformation does not guarantee that transformed variables are normally distributed. In fact, depending on location and scale of the variable, power transformation may reduce normality, as shown in Figure **INSERT REFERENCE**. This is problematic for automated power transformations, for three reasons. First, normality is often desired in machine learning applications. Second, a large negative or positve $\lambda$-parameter may lead to numeric issues. Third, we currently do not have a test to automatically reject poor transformations. Statistical tests for normality exist, such as the Shapiro-Wilk test [@Shapiro1965-zd]. Given sufficiently large sample sizes, these tests can detect trivial deviations from normality and are therefore not well-suited for practical applications of automated power transformations.
 
-``` {r reduced-normality, echo=FALSE, fig.cap=cap}
+```{r reduced-normality, echo=FALSE, fig.cap=cap}
 cap <- paste0(
   "Power transformations may reduce normality depending on location. ",
   "Variable $x$ consists of $10000$ values are randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$. ",
@@ -156,6 +158,9 @@ compute_lambda <- function(mu, x, method){
   # Return lambda value.
   return(transformer@lambda)
 }
+
+# Non-standard evaluation
+mu <- lambda <- method <- NULL
 
 x <- stats::rnorm(10000L)
 shift_range <- 10^seq(from=0, to=6, by=0.1)
@@ -209,11 +214,7 @@ p <- p + ggplot2::scale_y_continuous(
 p
 ```
 
-
-
-Figure showing Ames dataset feature "Year_Built". Panels: Histogram of feature; Q-Q plot of original feature, normal Box-Cox, robust Box-Cox, normal Yeo-Johnson, robust Yeo-Johnson.
-
-We make the following contributions:
+Here we make the following contributions:
 
 -   We devise shift-sensitive versions of the Box-Cox and Yeo-Johnson transformation, including versions robust to outliers.
 
@@ -223,11 +224,59 @@ We make the following contributions:
 
 # Methods
 
+## Shift-sensitive power transformation
+
+Box-Cox and Yeo-Johnson transformations are modified by adding a shift parameter $x_0$. The modified Box-Cox transformation of a feature $x$ under transformation parameter $\lambda$ and shift parameter $x_0$ is then:
+
+```{=latex}
+\begin{equation}
+\phi_{\text{BC}}^{\lambda, x_0} (x) = 
+\begin{cases}
+\left( \left(x - x_0 \right)^\lambda - 1 \right) / \lambda & \text{if } \lambda \neq 0\\
+\log(x - x_0) & \text{if } \lambda = 0
+\end{cases}
+\end{equation}
+```
+Where $x - x_0 > 0$. Likewise, the modified Yeo-Johnson transformation of a feature $x$ under transformation parameter $\lambda$ and shift parameter $x_0$ is:
+
+```{=latex}
+\begin{equation}
+\phi_{\text{YJ}}^{\lambda, x_0} (x) = 
+\begin{cases}
+\left( \left( 1 + x - x_0\right)^\lambda - 1\right) / \lambda & \text{if } \lambda \neq 0 \text{ and } x - x_0 \geq 0\\
+\log(1 + x - x_0) & \text{if } \lambda = 0 \text{ and } x - x_0 \geq 0\\
+-\left( \left( 1 - x - x_0\right)^{2 - \lambda} - 1 \right) / \left(2 - \lambda \right) & \text{if } \lambda \neq 2 \text{ and } x - x_0< 0\\
+-\log(1 - x - x_0) & \text{if } \lambda = 2 \text{ and } x - x_0 < 0
+\end{cases}
+\end{equation}
+```
+For both modified transformations, $\lambda$ and $x_0$ are obtained by maximising the normal log-likelihood function. For the modified Box-Cox transformation, and ignoring constant terms, this can be written as:
+
+```{=latex}
+\begin{equation}
+\left\{ \hat{\lambda}^{\text{BC}}, \hat{x}_0^{\text{BC}} \right\} = \argmax_{\lambda, x_0} \sum_{i=1}^n -\frac{1}{2}\log(\sigma^2) + (\lambda - 1) \log(x_i - x_0)
+\end{equation}
+```
+where $\sigma^2$ is the variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0} (x)$. Similarly for the modified Yeo-Johnson transformation:
+
+```{=latex}
+\begin{equation}
+\left\{ \hat{\lambda}^{\text{YJ}}, \hat{x}_0^{\text{YJ}} \right\} = \argmax_{\lambda, x_0} \sum_{i=1}^n -\frac{1}{2}\log(\sigma^2) + (\lambda - 1) \sgn(x_i - x_0) \log(1 + |x_i - x_0|)
+\end{equation}
+```
+where $\sigma^2$ is the variance of Yeo-Johnson transformed feature $\phi_{\text{YJ}}^{\lambda, x_0} (x)$.
+
+## Robust shift-sensitive power transformations
+
+Real-world data may contain outliers, to which maximum likelihood estimation can be sensitive. Their presence may lead to poor transformations to normality, as shown in Figure **INSERT REFERENCE**. As indicated by @Raymaekers2021-kq, the general aim of power transformations should be to transform non-outlier data to normality, i.e. achieve *central normality*. To achieve this, they devised an iterative procedure to find a robust estimate of the transformation parameter $\lambda$. Because $\lambda$ is updated during this procedure, simultaneous estimation of $\lambda$ and $x_0$ is not possible.
+
 # Simulation
 
 # Experimental Results
 
 # Discussion
+
+In their work, Box and Cox already mention a transformation with a shift parameter, but preferred the now well-known version in Eq. **INSERT REFERENCE** for the theoretical analysis in their paper [@Box1964-mz].
 
 # Conclusion
 
@@ -238,4 +287,3 @@ Shift-sensitive power transformations are implemented in the `power.transform` p
 # Appendix A.
 
 # References
-
