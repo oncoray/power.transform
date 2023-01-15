@@ -268,7 +268,37 @@ where $\sigma^2$ is the variance of Yeo-Johnson transformed feature $\phi_{\text
 
 ## Robust shift-sensitive power transformations
 
-Real-world data may contain outliers, to which maximum likelihood estimation can be sensitive. Their presence may lead to poor transformations to normality, as shown in Figure **INSERT REFERENCE**. As indicated by @Raymaekers2021-kq, the general aim of power transformations should be to transform non-outlier data to normality, i.e. achieve *central normality*. To achieve this, they devised an iterative procedure to find a robust estimate of the transformation parameter $\lambda$. Because $\lambda$ is updated during this procedure, simultaneous estimation of $\lambda$ and $x_0$ is not possible.
+Real-world data may contain outliers, to which maximum likelihood estimation can be sensitive. Their presence may lead to poor transformations to normality, as shown in Figure **INSERT REFERENCE**. As indicated by @Raymaekers2021-kq, the general aim of power transformations should be to transform non-outlier data to normality, i.e. achieve *central normality*. To achieve this, they devised an iterative procedure to find a robust estimate of the transformation parameter $\lambda$. Because $\lambda$ is updated during this procedure, simultaneous estimation of $\lambda$ and $x_0$ for modified power transformations is not possible.
+
+In essence, achieving central normality requires identifying outliers in the data, and weighting such instances during the optimisation process. @Raymaekers2021-kq do this (during the final steps of the iterative procedure) by introducing a weighted maximum likelihood estimation. This weighted maximum log-likelihood estimator is based on equations **INSERT REFERENCE**. The weighted maximum log-likelihood estimator for the modified Box-Cox power transformation is:
+
+```{=latex}
+\begin{equation}
+\left\{ \hat{\lambda}^{\text{rBC}}, \hat{x}_0^{\text{rBC}} \right\} = \argmax_{\lambda, x_0} \sum_{i=1}^n w_i \left[ -\frac{1}{2}\log(\sigma^2_w) + (\lambda - 1) \log(x_i - x_0) \right]
+\end{equation}
+```
+where $\sigma^2_w$ is the weighted variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0} (x)$:
+
+```{=latex}
+\begin{equation}
+\sigma_w^2 = \frac{\sum_{i=1}^n w_i \left(\phi_{\text{BC}}^{\lambda, x_0} (x_i) - \mu_w \right)^2}{\sum_{i=1}^n w_i} \quad \text{with } \mu_w = \frac{\sum_{i=1}^n \phi_{\text{BC}}^{\lambda, x_0} (x_i)} {\sum_{i=1}^n w_i}
+\end{equation}
+```
+Analogously, the weighted maximum log-likelihood estimator for the modified Yeo-Johnson power transformation is:
+
+```{=latex}
+\begin{equation}
+\left\{ \hat{\lambda}^{\text{rYJ}}, \hat{x}_0^{\text{rYJ}} \right\} = \argmax_{\lambda, x_0} \sum_{i=1}^n w_i \left[ -\frac{1}{2}\log(\sigma^2) + (\lambda - 1) \sgn(x_i - x_0) \log(1 + |x_i - x_0|) \right]
+\end{equation}
+```
+where $\sigma^2_w$ is the weighted variance of the Yeo-Johnson transformed feature $\phi_{\text{YJ}}^{\lambda, x_0} (x)$:
+
+```{=latex}
+\begin{equation}
+\sigma_w^2 = \frac{\sum_{i=1}^n w_i \left(\phi_{\text{YJ}}^{\lambda, x_0} (x_i) - \mu_w \right)^2}{\sum_{i=1}^n w_i} \quad \text{with } \mu_w = \frac{\sum_{i=1}^n \phi_{\text{YJ}}^{\lambda, x_0} (x_i)} {\sum_{i=1}^n w_i}
+\end{equation}
+```
+Weights $w_i$ can be set based on the original feature $x$, as well as the transformed feature $\phi^{\lambda, x_0} (x)$. @Raymaekers2021-kq use the latter.
 
 # Simulation
 
