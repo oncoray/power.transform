@@ -29,6 +29,9 @@ require(latex2exp)
 # Base font size.
 base_size <- 10
 
+# Set general theme.
+plot_theme <- ggplot2::theme_light(base_size=base_size)
+
 # Set seed.
 set.seed(19L)
 
@@ -188,16 +191,19 @@ data <- data.table::data.table(
 
 annotation_settings <- get_annotation_settings(ggplot2::theme_light(base_size = base_size))
 
-p <- ggplot2::ggplot(
-  data = data,
+p_bc <- ggplot2::ggplot(
+  data = data[method == "Box-Cox"],
   mapping = ggplot2::aes(
     x = mu,
     y = lambda,
     colour = method))
-p <- p + ggplot2::theme_light(base_size=base_size)
-p <- p + ggplot2::geom_point()
-p <- p + ggplot2::geom_hline(yintercept = 1.0, linetype="longdash", colour="grey40")
-p <- p + ggplot2::annotate(
+p_bc <- p_bc + plot_theme
+p_bc <- p_bc + ggplot2::geom_point()
+p_bc <- p_bc + ggplot2::geom_hline(
+  yintercept = 1.0, 
+  linetype="longdash", 
+  colour="grey40")
+p_bc <- p_bc + ggplot2::annotate(
   geom = "text",
   x = 6,
   y = 1,
@@ -206,15 +212,56 @@ p <- p + ggplot2::annotate(
   family=annotation_settings$family,
   fontface=annotation_settings$face,
   size=annotation_settings$geom_text_size,
-  vjust=1.5,
+  vjust=-1.0,
   hjust=1.0)
-p <- p + ggplot2::scale_x_continuous(
+p_bc <- p_bc + ggplot2::scale_x_continuous(
   name = latex2exp::TeX("$\\mu$"),
   labels = scales::math_format())
+p_bc <- p_bc + ggplot2::scale_y_continuous(
+  name = latex2exp::TeX("$\\lambda$"),
+  limits = c(-3.6, 1.1))
+p_bc <- p_bc + paletteer::scale_color_paletteer_d(
+  palette="ggthemes::Tableau_10",
+  drop=FALSE,
+  guide="none")
 
-p <- p + ggplot2::scale_y_continuous(
-  name = latex2exp::TeX("$\\lambda$"))
+p_yj <- ggplot2::ggplot(
+  data = data[method == "Yeo-Johnson"],
+  mapping = ggplot2::aes(
+    x = mu,
+    y = lambda,
+    colour = method))
+p_yj <- p_yj + plot_theme
+p_yj <- p_yj + ggplot2::geom_point()
+p_yj <- p_yj + ggplot2::geom_hline(
+  yintercept = 1.0,
+  linetype="longdash",
+  colour="grey40")
+p_yj <- p_yj + ggplot2::annotate(
+  geom = "text",
+  x = 6,
+  y = 1,
+  label = "expected",
+  colour=annotation_settings$colour,
+  family=annotation_settings$family,
+  fontface=annotation_settings$face,
+  size=annotation_settings$geom_text_size,
+  vjust=-1.0,
+  hjust=1.0)
+p_yj <- p_yj + ggplot2::scale_x_continuous(
+  name = latex2exp::TeX("$\\mu$"),
+  labels = scales::math_format())
+p_yj <- p_yj + ggplot2::scale_y_continuous(
+  name = latex2exp::TeX("$\\lambda$"),
+  limits = c(-3.6, 1.1))
+p_yj <- p_yj + paletteer::scale_color_paletteer_d(
+  palette="ggthemes::Tableau_10",
+  drop=FALSE)
+p_yj <- p_yj + ggplot2::theme(
+  axis.title.y=ggplot2::element_blank(),
+  axis.text.y=ggplot2::element_blank())
 
+p <- egg::ggarrange(plots=list(p_bc, p_yj), ncol=2, draw=FALSE)
 p
 ```
 
@@ -361,95 +408,262 @@ compute_lambda <- function(mu, x, method, shift=FALSE, robust=FALSE){
   return(transformer@lambda)
 }
 
+.create_lambda_shift_data <- function(x, shift_range){
+  
+  box_cox_values <- sapply(
+    shift_range,
+    compute_lambda,
+    x = x,
+    method = "box_cox")
+  
+  yeo_johnson_values <- sapply(
+    shift_range,
+    compute_lambda,
+    x = x,
+    method = "yeo_johnson")
+  
+  box_cox_shift_values <- sapply(
+    shift_range,
+    compute_lambda,
+    x = x,
+    method = "box_cox",
+    shift = TRUE,
+    robust = FALSE)
+  
+  box_cox_shift_robust_values <- sapply(
+    shift_range,
+    compute_lambda,
+    x = x,
+    method = "box_cox",
+    shift = TRUE,
+    robust = TRUE)
+  
+  yeo_johnson_shift_values <- sapply(
+    shift_range,
+    compute_lambda,
+    x = x,
+    method = "yeo_johnson",
+    shift = TRUE,
+    robust = FALSE)
+  
+  yeo_johnson_shift_robust_values <- sapply(
+    shift_range,
+    compute_lambda,
+    x = x,
+    method = "yeo_johnson",
+    shift = TRUE,
+    robust = TRUE)
+  
+  data <- data.table::data.table(
+    "mu" = log10(c(shift_range, shift_range)),
+    "lambda" = c(
+      box_cox_values,
+      box_cox_shift_values,
+      box_cox_shift_robust_values,
+      yeo_johnson_values,
+      yeo_johnson_shift_values,
+      yeo_johnson_shift_robust_values),
+    "method" = factor(
+      x=rep(
+        c("Box-Cox", "Yeo-Johnson"),
+        each = 3L * length(shift_range)),
+      levels=c("Box-Cox", "Yeo-Johnson")),
+    "version" = factor(
+      x=rep(
+        c("original", "shift-sensitive", "robust shift-sensitive"),
+        each = length(shift_range),
+        times = 2L),
+      levels = c("original", "shift-sensitive", "robust shift-sensitive")))
+  
+  return(data)
+}
+
+.create_density_plot <- function(x, plot_theme){
+  p <- ggplot2::ggplot(
+    data = data.table::data.table("x"=x),
+    mapping = ggplot2::aes(
+      x = x))
+  p <- p + plot_theme
+  p <- p + ggplot2::geom_density()
+  p <- p + ggplot2::theme(
+    axis.title = ggplot2::element_blank(),
+    axis.line = ggplot2::element_blank(),
+    axis.ticks = ggplot2::element_blank(),
+    axis.text = ggplot2::element_blank(),
+    panel.grid = ggplot2::element_blank(),
+    panel.border = ggplot2::element_blank())
+  
+  return(p)
+}
+
+.create_lambda_shift_plot <- function(data, plot_theme, limits, expected=FALSE){
+  
+  annotation_settings <- get_annotation_settings(plot_theme)
+  
+  p <- ggplot2::ggplot(
+    data = data,
+    mapping = ggplot2::aes(
+      x = mu,
+      y = lambda,
+      colour = method,
+      shape = version))
+  p <- p + plot_theme
+  p <- p + ggplot2::geom_point()
+  p <- p + ggplot2::geom_hline(
+    yintercept = 1.0, 
+    linetype="longdash", 
+    colour="grey40")
+  p <- p + ggplot2::scale_x_continuous(
+    name = latex2exp::TeX("$\\mu$"),
+    labels = scales::math_format())
+  p <- p + ggplot2::scale_y_continuous(
+    name = latex2exp::TeX("$\\lambda$"),
+    limits = limits)
+  
+  if(expected){
+      p <- p + ggplot2::annotate(
+    geom = "text",
+    x = 6,
+    y = 1,
+    label = "expected",
+    colour=annotation_settings$colour,
+    family=annotation_settings$family,
+    fontface=annotation_settings$face,
+    size=annotation_settings$geom_text_size,
+    vjust=-1.0,
+    hjust=1.0)
+  }
+  
+  return(p)
+}
+
 # Non-standard evaluation
 mu <- lambda <- method <- NULL
 
+# Normal distribution.
 x <- stats::rnorm(10000L)
 shift_range <- 10^seq(from=0, to=6, by=0.1)
 
-box_cox_shift_values <- sapply(
-  shift_range,
-  compute_lambda,
+# Right skewed data
+x_right_skewed <- (x - min(x) + 1)^0.1
+x_right_skewed <- (x_right_skewed - mean(x_right_skewed)) / sd(x_right_skewed)
+
+# Left skewed data
+x_left_skewed <- (x - min(x))^3
+x_left_skewed <- (x_left_skewed - mean(x_left_skewed)) / sd(x_left_skewed)
+
+#### Normal distribution -------------------------------------------------------
+
+data <- .create_lambda_shift_data(
   x = x,
-  method = "box_cox",
-  shift = TRUE,
-  robust = FALSE)
+  shift_range = shift_range)
 
-box_cox_shift_robust_values <- sapply(
-  shift_range,
-  compute_lambda,
-  x = x,
-  method = "box_cox",
-  shift = TRUE,
-  robust = TRUE)
+# Density
+p_dens_normal <- .create_density_plot(
+  x=x,
+  plot_theme=plot_theme)
 
-yeo_johnson_shift_values <- sapply(
-  shift_range,
-  compute_lambda,
-  x = x,
-  method = "yeo_johnson",
-  shift = TRUE,
-  robust = FALSE)
+# Box-Cox
+p_bc_normal <- .create_lambda_shift_plot(
+  data=data[method == "Box-Cox"],
+  plot_theme=plot_theme,
+  limits = c(-3.6, 1.1))
+p_bc_normal <- p_bc_normal + paletteer::scale_color_paletteer_d(
+  palette="ggthemes::Tableau_10",
+  drop=FALSE,
+  guide="none")
+p_bc_normal <- p_bc_normal + ggplot2::scale_shape_discrete(guide="none")
 
-yeo_johnson_shift_robust_values <- sapply(
-  shift_range,
-  compute_lambda,
-  x = x,
-  method = "yeo_johnson",
-  shift = TRUE,
-  robust = TRUE)
+# Yeo-Johnson
+p_yj_normal <- .create_lambda_shift_plot(
+  data=data[method == "Yeo-Johnson"],
+  plot_theme=plot_theme,
+  limits = c(-3.6, 1.1))
+p_yj_normal <- p_yj_normal + paletteer::scale_color_paletteer_d(
+  palette="ggthemes::Tableau_10",
+  drop=FALSE,
+  guide="none")
+p_yj_normal <- p_yj_normal + ggplot2::theme(
+  axis.title.y=ggplot2::element_blank(),
+  axis.text.y=ggplot2::element_blank())
 
-data <- data.table::data.table(
-  "mu" = log10(c(shift_range, shift_range)),
-  "lambda" = c(
-    box_cox_values,
-    box_cox_shift_values,
-    box_cox_shift_robust_values,
-    yeo_johnson_values,
-    yeo_johnson_shift_values,
-    yeo_johnson_shift_robust_values),
-  "method" = factor(
-    x=rep(
-      c("Box-Cox", "Yeo-Johnson"),
-      each = 3L * length(shift_range)),
-    levels=c("Box-Cox", "Yeo-Johnson")),
-  "version" = factor(
-    x=rep(
-      c("original", "shift-sensitive", "robust shift-sensitive"),
-      each = length(shift_range),
-      times = 2L),
-    levels = c("original", "shift-sensitive", "robust shift-sensitive")))
+#### Right skewed distribution -------------------------------------------------
 
-annotation_settings <- get_annotation_settings(ggplot2::theme_light(base_size = base_size))
+data <- .create_lambda_shift_data(
+  x = x_right_skewed,
+  shift_range = shift_range)
 
-p <- ggplot2::ggplot(
-  data = data,
-  mapping = ggplot2::aes(
-    x = mu,
-    y = lambda,
-    colour = method,
-    shape = version))
-p <- p + ggplot2::theme_light(base_size=base_size)
-p <- p + ggplot2::geom_point()
-p <- p + ggplot2::geom_hline(yintercept = 1.0, linetype="longdash", colour="grey40")
-p <- p + ggplot2::annotate(
-  geom = "text",
-  x = 6,
-  y = 1,
-  label = "expected",
-  colour=annotation_settings$colour,
-  family=annotation_settings$family,
-  fontface=annotation_settings$face,
-  size=annotation_settings$geom_text_size,
-  vjust=1.5,
-  hjust=1.0)
-p <- p + ggplot2::scale_x_continuous(
-  name = latex2exp::TeX("$\\mu$"),
-  labels = scales::math_format())
+# Density
+p_dens_right <- .create_density_plot(
+  x = x_right_skewed,
+  plot_theme = plot_theme)
 
-p <- p + ggplot2::scale_y_continuous(
-  name = latex2exp::TeX("$\\lambda$"))
+# Box-Cox
+p_bc_right <- .create_lambda_shift_plot(
+  data=data[method == "Box-Cox"],
+  plot_theme=plot_theme,
+  limits = c(1.0, 65))
+p_bc_right <- p_bc_right + paletteer::scale_color_paletteer_d(
+  palette="ggthemes::Tableau_10",
+  drop=FALSE,
+  guide="none")
+p_bc_right <- p_bc_right + ggplot2::scale_shape_discrete(guide="none")
 
+# Yeo-Johnson
+p_yj_right <- .create_lambda_shift_plot(
+  data=data[method == "Yeo-Johnson"],
+  plot_theme=plot_theme,
+  limits = c(1.0, 65))
+p_yj_right <- p_yj_right + paletteer::scale_color_paletteer_d(
+  palette="ggthemes::Tableau_10",
+  drop=FALSE)
+p_yj_right <- p_yj_right + ggplot2::theme(
+  axis.title.y=ggplot2::element_blank(),
+  axis.text.y=ggplot2::element_blank())
+
+#### Left skewed distribution --------------------------------------------------
+
+data <- .create_lambda_shift_data(
+  x = x_left_skewed,
+  shift_range = shift_range)
+
+# Density
+p_dens_left <- .create_density_plot(
+  x = x_left_skewed,
+  plot_theme = plot_theme)
+
+# Box-Cox
+p_bc_left <- .create_lambda_shift_plot(
+  data=data[method == "Box-Cox"],
+  plot_theme=plot_theme,
+  limits = c(-10.5, 0.5))
+p_bc_left <- p_bc_left + paletteer::scale_color_paletteer_d(
+  palette="ggthemes::Tableau_10",
+  drop=FALSE,
+  guide="none")
+p_bc_left <- p_bc_left + ggplot2::scale_shape_discrete(guide="none")
+
+# Yeo-Johnson
+p_yj_left <- .create_lambda_shift_plot(
+  data=data[method == "Yeo-Johnson"],
+  plot_theme=plot_theme,
+  limits = c(-10.5, 0.5))
+p_yj_left <- p_yj_left + paletteer::scale_color_paletteer_d(
+  palette = "ggthemes::Tableau_10",
+  drop = FALSE,
+  guide = "none")
+p_yj_left <- p_yj_left + ggplot2::theme(
+  axis.title.y=ggplot2::element_blank(),
+  axis.text.y=ggplot2::element_blank())
+
+
+p <- egg::ggarrange(
+  plots=list(
+    p_dens_normal, p_bc_normal, p_yj_normal,
+    p_dens_right, p_bc_right, p_yj_right,
+    p_dens_left, p_bc_left, p_yj_left),
+  ncol=3,
+  draw=FALSE)
 p
 ```
 
