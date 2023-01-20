@@ -30,6 +30,7 @@ Collate:
     'PlotUtilities.R'
     'RobustTransformation.R'
     'Utilities.R'
+    'WeightMethods.R'
     'YeoJohnson.R'
     'power.transform-package.R'
 Suggests: 

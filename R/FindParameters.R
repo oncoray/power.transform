@@ -36,6 +36,7 @@ NULL
 #' @param lambda Single lambda value, or range of lambda values that should be
 #'   considered. Default: c(4.0, 6.0). Can be `NULL` to force optimisation
 #'   without a constraint in lambda values.
+#' @param ... Unused parameters.
 #'
 #' @return A transformer object that can be used to transform values.
 #' @export
@@ -59,7 +60,8 @@ find_transformation_parameters <- function(
     method = "yeo_johnson",
     robust = TRUE,
     shift = TRUE,
-    lambda = c(-4.0, 6.0)){
+    lambda = c(-4.0, 6.0),
+    ...){
 
   # Check transformation methods.
   if(!method %in% c("box_cox", "yeo_johnson", "none")){
@@ -128,7 +130,8 @@ find_transformation_parameters <- function(
   object <- .set_transformation_parameters(
     object = object,
     x = x,
-    lambda = lambda)
+    lambda = lambda,
+    ...)
 
   return(object)
 }

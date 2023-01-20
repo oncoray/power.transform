@@ -258,21 +258,16 @@ setMethod(
       # Sort values
       x <- sort(x)
 
-      # Compute z-values according to the inverse cumulative density function.
-      z_expected <- compute_expected_z(x=x)
-
       # Optimisation function.
       opt_fun <- function(...) -.transformation_robust_shifted_optimisation(...)
 
     } else {
-      # No z required.
-      z_expected <- NULL
-
       # Optimisation function.
       # opt_fun <- .transform_shifted_optimisation
       opt_fun <- function(...) -.transform_shifted_optimisation(...)
     }
 
+    # Check fall-back option.
     if(!is_package_installed("nloptr") & optimiser %in% c("direct-l", "subplex", "nelder-mead")){
       warning(paste0(
         "The nloptr package is required to optimise power transformation parameters using the ",
@@ -297,8 +292,8 @@ setMethod(
         upper=c(search_grid$x_range[2], search_grid$lambda_range[2]),
         control=list("xtol_rel"=1e-3, ftol_rel=1e-4),
         x=x,
-        z=z_expected,
-        type="box_cox")
+        type="box_cox",
+        ...)
 
     } else if(optimiser == "subplex"){
       # SUBPLEX algorithm
@@ -314,8 +309,8 @@ setMethod(
         upper=c(search_grid$x_range[2], search_grid$lambda_range[2]),
         control=list("xtol_rel"=1e-3, ftol_rel=1e-4),
         x=x,
-        z=z_expected,
-        type="box_cox")
+        type="box_cox",
+        ...)
 
     } else if(optimiser == "nelder-mead"){
       # Nelder-Mead simplex algorithm
@@ -333,8 +328,8 @@ setMethod(
         upper=c(search_grid$x_range[2], search_grid$lambda_range[2]),
         control=list("xtol_rel"=1e-3, ftol_rel=1e-4),
         x=x,
-        z=z_expected,
-        type="box_cox")
+        type="box_cox",
+        ...)
 
     } else if(optimiser == "optim-nelder-mead"){
       # Fall-back optimiser in case nloptr is not available. The Nelder-Mead
@@ -345,8 +340,8 @@ setMethod(
         fn=opt_fun,
         gr=NULL,
         x=x,
-        z=z_expected,
         type="box_cox",
+        ...,
         control=list(
           "abstol"=1E-5,
           "reltol"=1E-5))
@@ -461,16 +456,10 @@ setMethod(
       # Sort values
       x <- sort(x)
 
-      # Compute z-values according to the inverse cumulative density function.
-      z_expected <- compute_expected_z(x=x)
-
       # Optimisation function.
       opt_fun <- function(...) -.transformation_robust_shifted_optimisation(...)
 
     } else {
-      # No z required.
-      z_expected <- NULL
-
       # Optimisation function.
       # opt_fun <- .transform_shifted_optimisation
       opt_fun <- function(...) -.transform_shifted_optimisation(...)
@@ -500,7 +489,7 @@ setMethod(
         upper=c(search_grid$x_range[2], search_grid$lambda_range[2]),
         control=list("xtol_rel"=1e-3, ftol_rel=1e-4),
         x=x,
-        z=z_expected,
+        ...,
         type="yeo_johnson")
 
     } else if(optimiser == "subplex"){
@@ -517,7 +506,7 @@ setMethod(
         upper=c(search_grid$x_range[2], search_grid$lambda_range[2]),
         control=list("xtol_rel"=1e-3, ftol_rel=1e-4),
         x=x,
-        z=z_expected,
+        ...,
         type="yeo_johnson")
 
     } else if(optimiser == "nelder-mead"){
@@ -536,7 +525,7 @@ setMethod(
         upper=c(search_grid$x_range[2], search_grid$lambda_range[2]),
         control=list("xtol_rel"=1e-3, ftol_rel=1e-4),
         x=x,
-        z=z_expected,
+        ...,
         type="yeo_johnson")
 
     } else if(optimiser == "optim-nelder-mead"){
@@ -548,7 +537,7 @@ setMethod(
         fn=opt_fun,
         gr=NULL,
         x=x,
-        z=z_expected,
+        ...,
         type="yeo_johnson",
         control=list(
           "abstol"=1E-5,
