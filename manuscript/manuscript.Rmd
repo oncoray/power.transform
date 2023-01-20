@@ -382,17 +382,11 @@ Here, $i = 1, 2, \ldots n$, with $n$ the number of instances of feature $x$.
 
 # Simulation
 
-For modified transformations show:
-- Comparison with figure 1.
-- A shifted left-skewed distribution, with the same shifts.
-- A shifted right-skewed distribution, with the same shifts.
+To assess whether the modified power transformations lead to $\lambda$ values that are invariant to shifts, we simulate three different distributions. The first distribution is a normal distribution, as previously shown in Figure **INSERT REFERENCE**. We first randomly draw $10000$ values from a normal distribution: $x_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)$. The second distribution is a right-skewed distribution $x_{\text{right}} = \left( x_{\text{normal}} - \text{min} \left(x_{\text{normal}}\right) + 1\right)^{\frac{1}{10}}$. The third distribution is a left-skewed distribution $x_{\text{left}} = \left( x_{\text{normal}} - \text{min} \left(x_{\text{normal}}\right) \right)^3$. Subsequently, all three distributions are standardised to have mean $0$ and standard deviation $1$. We then compute transformation parameter $\lambda$ using the original definitions (Eq. **INSERT REFERENCE** and **INSERT REFERENCE**) and the modified definitions (Eq. **INSERT REFERENCE** and **INSERT REFERENCE**) for each distribution, after adding a positive value $d$ to each distribution. Here, $d \in [1, 10^6]$.
 
 ```{r shifted-distributions, echo=FALSE, fig.cap=cap}
 cap <- paste0(
-  "Power transformations modified to be shift-sensitive produce transformation parameters that are invariant to location. ",
-  "Variable $x$ consists of $10000$ values are randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$. ",
-  "For both Box-Cox and Yeo-Johnson transformations, we would expect $\\lambda = 1$, since $x$ is already normally distributed. ",
-  "Unlike the orginal power transformations, $\\lambda = 1$ is consistently found using shift-sensitive power transformations.")
+  "Power transformations modified to be shift-sensitive produce transformation parameters that are invariant to location.")
 
 compute_lambda <- function(mu, x, method, shift=FALSE, robust=FALSE){
   # Create transformer object.
@@ -514,7 +508,7 @@ compute_lambda <- function(mu, x, method, shift=FALSE, robust=FALSE){
     linetype="longdash", 
     colour="grey40")
   p <- p + ggplot2::scale_x_continuous(
-    name = latex2exp::TeX("$\\mu$"),
+    name = latex2exp::TeX("$d$"),
     labels = scales::math_format())
   p <- p + ggplot2::scale_y_continuous(
     name = latex2exp::TeX("$\\lambda$"),
@@ -554,7 +548,7 @@ x_left_skewed <- (x_left_skewed - mean(x_left_skewed)) / sd(x_left_skewed)
 
 #### Normal distribution -------------------------------------------------------
 
-data <- .create_lambda_shift_data(
+data_normal <- .create_lambda_shift_data(
   x = x,
   shift_range = shift_range)
 
@@ -565,31 +559,31 @@ p_dens_normal <- .create_density_plot(
 
 # Box-Cox
 p_bc_normal <- .create_lambda_shift_plot(
-  data=data[method == "Box-Cox"],
-  plot_theme=plot_theme,
+  data = data_normal[method == "Box-Cox"],
+  plot_theme = plot_theme,
   limits = c(-3.6, 1.1))
 p_bc_normal <- p_bc_normal + paletteer::scale_color_paletteer_d(
-  palette="ggthemes::Tableau_10",
-  drop=FALSE,
-  guide="none")
+  palette = "ggthemes::Tableau_10",
+  drop = FALSE,
+  guide = "none")
 p_bc_normal <- p_bc_normal + ggplot2::scale_shape_discrete(guide="none")
 
 # Yeo-Johnson
 p_yj_normal <- .create_lambda_shift_plot(
-  data=data[method == "Yeo-Johnson"],
-  plot_theme=plot_theme,
+  data=data_normal[method == "Yeo-Johnson"],
+  plot_theme = plot_theme,
   limits = c(-3.6, 1.1))
 p_yj_normal <- p_yj_normal + paletteer::scale_color_paletteer_d(
-  palette="ggthemes::Tableau_10",
-  drop=FALSE,
-  guide="none")
+  palette = "ggthemes::Tableau_10",
+  drop = FALSE,
+  guide = "none")
 p_yj_normal <- p_yj_normal + ggplot2::theme(
-  axis.title.y=ggplot2::element_blank(),
-  axis.text.y=ggplot2::element_blank())
+  axis.title.y = ggplot2::element_blank(),
+  axis.text.y = ggplot2::element_blank())
 
 #### Right skewed distribution -------------------------------------------------
 
-data <- .create_lambda_shift_data(
+data_right <- .create_lambda_shift_data(
   x = x_right_skewed,
   shift_range = shift_range)
 
@@ -600,30 +594,30 @@ p_dens_right <- .create_density_plot(
 
 # Box-Cox
 p_bc_right <- .create_lambda_shift_plot(
-  data=data[method == "Box-Cox"],
-  plot_theme=plot_theme,
+  data = data_right[method == "Box-Cox"],
+  plot_theme = plot_theme,
   limits = c(1.0, 65))
 p_bc_right <- p_bc_right + paletteer::scale_color_paletteer_d(
-  palette="ggthemes::Tableau_10",
-  drop=FALSE,
-  guide="none")
+  palette = "ggthemes::Tableau_10",
+  drop = FALSE,
+  guide = "none")
 p_bc_right <- p_bc_right + ggplot2::scale_shape_discrete(guide="none")
 
 # Yeo-Johnson
 p_yj_right <- .create_lambda_shift_plot(
-  data=data[method == "Yeo-Johnson"],
-  plot_theme=plot_theme,
+  data = data_right[method == "Yeo-Johnson"],
+  plot_theme = plot_theme,
   limits = c(1.0, 65))
 p_yj_right <- p_yj_right + paletteer::scale_color_paletteer_d(
-  palette="ggthemes::Tableau_10",
-  drop=FALSE)
+  palette = "ggthemes::Tableau_10",
+  drop = FALSE)
 p_yj_right <- p_yj_right + ggplot2::theme(
   axis.title.y=ggplot2::element_blank(),
   axis.text.y=ggplot2::element_blank())
 
 #### Left skewed distribution --------------------------------------------------
 
-data <- .create_lambda_shift_data(
+data_left <- .create_lambda_shift_data(
   x = x_left_skewed,
   shift_range = shift_range)
 
@@ -634,19 +628,19 @@ p_dens_left <- .create_density_plot(
 
 # Box-Cox
 p_bc_left <- .create_lambda_shift_plot(
-  data=data[method == "Box-Cox"],
-  plot_theme=plot_theme,
+  data = data_left[method == "Box-Cox"],
+  plot_theme = plot_theme,
   limits = c(-10.5, 0.5))
 p_bc_left <- p_bc_left + paletteer::scale_color_paletteer_d(
-  palette="ggthemes::Tableau_10",
-  drop=FALSE,
-  guide="none")
+  palette = "ggthemes::Tableau_10",
+  drop = FALSE,
+  guide = "none")
 p_bc_left <- p_bc_left + ggplot2::scale_shape_discrete(guide="none")
 
 # Yeo-Johnson
 p_yj_left <- .create_lambda_shift_plot(
-  data=data[method == "Yeo-Johnson"],
-  plot_theme=plot_theme,
+  data = data_left[method == "Yeo-Johnson"],
+  plot_theme = plot_theme,
   limits = c(-10.5, 0.5))
 p_yj_left <- p_yj_left + paletteer::scale_color_paletteer_d(
   palette = "ggthemes::Tableau_10",
@@ -656,6 +650,13 @@ p_yj_left <- p_yj_left + ggplot2::theme(
   axis.title.y=ggplot2::element_blank(),
   axis.text.y=ggplot2::element_blank())
 
+#### Aggregate -----------------------------------------------------------------
+
+data_normal[, "distribution":="normal"]
+data_left[, "distribution":="left-skewed"]
+data_right[, "distribution":="right-skewed"]
+
+aggregate_data <- data.table::rbindlist(list(data_normal, data_left, data_right))[, list("mean_lambda"=mean(lambda), "sd_lambda"=stats::sd(lambda)), by=c("method", "version", "distribution")]
 
 p <- egg::ggarrange(
   plots=list(
@@ -666,6 +667,9 @@ p <- egg::ggarrange(
   draw=FALSE)
 p
 ```
+
+The result is shown in Figure **INSERT REFERENCE**. For each distribution, transformation parameter $\lambda$ varies with $d$ when estimated using the original definitions. In contrast, estimations of $\lambda$ modified power transformations were invariant to $d$. 
+
 
 For robustness simulate:
 - A shifted normal distribution without, 0.1%, 0.2%, 0.5%, 1.0%, 2.0%, 5.0%, 10%, and 20% outliers mixed in.
