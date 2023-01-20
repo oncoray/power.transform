@@ -143,7 +143,7 @@ cap <- paste0(
   "Variable $x$ consists of $10000$ values are randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$. ",
   "For both Box-Cox and Yeo-Johnson transformations, we would expect $\\lambda = 1$, since $x$ is already normally distributed. ",
   "The figure shows that instead, $\\lambda$ is strongly dependent on the location $\\mu$, ",
-  "and even breaks down due to numerical issues for $\\mu > 10^3$.")
+  "and even breaks down due to numerical issues for $\\mu > 10^3$. For values $\\mu \\leq 10^3$, $\\lambda$ values are similar between methods.")
 
 compute_lambda <- function(mu, x, method){
   # Create transformer object.
@@ -180,7 +180,11 @@ yeo_johnson_values <- sapply(
 data <- data.table::data.table(
   "mu" = log10(c(shift_range, shift_range)),
   "lambda" = c(box_cox_values, yeo_johnson_values),
-  "method" = factor(x=rep(c("Box-Cox", "Yeo-Johnson"), each = length(shift_range), levels=c("Box-Cox", "Yeo-Johnson"))))
+  "method" = factor(
+    x=rep(
+      c("Box-Cox", "Yeo-Johnson"),
+      each = length(shift_range)),
+    levels=c("Box-Cox", "Yeo-Johnson")))
 
 annotation_settings <- get_annotation_settings(ggplot2::theme_light(base_size = base_size))
 
@@ -270,7 +274,7 @@ where $\sigma^2$ is the variance of Yeo-Johnson transformed feature $\phi_{\text
 
 Real-world data may contain outliers, to which maximum likelihood estimation can be sensitive. Their presence may lead to poor transformations to normality, as shown in Figure **INSERT REFERENCE**. As indicated by @Raymaekers2021-kq, the general aim of power transformations should be to transform non-outlier data to normality, i.e. achieve *central normality*. To achieve this, they devised an iterative procedure to find a robust estimate of the transformation parameter $\lambda$. Because $\lambda$ is updated during this procedure, simultaneous estimation of $\lambda$ and $x_0$ for modified power transformations is not possible.
 
-In essence, achieving central normality requires identifying outliers in the data, and weighting such instances during the optimisation process. @Raymaekers2021-kq do this (during the final steps of the iterative procedure) by introducing a weighted maximum likelihood estimation. This weighted maximum log-likelihood estimator is based on equations **INSERT REFERENCE**. The weighted maximum log-likelihood estimator for the modified Box-Cox power transformation is:
+In essence, obtaining transformation parameters that provide central normality requires identifying outliers in the data, and weighting such instances during the optimisation process. @Raymaekers2021-kq do this (during the final steps of the iterative procedure) by introducing a weighted maximum likelihood estimation. This weighted maximum log-likelihood estimator is based on equations **INSERT REFERENCE**. The weighted maximum log-likelihood estimator for the modified Box-Cox power transformation is:
 
 ```{=latex}
 \begin{equation}
@@ -298,9 +302,164 @@ where $\sigma^2_w$ is the weighted variance of the Yeo-Johnson transformed featu
 \sigma_w^2 = \frac{\sum_{i=1}^n w_i \left(\phi_{\text{YJ}}^{\lambda, x_0} (x_i) - \mu_w \right)^2}{\sum_{i=1}^n w_i} \quad \text{with } \mu_w = \frac{\sum_{i=1}^n \phi_{\text{YJ}}^{\lambda, x_0} (x_i)} {\sum_{i=1}^n w_i}
 \end{equation}
 ```
-Weights $w_i$ can be set based on the original feature $x$, as well as the transformed feature $\phi^{\lambda, x_0} (x)$. @Raymaekers2021-kq use the latter.
+Weights $w_i$ can be set based on the original feature $x$, as well as the transformed feature $\phi^{\lambda, x_0} (x)$. @Raymaekers2021-kq use the latter:
+
+```{=latex}
+\begin{equation}
+w_i =
+\begin{cases}
+1 & \text{if } \frac{\left| \phi^{\lambda}(x) - \mu_M \right|}{\sigma_M} \leq Q_{\mathcal{N}} (0.995)\\
+0 & \text{if } \frac{\left| \phi^{\lambda}(x) - \mu_M \right|}{\sigma_M} > Q_{\mathcal{N}} (0.995)
+\end{cases}
+\end{equation}
+```
+Here, $\mu_M$ and $\sigma_M$ are robust Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0} (x)$ [@Huber1981-su]. In short, weights for all standardised transformed feature values that exceed the value corresponding to the $99.5^\text{th}$ percentile of the normal distribution ($Q_{\mathcal{N}}(0.995)$) are set to 0, and remaining weights are left at 1. This works well if outliers are relatively rare in the transformed feature values, which we cannot *a priori* assume in our use case. Using lower quantile values comes at the cost of essentially trimming more and more instances from the dataset.
+
+Another option is to weight instances based on their absolute residuals, $\left| \left( \phi^{\lambda, x_0}(x_i) - \mu_M)\right) / \sigma_M - Q_{\mathcal{N}}(q_i) \right|$, where $q_i$ is equispaced quantile probability for instance $i$. This weights instances by the distance from the expected normal distribution. Though we refrain from specifying the exact function here, one would down-weight instances with large absolute residuals more strongly than small absolute residuals. While this approach is able to deal with outliers, there is no guarantee that large absolute residuals are strictly outliers. They may also be found in the central region, and down-weighting there might lead to suboptimal solutions.
+
+We propose a practical approach. Let $\kappa$ be the fraction of central instances of feature $x$, i.e. those located between $q_i=(1-\kappa)/2$ and $q_i=(1 + \kappa)/2$. For example, if $\kappa = 0.80$, those instances with values between the $10^{\text{th}}$ and $90^{\text{th}}$ percentiles would be considered to be central. We then use Tukey's tapered cosine window to assign weights [@Tukey1967-eb]:
+
+```{=latex}
+\begin{equation}
+w_i = 
+\begin{cases}
+\frac{1}{2} \left[1 + \cos\left(2 \pi \frac{i - \frac{1}{2}\left[ n \left(1 - \kappa\right) + 1\right]} {n \left(1 - \kappa \right)} \right) \right] & \text{, } 0 \leq i - 0.5 < (1 - \kappa) /2\\
+1 & \text{, } (1 - \kappa) /2 \leq i - 0.5 \leq (1 + \kappa) /2\\
+\frac{1}{2} \left[1 + \cos\left(2 \pi \frac{i - \frac{1}{2}\left[ n \left(1 + \kappa\right) + 1\right]} {n \left(1 - \kappa \right)} \right) \right]& \text{, } (1 + \kappa) /2 < i - 0.5 \leq 1
+\end{cases}
+\end{equation}
+```
+Here, $i = 1, 2, \ldots n$, with $n$ the number of instances of feature $x$.
+
+## Goodness of fit
 
 # Simulation
+
+For modified transformations show:
+- Comparison with figure 1.
+- A shifted left-skewed distribution, with the same shifts.
+- A shifted right-skewed distribution, with the same shifts.
+
+```{r shifted-distributions, echo=FALSE, fig.cap=cap}
+cap <- paste0(
+  "Power transformations modified to be shift-sensitive produce transformation parameters that are invariant to location. ",
+  "Variable $x$ consists of $10000$ values are randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$. ",
+  "For both Box-Cox and Yeo-Johnson transformations, we would expect $\\lambda = 1$, since $x$ is already normally distributed. ",
+  "Unlike the orginal power transformations, $\\lambda = 1$ is consistently found using shift-sensitive power transformations.")
+
+compute_lambda <- function(mu, x, method, shift=FALSE, robust=FALSE){
+  # Create transformer object.
+  transformer <- suppressWarnings(
+    power.transform::find_transformation_parameters(
+      x = x + mu,
+      method = method,
+      robust = robust,
+      shift = shift,
+      lambda = NULL))
+  
+  # Return lambda value.
+  return(transformer@lambda)
+}
+
+# Non-standard evaluation
+mu <- lambda <- method <- NULL
+
+x <- stats::rnorm(10000L)
+shift_range <- 10^seq(from=0, to=6, by=0.1)
+
+box_cox_shift_values <- sapply(
+  shift_range,
+  compute_lambda,
+  x = x,
+  method = "box_cox",
+  shift = TRUE,
+  robust = FALSE)
+
+box_cox_shift_robust_values <- sapply(
+  shift_range,
+  compute_lambda,
+  x = x,
+  method = "box_cox",
+  shift = TRUE,
+  robust = TRUE)
+
+yeo_johnson_shift_values <- sapply(
+  shift_range,
+  compute_lambda,
+  x = x,
+  method = "yeo_johnson",
+  shift = TRUE,
+  robust = FALSE)
+
+yeo_johnson_shift_robust_values <- sapply(
+  shift_range,
+  compute_lambda,
+  x = x,
+  method = "yeo_johnson",
+  shift = TRUE,
+  robust = TRUE)
+
+data <- data.table::data.table(
+  "mu" = log10(c(shift_range, shift_range)),
+  "lambda" = c(
+    box_cox_values,
+    box_cox_shift_values,
+    box_cox_shift_robust_values,
+    yeo_johnson_values,
+    yeo_johnson_shift_values,
+    yeo_johnson_shift_robust_values),
+  "method" = factor(
+    x=rep(
+      c("Box-Cox", "Yeo-Johnson"),
+      each = 3L * length(shift_range)),
+    levels=c("Box-Cox", "Yeo-Johnson")),
+  "version" = factor(
+    x=rep(
+      c("original", "shift-sensitive", "robust shift-sensitive"),
+      each = length(shift_range),
+      times = 2L),
+    levels = c("original", "shift-sensitive", "robust shift-sensitive")))
+
+annotation_settings <- get_annotation_settings(ggplot2::theme_light(base_size = base_size))
+
+p <- ggplot2::ggplot(
+  data = data,
+  mapping = ggplot2::aes(
+    x = mu,
+    y = lambda,
+    colour = method,
+    shape = version))
+p <- p + ggplot2::theme_light(base_size=base_size)
+p <- p + ggplot2::geom_point()
+p <- p + ggplot2::geom_hline(yintercept = 1.0, linetype="longdash", colour="grey40")
+p <- p + ggplot2::annotate(
+  geom = "text",
+  x = 6,
+  y = 1,
+  label = "expected",
+  colour=annotation_settings$colour,
+  family=annotation_settings$family,
+  fontface=annotation_settings$face,
+  size=annotation_settings$geom_text_size,
+  vjust=1.5,
+  hjust=1.0)
+p <- p + ggplot2::scale_x_continuous(
+  name = latex2exp::TeX("$\\mu$"),
+  labels = scales::math_format())
+
+p <- p + ggplot2::scale_y_continuous(
+  name = latex2exp::TeX("$\\lambda$"))
+
+p
+```
+
+For robustness simulate:
+- A shifted normal distribution without, 0.1%, 0.2%, 0.5%, 1.0%, 2.0%, 5.0%, 10%, and 20% outliers mixed in.
+- A shifted left-skewed distribution without, 0.1%, 0.2%, 0.5%, 1.0%, 2.0%, 5.0%, 10%, and 20% outliers mixed in.
+- A shifted right-skewed distribution without, 0.1%, 0.2%, 0.5%, 1.0%, 2.0%, 5.0%, 10%, and 20% outliers mixed in.
+- To show: lambda for modified, and robust modified Yeo-Johnson distribution for: Raymaekers trimmed, Tukey Window
+
+
 
 # Experimental Results
 
