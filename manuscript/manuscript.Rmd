@@ -386,7 +386,7 @@ To assess whether the modified power transformations lead to $\lambda$ values th
 
 ```{r shifted-distributions, echo=FALSE, fig.cap=cap}
 cap <- paste0(
-  "Power transformations modified to be shift-sensitive produce transformation parameters that are invariant to location.")
+  "Power transformations modified to be shift-sensitive produce transformation parameters are invariant to location.")
 
 compute_lambda <- function(mu, x, method, shift=FALSE, robust=FALSE){
   # Create transformer object.
@@ -486,6 +486,7 @@ compute_lambda <- function(mu, x, method, shift=FALSE, robust=FALSE){
     axis.text = ggplot2::element_blank(),
     panel.grid = ggplot2::element_blank(),
     panel.border = ggplot2::element_blank())
+  p <- p + ggplot2::xlim(c(-5, 5))
   
   return(p)
 }
@@ -556,6 +557,10 @@ data_normal <- .create_lambda_shift_data(
 p_dens_normal <- .create_density_plot(
   x=x,
   plot_theme=plot_theme)
+p_dens_normal <- p_dens_normal + ggplot2::ggtitle(label="normal distribution")
+p_dens_normal <- p_dens_normal + ggplot2::theme(plot.title=ggplot2::element_text(
+  hjust=0.5,
+  size=ggplot2::rel(1.0)))
 
 # Box-Cox
 p_bc_normal <- .create_lambda_shift_plot(
@@ -577,9 +582,10 @@ p_yj_normal <- p_yj_normal + paletteer::scale_color_paletteer_d(
   palette = "ggthemes::Tableau_10",
   drop = FALSE,
   guide = "none")
-p_yj_normal <- p_yj_normal + ggplot2::theme(
-  axis.title.y = ggplot2::element_blank(),
-  axis.text.y = ggplot2::element_blank())
+p_yj_normal <- p_yj_normal + ggplot2::scale_shape_discrete(guide="none")
+# p_yj_normal <- p_yj_normal + ggplot2::theme(
+#   axis.title.y = ggplot2::element_blank(),
+#   axis.text.y = ggplot2::element_blank())
 
 #### Right skewed distribution -------------------------------------------------
 
@@ -591,6 +597,10 @@ data_right <- .create_lambda_shift_data(
 p_dens_right <- .create_density_plot(
   x = x_right_skewed,
   plot_theme = plot_theme)
+p_dens_right <- p_dens_right + ggplot2::ggtitle(label="right-skewed distribution")
+p_dens_right <- p_dens_right + ggplot2::theme(plot.title=ggplot2::element_text(
+  hjust=0.5,
+  size=ggplot2::rel(1.0)))
 
 # Box-Cox
 p_bc_right <- .create_lambda_shift_plot(
@@ -610,10 +620,15 @@ p_yj_right <- .create_lambda_shift_plot(
   limits = c(1.0, 65))
 p_yj_right <- p_yj_right + paletteer::scale_color_paletteer_d(
   palette = "ggthemes::Tableau_10",
-  drop = FALSE)
-p_yj_right <- p_yj_right + ggplot2::theme(
-  axis.title.y=ggplot2::element_blank(),
-  axis.text.y=ggplot2::element_blank())
+  drop = FALSE,
+  guide = "none")
+p_yj_right <- p_yj_right + ggplot2::scale_shape_discrete(guide="none")
+# p_yj_right <- p_yj_right + paletteer::scale_color_paletteer_d(
+#   palette = "ggthemes::Tableau_10",
+#   drop = FALSE)
+# p_yj_right <- p_yj_right + ggplot2::theme(
+#   axis.title.y=ggplot2::element_blank(),
+#   axis.text.y=ggplot2::element_blank())
 
 #### Left skewed distribution --------------------------------------------------
 
@@ -625,6 +640,10 @@ data_left <- .create_lambda_shift_data(
 p_dens_left <- .create_density_plot(
   x = x_left_skewed,
   plot_theme = plot_theme)
+p_dens_left <- p_dens_left + ggplot2::ggtitle(label="left-skewed distribution")
+p_dens_left <- p_dens_left + ggplot2::theme(plot.title=ggplot2::element_text(
+  hjust=0.5,
+  size=ggplot2::rel(1.0)))
 
 # Box-Cox
 p_bc_left <- .create_lambda_shift_plot(
@@ -633,9 +652,12 @@ p_bc_left <- .create_lambda_shift_plot(
   limits = c(-10.5, 0.5))
 p_bc_left <- p_bc_left + paletteer::scale_color_paletteer_d(
   palette = "ggthemes::Tableau_10",
-  drop = FALSE,
-  guide = "none")
-p_bc_left <- p_bc_left + ggplot2::scale_shape_discrete(guide="none")
+  drop = FALSE)
+# p_bc_left <- p_bc_left + paletteer::scale_color_paletteer_d(
+#   palette = "ggthemes::Tableau_10",
+#   drop = FALSE,
+#   guide = "none")
+# p_bc_left <- p_bc_left + ggplot2::scale_shape_discrete(guide="none")
 
 # Yeo-Johnson
 p_yj_left <- .create_lambda_shift_plot(
@@ -646,9 +668,10 @@ p_yj_left <- p_yj_left + paletteer::scale_color_paletteer_d(
   palette = "ggthemes::Tableau_10",
   drop = FALSE,
   guide = "none")
-p_yj_left <- p_yj_left + ggplot2::theme(
-  axis.title.y=ggplot2::element_blank(),
-  axis.text.y=ggplot2::element_blank())
+p_yj_left <- p_yj_left + ggplot2::scale_shape_discrete(guide="none")
+# p_yj_left <- p_yj_left + ggplot2::theme(
+#   axis.title.y=ggplot2::element_blank(),
+#   axis.text.y=ggplot2::element_blank())
 
 #### Aggregate -----------------------------------------------------------------
 
@@ -664,6 +687,8 @@ p <- egg::ggarrange(
     p_dens_right, p_bc_right, p_yj_right,
     p_dens_left, p_bc_left, p_yj_left),
   ncol=3,
+  heights=c(0.5, 1.0, 1.0),
+  byrow=FALSE,
   draw=FALSE)
 p
 ```
