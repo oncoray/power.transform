@@ -165,3 +165,117 @@ paste_s <- function(...){
     return(paste0(dots))
   }
 }
+
+
+#' Random Values from the Asymmetric Generalised Normal Distribution
+#'
+#' Draws random values from an asymmetric generalised normal distribution.
+#'
+#' @param n number of instances
+#' @param location central location of the distribution
+#' @param scale scale of the distribution. Must be strictly positive: `scale >
+#'   0.0`
+#' @param alpha value between 0.0 and 1.0 that determines the skewness of the
+#'   distribution. `alpha > 0.5` creates a distribution with a negative skew
+#'   (left-skewed), i.e. the left tail of the distribution is elongated, and the
+#'   bulk of the distribution is located to the right. `alpha < 0.5` creates a
+#'   distribution with a positive skew (right-skewed), i.e. the right tail of
+#'   the distribution is elongated, and the bulk of the distribution is located
+#'   to the left. For `alpha = 0.0`, the distribution does not have a skew.
+#' @param beta Strictly positive value (`beta > 0.0`) that determines the
+#'   overall shape of the generalised normal distribution. For `beta = 1`, an
+#'   asymmetric Laplace distribution is used. `beta = 2` draws values according
+#'   to an asymmetric normal distribution. For large `beta` the distribution
+#'   will approximate the uniform distribution.
+#'
+#' @details Random values drawn according to an asymmetric generalised normal
+#'   distribution. Here the asymmetric generalised normal distribution is a
+#'   symmetric general normal distribution, that is made asymmetric using the
+#'   procedure described by Gijbels et al. To generate random values we use the
+#'   quantile function of the symmetric generalised normal distribution that was
+#'   derived by M. Griffin.
+#'
+#'   The default parameter values produce values as if drawn from the standard
+#'   normal distribution with \eqn{\sigma = 1/\sqrt(2)}, that is, the standard
+#'   deviation is not 1.
+#'
+#' @return One or more numeric values drawn from the asymmetric generalised
+#'   normal distribution.
+#' @export
+#'
+#' @references
+#' 1. Gijbels I, Karim R, Verhasselt A. Quantile Estimation in a Generalized
+# Asymmetric Distributional Setting. Stochastic Models, Statistics and Their
+# Applications. Springer International Publishing; 2019. pp. 13–40
+#'
+#' 1. Griffin M (2018). gnorm: Generalized Normal/Exponential Power Distribution.
+# R package version 1.0.0
+#'
+#' @examples
+#' # Draw values from a standard normal distribution.
+#' x <- power.transform::ragn(n=10000, scale=sqrt(2))
+#' hist(x, 50)
+#'
+#' # Draw values from a left-skewed normal distribution.
+#' x <- power.transform::ragn(n=10000, scale=sqrt(2), alpha=0.8)
+#' hist(x, 50)
+#'
+#' # Draw values from a right-skewed normal distribution.
+#' x <- power.transform::ragn(n=10000, scale=sqrt(2), alpha=0.2)
+#' hist(x, 50)
+#'
+#' # Draw values from a standard laplace distribution.
+#' x <- power.transform::ragn(n=10000, scale=sqrt(2), beta=1.0)
+#' hist(x, 50)
+ragn <- function(n, location=0, scale=1, alpha=0.5, beta=2){
+  # Random values drawn according to an asymmetric generalised normal
+  # distribution. Here the asymmetric generalised normal distribution is a
+  # symmetric general normal distribution, that is made asymmetric using the
+  # procedure described by Gijbels et al. To generate random values we require
+  # the quantile function of the symmetric generalised normal distribution,
+  # which is was derived by M. Griffin.
+  #
+  # See , and
+  #
+
+  # alpha needs to be in (0, 1).
+  if(alpha < 0.0 || alpha > 1.0) stop("alpha should be between 0.0 and 1.0.")
+
+  # Beta cannot be zero or negative.
+  if(beta <= 0.0) stop("beta must be strictly positive.")
+
+  # Scale cannot be zero or negative.
+  if(scale <= 0.0) stop("scale must be strictly positive.")
+
+  # Draw n values from an uniform distribution. Avoid extreme tails for
+  # numerical reasons.
+  p <- stats::runif(n=n, min=sqrt(.Machine$double.eps), max=1 - sqrt(.Machine$double.eps))
+
+  # Avoid extreme alpha. There are singularities at 0 and 1.
+  if(alpha < sqrt(.Machine$double.eps)){
+    alpha <- sqrt(.Machine$double.eps)
+  } else if(alpha > 1.0 - sqrt(.Machine$double.eps)){
+    alpha <- 1.0 - sqrt(.Machine$double.eps)
+  }
+
+  # Identify values of p which are less and greater than alpha.
+  p_less <- which(p <= alpha)
+  p_greater <- which(p > alpha)
+
+  # Compute p for the quantile function of the symmetric generalised normal
+  # distribution.
+  p_sgnd <- numeric(n)
+  p_sgnd[p_less] <- p[p_less] / (2.0 * alpha)
+  p_sgnd[p_greater] <- (1.0 + p[p_greater] - 2.0 * alpha) / (2.0 * (1.0 - alpha))
+
+  # Compute values according to the quantile function of the symmetric
+  # generalised normal distribution.
+  x_sgnd <- sign(p_sgnd - 0.5) * stats::qgamma(p=2.0 * abs(p_sgnd - 0.5), shape=1.0/beta, scale=1.0)^(1.0 / beta)
+
+  # Populate array of values x.
+  x <- numeric(n)
+  x[p_less] <- location + scale / (1.0 - alpha) * x_sgnd[p_less]
+  x[p_greater] <- location + scale / alpha * x_sgnd[p_greater]
+
+  return(x)
+}
