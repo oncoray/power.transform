@@ -1,4 +1,4 @@
-tukey_tapered_cosine_window <- function(x, k=0.80, ...){
+tukey_tapered_cosine_window <- function(x, k=0.00, ...){
   # Use Tukey window (also cosine-tapered window) for downweighting based on
   # expected quantile (not on residual!). The Tukey window has a flat top, with
   # width k (or 2 alpha), and then tapers off. The alpha parameter is related to
@@ -19,6 +19,65 @@ tukey_tapered_cosine_window <- function(x, k=0.80, ...){
   # Right tapered cosine lobe.
   right_lobe <- which(i - 0.5 > length(i) * (1 + k) /2)
   w[right_lobe] <- 0.5 * (1 + cos((2 * pi * (right_lobe - (1 + length(i) * (1 + k)) /2) / (length(i) * (1 - k)))))
+
+  return(w)
+}
+
+
+step_window <- function(x, k=0.80, ...){
+  # Use a step window for downweighting based on expected quantile. The window
+  # has a flat top with width k, that drops to 0 outside of the central k
+  # values.
+
+  if(is.unsorted(x)) stop("DEV: x should be sorted.")
+
+  # Iterate along x
+  i <- seq_along(x)
+
+  # Initialise weights.
+  w <- numeric(length(i)) + 1.0
+
+  # Left lobe.
+  left_lobe <- which(i - 0.5 < length(i) * (1 - k) / 2)
+  w[left_lobe] <- 0.0
+
+  # Right lobe.
+  right_lobe <- which(i - 0.5 > length(i) * (1 + k) /2)
+  w[right_lobe] <- 0.0
+
+  return(w)
+}
+
+
+
+tapered_step_window <- function(x, k_step=0.90, k=0.20, ...){
+
+  if(is.unsorted(x)) stop("DEV: x should be sorted.")
+
+  # Iterate along x
+  i <- seq_along(x)
+
+  # Initialise weights.
+  w <- numeric(length(i)) + 1.0
+
+  # Left lobe for step function.
+  left_lobe <- which(i - 0.5 < length(i) * (1 - k_step) / 2)
+  w[left_lobe] <- 0.0
+
+  # Right lobe for step function.
+  right_lobe <- which(i - 0.5 > length(i) * (1 + k_step) /2)
+  w[right_lobe] <- 0.0
+
+  # Left tapered lobe.
+  left_lobe <- which(i - 0.5 < length(i) * (1 - k) / 2 &
+                       i - 0.5 >= length(i) * (1 - k_step) / 2)
+
+  w[left_lobe] <- (left_lobe - min(left_lobe)) / (max(left_lobe) - min(left_lobe))
+
+  # Right tapered lobe.
+  right_lobe <- which(i - 0.5 > length(i) * (1 + k) /2 &
+                        i - 0.5 <= length(i) * (1 + k_step) / 2)
+  w[right_lobe] <- 1.0 - (right_lobe - min(right_lobe)) / (max(right_lobe) - min(right_lobe))
 
   return(w)
 }
@@ -75,6 +134,45 @@ residual_step_weighting <- function(x, lambda, type, tau=0.50, ...){
 
 
 
+transformed_tukey_biweight <- function(x, lambda, type, tau=2.58, ...){
+  # Set weights based on Tukey's Biweights.
+
+  transform_FUN <- switch(
+    type,
+    "box_cox"=..box_cox_transform,
+    "yeo_johnson"=..yeo_johnson_transform
+  )
+
+  # Find transformed feature values.
+  y <- do.call(
+    transform_FUN,
+    args=list(
+      "lambda"=lambda,
+      "x"=x))
+
+  # Approximate Huber's M-estimates for locality and scale.
+  robust_estimates <- huber_estimate(y, tol=1E-3)
+
+  # Check problematic values.
+  if(!is.finite(robust_estimates$sigma)) return(NA_real_)
+  if(robust_estimates$sigma == 0.0) return(NA_real_)
+
+  # Initialise 0-weights.
+  w <- numeric(length(x))
+
+  # Compute standardised values.
+  z <- (y - robust_estimates$mu) / robust_estimates$sigma
+
+  # Set non-zero weights for z-scores smaller than tau.
+  ii <- which(abs(z) <= tau)
+  if(length(ii) > 0) w[ii] <- (1 - (z[ii] / tau)^2 )^2
+
+  # Compute weights.
+  return(w)
+}
+
+
+
 residual_tukey_biweight <- function(x, lambda, type, tau=0.50, ...){
   # Set weights based on Tukey's Biweigths.
 
@@ -85,12 +183,52 @@ residual_tukey_biweight <- function(x, lambda, type, tau=0.50, ...){
     type=type)
 
   # Initialise 0-weights.
-  w <- as.numeric(length(x))
+  w <- numeric(length(x))
 
-  # Set non-zero weights for residual errors smaller than rho.
+  # Set non-zero weights for residual errors smaller than tau.
   ii <- which(abs(r) <= tau)
   if(length(ii) > 0) w[ii] <- (1 - (r[ii] / tau)^2 )^2
 
+  return(w)
+}
+
+
+
+
+transformed_huber_weight <- function(x, lambda, type, tau=1.96, ...){
+  # Set weights based on Tukey's Biweights.
+
+  transform_FUN <- switch(
+    type,
+    "box_cox"=..box_cox_transform,
+    "yeo_johnson"=..yeo_johnson_transform
+  )
+
+  # Find transformed feature values.
+  y <- do.call(
+    transform_FUN,
+    args=list(
+      "lambda"=lambda,
+      "x"=x))
+
+  # Approximate Huber's M-estimates for locality and scale.
+  robust_estimates <- huber_estimate(y, tol=1E-3)
+
+  # Check problematic values.
+  if(!is.finite(robust_estimates$sigma)) return(NA_real_)
+  if(robust_estimates$sigma == 0.0) return(NA_real_)
+
+  # Compute standardised values.
+  z <- (y - robust_estimates$mu) / robust_estimates$sigma
+
+  # Initialise 1-weights.
+  w <- numeric(length(x)) + 1.0
+
+  # Set weights. Standardised values larger than tau are down-weighted.
+  ii <- which(abs(z) > tau)
+  if(length(ii) > 0)  w[ii] <- tau / abs(z[ii])
+
+  # Compute weights.
   return(w)
 }
 
@@ -106,11 +244,11 @@ residual_huber_weight <- function(x, lambda, type, tau=0.20, ...){
     type=type)
 
   # Initialise 1-weights.
-  w <- as.numeric(length(x))
+  w <- numeric(length(x)) + 1.0
 
-  # Set weights. Values > 0 rho are down-weighted.
-  ii <- which(abs(r) <= tau)
-  if(length(ii) > 0)  w[ii] <- tau / r[ii]
+  # Set weights. Values > tau are down-weighted.
+  ii <- which(abs(r) > tau)
+  if(length(ii) > 0)  w[ii] <- tau / abs(r[ii])
 
   return(w)
 }

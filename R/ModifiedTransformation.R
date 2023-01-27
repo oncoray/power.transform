@@ -54,9 +54,13 @@
   weight_fun <- switch(
     weight_method,
     "tukey_window" = tukey_tapered_cosine_window,
+    "step_window" = step_window,
+    "tapered_step_window" = tapered_step_window,
     "trim_transformation" = transformed_step_weighting,
     "trim_residual" = residual_step_weighting,
+    "tukey_biweight_transformation" = transformed_tukey_biweight,
     "tukey_biweight_residual" = residual_tukey_biweight,
+    "huber_weight_transformed" = transformed_huber_weight,
     "huber_weight_residual" = residual_huber_weight)
 
   # Compute weights
