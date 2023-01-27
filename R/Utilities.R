@@ -196,8 +196,8 @@ paste_s <- function(...){
 #'   derived by M. Griffin.
 #'
 #'   The default parameter values produce values as if drawn from the standard
-#'   normal distribution with \eqn{\sigma = 1/\sqrt(2)}, that is, the standard
-#'   deviation is not 1.
+#'   normal distribution with \eqn{\sigma = \sqrt{2}}, that is, the standard
+#'   deviation is not \eqn{\sqrt{2}} instead of \eqn{1}.
 #'
 #' @return One or more numeric values drawn from the asymmetric generalised
 #'   normal distribution.
@@ -213,19 +213,19 @@ paste_s <- function(...){
 #'
 #' @examples
 #' # Draw values from a standard normal distribution.
-#' x <- power.transform::ragn(n=10000, scale=sqrt(2))
+#' x <- power.transform::ragn(n=10000, scale=1/sqrt(2))
 #' hist(x, 50)
 #'
 #' # Draw values from a left-skewed normal distribution.
-#' x <- power.transform::ragn(n=10000, scale=sqrt(2), alpha=0.8)
+#' x <- power.transform::ragn(n=10000, scale=1/sqrt(2), alpha=0.8)
 #' hist(x, 50)
 #'
 #' # Draw values from a right-skewed normal distribution.
-#' x <- power.transform::ragn(n=10000, scale=sqrt(2), alpha=0.2)
+#' x <- power.transform::ragn(n=10000, scale=1/sqrt(2), alpha=0.2)
 #' hist(x, 50)
 #'
 #' # Draw values from a standard laplace distribution.
-#' x <- power.transform::ragn(n=10000, scale=sqrt(2), beta=1.0)
+#' x <- power.transform::ragn(n=10000, scale=1/sqrt(2), beta=1.0)
 #' hist(x, 50)
 ragn <- function(n, location=0, scale=1, alpha=0.5, beta=2){
   # Random values drawn according to an asymmetric generalised normal
