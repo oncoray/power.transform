@@ -8,6 +8,7 @@ output:
 bibliography: "refs.bib"
 header-includes:
    - \usepackage{amsmath}
+   - \usepackage{booktabs}
    - \DeclareMathOperator*{\argmax}{argmax}
    - \DeclareMathOperator{\sgn}{sgn}
 ---
@@ -25,15 +26,13 @@ require(power.transform)
 require(ggplot2)
 require(data.table)
 require(latex2exp)
+require(coro)
 
 # Base font size.
 base_size <- 10
 
 # Set general theme.
 plot_theme <- ggplot2::theme_light(base_size=base_size)
-
-# Set seed.
-set.seed(19L)
 
 get_annotation_settings <- function(ggtheme=NULL){
   # Import formatting settings from the provided ggtheme.
@@ -106,6 +105,12 @@ get_annotation_settings <- function(ggtheme=NULL){
     "lineheight"=lineheight))
 }
 
+parse_mean_sd_latex <- function(mu, sigma, digits=2L){
+  return(paste0(
+    "$", round(mu, digits=digits), " \\pm ", round(sigma, digits=digits), "$"
+  ))
+}
+
 ```
 
 # Abstract
@@ -164,6 +169,9 @@ compute_lambda <- function(mu, x, method){
 
 # Non-standard evaluation
 mu <- lambda <- method <- NULL
+
+# Set seed.
+set.seed(19L)
 
 x <- stats::rnorm(10000L)
 shift_range <- 10^seq(from=0, to=6, by=0.1)
@@ -384,94 +392,14 @@ Here, $i = 1, 2, \ldots n$, with $n$ the number of instances of feature $x$.
 
 To assess whether the modified power transformations lead to $\lambda$ values that are invariant to shifts, we simulate three different distributions. The first distribution is a normal distribution, as previously shown in Figure **INSERT REFERENCE**. We first randomly draw $10000$ values from a normal distribution: $x_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)$. The second distribution is a right-skewed distribution $x_{\text{right}} = \left( x_{\text{normal}} - \text{min} \left(x_{\text{normal}}\right) + 1\right)^{\frac{1}{10}}$. The third distribution is a left-skewed distribution $x_{\text{left}} = \left( x_{\text{normal}} - \text{min} \left(x_{\text{normal}}\right) \right)^3$. Subsequently, all three distributions are standardised to have mean $0$ and standard deviation $1$. We then compute transformation parameter $\lambda$ using the original definitions (Eq. **INSERT REFERENCE** and **INSERT REFERENCE**) and the modified definitions (Eq. **INSERT REFERENCE** and **INSERT REFERENCE**) for each distribution, after adding a positive value $d$ to each distribution. Here, $d \in [1, 10^6]$.
 
-```{r shifted-distributions, echo=FALSE, fig.cap=cap}
+```{r shifted-distributions, echo=FALSE, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
   "Power transformations modified to be shift-sensitive produce transformation parameters are invariant to location.")
 
-compute_lambda <- function(mu, x, method, shift=FALSE, robust=FALSE){
-  # Create transformer object.
-  transformer <- suppressWarnings(
-    power.transform::find_transformation_parameters(
-      x = x + mu,
-      method = method,
-      robust = robust,
-      shift = shift,
-      lambda = NULL))
-  
-  # Return lambda value.
-  return(transformer@lambda)
-}
+# Non-standard evaluation
+d <- distribution <- method <- mean_lambda <- sd_lambda <- NULL
 
-.create_lambda_shift_data <- function(x, shift_range){
-  
-  box_cox_values <- sapply(
-    shift_range,
-    compute_lambda,
-    x = x,
-    method = "box_cox")
-  
-  yeo_johnson_values <- sapply(
-    shift_range,
-    compute_lambda,
-    x = x,
-    method = "yeo_johnson")
-  
-  box_cox_shift_values <- sapply(
-    shift_range,
-    compute_lambda,
-    x = x,
-    method = "box_cox",
-    shift = TRUE,
-    robust = FALSE)
-  
-  box_cox_shift_robust_values <- sapply(
-    shift_range,
-    compute_lambda,
-    x = x,
-    method = "box_cox",
-    shift = TRUE,
-    robust = TRUE)
-  
-  yeo_johnson_shift_values <- sapply(
-    shift_range,
-    compute_lambda,
-    x = x,
-    method = "yeo_johnson",
-    shift = TRUE,
-    robust = FALSE)
-  
-  yeo_johnson_shift_robust_values <- sapply(
-    shift_range,
-    compute_lambda,
-    x = x,
-    method = "yeo_johnson",
-    shift = TRUE,
-    robust = TRUE)
-  
-  data <- data.table::data.table(
-    "mu" = log10(c(shift_range, shift_range)),
-    "lambda" = c(
-      box_cox_values,
-      box_cox_shift_values,
-      box_cox_shift_robust_values,
-      yeo_johnson_values,
-      yeo_johnson_shift_values,
-      yeo_johnson_shift_robust_values),
-    "method" = factor(
-      x=rep(
-        c("Box-Cox", "Yeo-Johnson"),
-        each = 3L * length(shift_range)),
-      levels=c("Box-Cox", "Yeo-Johnson")),
-    "version" = factor(
-      x=rep(
-        c("original", "shift-sensitive", "robust shift-sensitive"),
-        each = length(shift_range),
-        times = 2L),
-      levels = c("original", "shift-sensitive", "robust shift-sensitive")))
-  
-  return(data)
-}
-
+# Density plot.
 .create_density_plot <- function(x, plot_theme){
   p <- ggplot2::ggplot(
     data = data.table::data.table("x"=x),
@@ -485,29 +413,27 @@ compute_lambda <- function(mu, x, method, shift=FALSE, robust=FALSE){
     axis.ticks = ggplot2::element_blank(),
     axis.text = ggplot2::element_blank(),
     panel.grid = ggplot2::element_blank(),
-    panel.border = ggplot2::element_blank())
+    panel.border = ggplot2::element_blank(),
+    plot.title=ggplot2::element_text(
+      hjust=0.5,
+      size=ggplot2::rel(1.0)))
   p <- p + ggplot2::xlim(c(-5, 5))
   
   return(p)
 }
 
-.create_lambda_shift_plot <- function(data, plot_theme, limits, expected=FALSE){
-  
-  annotation_settings <- get_annotation_settings(plot_theme)
-  
+# Lambda plot,
+.create_lambda_shift_plot <- function(data, plot_theme, limits, guide=FALSE){
+ 
   p <- ggplot2::ggplot(
     data = data,
     mapping = ggplot2::aes(
-      x = mu,
+      x = d,
       y = lambda,
       colour = method,
       shape = version))
   p <- p + plot_theme
   p <- p + ggplot2::geom_point()
-  p <- p + ggplot2::geom_hline(
-    yintercept = 1.0, 
-    linetype="longdash", 
-    colour="grey40")
   p <- p + ggplot2::scale_x_continuous(
     name = latex2exp::TeX("$d$"),
     labels = scales::math_format())
@@ -515,171 +441,214 @@ compute_lambda <- function(mu, x, method, shift=FALSE, robust=FALSE){
     name = latex2exp::TeX("$\\lambda$"),
     limits = limits)
   
-  if(expected){
-      p <- p + ggplot2::annotate(
-    geom = "text",
-    x = 6,
-    y = 1,
-    label = "expected",
-    colour=annotation_settings$colour,
-    family=annotation_settings$family,
-    fontface=annotation_settings$face,
-    size=annotation_settings$geom_text_size,
-    vjust=-1.0,
-    hjust=1.0)
+  if(guide){
+     p <- p + paletteer::scale_color_paletteer_d(
+      palette = "ggthemes::Tableau_10",
+      drop = FALSE)
+     
+  } else {
+    p <- p + paletteer::scale_color_paletteer_d(
+      palette = "ggthemes::Tableau_10",
+      drop = FALSE,
+      guide = "none")
+    p <- p + ggplot2::scale_shape_discrete(guide="none")
   }
   
   return(p)
 }
 
-# Non-standard evaluation
-mu <- lambda <- method <- NULL
+# Generator for creating parameters and data for all experiments.
+generate_experiment_data <- coro::generator(
+  function(
+    x_normal,
+    x_right_skewed,
+    x_left_skewed){
+    
+    shift_range <- 10^seq(from=0, to=6, by=0.1)
+    
+    for(d in shift_range){
+      for(distribution in c("normal", "right-skewed", "left-skewed")){
+        if(distribution == "normal"){
+          x <- x_normal
+          
+        } else if(distribution == "right-skewed"){
+          x <- x_right_skewed
+          
+        } else if(distribution == "left-skewed"){
+          x <- x_left_skewed
+        }
+        
+        for(method in c("box_cox", "yeo_johnson")){
+          for(shift in c(FALSE, TRUE)){
+            for(robust in c(FALSE, TRUE)){
+              # Skip if robust, but not shifted.
+              if(robust && !shift) next
+              
+              if(!shift && !robust){
+                version <- "original"
+                
+              } else if(!robust){
+                version <- "shift-sensitive"
+                
+              } else {
+                version <- "robust shift-sensitive"
+              }
+              
+              yield(list(
+                "x" = x + d,
+                "d" = d,
+                "distribution" = distribution,
+                "method" = method,
+                "shift" = shift,
+                "robust" = robust,
+                "version" = version
+              ))
+            }
+          }
+        }
+      }
+    }
+  })
+
+.compute_lambda <- function(parameter_set){
+  # Create transformer object.
+  transformer <- suppressWarnings(
+    power.transform::find_transformation_parameters(
+      x = parameter_set$x,
+      method = parameter_set$method,
+      robust = parameter_set$robust,
+      shift = parameter_set$shift,
+      lambda = NULL))
+  
+  return(
+    data.table::data.table(
+      "distribution" = parameter_set$distribution,
+      "method" = parameter_set$method,
+      "version" = parameter_set$version,
+      "d" = log10(parameter_set$d),
+      "lambda" = transformer@lambda
+    ))
+}
+
+#### Computations --------------------------------------------------------------
+
+# Set seed.
+set.seed(19L)
 
 # Normal distribution.
-x <- stats::rnorm(10000L)
-shift_range <- 10^seq(from=0, to=6, by=0.1)
+x_normal <- stats::rnorm(10000L)
 
 # Right skewed data
-x_right_skewed <- (x - min(x) + 1)^0.1
+x_right_skewed <- (x_normal - min(x_normal) + 1)^0.1
 x_right_skewed <- (x_right_skewed - mean(x_right_skewed)) / sd(x_right_skewed)
 
 # Left skewed data
-x_left_skewed <- (x - min(x))^3
+x_left_skewed <- (x_normal - min(x_normal))^3
 x_left_skewed <- (x_left_skewed - mean(x_left_skewed)) / sd(x_left_skewed)
 
+# Generate all experiments.
+experiments <- coro::collect(generate_experiment_data(
+  x_normal = x_normal,
+  x_right_skewed = x_right_skewed,
+  x_left_skewed = x_left_skewed
+))
+
+# Start cluster
+cl <- parallel::makeCluster(16L)
+
+# Compute all data in parallel.
+data <- parallel::parLapply(
+  cl=cl,
+  X=experiments,
+  fun=.compute_lambda
+)
+
+# Stop cluster.
+parallel::stopCluster(cl)
+
+# Combine data into a single table.
+data <- data.table::rbindlist(data)
+
+# Update distribution, method and version to factors.
+data$distribution <- factor(
+  x = data$distribution,
+  levels = c("normal", "right-skewed", "left-skewed"))
+data$method <- factor(
+  x = data$method,
+  levels = c("box_cox", "yeo_johnson"),
+  labels = c("Box-Cox", "Yeo-Johnson"))
+data$version <- factor(
+  x = data$version,
+  levels = c("original", "shift-sensitive", "robust shift-sensitive"))
+
+
 #### Normal distribution -------------------------------------------------------
-
-data_normal <- .create_lambda_shift_data(
-  x = x,
-  shift_range = shift_range)
-
 # Density
 p_dens_normal <- .create_density_plot(
-  x=x,
+  x=x_normal,
   plot_theme=plot_theme)
 p_dens_normal <- p_dens_normal + ggplot2::ggtitle(label="normal distribution")
-p_dens_normal <- p_dens_normal + ggplot2::theme(plot.title=ggplot2::element_text(
-  hjust=0.5,
-  size=ggplot2::rel(1.0)))
 
 # Box-Cox
 p_bc_normal <- .create_lambda_shift_plot(
-  data = data_normal[method == "Box-Cox"],
+  data = data[distribution == "normal" & method == "Box-Cox"],
   plot_theme = plot_theme,
   limits = c(-3.6, 1.1))
-p_bc_normal <- p_bc_normal + paletteer::scale_color_paletteer_d(
-  palette = "ggthemes::Tableau_10",
-  drop = FALSE,
-  guide = "none")
-p_bc_normal <- p_bc_normal + ggplot2::scale_shape_discrete(guide="none")
 
 # Yeo-Johnson
 p_yj_normal <- .create_lambda_shift_plot(
-  data=data_normal[method == "Yeo-Johnson"],
+  data=data[distribution == "normal" & method == "Yeo-Johnson"],
   plot_theme = plot_theme,
   limits = c(-3.6, 1.1))
-p_yj_normal <- p_yj_normal + paletteer::scale_color_paletteer_d(
-  palette = "ggthemes::Tableau_10",
-  drop = FALSE,
-  guide = "none")
-p_yj_normal <- p_yj_normal + ggplot2::scale_shape_discrete(guide="none")
-# p_yj_normal <- p_yj_normal + ggplot2::theme(
-#   axis.title.y = ggplot2::element_blank(),
-#   axis.text.y = ggplot2::element_blank())
 
 #### Right skewed distribution -------------------------------------------------
-
-data_right <- .create_lambda_shift_data(
-  x = x_right_skewed,
-  shift_range = shift_range)
 
 # Density
 p_dens_right <- .create_density_plot(
   x = x_right_skewed,
   plot_theme = plot_theme)
 p_dens_right <- p_dens_right + ggplot2::ggtitle(label="right-skewed distribution")
-p_dens_right <- p_dens_right + ggplot2::theme(plot.title=ggplot2::element_text(
-  hjust=0.5,
-  size=ggplot2::rel(1.0)))
 
 # Box-Cox
 p_bc_right <- .create_lambda_shift_plot(
-  data = data_right[method == "Box-Cox"],
+  data =data[distribution == "right-skewed" & method == "Box-Cox"],
   plot_theme = plot_theme,
   limits = c(1.0, 65))
-p_bc_right <- p_bc_right + paletteer::scale_color_paletteer_d(
-  palette = "ggthemes::Tableau_10",
-  drop = FALSE,
-  guide = "none")
-p_bc_right <- p_bc_right + ggplot2::scale_shape_discrete(guide="none")
 
 # Yeo-Johnson
 p_yj_right <- .create_lambda_shift_plot(
-  data = data_right[method == "Yeo-Johnson"],
+  data = data[distribution == "right-skewed" & method == "Yeo-Johnson"],
   plot_theme = plot_theme,
   limits = c(1.0, 65))
-p_yj_right <- p_yj_right + paletteer::scale_color_paletteer_d(
-  palette = "ggthemes::Tableau_10",
-  drop = FALSE,
-  guide = "none")
-p_yj_right <- p_yj_right + ggplot2::scale_shape_discrete(guide="none")
-# p_yj_right <- p_yj_right + paletteer::scale_color_paletteer_d(
-#   palette = "ggthemes::Tableau_10",
-#   drop = FALSE)
-# p_yj_right <- p_yj_right + ggplot2::theme(
-#   axis.title.y=ggplot2::element_blank(),
-#   axis.text.y=ggplot2::element_blank())
 
 #### Left skewed distribution --------------------------------------------------
-
-data_left <- .create_lambda_shift_data(
-  x = x_left_skewed,
-  shift_range = shift_range)
 
 # Density
 p_dens_left <- .create_density_plot(
   x = x_left_skewed,
   plot_theme = plot_theme)
 p_dens_left <- p_dens_left + ggplot2::ggtitle(label="left-skewed distribution")
-p_dens_left <- p_dens_left + ggplot2::theme(plot.title=ggplot2::element_text(
-  hjust=0.5,
-  size=ggplot2::rel(1.0)))
 
 # Box-Cox
 p_bc_left <- .create_lambda_shift_plot(
-  data = data_left[method == "Box-Cox"],
+  data = data[distribution == "left-skewed" & method == "Box-Cox"],
   plot_theme = plot_theme,
-  limits = c(-10.5, 0.5))
-p_bc_left <- p_bc_left + paletteer::scale_color_paletteer_d(
-  palette = "ggthemes::Tableau_10",
-  drop = FALSE)
-# p_bc_left <- p_bc_left + paletteer::scale_color_paletteer_d(
-#   palette = "ggthemes::Tableau_10",
-#   drop = FALSE,
-#   guide = "none")
-# p_bc_left <- p_bc_left + ggplot2::scale_shape_discrete(guide="none")
+  limits = c(-10.5, 0.5),
+  guide = TRUE)
 
 # Yeo-Johnson
 p_yj_left <- .create_lambda_shift_plot(
-  data = data_left[method == "Yeo-Johnson"],
+  data = data[distribution == "left-skewed" & method == "Yeo-Johnson"],
   plot_theme = plot_theme,
   limits = c(-10.5, 0.5))
-p_yj_left <- p_yj_left + paletteer::scale_color_paletteer_d(
-  palette = "ggthemes::Tableau_10",
-  drop = FALSE,
-  guide = "none")
-p_yj_left <- p_yj_left + ggplot2::scale_shape_discrete(guide="none")
-# p_yj_left <- p_yj_left + ggplot2::theme(
-#   axis.title.y=ggplot2::element_blank(),
-#   axis.text.y=ggplot2::element_blank())
 
 #### Aggregate -----------------------------------------------------------------
 
-data_normal[, "distribution":="normal"]
-data_left[, "distribution":="left-skewed"]
-data_right[, "distribution":="right-skewed"]
-
-aggregate_data <- data.table::rbindlist(list(data_normal, data_left, data_right))[, list("mean_lambda"=mean(lambda), "sd_lambda"=stats::sd(lambda)), by=c("method", "version", "distribution")]
+aggregate_data <- data[, list("mean_lambda"=mean(lambda), "sd_lambda"=stats::sd(lambda)), by=c("method", "version", "distribution")]
+aggregate_data$distribution <- factor(
+  x=aggregate_data$distribution,
+  levels = c("normal", "left-skewed", "right-skewed"))
+aggregate_data[, "text":=parse_mean_sd_latex(mu=mean_lambda, sigma=sd_lambda)]
 
 p <- egg::ggarrange(
   plots=list(
@@ -693,8 +662,23 @@ p <- egg::ggarrange(
 p
 ```
 
-The result is shown in Figure **INSERT REFERENCE**. For each distribution, transformation parameter $\lambda$ varies with $d$ when estimated using the original definitions. In contrast, estimations of $\lambda$ modified power transformations were invariant to $d$. 
+The result is shown in Figure **INSERT REFERENCE**. For each distribution, transformation parameter $\lambda$ varies with $d$ when estimated using the original definitions. In contrast, estimations of $\lambda$ modified power transformations were invariant to $d$.
 
+```{r, echo=FALSE, results="asis"}
+table_data <- data.table::dcast(
+  aggregate_data,
+  distribution ~ version + method,
+  value.var = "text",
+  sep = " ")
+
+knitr::kable(
+  table_data,
+  caption = "Estimates and deviation of transformation parameter $\\lambda$ under location shifts",
+  label = "shifted-distributions-table",
+  format = "latex",
+  escape = FALSE,
+  booktabs = TRUE)
+```
 
 For robustness simulate:
 - A shifted normal distribution without, 0.1%, 0.2%, 0.5%, 1.0%, 2.0%, 5.0%, 10%, and 20% outliers mixed in.
@@ -702,6 +686,212 @@ For robustness simulate:
 - A shifted right-skewed distribution without, 0.1%, 0.2%, 0.5%, 1.0%, 2.0%, 5.0%, 10%, and 20% outliers mixed in.
 - To show: lambda for modified, and robust modified Yeo-Johnson distribution for: Raymaekers trimmed, Tukey Window
 
+```{r}
+# Generator for creating parameters and data for all experiments.
+generate_experiment_data <- coro::generator(
+  function(
+    x_normal,
+    x_right_skewed,
+    x_left_skewed){
+    
+    n <- 20
+    k_range <- (seq_len(n) - 1)^2 /((n-1)^2 * 5)  
+    # k_range <- c(0.0, 0.001, 0.002, 0.005, 0.010, 0.020, 0.050, 0.100, 0.200)
+    
+    for(distribution in c("normal", "right-skewed", "left-skewed")){
+      if(distribution == "normal"){
+        x <- x_normal
+        
+      } else if(distribution == "right-skewed"){
+        x <- x_right_skewed
+        
+      } else if(distribution == "left-skewed"){
+        x <- x_left_skewed
+      }
+      for(ii in seq_len(20)){
+        for(k in k_range){
+          # Compute interquartile range.
+          interquartile_range <- stats::IQR(x)
+          
+          # Compute upper and lower quartiles.
+          q_lower <- stats::quantile(x, probs=0.25, names=FALSE)
+          q_upper <- stats::quantile(x, probs=0.75, names=FALSE)
+          
+          # Set data where the outliers will be copied into.
+          x_outlier <- x
+          
+          if(k != 0.0){
+            n_draw <- ceiling(k * 0.5 * length(x))
+            
+            # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
+            # than Q3 + 1.5 IQR.
+            outlier <- c(
+              q_lower - 1.5 * interquartile_range - 3.0 * stats::runif(n_draw),
+              q_upper + 1.5 * interquartile_range + 3.0 * stats::runif(n_draw))
+            
+            # Randomly insert outlier values.
+            x_outlier[sample(seq_along(x), size=2*n_draw, replace=FALSE)] <- outlier
+          }
+          
+          #for(method in c("box_cox", "yeo_johnson")){
+          for(method in c("yeo_johnson")){
+            for(weight_method in c("none", "tukey_window", "tapered_step_window")){
+            # for(weight_method in c("none", "tukey_window", "step_window", "tapered_step_window", "trim_transformation", "trim_residual", "tukey_biweight_transformation", "tukey_biweight_residual", "huber_weight_transformed", "huber_weight_residual")){
+              
+              weight_method_name <- weight_method
+              
+              for(tukey_window_k in c(0.80, 0.60, 0.40, 0.20, 0.00)){
+                if(weight_method == "none" && tukey_window_k != 0.00) next
+                
+                yield(list(
+                  "ii" = ii,
+                  "x" = x_outlier,
+                  "k" = k,
+                  "distribution" = distribution,
+                  "method" = method,
+                  "robust" = weight_method != "none",
+                  "weight_method" = weight_method,
+                  "weight_method_name" = paste0(weight_method_name, "_k_", tukey_window_k),
+                  "tukey_window_k" = tukey_window_k
+                ))
+              }
+              
+              
+              # if(weight_method == "tukey_window"){
+              #   for(tukey_window_k in c(0.9, 0.8, 0.7, 0.6, 0.5)){
+              #     yield(list(
+              #       "x" = x_outlier,
+              #       "k" = k,
+              #       "distribution" = distribution,
+              #       "method" = method,
+              #       "robust" = weight_method != "none",
+              #       "weight_method" = weight_method,
+              #       "weight_method_name" = paste0(weight_method_name, "_k_", tukey_window_k),
+              #       "tukey_window_k" = tukey_window_k
+              #     ))
+              #   }
+              # } else {
+              #   yield(list(
+              #     "x" = x_outlier,
+              #     "k" = k,
+              #     "distribution" = distribution,
+              #     "method" = method,
+              #     "robust" = weight_method != "none",
+              #     "weight_method" = weight_method,
+              #     "weight_method_name" = weight_method_name
+              #   ))
+              # }
+            }
+          }
+        }
+      }
+    }
+  })
+
+.compute_lambda <- function(parameter_set){
+  # Create transformer object.
+  transformer <- suppressWarnings(
+    power.transform::find_transformation_parameters(
+      x = parameter_set$x,
+      method = parameter_set$method,
+      robust = parameter_set$robust,
+      shift = TRUE,
+      weight_method = parameter_set$weight_method,
+      k = parameter_set$tukey_window_k,
+      lambda = NULL))
+  
+  return(
+    data.table::data.table(
+      "distribution" = parameter_set$distribution,
+      "method" = parameter_set$method,
+      "weight_method" = parameter_set$weight_method,
+      "weight_method_name" = parameter_set$weight_method_name,
+      "k" = parameter_set$k,
+      "lambda" = transformer@lambda,
+      "kappa" = parameter_set$tukey_window_k,
+      "ii" = parameter_set$ii
+    ))
+}
+
+# Set seed.
+set.seed(19L)
+
+# Normal distribution.
+x_normal <- stats::rnorm(10000L)
+
+# Right skewed data
+x_right_skewed <- (x_normal - min(x_normal) + 1)^0.1
+x_right_skewed <- (x_right_skewed - mean(x_right_skewed)) / sd(x_right_skewed)
+
+# Left skewed data
+x_left_skewed <- (x_normal - min(x_normal))^3
+x_left_skewed <- (x_left_skewed - mean(x_left_skewed)) / sd(x_left_skewed)
+
+# Generate all experiments.
+experiments <- coro::collect(generate_experiment_data(
+  x_normal = x_normal,
+  x_right_skewed = x_right_skewed,
+  x_left_skewed = x_left_skewed
+))
+
+# Start cluster
+cl <- parallel::makeCluster(16L)
+
+# Compute all data in parallel.
+data <- parallel::parLapply(
+  cl=cl,
+  X=experiments,
+  fun=.compute_lambda
+)
+
+# Stop cluster.
+parallel::stopCluster(cl)
+
+# Combine data into a single table.
+data <- data.table::rbindlist(data)
+
+# Update distribution, method and version to factors.
+data$distribution <- factor(
+  x = data$distribution,
+  levels = c("normal", "right-skewed", "left-skewed"))
+data$method <- factor(
+  x = data$method,
+  levels = c("box_cox", "yeo_johnson"),
+  labels = c("Box-Cox", "Yeo-Johnson"))
+data$kappa <- factor(data$kappa)
+
+# Find target lambda values in the absence of any outliers.
+target_data <- data[weight_method=="none" & k == 0.0, mget(c("distribution", "ii", "lambda", "method"))]
+data.table::setnames(target_data, old="lambda", new="target_lambda")
+
+# Merge target lambda values into the main data.
+data <- data[target_data, on=.NATURAL]
+
+# Compute difference with target lambda.
+data[, "diff_lambda":=lambda - target_lambda]
+
+summary_data[, list(deviation=sum(abs(diff_lambda))), by=c("distribution", "weight_method_name")][order(distribution, deviation)]
+
+# Compute average.
+new_data <- data[, list(lambda = mean(lambda)), by=c("k", "kappa", "weight_method", "distribution")]
+
+p <- ggplot2::ggplot(
+  data = new_data[distribution=="left-skewed"],
+  mapping = ggplot2::aes(
+    x = k,
+    y = lambda,
+    colour = kappa,
+    linetype = weight_method))
+p <- p + plot_theme
+# p <- p + ggplot2::geom_point()
+p <- p + ggplot2::geom_line()
+p <- p + ggplot2::scale_x_continuous(
+  name = latex2exp::TeX("$k$"),
+  trans = "sqrt")
+p <- p + ggplot2::scale_y_continuous(
+  name = latex2exp::TeX("$\\lambda$"))
+
+```
 
 
 # Experimental Results
