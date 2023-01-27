@@ -386,13 +386,59 @@ w_i =
 ```
 Here, $i = 1, 2, \ldots n$, with $n$ the number of instances of feature $x$.
 
+## Asymmetric generalised normal distributions
+
+Modifications intended to make power transformations invariant to shifts and methods to improve their robustness against outliers need to be assessed using data drawn from a range of different distributions. Since the power transformations are intended for use with unimodal distributions, the generalised normal distribution [@Subbotin1923-qk, @Nadarajah2005-xe] is a suitable option to simulate realistic feature distributions. This distribution has the following probability density function $f_{\beta}$ for a value $x \in \mathbb{R}$:
+
+```{=latex}
+\begin{equation}
+f_{\beta}(x) = \frac{\beta}{2\Gamma \left(1 / \beta \right)} e^{-\left| x \right|^\beta}
+\end{equation}
+```
+Here, $\Gamma$ is the gamma function, and $\beta$ is a strictly positive shape parameter. For $\beta = 1$, the probability density function describes a Laplace distribution. A normal distribution is found for $\beta=2$, and for large $\beta$, the distribution approaches a uniform distribution. We will refrain from introducing scale and location parameters here directly.
+
+Realistic feature distributions may be skewed. Gijbels et al. describe a recipe for introducing skewness into the otherwise symmetric generalised norm distribution [@Gijbels2019-te], leading to the following probability density function:
+
+```{=latex}
+\begin{equation}
+f_{\alpha}(x; \mu, \sigma, \beta) = \frac{2 \alpha \left(1 - \alpha\right)}{\sigma}
+\begin{cases}
+f_{\beta}\left( \left(1 - \alpha \right) \frac{\left| x - \mu \right|}{\sigma} \right) & \text{, } x \leq \mu \\
+f_{\beta}\left( \alpha \frac{\left| x - \mu \right|}{\sigma} \right) & \text{, } x > \mu
+\end{cases}
+\end{equation}
+```
+Here $\alpha \in (0,1)$ is a skewness parameter. $\alpha > 0.5$ creates a distribution with a negative skew, i.e. a left-skewed distribution. A right-skewed distribution is created for $\alpha < 0.5$. $\mu$ and $\sigma \in (0, \infty)$ are location and scale parameters, respectively. $f_{\alpha}$ thus describes the probability density function of an asymmetric generalised normal distribution, which we will refer to here and parametrise as $\mathcal{AGN}\left(\mu, \sigma, \alpha, \beta \right)$.
+
+We require a quantile function (or an approximation thereof) to draw random values from an asymmetric generalised normal distribution using inverse transform sampling. Gijbels et al. derived the following quantile function $F_{\alpha}^{-1}(p)$:
+
+```{=latex}
+\begin{equation}
+F_{\alpha}^{-1}(p; \mu, \sigma, \beta) =
+\begin{cases}
+\mu + \frac{\sigma}{1 - \alpha} F_{\beta}^{-1} \left( \frac{p}{2 \alpha}\right) & \text{, } p \leq \alpha \\
+\mu + \frac{\sigma}{\alpha} F_{\beta}^{-1} \left( \frac{1 + p - 2 \alpha}{2 \left(1 - \alpha \right)} \right) & \text{, } p > \alpha
+\end{cases}
+\end{equation}
+```
+The quantile function for the asymmetric generalised normal distribution $F_{\alpha}^{-1}(p)$ thus incorporates the quantile function $F_{\beta}^{-1}(p^{*})$ of the symmetric generalised normal distribution. $F_{\beta}^{-1}(p^{*})$ was derived by Griffin to be [@Griffin2018-bf]:
+
+```{=latex}
+\begin{equation}
+F_{\beta}^{-1}(p^{*}) = \sgn\left(p^{*} - 0.5 \right) F_{\Gamma}^{-1}\left(2 \left|p^{*} - 0.5 \right|; 1 / \beta \right)
+\end{equation}
+```
+Here, $F_{\Gamma}^{-1}$ is the quantile function of the gamma distribution with shape $1 / \beta$, which can be numerically approximated. 
+
 ## Goodness of fit
+
+
 
 # Simulation
 
-To assess whether the modified power transformations lead to $\lambda$ values that are invariant to shifts, we simulate three different distributions. The first distribution is a normal distribution, as previously shown in Figure **INSERT REFERENCE**. We first randomly draw $10000$ values from a normal distribution: $x_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)$. The second distribution is a right-skewed distribution $x_{\text{right}} = \left( x_{\text{normal}} - \text{min} \left(x_{\text{normal}}\right) + 1\right)^{\frac{1}{10}}$. The third distribution is a left-skewed distribution $x_{\text{left}} = \left( x_{\text{normal}} - \text{min} \left(x_{\text{normal}}\right) \right)^3$. Subsequently, all three distributions are standardised to have mean $0$ and standard deviation $1$. We then compute transformation parameter $\lambda$ using the original definitions (Eq. **INSERT REFERENCE** and **INSERT REFERENCE**) and the modified definitions (Eq. **INSERT REFERENCE** and **INSERT REFERENCE**) for each distribution, after adding a positive value $d$ to each distribution. Here, $d \in [1, 10^6]$.
+To assess whether the modified power transformations lead to $\lambda$ values that are invariant to shifts, we simulate three different distributions. The first distribution is a normal distribution, as previously shown in Figure **INSERT REFERENCE**. We first randomly draw $10000$ values from a normal distribution: $x_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)$, or equivalently $x_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.5, 2\right)$. The second distribution is a right-skewed normal distribution $x_{\text{right}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.2, 2\right)$. The third distribution is a left-skewed normal distribution $x_{\text{left}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.8, 2\right)$. We then compute transformation parameter $\lambda$ using the original definitions (Eq. **INSERT REFERENCE** and **INSERT REFERENCE**) and the modified definitions (Eq. **INSERT REFERENCE** and **INSERT REFERENCE**) for each distribution, after adding a positive value $d$ to each distribution. Here, $d \in [1, 10^6]$.
 
-```{r shifted-distributions, echo=FALSE, warning=FALSE, message=FALSE, fig.cap=cap}
+```{r shifted-distributions, echo=FALSE, warning=FALSE, message=FALSE, fig.cap=cap, include=FALSE, eval = FALSE}
 cap <- paste0(
   "Power transformations modified to be shift-sensitive produce transformation parameters are invariant to location.")
 
@@ -536,15 +582,13 @@ generate_experiment_data <- coro::generator(
 set.seed(19L)
 
 # Normal distribution.
-x_normal <- stats::rnorm(10000L)
+x_normal <- power.transform::ragn(10000L, location=0, scale=1/sqrt(2), alpha=0.5, beta=2)
 
 # Right skewed data
-x_right_skewed <- (x_normal - min(x_normal) + 1)^0.1
-x_right_skewed <- (x_right_skewed - mean(x_right_skewed)) / sd(x_right_skewed)
+x_right_skewed <- power.transform::ragn(10000L, location=0, scale=1/sqrt(2), alpha=0.2, beta=2)
 
 # Left skewed data
-x_left_skewed <- (x_normal - min(x_normal))^3
-x_left_skewed <- (x_left_skewed - mean(x_left_skewed)) / sd(x_left_skewed)
+x_left_skewed <- power.transform::ragn(10000L, location=0, scale=1/sqrt(2), alpha=0.8, beta=2)
 
 # Generate all experiments.
 experiments <- coro::collect(generate_experiment_data(
@@ -664,7 +708,7 @@ p
 
 The result is shown in Figure **INSERT REFERENCE**. For each distribution, transformation parameter $\lambda$ varies with $d$ when estimated using the original definitions. In contrast, estimations of $\lambda$ modified power transformations were invariant to $d$.
 
-```{r, echo=FALSE, results="asis"}
+```{r, echo=FALSE, results="asis", include=FALSE, eval = FALSE}
 table_data <- data.table::dcast(
   aggregate_data,
   distribution ~ version + method,
@@ -686,7 +730,7 @@ For robustness simulate:
 - A shifted right-skewed distribution without, 0.1%, 0.2%, 0.5%, 1.0%, 2.0%, 5.0%, 10%, and 20% outliers mixed in.
 - To show: lambda for modified, and robust modified Yeo-Johnson distribution for: Raymaekers trimmed, Tukey Window
 
-```{r}
+```{r, include=FALSE, eval = FALSE}
 # Generator for creating parameters and data for all experiments.
 generate_experiment_data <- coro::generator(
   function(
