@@ -145,7 +145,7 @@ The $\lambda$-parameter is typically optimised using maximum likelihood estimati
 
 Power transformation does not guarantee that transformed variables are normally distributed. In fact, depending on location and scale of the variable, power transformation may reduce normality, as shown in Figure **INSERT REFERENCE**. This is problematic for automated power transformations, for three reasons. First, normality is often desired in machine learning applications. Second, a large negative or positve $\lambda$-parameter may lead to numeric issues. Third, we currently do not have a test to automatically reject poor transformations. Statistical tests for normality exist, such as the Shapiro-Wilk test [@Shapiro1965-zd]. Given sufficiently large sample sizes, these tests can detect trivial deviations from normality and are therefore not well-suited for practical applications of automated power transformations.
 
-```{r reduced-normality, echo=FALSE, fig.cap=cap}
+```{r reduced-normality, echo=FALSE, fig.cap=cap, eval=FALSE}
 cap <- paste0(
   "Power transformations may reduce normality depending on location. ",
   "Variable $x$ consists of $10000$ values are randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$. ",
