@@ -151,7 +151,7 @@ cap <- paste0(
   "Variable $x$ consists of $10000$ values are randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$. ",
   "For both Box-Cox and Yeo-Johnson transformations, we would expect $\\lambda = 1$, since $x$ is already normally distributed. ",
   "The figure shows that instead, $\\lambda$ is strongly dependent on the location $\\mu$, ",
-  "and even breaks down due to numerical issues for $\\mu > 10^3$. For values $\\mu \\leq 10^3$, $\\lambda$ values are similar between methods.")
+  "and even breaks down due to numerical issues for $\\mu > 5 10^4$.")
 
 compute_lambda <- function(mu, x, method){
   # Create transformer object.
@@ -173,7 +173,7 @@ mu <- lambda <- method <- NULL
 # Set seed.
 set.seed(19L)
 
-x <- stats::rnorm(10000L)
+x <- power.transform::ragn(10000L, location=0, scale=1/sqrt(2), alpha=0.5, beta=2)
 shift_range <- 10^seq(from=0, to=6, by=0.1)
 
 box_cox_values <- sapply(
@@ -227,7 +227,7 @@ p_bc <- p_bc + ggplot2::scale_x_continuous(
   labels = scales::math_format())
 p_bc <- p_bc + ggplot2::scale_y_continuous(
   name = latex2exp::TeX("$\\lambda$"),
-  limits = c(-3.6, 1.1))
+  limits = c(0.0, 35.0))
 p_bc <- p_bc + paletteer::scale_color_paletteer_d(
   palette="ggthemes::Tableau_10",
   drop=FALSE,
@@ -261,7 +261,7 @@ p_yj <- p_yj + ggplot2::scale_x_continuous(
   labels = scales::math_format())
 p_yj <- p_yj + ggplot2::scale_y_continuous(
   name = latex2exp::TeX("$\\lambda$"),
-  limits = c(-3.6, 1.1))
+  limits = c(0.0, 35.0))
 p_yj <- p_yj + paletteer::scale_color_paletteer_d(
   palette="ggthemes::Tableau_10",
   drop=FALSE)
@@ -436,11 +436,13 @@ Here, $F_{\Gamma}^{-1}$ is the quantile function of the gamma distribution with 
 
 # Simulation
 
+## Modified power transformations are invariant to location
+
 To assess whether the modified power transformations lead to $\lambda$ values that are invariant to shifts, we simulate three different distributions. The first distribution is a normal distribution, as previously shown in Figure **INSERT REFERENCE**. We first randomly draw $10000$ values from a normal distribution: $x_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)$, or equivalently $x_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.5, 2\right)$. The second distribution is a right-skewed normal distribution $x_{\text{right}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.2, 2\right)$. The third distribution is a left-skewed normal distribution $x_{\text{left}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.8, 2\right)$. We then compute transformation parameter $\lambda$ using the original definitions (Eq. **INSERT REFERENCE** and **INSERT REFERENCE**) and the modified definitions (Eq. **INSERT REFERENCE** and **INSERT REFERENCE**) for each distribution, after adding a positive value $d$ to each distribution. Here, $d \in [1, 10^6]$.
 
-```{r shifted-distributions, echo=FALSE, warning=FALSE, message=FALSE, fig.cap=cap, include=FALSE, eval = FALSE}
+```{r shifted-distributions, echo=FALSE, warning=FALSE, message=FALSE, fig.cap=cap, eval = FALSE}
 cap <- paste0(
-  "Power transformations modified to be shift-sensitive produce transformation parameters are invariant to location.")
+  "Power transformations modified to be shift-sensitive produce transformation parameters are invariant to location. ")
 
 # Non-standard evaluation
 d <- distribution <- method <- mean_lambda <- sd_lambda <- NULL
@@ -526,7 +528,9 @@ generate_experiment_data <- coro::generator(
         
         for(method in c("box_cox", "yeo_johnson")){
           for(shift in c(FALSE, TRUE)){
-            for(robust in c(FALSE, TRUE)){
+            for(robust in c(FALSE)){
+            # for(robust in c(FALSE, TRUE)){
+              # Only 
               # Skip if robust, but not shifted.
               if(robust && !shift) next
               
@@ -623,7 +627,7 @@ data$method <- factor(
   labels = c("Box-Cox", "Yeo-Johnson"))
 data$version <- factor(
   x = data$version,
-  levels = c("original", "shift-sensitive", "robust shift-sensitive"))
+  levels = c("original", "shift-sensitive"))
 
 
 #### Normal distribution -------------------------------------------------------
@@ -637,13 +641,13 @@ p_dens_normal <- p_dens_normal + ggplot2::ggtitle(label="normal distribution")
 p_bc_normal <- .create_lambda_shift_plot(
   data = data[distribution == "normal" & method == "Box-Cox"],
   plot_theme = plot_theme,
-  limits = c(-3.6, 1.1))
+  limits = c(0.0, 35.0))
 
 # Yeo-Johnson
 p_yj_normal <- .create_lambda_shift_plot(
   data=data[distribution == "normal" & method == "Yeo-Johnson"],
   plot_theme = plot_theme,
-  limits = c(-3.6, 1.1))
+  limits = c(0.0, 35.0))
 
 #### Right skewed distribution -------------------------------------------------
 
@@ -657,13 +661,13 @@ p_dens_right <- p_dens_right + ggplot2::ggtitle(label="right-skewed distribution
 p_bc_right <- .create_lambda_shift_plot(
   data =data[distribution == "right-skewed" & method == "Box-Cox"],
   plot_theme = plot_theme,
-  limits = c(1.0, 65))
+  limits = c(-9.0, 1.0))
 
 # Yeo-Johnson
 p_yj_right <- .create_lambda_shift_plot(
   data = data[distribution == "right-skewed" & method == "Yeo-Johnson"],
   plot_theme = plot_theme,
-  limits = c(1.0, 65))
+  limits = c(-9.0, 1.0))
 
 #### Left skewed distribution --------------------------------------------------
 
@@ -677,14 +681,14 @@ p_dens_left <- p_dens_left + ggplot2::ggtitle(label="left-skewed distribution")
 p_bc_left <- .create_lambda_shift_plot(
   data = data[distribution == "left-skewed" & method == "Box-Cox"],
   plot_theme = plot_theme,
-  limits = c(-10.5, 0.5),
+  limits = c(0.0, 60.0),
   guide = TRUE)
 
 # Yeo-Johnson
 p_yj_left <- .create_lambda_shift_plot(
   data = data[distribution == "left-skewed" & method == "Yeo-Johnson"],
   plot_theme = plot_theme,
-  limits = c(-10.5, 0.5))
+  limits = c(0.0, 60.0))
 
 #### Aggregate -----------------------------------------------------------------
 
@@ -706,7 +710,7 @@ p <- egg::ggarrange(
 p
 ```
 
-The result is shown in Figure **INSERT REFERENCE**. For each distribution, transformation parameter $\lambda$ varies with $d$ when estimated using the original definitions. In contrast, estimations of $\lambda$ modified power transformations were invariant to $d$.
+The result is shown in Figure **INSERT REFERENCE**, and summarised in Table **INSERT REFERENCE**. For each distribution, transformation parameter $\lambda$ varies with $d$ when estimated using the original definitions. In contrast, estimations of $\lambda$ modified power transformations were invariant to $d$.
 
 ```{r, echo=FALSE, results="asis", include=FALSE, eval = FALSE}
 table_data <- data.table::dcast(
@@ -723,6 +727,12 @@ knitr::kable(
   escape = FALSE,
   booktabs = TRUE)
 ```
+
+## Weighting based on feature values offers best robustness
+
+Outliers may be presented in the data, and affect estimation of power transformation parameters. Such outliers should be down-weighted during the optimisation process. Such weights can be assigned using three different data representations: 1. the original feature values; 2. the feature values after power transformation; 3. the residual errors between transformed feature values and their expected values according to the normal distribution.
+
+
 
 For robustness simulate:
 - A shifted normal distribution without, 0.1%, 0.2%, 0.5%, 1.0%, 2.0%, 5.0%, 10%, and 20% outliers mixed in.
