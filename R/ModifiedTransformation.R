@@ -25,14 +25,8 @@
 
 
 
-.transformation_robust_shifted_optimisation <- function(parameters, x, type, weight_method="tukey_window", ...){
-  # This follows the algorithm from Raymaekers J, Rousseeuw PJ. Transforming
-  # variables to central normality. Mach Learn. 2021.
-  # doi:10.1007/s10994-021-05960-5. However, because we are optimising over
-  # shift and lambda directly, we can't select an initial
-  # lambda-0 value using reweighted optimisation and a first re-weighted
-  # optimisation step. We directly use lambda to compute weighted
-  # log-likelihood using Tukey's bisquare function as a weight.
+.transformation_robust_shifted_optimisation <- function(parameters, x, type, weight_method="original_cosine", ...){
+  # Compute weighted log-likelihood function.
 
   shift <- parameters[1]
   lambda <- parameters[2]
@@ -53,15 +47,15 @@
   # Set weight function used to compute weights.
   weight_fun <- switch(
     weight_method,
-    "tukey_window" = tukey_tapered_cosine_window,
-    "step_window" = step_window,
-    "tapered_step_window" = tapered_step_window,
-    "trim_transformation" = transformed_step_weighting,
-    "trim_residual" = residual_step_weighting,
-    "tukey_biweight_transformation" = transformed_tukey_biweight,
-    "tukey_biweight_residual" = residual_tukey_biweight,
-    "huber_weight_transformed" = transformed_huber_weight,
-    "huber_weight_residual" = residual_huber_weight)
+    "original_step" = original_step,
+    "original_triangle" = original_triangle,
+    "original_cosine" = original_cosine,
+    "transformed_step" = transformed_step,
+    "transformed_triangle" = transformed_triangle,
+    "transformed_cosine" = transformed_cosine,
+    "residual_step" = residual_step,
+    "residual_triangle" = residual_triangle,
+    "residual_cosine" = residual_cosine)
 
   # Compute weights
   w <- do.call(
