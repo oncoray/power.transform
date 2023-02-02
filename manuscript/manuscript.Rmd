@@ -143,7 +143,7 @@ One limitation of th Box-Cox transformation is that it is only defined for $x > 
 ```
 The $\lambda$-parameter is typically optimised using maximum likelihood estimation under the assumption that the transformed feature is normally distributed. As noted by Raymaekers and Rousseeuw, this approach is very sensitive to the presence of outliers, and robust versions of Box-Cox and Yeo-Johnson transformations were devised [@Raymaekers2021-kq].
 
-Power transformation does not guarantee that transformed variables are normally distributed. In fact, depending on location and scale of the variable, power transformation may reduce normality, as shown in Figure **INSERT REFERENCE**. This is problematic for automated power transformations, for three reasons. First, normality is often desired in machine learning applications. Second, a large negative or positve $\lambda$-parameter may lead to numeric issues. Third, we currently do not have a test to automatically reject poor transformations. Statistical tests for normality exist, such as the Shapiro-Wilk test [@Shapiro1965-zd]. Given sufficiently large sample sizes, these tests can detect trivial deviations from normality and are therefore not well-suited for practical applications of automated power transformations.
+Power transformation does not guarantee that transformed variables are normally distributed. In fact, depending on location and scale of the variable, power transformation may reduce normality, as shown in Figure **INSERT REFERENCE**. This is problematic for automated power transformations, for three reasons. First, normality is often desired in machine learning applications. Second, a large negative or positive $\lambda$-parameter may lead to numeric issues. Third, we currently do not have a test to automatically reject poor transformations. Statistical tests for normality exist, such as the Shapiro-Wilk test [@Shapiro1965-zd]. Given sufficiently large sample sizes, these tests can detect trivial deviations from normality and are therefore not well-suited for practical applications of automated power transformations.
 
 ```{r reduced-normality, echo=FALSE, fig.cap=cap, eval=FALSE}
 cap <- paste0(
@@ -357,34 +357,72 @@ where $\sigma^2_w$ is the weighted variance of the Yeo-Johnson transformed featu
 \sigma_w^2 = \frac{\sum_{i=1}^n w_i \left(\phi_{\text{YJ}}^{\lambda, x_0} (x_i) - \mu_w \right)^2}{\sum_{i=1}^n w_i} \quad \text{with } \mu_w = \frac{\sum_{i=1}^n \phi_{\text{YJ}}^{\lambda, x_0} (x_i)} {\sum_{i=1}^n w_i}
 \end{equation}
 ```
-Weights $w_i$ can be set based on the original feature $x$, as well as the transformed feature $\phi^{\lambda, x_0} (x)$. @Raymaekers2021-kq use the latter:
 
+There are a few options based on which weights may be set. Here, we investigate three:
+
+- Set weights based on quantiles of the original feature $x$. Quantiles are determined as $p_i = \frac{i - 1/3}{n + 1/3}$, with $i = 1, 2, \ldots n$, with $n$ the number of instances of feature $x$.
+
+- Set weights based on z-score of the transformed feature $\phi^{\lambda, x_0} (x)$. After @Raymaekers2021-kq, $z_i = \frac{\phi^{\lambda, x_0}(x_i) - \mu_M}{\sigma_M}$. Here, $\mu_M$ and $\sigma_M$ are robust Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0} (x)$ [@Huber1981-su].
+
+- Set weights based on the residual error between the z-score of the transformed feature $\phi^{\lambda, x_0} (x)$ and the theoretical z-score from a standard normal distribution: $\left| \left( \phi^{\lambda, x_0}(x_i) - \mu_M)\right) / \sigma_M - F^{-1}_{\mathcal{N}}(p_i) \right|$, with $\mu_M$, $\sigma_M$ and $p_i$ as defined above.
+
+Based on either of the above, weights are set using a weight function. We use the following functions:
+
+- A step function, with $k_1$ as threshold parameter:
 ```{=latex}
 \begin{equation}
 w_i =
 \begin{cases}
-1 & \text{if } \frac{\left| \phi^{\lambda}(x) - \mu_M \right|}{\sigma_M} \leq Q_{\mathcal{N}} (0.995)\\
-0 & \text{if } \frac{\left| \phi^{\lambda}(x) - \mu_M \right|}{\sigma_M} > Q_{\mathcal{N}} (0.995)
+1 & \text{if } \left| x_i \right| \leq k_1\\
+0 & \text{if } \left| x_i \right| > k_1
 \end{cases}
 \end{equation}
 ```
-Here, $\mu_M$ and $\sigma_M$ are robust Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0} (x)$ [@Huber1981-su]. In short, weights for all standardised transformed feature values that exceed the value corresponding to the $99.5^\text{th}$ percentile of the normal distribution ($Q_{\mathcal{N}}(0.995)$) are set to 0, and remaining weights are left at 1. This works well if outliers are relatively rare in the transformed feature values, which we cannot *a priori* assume in our use case. Using lower quantile values comes at the cost of essentially trimming more and more instances from the dataset.
 
-Another option is to weight instances based on their absolute residuals, $\left| \left( \phi^{\lambda, x_0}(x_i) - \mu_M)\right) / \sigma_M - Q_{\mathcal{N}}(q_i) \right|$, where $q_i$ is equispaced quantile probability for instance $i$. This weights instances by the distance from the expected normal distribution. Though we refrain from specifying the exact function here, one would down-weight instances with large absolute residuals more strongly than small absolute residuals. While this approach is able to deal with outliers, there is no guarantee that large absolute residuals are strictly outliers. They may also be found in the central region, and down-weighting there might lead to suboptimal solutions.
-
-We propose a practical approach. Let $\kappa$ be the fraction of central instances of feature $x$, i.e. those located between $q_i=(1-\kappa)/2$ and $q_i=(1 + \kappa)/2$. For example, if $\kappa = 0.80$, those instances with values between the $10^{\text{th}}$ and $90^{\text{th}}$ percentiles would be considered to be central. We then use Tukey's tapered cosine window to assign weights [@Tukey1967-eb]:
-
+- A triangle function (or generalised Huber weight), with $k_1$ and $k_2 \geq k_1$ as threshold parameters:
 ```{=latex}
 \begin{equation}
-w_i = 
+w_i =
 \begin{cases}
-\frac{1}{2} \left[1 + \cos\left(2 \pi \frac{i - \frac{1}{2}\left[ n \left(1 - \kappa\right) + 1\right]} {n \left(1 - \kappa \right)} \right) \right] & \text{, } 0 \leq i - 0.5 < (1 - \kappa) /2\\
-1 & \text{, } (1 - \kappa) /2 \leq i - 0.5 \leq (1 + \kappa) /2\\
-\frac{1}{2} \left[1 + \cos\left(2 \pi \frac{i - \frac{1}{2}\left[ n \left(1 + \kappa\right) + 1\right]} {n \left(1 - \kappa \right)} \right) \right]& \text{, } (1 + \kappa) /2 < i - 0.5 \leq 1
+1 & \text{if } \left| x_i \right| \leq k_1\\
+ \\
+0 & \text{if } \left| x_i \right| > k_1
 \end{cases}
 \end{equation}
 ```
-Here, $i = 1, 2, \ldots n$, with $n$ the number of instances of feature $x$.
+
+<!-- Weights $w_i$ can be set based on the original feature $x$, as well as the transformed feature $\phi^{\lambda, x_0} (x)$. @Raymaekers2021-kq use the latter: -->
+
+<!-- ```{=latex} -->
+<!-- \begin{equation} -->
+<!-- w_i = -->
+<!-- \begin{cases} -->
+<!-- 1 & \text{if } \frac{\left| \phi^{\lambda}(x) - \mu_M \right|}{\sigma_M} \leq Q_{\mathcal{N}} (0.995)\\ -->
+<!-- 0 & \text{if } \frac{\left| \phi^{\lambda}(x) - \mu_M \right|}{\sigma_M} > Q_{\mathcal{N}} (0.995) -->
+<!-- \end{cases} -->
+<!-- \end{equation} -->
+<!-- ``` -->
+<!-- Here, $\mu_M$ and $\sigma_M$ are robust Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0} (x)$ [@Huber1981-su]. In short, weights for all standardised transformed feature values that exceed the value corresponding to the $99.5^\text{th}$ percentile of the normal distribution ($Q_{\mathcal{N}}(0.995)$) are set to 0, and remaining weights are left at 1. This works well if outliers are relatively rare in the transformed feature values, which we cannot *a priori* assume in our use case. Using lower quantile values comes at the cost of essentially trimming more and more instances from the dataset. -->
+
+<!-- Another option is to weight instances based on their absolute residuals, $\left| \left( \phi^{\lambda, x_0}(x_i) - \mu_M)\right) / \sigma_M - Q_{\mathcal{N}}(q_i) \right|$, where $q_i$ is equispaced quantile probability for instance $i$. This weights instances by the distance from the expected normal distribution. -->
+
+<!-- Though we refrain from specifying the exact function here, one would down-weight instances with large absolute residuals more strongly than small absolute residuals. While this approach is able to deal with outliers, there is no guarantee that large absolute residuals are strictly outliers. They may also be found in the central region, and down-weighting there might lead to suboptimal solutions. -->
+
+<!-- We propose a practical approach. Let $\kappa$ be the fraction of central instances of feature $x$, i.e. those located between $q_i=(1-\kappa)/2$ and $q_i=(1 + \kappa)/2$. For example, if $\kappa = 0.80$, those instances with values between the $10^{\text{th}}$ and $90^{\text{th}}$ percentiles would be considered to be central. We then use Tukey's tapered cosine window to assign weights [@Tukey1967-eb]: -->
+
+<!-- ```{=latex} -->
+<!-- \begin{equation} -->
+<!-- w_i =  -->
+<!-- \begin{cases} -->
+<!-- \frac{1}{2} \left[1 + \cos\left(2 \pi \frac{i - \frac{1}{2}\left[ n \left(1 - \kappa\right) + 1\right]} {n \left(1 - \kappa \right)} \right) \right] & \text{, } 0 \leq i - 0.5 < (1 - \kappa) /2\\ -->
+<!-- 1 & \text{, } (1 - \kappa) /2 \leq i - 0.5 \leq (1 + \kappa) /2\\ -->
+<!-- \frac{1}{2} \left[1 + \cos\left(2 \pi \frac{i - \frac{1}{2}\left[ n \left(1 + \kappa\right) + 1\right]} {n \left(1 - \kappa \right)} \right) \right]& \text{, } (1 + \kappa) /2 < i - 0.5 \leq 1 -->
+<!-- \end{cases} -->
+<!-- \end{equation} -->
+<!-- ``` -->
+<!-- Here, $i = 1, 2, \ldots n$, with $n$ the number of instances of feature $x$. -->
+
+
 
 ## Asymmetric generalised normal distributions
 
@@ -730,7 +768,7 @@ knitr::kable(
 
 ## Weighting based on feature values offers best robustness
 
-Outliers may be presented in the data, and affect estimation of power transformation parameters. Such outliers should be down-weighted during the optimisation process. Such weights can be assigned using three different data representations: 1. the original feature values; 2. the feature values after power transformation; 3. the residual errors between transformed feature values and their expected values according to the normal distribution.
+Outliers may be presented in the data, and affect estimation of power transformation parameters. Such outliers should be down-weighted during the optimisation process. Weights can be assigned using three different data representations: 1. the original feature values; 2. the feature values after power transformation; 3. the residual errors between transformed feature values and their expected values according to the normal distribution.
 
 
 
