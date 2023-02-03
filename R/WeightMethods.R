@@ -82,13 +82,13 @@ residual_cosine <- function(x, lambda, type, k1=0.30, k2=0.50, ...){
   # Check if x is sorted.
   if(is.unsorted(x)) stop(paste0("DEV: x is expected to be sorted in ascending order."))
 
-  # Compute expected quantile.
-  q <- (seq_along(x) - 1/3) / (length(x) + 1/3)
+  # Compute empirical probabilities of each point
+  p <- (seq_along(x) - 1/3) / (length(x) + 1/3)
 
   # Centralise and map to [-1, 1] range.
-  q <- 2.0 * (q - 0.5)
+  p <- 2.0 * (p - 0.5)
 
-  return(q)
+  return(p)
 }
 
 
