@@ -360,15 +360,15 @@ where $\sigma^2_w$ is the weighted variance of the Yeo-Johnson transformed featu
 
 There are a few options based on which weights may be set. Here, we investigate three:
 
-- Set weights based on quantiles of the original feature $x$. Quantiles are determined as $p_i = \frac{i - 1/3}{n + 1/3}$, with $i = 1, 2, \ldots n$, with $n$ the number of instances of feature $x$.
+- Set weights based on probabilities of the empirical distribution of the original feature $x$. Probabilities are determined as $p_i = \frac{i - 1/3}{n + 1/3}$, with $i = 1, 2, \ldots n$, with $n$ the number of instances of feature $x$.
 
 - Set weights based on z-score of the transformed feature $\phi^{\lambda, x_0} (x)$. After @Raymaekers2021-kq, $z_i = \frac{\phi^{\lambda, x_0}(x_i) - \mu_M}{\sigma_M}$. Here, $\mu_M$ and $\sigma_M$ are robust Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0} (x)$ [@Huber1981-su].
 
-- Set weights based on the residual error between the z-score of the transformed feature $\phi^{\lambda, x_0} (x)$ and the theoretical z-score from a standard normal distribution: $\left| \left( \phi^{\lambda, x_0}(x_i) - \mu_M)\right) / \sigma_M - F^{-1}_{\mathcal{N}}(p_i) \right|$, with $\mu_M$, $\sigma_M$ and $p_i$ as defined above.
+- Set weights based on the residual error between the z-score of the transformed feature $\phi^{\lambda, x_0} (x)$ and the theoretical z-score from a standard normal distribution: $r_i =\left| \left( \phi^{\lambda, x_0}(x_i) - \mu_M)\right) / \sigma_M - F^{-1}_{\mathcal{N}}(p_i) \right|$, with $\mu_M$, $\sigma_M$ and $p_i$ as defined above.
 
-Based on either of the above, weights are set using a weight function. We use the following functions:
+Based on either of the above, weights are set using a weighting function. We will investigate the following functions, where $x_i$ can be either $p^{*}_i=2 \left( p_i - 0.5\right)$ (so that the quantiles are zero-centred), $z_i$ or $r_i$:
 
-- A step function, with $k_1$ as threshold parameter:
+- A step function, with $k_1 \geq 0$ as threshold parameter:
 ```{=latex}
 \begin{equation}
 w_i =
@@ -379,16 +379,95 @@ w_i =
 \end{equation}
 ```
 
-- A triangle function (or generalised Huber weight), with $k_1$ and $k_2 \geq k_1$ as threshold parameters:
+- A triangle function (or generalised Huber weight), with $k_1 \geq 0$ and $k_2 \geq k_1$ as threshold parameters:
 ```{=latex}
 \begin{equation}
 w_i =
 \begin{cases}
-1 & \text{if } \left| x_i \right| \leq k_1\\
- \\
-0 & \text{if } \left| x_i \right| > k_1
+1 & \text{if } \left| x_i \right| < k_1\\
+1 - \frac{\left| x_i \right| - k_1}{k_2 - k_1} & \text{if } k_1 \leq \left| x_i \right| \leq k_2 \\
+0 & \text{if } \left| x_i \right| > k_2
 \end{cases}
 \end{equation}
+```
+
+- A tapered cosine function [@Tukey1967-eb], with $k_1 \geq 0$ and $k_2 \geq k_1$ as threshold parameters:
+```{=latex}
+\begin{equation}
+w_i =
+\begin{cases}
+1 & \text{if } \left| x_i \right| < k_1\\
+0.5 + 0.5 \cos\left(\pi \frac{\left| x_i \right| - k_1}{k_2 - k_1} \right) & \text{if } k_1 \leq \left| x_i \right| \leq k_2 \\
+0 & \text{if } \left| x_i \right| > k_2
+\end{cases}
+\end{equation}
+```
+
+All weighting functions share the characteristic that for $x_i < k_1$, instances are fully weighted, i.e. when $k_1 > 0$ the weighting functions are symmetric window functions with a flat top. The triangle and tapered cosine functions then gradually down-weight instances with $k_1 \leq x_i \leq k_2$, and assign no weight to instances $x_i > k_2$.
+
+```{r weight-functions , echo=FALSE, warning=FALSE, message=FALSE, fig.cap=cap, eval = FALSE}
+cap <- paste0(
+  "Weighting functions investigated in this study to make power transformations more robust against outliers. ",
+  "The step function was parameterised with $k_1 = 0.60$. ",
+  "The triangle and tapered cosine functions were both parameterised with $k_1 = 0.30$ and $k_2 = 0.90$.")
+
+# Non-standard evaluation
+d <- distribution <- method <- mean_lambda <- sd_lambda <- NULL
+
+data_step <- data.table::data.table(x = seq(from=-1.0, to=1.0, by=0.001))
+data_step[, "weight":=power.transform:::.step_window(x, k1=0.60)]
+
+p_step <- ggplot2::ggplot(
+  data = data_step,
+  mapping = ggplot2::aes(
+    x = x,
+    y = weight))
+p_step <- p_step + plot_theme
+p_step <- p_step + ggplot2::geom_line()
+p_step <- p_step + ggplot2::ggtitle(label="step")
+p_step <- p_step + ggplot2::theme(
+  plot.title=ggplot2::element_text(
+    hjust=0.5,
+    size=ggplot2::rel(1.0)))
+
+data_triangle <- data.table::data.table(x = seq(from=-1.0, to=1.0, by=0.001))
+data_triangle[, "weight":=power.transform:::.triangular_window(x, k1=0.30, k2=0.90)]
+
+p_triangle <- ggplot2::ggplot(
+  data = data_triangle,
+  mapping = ggplot2::aes(
+    x = x,
+    y = weight))
+p_triangle <- p_triangle + plot_theme
+p_triangle <- p_triangle + ggplot2::geom_line()
+p_triangle <- p_triangle + ggplot2::ggtitle(label="triangle")
+p_triangle <- p_triangle + ggplot2::theme(
+  plot.title=ggplot2::element_text(
+    hjust=0.5,
+    size=ggplot2::rel(1.0)),
+  axis.text.y = ggplot2::element_blank(),
+  axis.title.y = ggplot2::element_blank())
+
+data_cosine <- data.table::data.table(x = seq(from=-1.0, to=1.0, by=0.001))
+data_cosine[, "weight":=power.transform:::.tapered_cosine_window(x, k1=0.30, k2=0.90)]
+
+p_cosine <- ggplot2::ggplot(
+  data = data_cosine,
+  mapping = ggplot2::aes(
+    x = x,
+    y = weight))
+p_cosine <- p_cosine + plot_theme
+p_cosine <- p_cosine + ggplot2::geom_line()
+p_cosine <- p_cosine + ggplot2::ggtitle(label="tapered cosine")
+p_cosine <- p_cosine + ggplot2::theme(
+  plot.title = ggplot2::element_text(
+    hjust = 0.5,
+    size = ggplot2::rel(1.0)),
+  axis.text.y = ggplot2::element_blank(),
+  axis.title.y = ggplot2::element_blank())
+
+p <- egg::ggarrange(plots=list(p_step, p_triangle, p_cosine), ncol=3, draw=FALSE)
+p
 ```
 
 <!-- Weights $w_i$ can be set based on the original feature $x$, as well as the transformed feature $\phi^{\lambda, x_0} (x)$. @Raymaekers2021-kq use the latter: -->
@@ -770,7 +849,108 @@ knitr::kable(
 
 Outliers may be presented in the data, and affect estimation of power transformation parameters. Such outliers should be down-weighted during the optimisation process. Weights can be assigned using three different data representations: 1. the original feature values; 2. the feature values after power transformation; 3. the residual errors between transformed feature values and their expected values according to the normal distribution.
 
+```{r, echo=FALSE, warning=FALSE, message=FALSE, eval = FALSE}
 
+set.seed(95)
+
+.compute_lambda <- function(x){
+  # Create transformer object.
+  transformer <- suppressWarnings(
+    power.transform::find_transformation_parameters(
+      x = x,
+      method = "yeo_johnson",
+      robust = FALSE,
+      shift = TRUE))
+  
+  return(transformer@lambda)
+}
+
+# Generate table of asymmetric generalised normal distribution parameters.
+n_distributions <- 100
+
+# Generate alpha, beta and n.
+n <- stats::runif(n=n_distributions, min=2, max=4)
+n <- round(10^n)
+
+alpha <- stats::runif(n=n_distributions, min=0.01, max=0.99)
+beta <- stats::runif(n=n_distributions, min=1.00, max=5.00)
+
+# Generate corresponding distributions.
+x <- mapply(
+  power.transform::ragn,
+  n = n,
+  alpha = alpha,
+  beta = beta)
+
+# Compute lambda values without weighting for Yeo-Johnson.
+target_lambda <- sapply(
+  x,
+  .compute_lambda)
+
+# Add outliers, between 0.00 and 0.10.
+n_outliers <- 10
+outlier_fraction <- (seq_len(n_outliers) - 1)^2 /((n_outliers-1)^2 * 10)
+
+# Find optimised k1 and k2 values for all combinations of weight sources and
+# weighting functions.
+x <- mapply(
+  function(x, n, alpha, beta, target_lambda, outlier_fraction){
+    
+    parameters <- list("n" = n, "alpha"=alpha, "beta" = beta, "target_lambda"=target_lambda)
+    
+    x <- lapply(
+      outlier_fraction,
+      function(k, x, parameters){
+        # Set parameters.
+        parameters$k <- k
+        
+        # Compute interquartile range.
+        interquartile_range <- stats::IQR(x)
+        
+        # Compute upper and lower quartiles.
+        q_lower <- stats::quantile(x, probs=0.25, names=FALSE)
+        q_upper <- stats::quantile(x, probs=0.75, names=FALSE)
+        
+        # Set data where the outliers will be copied into.
+        x_outlier <- x
+        
+        if(k != 0.0){
+          n_draw <- ceiling(k * 0.5 * length(x))
+          
+          # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
+          # than Q3 + 1.5 IQR.
+          outlier <- c(
+            q_lower - 1.5 * interquartile_range - 3.0 * stats::runif(n_draw),
+            q_upper + 1.5 * interquartile_range + 3.0 * stats::runif(n_draw))
+          
+          # Randomly insert outlier values.
+          x_outlier[sample(seq_along(x), size=2*n_draw, replace=FALSE)] <- outlier
+        }
+        
+        return(list(
+          "x" = x_outlier,
+          "parameters" = parameters))
+      },
+      x = x,
+      parameters)
+    
+    return(x)
+  },
+  x = x,
+  n = n,
+  alpha = alpha,
+  beta = beta,
+  target_lambda = target_lambda,
+  MoreArgs=list("outlier_fraction"=outlier_fraction),
+  SIMPLIFY=FALSE,
+  USE.NAMES=FALSE)
+
+x <- unlist(x, recursive = FALSE)
+
+# Optimise k1, k2 so that sum of absolute differences with target-lambda is
+# minimised for each combination of source and weighting method.
+
+```
 
 For robustness simulate:
 - A shifted normal distribution without, 0.1%, 0.2%, 0.5%, 1.0%, 2.0%, 5.0%, 10%, and 20% outliers mixed in.
@@ -778,7 +958,7 @@ For robustness simulate:
 - A shifted right-skewed distribution without, 0.1%, 0.2%, 0.5%, 1.0%, 2.0%, 5.0%, 10%, and 20% outliers mixed in.
 - To show: lambda for modified, and robust modified Yeo-Johnson distribution for: Raymaekers trimmed, Tukey Window
 
-```{r, include=FALSE, eval = FALSE}
+```{r, eval = FALSE}
 # Generator for creating parameters and data for all experiments.
 generate_experiment_data <- coro::generator(
   function(
