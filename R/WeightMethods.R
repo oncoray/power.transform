@@ -160,6 +160,9 @@ residual_cosine <- function(x, lambda, type, k1=0.30, k2=0.50, ...){
 .step_window <- function(x, k1, ...){
   # Set weights using a step window.
 
+  # k1 should be 0 or greater.
+  if(k1 < 0) return(NA_real_)
+
   # Initialise weights.
   w <- numeric(length(x)) + 1.0
 
@@ -174,12 +177,18 @@ residual_cosine <- function(x, lambda, type, k1=0.30, k2=0.50, ...){
 .triangular_window <- function(x, k1, k2, ...){
   # Set weights using a triangular window.
 
+  # k1 should be 0 or greater, and k2 cannot be smaller than k1.
+  if(k2 < k1) return(NA_real_)
+  if(k1 < 0) return(NA_real_)
+
   # Initialise weights.
   w <- numeric(length(x)) + 1.0
 
   # Set weights of elements between k1 and k2.
+  if(k1 != k2){
     lobe_elements <- which(abs(x) >= k1 & abs(x) <= k2)
     w[lobe_elements] <- 1.0 - (abs(x[lobe_elements]) - k1) / (k2 - k1)
+  }
 
   # Set weights of elements greater than k2.
   w[abs(x) > k2] <- 0.0
@@ -192,12 +201,18 @@ residual_cosine <- function(x, lambda, type, k1=0.30, k2=0.50, ...){
 .tapered_cosine_window <- function(x, k1, k2, ...){
   # Set weights using a tapered cosine window.
 
+  # k1 should be 0 or greater, and k2 cannot be smaller than k1.
+  if(k2 < k1) return(NA_real_)
+  if(k1 < 0) return(NA_real_)
+
   # Initialise weights.
   w <- numeric(length(x)) + 1.0
 
   # Set weights of elements between k1 and k2.
-  lobe_elements <- which(abs(x) >= k1 & abs(x) <= k2)
-  w[lobe_elements] <- 0.5 + 0.5 * cos((abs(x[lobe_elements]) - k1) / (k2 - k1) * pi)
+  if(k1 != k2){
+    lobe_elements <- which(abs(x) >= k1 & abs(x) <= k2)
+    w[lobe_elements] <- 0.5 + 0.5 * cos((abs(x[lobe_elements]) - k1) / (k2 - k1) * pi)
+  }
 
   # Set weights of elements greater than k2.
   w[abs(x) > k2] <- 0.0
