@@ -178,8 +178,8 @@ residual_cosine <- function(x, lambda, type, k1=0.30, k2=0.50, ...){
   w <- numeric(length(x)) + 1.0
 
   # Set weights of elements between k1 and k2.
-  lobe_elements <- which(abs(x) >= k1 & abs(x) <= k2)
-  w[lobe_elements] <- 1.0 - (abs(x) - k1) / (k2 - k1)
+    lobe_elements <- which(abs(x) >= k1 & abs(x) <= k2)
+    w[lobe_elements] <- 1.0 - (abs(x[lobe_elements]) - k1) / (k2 - k1)
 
   # Set weights of elements greater than k2.
   w[abs(x) > k2] <- 0.0
