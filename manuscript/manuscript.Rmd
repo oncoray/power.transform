@@ -28,6 +28,9 @@ require(data.table)
 require(latex2exp)
 require(coro)
 
+manuscript_dir <- file.path(
+  getwd())
+
 # Base font size.
 base_size <- 10
 
@@ -866,7 +869,7 @@ set.seed(95)
 }
 
 # Generate table of asymmetric generalised normal distribution parameters.
-n_distributions <- 10
+n_distributions <- 100
 
 # Generate alpha, beta and n.
 n <- stats::runif(n=n_distributions, min=2, max=4)
@@ -1010,15 +1013,12 @@ experiment_args <- coro::generator(
     }
   })
 
-
-experiments <- coro::collect(experiment_args())
-
-
 # Function for computing transformer parameters under optimisation constraints.
 compute_robust_lambda <- function(
     x,
     fun_args,
-    opt_args){
+    opt_args,
+    cl=NULL){
   
   # Custom parser.
   ..outlier_parser <- function(
@@ -1046,11 +1046,21 @@ compute_robust_lambda <- function(
     return(parameter_data)
   }
   
-  parameter_data <- lapply(
-    x,
-    ..outlier_parser,
-    fun_args = fun_args,
-    opt_args = opt_args)
+  if(is.null(cl)){
+    parameter_data <- lapply(
+      x,
+      ..outlier_parser,
+      fun_args = fun_args,
+      opt_args = opt_args)
+    
+  } else {
+    parameter_data <- parallel::parLapply(
+      cl = cl,
+      X = x,
+      fun = ..outlier_parser,
+      fun_args = fun_args,
+      opt_args = opt_args)
+  }
   
   return(parameter_data)
 }
@@ -1060,7 +1070,8 @@ compute_robust_lambda <- function(
 ..optimisation_function <- function(
   opt_param,
   x,
-  fun_args){
+  fun_args,
+  cl = NULL){
   
   # Parse options.
   opt_args <- list()
@@ -1070,7 +1081,8 @@ compute_robust_lambda <- function(
   parameter_data <- compute_robust_lambda(
     x = x,
     fun_args = fun_args,
-    opt_args = opt_args)
+    opt_args = opt_args,
+    cl = cl)
   
   lambda_error <- sapply(
     parameter_data,
@@ -1083,7 +1095,8 @@ compute_robust_lambda <- function(
 # Outer optimisation function
 .optimisation_function <- function(
     experiment,
-    x){
+    x,
+    cl = NULL){
   
   # Run optimiser.
   if(length(experiment$opt_args) > 0){
@@ -1105,7 +1118,8 @@ compute_robust_lambda <- function(
       upper = upper,
       control=list("xtol_rel"=1e-3, "ftol_rel"=1e-4),
       x = x,
-      fun_args = experiment$fun_args)
+      fun_args = experiment$fun_args,
+      cl = cl)
     
     if(length(h$par) == 1){
       return(list("name"=experiment$name, "k1" = h$par, "value" = h$value))
@@ -1118,20 +1132,25 @@ compute_robust_lambda <- function(
     value <- ..optimisation_function(
       opt_param=list(),
       x = x,
-      fun_args=experiment$fun_args)
+      fun_args=experiment$fun_args,
+      cl = cl)
     
     return(list("name"=experiment$name, "value" = value))
   }
 }
 
-lapply(
-  experiments,
+
+# Start cluster
+cl <- parallel::makeCluster(16L)
+
+experiment_results <- lapply(
+  coro::collect(experiment_args()),
   .optimisation_function,
-  x=x
-)
+  x = x,
+  cl = cl)
 
-
-
+# Stop cluster.
+parallel::stopCluster(cl)
 
 
 ```
