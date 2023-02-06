@@ -433,7 +433,7 @@ setMethod(
 setMethod(
   ".set_transformation_parameters",
   signature("transformationYeoJohnsonShift"),
-  function(object, x, lambda, optimiser="subplex", ...){
+  function(object, x, lambda, optimiser="subplex", backup_use_default=TRUE, ...){
 
     if(is.null(lambda)){
       # Pick very wide lambda-range, if lambda is NULL.
@@ -499,15 +499,17 @@ setMethod(
       # Algorithms”, Ph.D. thesis, Department of Computer Sciences, University
       # of Texas at Austin, 1990.
 
-      results <- nloptr::sbplx(
-        x0=c(search_grid$x_range[1], mean(search_grid$lambda_range)),
-        fn=opt_fun,
-        lower=c(search_grid$x_range[1], search_grid$lambda_range[1]),
-        upper=c(search_grid$x_range[2], search_grid$lambda_range[2]),
-        control=list("xtol_rel"=1e-3, ftol_rel=1e-4),
-        x=x,
-        ...,
-        type="yeo_johnson")
+      results <- tryCatch(
+        nloptr::sbplx(
+          x0=c(search_grid$x_range[1], mean(search_grid$lambda_range)),
+          fn=opt_fun,
+          lower=c(search_grid$x_range[1], search_grid$lambda_range[1]),
+          upper=c(search_grid$x_range[2], search_grid$lambda_range[2]),
+          control=list("xtol_rel"=1e-3, ftol_rel=1e-4),
+          x=x,
+          ...,
+          type="yeo_johnson"),
+        error = identity)
 
     } else if(optimiser == "nelder-mead"){
       # Nelder-Mead simplex algorithm
@@ -547,11 +549,22 @@ setMethod(
       stop(paste0("Optimiser not recognised: ", optimiser))
     }
 
-    # Extract optimal values.
-    shift <- results$par[1]
-    lambda <- results$par[2]
+    if(inherits(results, "error")){
+      if(results$message == "objective in x0 returns NA"){
+        shift <- NA_real_
+        lambda <- NA_real_
 
-    if(!is.finite(results$value) || !is.finite(shift) || !is.finite(lambda)){
+      } else {
+        stop(results)
+      }
+
+    } else {
+      # Extract optimal values.
+      shift <- results$par[1]
+      lambda <- results$par[2]
+    }
+
+    if(backup_use_default && (!is.finite(results$value) || !is.finite(shift) || !is.finite(lambda))){
       shift <- 0.0
       lambda <- 1.0
     }
