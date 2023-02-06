@@ -866,7 +866,7 @@ set.seed(95)
 }
 
 # Generate table of asymmetric generalised normal distribution parameters.
-n_distributions <- 100
+n_distributions <- 10
 
 # Generate alpha, beta and n.
 n <- stats::runif(n=n_distributions, min=2, max=4)
@@ -949,6 +949,190 @@ x <- unlist(x, recursive = FALSE)
 
 # Optimise k1, k2 so that sum of absolute differences with target-lambda is
 # minimised for each combination of source and weighting method.
+experiment_args <- coro::generator(
+  function(){
+    
+    # Non-robust transformation.
+    fun_args <- list(
+      "method" = "yeo_johnson",
+      "robust" = FALSE,
+      "shift" = TRUE)
+    
+    opt_args <- list()
+    
+    yield(list(
+      "name" = "non-robust",
+      "fun_args" = fun_args,
+      "opt_args" = opt_args
+    ))
+    
+    for(robustness_source in c("original", "transformed", "residual")){
+      
+      def_opt_limits <- list("k1"=c(0.0, 10.0), "k2"=c(0.0, 10.0))
+      
+      if(robustness_source == "original"){
+        def_opt_limits$k1[2] <- 1.0
+        def_opt_limits$k2[2] <- 1.0
+        
+        def_opt_init <- list("k1" = 0.8, "k2" = 0.95)
+        
+      } else if(robustness_source == "transformed"){
+        def_opt_init <- list("k1" = 1.5, "k2" = 3.0)
+        
+      } else if(robustness_source == "residual"){
+        def_opt_init <- list("k1" = 0.15, "k2" = 1.0)
+      }
+      
+      for(robustness_weighting_function in c("step", "triangle", "cosine")){
+        
+        fun_args <- list(
+          "method" = "yeo_johnson",
+          "robust" = TRUE,
+          "shift" = TRUE,
+          "weight_method" = paste0(robustness_source, "_", robustness_weighting_function),
+          "backup_use_default" = FALSE)
+        
+        opt_limits <- def_opt_limits
+        opt_init <- def_opt_init
+        
+        # Step-weighting only has k1 as a parameter.
+        if(robustness_weighting_function == "step"){
+          opt_limits$k2 <- NULL
+          opt_init$k2 <- NULL
+        }
+        
+        yield(list(
+          "name" = paste0(robustness_source, "-", robustness_weighting_function),
+          "fun_args" = fun_args,
+          "opt_args" = list("initial" = opt_init, "limits" = opt_limits)
+        ))
+      }
+    }
+  })
+
+
+experiments <- coro::collect(experiment_args())
+
+
+# Function for computing transformer parameters under optimisation constraints.
+compute_robust_lambda <- function(
+    x,
+    fun_args,
+    opt_args){
+  
+  # Custom parser.
+  ..outlier_parser <- function(
+    x,
+    fun_args,
+    opt_args
+  ){
+    # Create transformer.
+    transformer <- suppressWarnings(do.call(
+      power.transform::find_transformation_parameters,
+      args=c(
+        list("x" = x$x),
+        fun_args,
+        opt_args)))
+    
+    parameter_data <- c(
+      x$parameters,
+      opt_args,
+      list(
+        "weight_method" = fun_args$weight_method,
+        "lambda" = transformer@lambda,
+        "shift" = transformer@shift)
+    )
+    
+    return(parameter_data)
+  }
+  
+  parameter_data <- lapply(
+    x,
+    ..outlier_parser,
+    fun_args = fun_args,
+    opt_args = opt_args)
+  
+  return(parameter_data)
+}
+
+
+# Inner optimisation function that sets the loss.
+..optimisation_function <- function(
+  opt_param,
+  x,
+  fun_args){
+  
+  # Parse options.
+  opt_args <- list()
+  if(length(opt_param) >= 1) opt_args <- c(opt_args, list("k1"=opt_param[1]))
+  if(length(opt_param) >= 2) opt_args <- c(opt_args, list("k2"=opt_param[2]))
+  
+  parameter_data <- compute_robust_lambda(
+    x = x,
+    fun_args = fun_args,
+    opt_args = opt_args)
+  
+  lambda_error <- sapply(
+    parameter_data,
+    function(x) (abs(x$lambda - x$target_lambda)))
+  
+  return(sum(lambda_error))
+}
+
+
+# Outer optimisation function
+.optimisation_function <- function(
+    experiment,
+    x){
+  
+  # Run optimiser.
+  if(length(experiment$opt_args) > 0){
+    
+    x0 <- unlist(experiment$opt_args$initial)
+    
+    lower <- experiment$opt_args$limits$k1[1]
+    upper <- experiment$opt_args$limits$k1[2]
+    
+    if(length(experiment$opt_args$limits) > 1){
+      lower <- c(lower, experiment$opt_args$limits$k2[1])
+      upper <- c(upper, experiment$opt_args$limits$k2[2])
+    }
+    
+    h <- nloptr::sbplx(
+      x0 = x0,
+      fn = ..optimisation_function,
+      lower = lower,
+      upper = upper,
+      control=list("xtol_rel"=1e-3, "ftol_rel"=1e-4),
+      x = x,
+      fun_args = experiment$fun_args)
+    
+    if(length(h$par) == 1){
+      return(list("name"=experiment$name, "k1" = h$par, "value" = h$value))
+      
+    } else {
+      return(list("name"=experiment$name, "k1" = h$par[1], "k2" = h$par[2], "value" = h$value))
+    }
+    
+  } else {
+    value <- ..optimisation_function(
+      opt_param=list(),
+      x = x,
+      fun_args=experiment$fun_args)
+    
+    return(list("name"=experiment$name, "value" = value))
+  }
+}
+
+lapply(
+  experiments,
+  .optimisation_function,
+  x=x
+)
+
+
+
+
 
 ```
 
