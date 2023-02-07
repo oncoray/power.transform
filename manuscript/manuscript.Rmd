@@ -10,6 +10,7 @@ header-includes:
    - \usepackage{amsmath}
    - \usepackage{booktabs}
    - \DeclareMathOperator*{\argmax}{argmax}
+   - \DeclareMathOperator*{\argmin}{argmin}
    - \DeclareMathOperator{\sgn}{sgn}
 ---
 
@@ -120,27 +121,27 @@ parse_mean_sd_latex <- function(mu, sigma, digits=2L){
 
 # Introduction
 
-Numerical variables in datasets may strongly deviate from normal distributions, e.g. by being skewed. This may complicate further analysis. Power transformations [@Tukey1957-rt] can help improve normality of such features. The two most commonly used transformations are that of @Box1964-mz and @Yeo2000-vw. The Box-Cox transformation of a feature $x$ under the transformation parameter $\lambda$ is defined as:
+Numerical variables in datasets may strongly deviate from normal distributions, e.g. by being skewed. This may complicate further analysis. Power transformations [@Tukey1957-rt] can help improve normality of such features. The two most commonly used transformations are that of @Box1964-mz and @Yeo2000-vw. The Box-Cox transformation of a feature value $x_i$ of feature $\mathbf{X}=\left\{x_1, x_2, \ldots, x_n \right\}$ under the transformation parameter $\lambda$ is defined as:
 
 ```{=latex}
 \begin{equation}
-\phi_{\text{BC}}^\lambda (x) = 
+\phi_{\text{BC}}^\lambda (x_i) = 
 \begin{cases}
-\left(x^\lambda - 1 \right) / \lambda & \text{if } \lambda \neq 0\\
-\log(x) & \text{if } \lambda = 0
+\left(x_i^\lambda - 1 \right) / \lambda & \text{if } \lambda \neq 0\\
+\log(x_i) & \text{if } \lambda = 0
 \end{cases}
 \end{equation}
 ```
-One limitation of th Box-Cox transformation is that it is only defined for $x > 0$. In contrast, the Yeo-Johnson transformation under the transformation parameter $\lambda$ is defined for any $x \in \mathbb{R}$:
+One limitation of th Box-Cox transformation is that it is only defined for $x_i > 0$. In contrast, the Yeo-Johnson transformation under the transformation parameter $\lambda$ is defined for any $x_i \in \mathbb{R}$:
 
 ```{=latex}
 \begin{equation}
-\phi_{\text{YJ}}^\lambda (x) = 
+\phi_{\text{YJ}}^\lambda (x_i) = 
 \begin{cases}
-\left( \left( 1 + x \right)^\lambda - 1\right) / \lambda & \text{if } \lambda \neq 0 \text{ and } x \geq 0\\
-\log(1 + x) & \text{if } \lambda = 0 \text{ and } x \geq 0\\
--\left( \left( 1 - x\right)^{2 - \lambda} - 1 \right) / \left(2 - \lambda \right) & \text{if } \lambda \neq 2 \text{ and } x < 0\\
--\log(1 - x) & \text{if } \lambda = 2 \text{ and } x < 0
+\left( \left( 1 + x_i \right)^\lambda - 1\right) / \lambda & \text{if } \lambda \neq 0 \text{ and } x_i \geq 0\\
+\log(1 + x_i) & \text{if } \lambda = 0 \text{ and } x_i \geq 0\\
+-\left( \left( 1 - x_i\right)^{2 - \lambda} - 1 \right) / \left(2 - \lambda \right) & \text{if } \lambda \neq 2 \text{ and } x_i < 0\\
+-\log(1 - x_i) & \text{if } \lambda = 2 \text{ and } x_i < 0
 \end{cases}
 \end{equation}
 ```
@@ -148,7 +149,7 @@ The $\lambda$-parameter is typically optimised using maximum likelihood estimati
 
 Power transformation does not guarantee that transformed variables are normally distributed. In fact, depending on location and scale of the variable, power transformation may reduce normality, as shown in Figure **INSERT REFERENCE**. This is problematic for automated power transformations, for three reasons. First, normality is often desired in machine learning applications. Second, a large negative or positive $\lambda$-parameter may lead to numeric issues. Third, we currently do not have a test to automatically reject poor transformations. Statistical tests for normality exist, such as the Shapiro-Wilk test [@Shapiro1965-zd]. Given sufficiently large sample sizes, these tests can detect trivial deviations from normality and are therefore not well-suited for practical applications of automated power transformations.
 
-```{r reduced-normality, echo=FALSE, fig.cap=cap, eval=FALSE}
+```{r reduced-normality, echo=FALSE, fig.cap=cap, eval=FALSE, warning=FALSE}
 cap <- paste0(
   "Power transformations may reduce normality depending on location. ",
   "Variable $x$ consists of $10000$ values are randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$. ",
@@ -288,45 +289,45 @@ Here we make the following contributions:
 
 ## Shift-sensitive power transformation
 
-Box-Cox and Yeo-Johnson transformations are modified by adding a shift parameter $x_0$. The modified Box-Cox transformation of a feature $x$ under transformation parameter $\lambda$ and shift parameter $x_0$ is then:
+Box-Cox and Yeo-Johnson transformations are modified by adding a shift parameter $x_0$. The shift-sensitive Box-Cox transformation of a feature value $x_i$ of feature $\mathbf{X}$ under transformation parameter $\lambda$ and shift parameter $x_0$ is then:
 
 ```{=latex}
 \begin{equation}
-\phi_{\text{BC}}^{\lambda, x_0} (x) = 
+\phi_{\text{BC}}^{\lambda, x_0} (x_i) = 
 \begin{cases}
-\left( \left(x - x_0 \right)^\lambda - 1 \right) / \lambda & \text{if } \lambda \neq 0\\
-\log(x - x_0) & \text{if } \lambda = 0
+\left( \left(x_i - x_0 \right)^\lambda - 1 \right) / \lambda & \text{if } \lambda \neq 0\\
+\log(x_i - x_0) & \text{if } \lambda = 0
 \end{cases}
 \end{equation}
 ```
-Where $x - x_0 > 0$. Likewise, the modified Yeo-Johnson transformation of a feature $x$ under transformation parameter $\lambda$ and shift parameter $x_0$ is:
+Where $x_i - x_0 > 0$. Likewise, the shift-sensitive Yeo-Johnson transformation of a feature value $x_i$ under transformation parameter $\lambda$ and shift parameter $x_0$ is:
 
 ```{=latex}
 \begin{equation}
-\phi_{\text{YJ}}^{\lambda, x_0} (x) = 
+\phi_{\text{YJ}}^{\lambda, x_0} (x_i) = 
 \begin{cases}
-\left( \left( 1 + x - x_0\right)^\lambda - 1\right) / \lambda & \text{if } \lambda \neq 0 \text{ and } x - x_0 \geq 0\\
-\log(1 + x - x_0) & \text{if } \lambda = 0 \text{ and } x - x_0 \geq 0\\
--\left( \left( 1 - x - x_0\right)^{2 - \lambda} - 1 \right) / \left(2 - \lambda \right) & \text{if } \lambda \neq 2 \text{ and } x - x_0< 0\\
--\log(1 - x - x_0) & \text{if } \lambda = 2 \text{ and } x - x_0 < 0
+\left( \left( 1 + x_i - x_0\right)^\lambda - 1\right) / \lambda & \text{if } \lambda \neq 0 \text{ and } x_i - x_0 \geq 0\\
+\log(1 + x_i - x_0) & \text{if } \lambda = 0 \text{ and } x_i - x_0 \geq 0\\
+-\left( \left( 1 - x_i - x_0\right)^{2 - \lambda} - 1 \right) / \left(2 - \lambda \right) & \text{if } \lambda \neq 2 \text{ and } x_i - x_0< 0\\
+-\log(1 - x_i - x_0) & \text{if } \lambda = 2 \text{ and } x_i - x_0 < 0
 \end{cases}
 \end{equation}
 ```
-For both modified transformations, $\lambda$ and $x_0$ are obtained by maximising the normal log-likelihood function. For the modified Box-Cox transformation, and ignoring constant terms, this can be written as:
+For both shift-sensitive transformations, $\lambda$ and $x_0$ are obtained by maximising the normal log-likelihood function. For the shift-sensitive Box-Cox transformation, and ignoring constant terms, this can be written as:
 
 ```{=latex}
 \begin{equation}
 \left\{ \hat{\lambda}^{\text{BC}}, \hat{x}_0^{\text{BC}} \right\} = \argmax_{\lambda, x_0} \sum_{i=1}^n -\frac{1}{2}\log(\sigma^2) + (\lambda - 1) \log(x_i - x_0)
 \end{equation}
 ```
-where $\sigma^2$ is the variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0} (x)$. Similarly for the modified Yeo-Johnson transformation:
+where $\sigma^2$ is the variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0} (\mathbf{X})$. Similarly for the shift-sensitive Yeo-Johnson transformation:
 
 ```{=latex}
 \begin{equation}
 \left\{ \hat{\lambda}^{\text{YJ}}, \hat{x}_0^{\text{YJ}} \right\} = \argmax_{\lambda, x_0} \sum_{i=1}^n -\frac{1}{2}\log(\sigma^2) + (\lambda - 1) \sgn(x_i - x_0) \log(1 + |x_i - x_0|)
 \end{equation}
 ```
-where $\sigma^2$ is the variance of Yeo-Johnson transformed feature $\phi_{\text{YJ}}^{\lambda, x_0} (x)$.
+where $\sigma^2$ is the variance of Yeo-Johnson transformed feature $\phi_{\text{YJ}}^{\lambda, x_0} (\mathbf{X})$.
 
 ## Robust shift-sensitive power transformations
 
@@ -350,7 +351,7 @@ Analogously, the weighted maximum log-likelihood estimator for the modified Yeo-
 
 ```{=latex}
 \begin{equation}
-\left\{ \hat{\lambda}^{\text{rYJ}}, \hat{x}_0^{\text{rYJ}} \right\} = \argmax_{\lambda, x_0} \sum_{i=1}^n w_i \left[ -\frac{1}{2}\log(\sigma^2) + (\lambda - 1) \sgn(x_i - x_0) \log(1 + |x_i - x_0|) \right]
+\left\{ \hat{\lambda}^{\text{rYJ}}, \hat{x}_0^{\text{rYJ}} \right\} = \argmax_{\lambda, x_0} \sum_{i=1}^n w_i \left[ -\frac{1}{2}\log(\sigma^2_w) + (\lambda - 1) \sgn(x_i - x_0) \log(1 + |x_i - x_0|) \right]
 \end{equation}
 ```
 where $\sigma^2_w$ is the weighted variance of the Yeo-Johnson transformed feature $\phi_{\text{YJ}}^{\lambda, x_0} (x)$:
@@ -552,7 +553,11 @@ Here, $F_{\Gamma}^{-1}$ is the quantile function of the gamma distribution with 
 
 ## Goodness of fit
 
-
+```{=latex}
+\begin{equation}
+\left\{ \hat{\lambda}^{\text{rYJ}}, \hat{x}_0^{\text{rYJ}} \right\} = \argmax_{\lambda, x_0} \sum_{i=1}^n w_i \left[ -\frac{1}{2}\log(\sigma^2) + (\lambda - 1) \sgn(x_i - x_0) \log(1 + |x_i - x_0|) \right]
+\end{equation}
+```
 
 # Simulation
 
@@ -848,9 +853,35 @@ knitr::kable(
   booktabs = TRUE)
 ```
 
-## Weighting based on feature values offers best robustness
+## Weighting based on empirical distribution is the most robust
 
-Outliers may be presented in the data, and affect estimation of power transformation parameters. Such outliers should be down-weighted during the optimisation process. Weights can be assigned using three different data representations: 1. the original feature values; 2. the feature values after power transformation; 3. the residual errors between transformed feature values and their expected values according to the normal distribution.
+Outliers may be presented in the data, and affect estimation of power transformation parameters. The log-likelihood function is weighted to assign less weight to outlier instances. Weighting is based on either probabilities of the empirical distribution of the original feature, the z-score of the transformed feature values, or the residual error between the z-score of the transformed feature values and their expected z-score based on the normal distribution. A weight is then assigned to each instance using one of three weighting functions: step, triangle and tapered cosine. The weighting functions have one (step) or two (triangle, tapered cosine) parameters. Here we investigate how these parameters should be set to yield weights that are robust to outliers.
+
+Let us randomly draw $m_d=100$ asymmetric generalised normal distributions. Each distribution is parametrised with a randomly chosen skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$. Location and scale parameters are set as $\mu = 0$ and $\sigma = 1$, respectively. $n = \lceil 10^\gamma \rceil$ values are then randomly drawn, with $\gamma \sim U\left(2, 4\right)$. That is between $100$ and $10000$ values are drawn to create $\mathbf{X}_i$. 
+
+Outlier values are then drawn to randomly replace a fraction of the values of $\mathbf{X}_i$. This is repeated $m_{out} = 10$ times, with outlier fractions $f_{out,j}$ regularly spaced in $[0.00, 0.10]$. Thus up to 10 percent of the values may be replaced by outliers. Outlier values are set according to @Tukey1977-xm. Let $x^{*} \sim U\left(-2, 2\right)$. Then the corresponding outlier value is:
+
+```{=latex}
+\begin{equation}
+x_{out} =
+\begin{cases}
+Q_1 - \left(1.5 - x^{*} \right) \text{IQR} & \text{if } x^{*} < 0 \\
+Q_3 + \left(1.5 + x^{*} \right) \text{IQR} & \text{if } x^{*} \geq 0
+\end{cases}
+\end{equation}
+```
+
+Here, $Q_1$, $Q_3$ and $\text{IQR}$ are the first quartile, third quartile and interquartile range of $\mathbf{X}_i$, respectively. Outlier values randomly replace values in $\mathbf{X}_i$ to create $\mathbf{X}_{i,j}$.
+
+To find the optimal values for the weighting function parameters $k_1$ and $k_2$ (if applicable), we minimise the absolute difference between the $\hat{\lambda}^r$ parameter obtained for transformation in the presence of outliers, and the $\hat{\lambda}_0$ parameter obtained using the non-robust modified transformation in absence of outliers:
+
+```{=latex}
+\begin{equation}
+\left\{ \hat{k}_1, \hat{k}_2 \right\} = \argmin_{k_1, k_2} \sum_{i=1}^{m_d} \sum_{j=1}^{m_{out}} \left| \hat{\lambda}^r \left(\mathbf{X}_{i, j}; k_1, k_2 \right) - \hat{\lambda}_{0} \left(\mathbf{X}_i \right) \right|
+\end{equation}
+```
+
+Optimisation is performed using the subplex algorithm implemented in the *nloptr* package for R [@Rowan1990-sn, @Ypma2022-tc].
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, eval = FALSE}
 
@@ -873,7 +904,7 @@ n_distributions <- 100
 
 # Generate alpha, beta and n.
 n <- stats::runif(n=n_distributions, min=2, max=4)
-n <- round(10^n)
+n <- ceiling(10^n)
 
 alpha <- stats::runif(n=n_distributions, min=0.01, max=0.99)
 beta <- stats::runif(n=n_distributions, min=1.00, max=5.00)
@@ -918,16 +949,22 @@ x <- mapply(
         x_outlier <- x
         
         if(k != 0.0){
-          n_draw <- ceiling(k * 0.5 * length(x))
+          n_draw <- ceiling(k * length(x))
           
           # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
           # than Q3 + 1.5 IQR.
-          outlier <- c(
-            q_lower - 1.5 * interquartile_range - 3.0 * stats::runif(n_draw),
-            q_upper + 1.5 * interquartile_range + 3.0 * stats::runif(n_draw))
+          x_random <- stats::runif(n_draw, min=-2.0, max=2.0)
+          outlier <- numeric(n_draw)
+          if(any(x_random < 0)){
+            outlier[x_random < 0] <- q_lower - 1.5 * interquartile_range + x_random[x_random < 0] * interquartile_range
+          }
+          
+          if(any(x_random >= 0)){
+            outlier[x_random >= 0] <- q_upper + 1.5 * interquartile_range + x_random[x_random >= 0] * interquartile_range
+          }
           
           # Randomly insert outlier values.
-          x_outlier[sample(seq_along(x), size=2*n_draw, replace=FALSE)] <- outlier
+          x_outlier[sample(seq_along(x), size=n_draw, replace=FALSE)] <- outlier
         }
         
         return(list(
@@ -1141,7 +1178,7 @@ compute_robust_lambda <- function(
 
 
 # Start cluster
-cl <- parallel::makeCluster(16L)
+cl <- parallel::makeCluster(8L)
 
 experiment_results <- lapply(
   coro::collect(experiment_args()),
@@ -1152,8 +1189,10 @@ experiment_results <- lapply(
 # Stop cluster.
 parallel::stopCluster(cl)
 
-
+saveRDS(experiment_results, file = file.path(manuscript_dir, "robustness_comparison.RDS"))
 ```
+
+
 
 For robustness simulate:
 - A shifted normal distribution without, 0.1%, 0.2%, 0.5%, 1.0%, 2.0%, 5.0%, 10%, and 20% outliers mixed in.
