@@ -16,7 +16,8 @@ header-includes:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-  echo = TRUE,
+  echo = FALSE,
+  eval = TRUE,
   fig.align= "center")
 
 # Allow for defining figure captions within a chunk.
@@ -29,8 +30,7 @@ require(data.table)
 require(latex2exp)
 require(coro)
 
-manuscript_dir <- file.path(
-  getwd())
+manuscript_dir <- file.path("C:/Users/alexz/Documents/GitHub/power.transform/manuscript")
 
 # Base font size.
 base_size <- 10
@@ -147,9 +147,9 @@ One limitation of th Box-Cox transformation is that it is only defined for $x_i 
 ```
 The $\lambda$-parameter is typically optimised using maximum likelihood estimation under the assumption that the transformed feature is normally distributed. As noted by Raymaekers and Rousseeuw, this approach is very sensitive to the presence of outliers, and robust versions of Box-Cox and Yeo-Johnson transformations were devised [@Raymaekers2021-kq].
 
-Power transformation does not guarantee that transformed variables are normally distributed. In fact, depending on location and scale of the variable, power transformation may reduce normality, as shown in Figure **INSERT REFERENCE**. This is problematic for automated power transformations, for three reasons. First, normality is often desired in machine learning applications. Second, a large negative or positive $\lambda$-parameter may lead to numeric issues. Third, we currently do not have a test to automatically reject poor transformations. Statistical tests for normality exist, such as the Shapiro-Wilk test [@Shapiro1965-zd]. Given sufficiently large sample sizes, these tests can detect trivial deviations from normality and are therefore not well-suited for practical applications of automated power transformations.
+Power transformation does not guarantee that transformed variables are normally distributed. In fact, depending on location and scale of the variable, power transformation may reduce normality, as shown in Figure **INSERT**. This is problematic for automated power transformations, for three reasons. First, normality is often desired in machine learning applications. Second, a large negative or positive $\lambda$-parameter may lead to numeric issues. Third, we currently do not have a test to automatically reject poor transformations. Statistical tests for normality exist, such as the Shapiro-Wilk test [@Shapiro1965-zd]. However, given sufficiently large sample sizes, these tests can detect trivial deviations from normality and are therefore not well-suited for practical applications of automated power transformations.
 
-```{r reduced-normality, echo=FALSE, fig.cap=cap, eval=FALSE, warning=FALSE}
+```{r reduced-normality, echo=FALSE, fig.cap=cap, warning=FALSE}
 cap <- paste0(
   "Power transformations may reduce normality depending on location. ",
   "Variable $x$ consists of $10000$ values are randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$. ",
@@ -331,30 +331,30 @@ where $\sigma^2$ is the variance of Yeo-Johnson transformed feature $\phi_{\text
 
 ## Robust shift-sensitive power transformations
 
-Real-world data may contain outliers, to which maximum likelihood estimation can be sensitive. Their presence may lead to poor transformations to normality, as shown in Figure **INSERT REFERENCE**. As indicated by @Raymaekers2021-kq, the general aim of power transformations should be to transform non-outlier data to normality, i.e. achieve *central normality*. To achieve this, they devised an iterative procedure to find a robust estimate of the transformation parameter $\lambda$. Because $\lambda$ is updated during this procedure, simultaneous estimation of $\lambda$ and $x_0$ for modified power transformations is not possible.
+Real-world data may contain outliers, to which maximum likelihood estimation can be sensitive. Their presence may lead to poor transformations to normality, as shown in Figure **INSERT**. As indicated by @Raymaekers2021-kq, the general aim of power transformations should be to transform non-outlier data to normality, i.e. achieve *central normality*. To achieve this, they devised an iterative procedure to find a robust estimate of the transformation parameter $\lambda$. Because $\lambda$ is updated during their procedure, simultaneous estimation of $\lambda$ and $x_0$ for shift-sensitive power transformations is not possible.
 
-In essence, obtaining transformation parameters that provide central normality requires identifying outliers in the data, and weighting such instances during the optimisation process. @Raymaekers2021-kq do this (during the final steps of the iterative procedure) by introducing a weighted maximum likelihood estimation. This weighted maximum log-likelihood estimator is based on equations **INSERT REFERENCE**. The weighted maximum log-likelihood estimator for the modified Box-Cox power transformation is:
+In essence, obtaining robust transformation parameters that provide central normality requires identifying outliers in the data and weighting such instances during the optimisation process. @Raymaekers2021-kq do this (during the final steps of their iterative procedure) through a weighted maximum likelihood estimation. This weighted maximum log-likelihood estimator is based on equations **INSERT**. The weighted maximum log-likelihood estimator for the shift-sensitive Box-Cox power transformation is:
 
 ```{=latex}
 \begin{equation}
 \left\{ \hat{\lambda}^{\text{rBC}}, \hat{x}_0^{\text{rBC}} \right\} = \argmax_{\lambda, x_0} \sum_{i=1}^n w_i \left[ -\frac{1}{2}\log(\sigma^2_w) + (\lambda - 1) \log(x_i - x_0) \right]
 \end{equation}
 ```
-where $\sigma^2_w$ is the weighted variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0} (x)$:
+where $\sigma^2_w$ is the weighted variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0} (\mathbf{X})$:
 
 ```{=latex}
 \begin{equation}
 \sigma_w^2 = \frac{\sum_{i=1}^n w_i \left(\phi_{\text{BC}}^{\lambda, x_0} (x_i) - \mu_w \right)^2}{\sum_{i=1}^n w_i} \quad \text{with } \mu_w = \frac{\sum_{i=1}^n \phi_{\text{BC}}^{\lambda, x_0} (x_i)} {\sum_{i=1}^n w_i}
 \end{equation}
 ```
-Analogously, the weighted maximum log-likelihood estimator for the modified Yeo-Johnson power transformation is:
+Analogously, the weighted maximum log-likelihood estimator for the shift-sensitive Yeo-Johnson power transformation is:
 
 ```{=latex}
 \begin{equation}
 \left\{ \hat{\lambda}^{\text{rYJ}}, \hat{x}_0^{\text{rYJ}} \right\} = \argmax_{\lambda, x_0} \sum_{i=1}^n w_i \left[ -\frac{1}{2}\log(\sigma^2_w) + (\lambda - 1) \sgn(x_i - x_0) \log(1 + |x_i - x_0|) \right]
 \end{equation}
 ```
-where $\sigma^2_w$ is the weighted variance of the Yeo-Johnson transformed feature $\phi_{\text{YJ}}^{\lambda, x_0} (x)$:
+where $\sigma^2_w$ is the weighted variance of the Yeo-Johnson transformed feature $\phi_{\text{YJ}}^{\lambda, x_0} (\mathbf{X})$:
 
 ```{=latex}
 \begin{equation}
@@ -364,21 +364,21 @@ where $\sigma^2_w$ is the weighted variance of the Yeo-Johnson transformed featu
 
 There are a few options based on which weights may be set. Here, we investigate three:
 
-- Set weights based on probabilities of the empirical distribution of the original feature $x$. Probabilities are determined as $p_i = \frac{i - 1/3}{n + 1/3}$, with $i = 1, 2, \ldots n$, with $n$ the number of instances of feature $x$.
+- Set weights based on probabilities of the empirical distribution of the original feature $\mathbf{X}$. Probabilities are determined as $p_i = \frac{i - 1/3}{n + 1/3}$, with $i = 1, 2, \ldots n$, with $n$ the number of instances of feature $\mathbf{X}$.
 
-- Set weights based on z-score of the transformed feature $\phi^{\lambda, x_0} (x)$. After @Raymaekers2021-kq, $z_i = \frac{\phi^{\lambda, x_0}(x_i) - \mu_M}{\sigma_M}$. Here, $\mu_M$ and $\sigma_M$ are robust Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0} (x)$ [@Huber1981-su].
+- Set weights based on z-score of the transformed feature $\phi^{\lambda, x_0} (\mathbf{X})$. After @Raymaekers2021-kq, $z_i = \frac{\phi^{\lambda, x_0}(x_i) - \mu_M}{\sigma_M}$. Here, $\mu_M$ and $\sigma_M$ are robust Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0} (\mathbf{X})$ [@Huber1981-su].
 
-- Set weights based on the residual error between the z-score of the transformed feature $\phi^{\lambda, x_0} (x)$ and the theoretical z-score from a standard normal distribution: $r_i =\left| \left( \phi^{\lambda, x_0}(x_i) - \mu_M)\right) / \sigma_M - F^{-1}_{\mathcal{N}}(p_i) \right|$, with $\mu_M$, $\sigma_M$ and $p_i$ as defined above.
+- Set weights based on the residual error between the z-score of the transformed feature $\phi^{\lambda, x_0} (\mathbf{X})$ and the theoretical z-score from a standard normal distribution: $r_i =\left| \left( \phi^{\lambda, x_0}(x_i) - \mu_M)\right) / \sigma_M - F^{-1}_{\mathcal{N}}(p_i) \right|$, with $\mu_M$, $\sigma_M$ and $p_i$ as defined above.
 
-Based on either of the above, weights are set using a weighting function. We will investigate the following functions, where $x_i$ can be either $p^{*}_i=2 \left( p_i - 0.5\right)$ (so that the quantiles are zero-centred), $z_i$ or $r_i$:
+Based on either of the above, weights are set using a weighting function. We will investigate the following functions, where $\dot{x}_i$ can be either $p^{*}_i=2 \left( p_i - 0.5\right)$ (so that the quantiles are zero-centred), $z_i$ or $r_i$:
 
 - A step function, with $k_1 \geq 0$ as threshold parameter:
 ```{=latex}
 \begin{equation}
 w_i =
 \begin{cases}
-1 & \text{if } \left| x_i \right| \leq k_1\\
-0 & \text{if } \left| x_i \right| > k_1
+1 & \text{if } \left| \dot{x}_i \right| \leq k_1\\
+0 & \text{if } \left| \dot{x}_i \right| > k_1
 \end{cases}
 \end{equation}
 ```
@@ -388,9 +388,9 @@ w_i =
 \begin{equation}
 w_i =
 \begin{cases}
-1 & \text{if } \left| x_i \right| < k_1\\
-1 - \frac{\left| x_i \right| - k_1}{k_2 - k_1} & \text{if } k_1 \leq \left| x_i \right| \leq k_2 \\
-0 & \text{if } \left| x_i \right| > k_2
+1 & \text{if } \left| \dot{x}_i \right| < k_1\\
+1 - \frac{\left| \dot{x}_i \right| - k_1}{k_2 - k_1} & \text{if } k_1 \leq \left| \dot{x}_i \right| \leq k_2 \\
+0 & \text{if } \left| \dot{x}_i \right| > k_2
 \end{cases}
 \end{equation}
 ```
@@ -400,23 +400,23 @@ w_i =
 \begin{equation}
 w_i =
 \begin{cases}
-1 & \text{if } \left| x_i \right| < k_1\\
-0.5 + 0.5 \cos\left(\pi \frac{\left| x_i \right| - k_1}{k_2 - k_1} \right) & \text{if } k_1 \leq \left| x_i \right| \leq k_2 \\
-0 & \text{if } \left| x_i \right| > k_2
+1 & \text{if } \left| \dot{x}_i \right| < k_1\\
+0.5 + 0.5 \cos\left(\pi \frac{\left| \dot{x}_i \right| - k_1}{k_2 - k_1} \right) & \text{if } k_1 \leq \left| \dot{x}_i \right| \leq k_2 \\
+0 & \text{if } \left| \dot{x}_i \right| > k_2
 \end{cases}
 \end{equation}
 ```
 
-All weighting functions share the characteristic that for $x_i < k_1$, instances are fully weighted, i.e. when $k_1 > 0$ the weighting functions are symmetric window functions with a flat top. The triangle and tapered cosine functions then gradually down-weight instances with $k_1 \leq x_i \leq k_2$, and assign no weight to instances $x_i > k_2$.
+All weighting functions share the characteristic that for $\dot{x}_i < k_1$, instances are fully weighted, i.e. when $k_1 > 0$ the weighting functions are symmetric window functions with a flat top. The triangle and tapered cosine functions then gradually down-weight instances with $k_1 \leq \dot{x}_i \leq k_2$, and assign no weight to instances $x_i > k_2$.
 
-```{r weight-functions , echo=FALSE, warning=FALSE, message=FALSE, fig.cap=cap, eval = FALSE}
+```{r weight-functions, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
   "Weighting functions investigated in this study to make power transformations more robust against outliers. ",
   "The step function was parameterised with $k_1 = 0.60$. ",
   "The triangle and tapered cosine functions were both parameterised with $k_1 = 0.30$ and $k_2 = 0.90$.")
 
 # Non-standard evaluation
-d <- distribution <- method <- mean_lambda <- sd_lambda <- NULL
+d <- distribution <- method <- mean_lambda <- sd_lambda <- weight <- NULL
 
 data_step <- data.table::data.table(x = seq(from=-1.0, to=1.0, by=0.001))
 data_step[, "weight":=power.transform:::.step_window(x, k1=0.60)]
@@ -474,42 +474,9 @@ p <- egg::ggarrange(plots=list(p_step, p_triangle, p_cosine), ncol=3, draw=FALSE
 p
 ```
 
-<!-- Weights $w_i$ can be set based on the original feature $x$, as well as the transformed feature $\phi^{\lambda, x_0} (x)$. @Raymaekers2021-kq use the latter: -->
-
-<!-- ```{=latex} -->
-<!-- \begin{equation} -->
-<!-- w_i = -->
-<!-- \begin{cases} -->
-<!-- 1 & \text{if } \frac{\left| \phi^{\lambda}(x) - \mu_M \right|}{\sigma_M} \leq Q_{\mathcal{N}} (0.995)\\ -->
-<!-- 0 & \text{if } \frac{\left| \phi^{\lambda}(x) - \mu_M \right|}{\sigma_M} > Q_{\mathcal{N}} (0.995) -->
-<!-- \end{cases} -->
-<!-- \end{equation} -->
-<!-- ``` -->
-<!-- Here, $\mu_M$ and $\sigma_M$ are robust Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0} (x)$ [@Huber1981-su]. In short, weights for all standardised transformed feature values that exceed the value corresponding to the $99.5^\text{th}$ percentile of the normal distribution ($Q_{\mathcal{N}}(0.995)$) are set to 0, and remaining weights are left at 1. This works well if outliers are relatively rare in the transformed feature values, which we cannot *a priori* assume in our use case. Using lower quantile values comes at the cost of essentially trimming more and more instances from the dataset. -->
-
-<!-- Another option is to weight instances based on their absolute residuals, $\left| \left( \phi^{\lambda, x_0}(x_i) - \mu_M)\right) / \sigma_M - Q_{\mathcal{N}}(q_i) \right|$, where $q_i$ is equispaced quantile probability for instance $i$. This weights instances by the distance from the expected normal distribution. -->
-
-<!-- Though we refrain from specifying the exact function here, one would down-weight instances with large absolute residuals more strongly than small absolute residuals. While this approach is able to deal with outliers, there is no guarantee that large absolute residuals are strictly outliers. They may also be found in the central region, and down-weighting there might lead to suboptimal solutions. -->
-
-<!-- We propose a practical approach. Let $\kappa$ be the fraction of central instances of feature $x$, i.e. those located between $q_i=(1-\kappa)/2$ and $q_i=(1 + \kappa)/2$. For example, if $\kappa = 0.80$, those instances with values between the $10^{\text{th}}$ and $90^{\text{th}}$ percentiles would be considered to be central. We then use Tukey's tapered cosine window to assign weights [@Tukey1967-eb]: -->
-
-<!-- ```{=latex} -->
-<!-- \begin{equation} -->
-<!-- w_i =  -->
-<!-- \begin{cases} -->
-<!-- \frac{1}{2} \left[1 + \cos\left(2 \pi \frac{i - \frac{1}{2}\left[ n \left(1 - \kappa\right) + 1\right]} {n \left(1 - \kappa \right)} \right) \right] & \text{, } 0 \leq i - 0.5 < (1 - \kappa) /2\\ -->
-<!-- 1 & \text{, } (1 - \kappa) /2 \leq i - 0.5 \leq (1 + \kappa) /2\\ -->
-<!-- \frac{1}{2} \left[1 + \cos\left(2 \pi \frac{i - \frac{1}{2}\left[ n \left(1 + \kappa\right) + 1\right]} {n \left(1 - \kappa \right)} \right) \right]& \text{, } (1 + \kappa) /2 < i - 0.5 \leq 1 -->
-<!-- \end{cases} -->
-<!-- \end{equation} -->
-<!-- ``` -->
-<!-- Here, $i = 1, 2, \ldots n$, with $n$ the number of instances of feature $x$. -->
-
-
-
 ## Asymmetric generalised normal distributions
 
-Modifications intended to make power transformations invariant to shifts and methods to improve their robustness against outliers need to be assessed using data drawn from a range of different distributions. Since the power transformations are intended for use with unimodal distributions, the generalised normal distribution [@Subbotin1923-qk, @Nadarajah2005-xe] is a suitable option to simulate realistic feature distributions. This distribution has the following probability density function $f_{\beta}$ for a value $x \in \mathbb{R}$:
+Modifications intended to make power transformations invariant to shifts and methods to improve their robustness against outliers need to be assessed using data drawn from a range of different distributions. Since the power transformations are intended for use with unimodal distributions, the generalised normal distribution [@Subbotin1923-qk; @Nadarajah2005-xe] is a suitable option to simulate realistic feature distributions. This distribution has the following probability density function $f_{\beta}$ for a value $x \in \mathbb{R}$:
 
 ```{=latex}
 \begin{equation}
@@ -529,7 +496,7 @@ f_{\beta}\left( \alpha \frac{\left| x - \mu \right|}{\sigma} \right) & \text{, }
 \end{cases}
 \end{equation}
 ```
-Here $\alpha \in (0,1)$ is a skewness parameter. $\alpha > 0.5$ creates a distribution with a negative skew, i.e. a left-skewed distribution. A right-skewed distribution is created for $\alpha < 0.5$. $\mu$ and $\sigma \in (0, \infty)$ are location and scale parameters, respectively. $f_{\alpha}$ thus describes the probability density function of an asymmetric generalised normal distribution, which we will refer to here and parametrise as $\mathcal{AGN}\left(\mu, \sigma, \alpha, \beta \right)$.
+Here $\alpha \in (0,1)$ is a skewness parameter. $\alpha > 0.5$ creates a distribution with a negative skew, i.e. a left-skewed distribution. A right-skewed distribution is created for $\alpha < 0.5$. $\mu \in \mathcal{R}$ and $\sigma \in (0, \infty)$ are location and scale parameters, respectively. $f_{\alpha}$ thus describes the probability density function of an asymmetric generalised normal distribution, which we will refer to here and parametrise as $\mathcal{AGN}\left(\mu, \sigma, \alpha, \beta \right)$.
 
 We require a quantile function (or an approximation thereof) to draw random values from an asymmetric generalised normal distribution using inverse transform sampling. Gijbels et al. derived the following quantile function $F_{\alpha}^{-1}(p)$:
 
@@ -553,21 +520,24 @@ Here, $F_{\Gamma}^{-1}$ is the quantile function of the gamma distribution with 
 
 ## Goodness of fit
 
-```{=latex}
-\begin{equation}
-\left\{ \hat{\lambda}^{\text{rYJ}}, \hat{x}_0^{\text{rYJ}} \right\} = \argmax_{\lambda, x_0} \sum_{i=1}^n w_i \left[ -\frac{1}{2}\log(\sigma^2) + (\lambda - 1) \sgn(x_i - x_0) \log(1 + |x_i - x_0|) \right]
-\end{equation}
-```
+To be added.
 
 # Simulation
 
-## Modified power transformations are invariant to location
+## Shift-sensitive transformations are location-invariant
 
-To assess whether the modified power transformations lead to $\lambda$ values that are invariant to shifts, we simulate three different distributions. The first distribution is a normal distribution, as previously shown in Figure **INSERT REFERENCE**. We first randomly draw $10000$ values from a normal distribution: $x_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)$, or equivalently $x_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.5, 2\right)$. The second distribution is a right-skewed normal distribution $x_{\text{right}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.2, 2\right)$. The third distribution is a left-skewed normal distribution $x_{\text{left}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.8, 2\right)$. We then compute transformation parameter $\lambda$ using the original definitions (Eq. **INSERT REFERENCE** and **INSERT REFERENCE**) and the modified definitions (Eq. **INSERT REFERENCE** and **INSERT REFERENCE**) for each distribution, after adding a positive value $d$ to each distribution. Here, $d \in [1, 10^6]$.
+To assess whether the modified power transformations lead to $\lambda$ values that are invariant to shifts, we simulate three different distributions. The first distribution is a normal distribution, as previously shown in Figure **INSERT**.
+We first randomly draw $10000$ values from a normal distribution: $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)$, or equivalently $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.5, 2\right)$.
+The second distribution is a right-skewed normal distribution $\mathbf{X}_{\text{right}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.2, 2\right)$.
+The third distribution is a left-skewed normal distribution $\mathbf{X}_{\text{left}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.8, 2\right)$.
+We then compute transformation parameter $\hat{\lambda}$ using the original definitions (Eq. **INSERT** and **INSERT**) and the shift-sensitive definitions (Eq. **INSERT** and **INSERT**) for each distribution, after adding a positive value $d$ to each distribution. Here, $d \in [1, 10^6]$.
 
-```{r shifted-distributions, echo=FALSE, warning=FALSE, message=FALSE, fig.cap=cap, eval = FALSE}
+```{r shifted-distributions, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
-  "Power transformations modified to be shift-sensitive produce transformation parameters are invariant to location. ")
+  "Shift-sensitive power transformation produces transformation parameters that are invariant to location. ",
+  "Samples were drawn from normal, right-skewed and left-skewed distributions, respectively,  which then underwent a shift $d$. ",
+  "Estimates of transformation parameter $\\lambda$ with the original power transformations (circle) show strong dependency on the overall location of the distribution, ",
+  "whereas estimates with the shift-sensitive power transformations (triangle) are constant.")
 
 # Non-standard evaluation
 d <- distribution <- method <- mean_lambda <- sd_lambda <- NULL
@@ -597,7 +567,7 @@ d <- distribution <- method <- mean_lambda <- sd_lambda <- NULL
 
 # Lambda plot,
 .create_lambda_shift_plot <- function(data, plot_theme, limits, guide=FALSE){
- 
+  
   p <- ggplot2::ggplot(
     data = data,
     mapping = ggplot2::aes(
@@ -615,10 +585,10 @@ d <- distribution <- method <- mean_lambda <- sd_lambda <- NULL
     limits = limits)
   
   if(guide){
-     p <- p + paletteer::scale_color_paletteer_d(
+    p <- p + paletteer::scale_color_paletteer_d(
       palette = "ggthemes::Tableau_10",
       drop = FALSE)
-     
+    
   } else {
     p <- p + paletteer::scale_color_paletteer_d(
       palette = "ggthemes::Tableau_10",
@@ -629,83 +599,6 @@ d <- distribution <- method <- mean_lambda <- sd_lambda <- NULL
   
   return(p)
 }
-
-# Generator for creating parameters and data for all experiments.
-generate_experiment_data <- coro::generator(
-  function(
-    x_normal,
-    x_right_skewed,
-    x_left_skewed){
-    
-    shift_range <- 10^seq(from=0, to=6, by=0.1)
-    
-    for(d in shift_range){
-      for(distribution in c("normal", "right-skewed", "left-skewed")){
-        if(distribution == "normal"){
-          x <- x_normal
-          
-        } else if(distribution == "right-skewed"){
-          x <- x_right_skewed
-          
-        } else if(distribution == "left-skewed"){
-          x <- x_left_skewed
-        }
-        
-        for(method in c("box_cox", "yeo_johnson")){
-          for(shift in c(FALSE, TRUE)){
-            for(robust in c(FALSE)){
-            # for(robust in c(FALSE, TRUE)){
-              # Only 
-              # Skip if robust, but not shifted.
-              if(robust && !shift) next
-              
-              if(!shift && !robust){
-                version <- "original"
-                
-              } else if(!robust){
-                version <- "shift-sensitive"
-                
-              } else {
-                version <- "robust shift-sensitive"
-              }
-              
-              yield(list(
-                "x" = x + d,
-                "d" = d,
-                "distribution" = distribution,
-                "method" = method,
-                "shift" = shift,
-                "robust" = robust,
-                "version" = version
-              ))
-            }
-          }
-        }
-      }
-    }
-  })
-
-.compute_lambda <- function(parameter_set){
-  # Create transformer object.
-  transformer <- suppressWarnings(
-    power.transform::find_transformation_parameters(
-      x = parameter_set$x,
-      method = parameter_set$method,
-      robust = parameter_set$robust,
-      shift = parameter_set$shift,
-      lambda = NULL))
-  
-  return(
-    data.table::data.table(
-      "distribution" = parameter_set$distribution,
-      "method" = parameter_set$method,
-      "version" = parameter_set$version,
-      "d" = log10(parameter_set$d),
-      "lambda" = transformer@lambda
-    ))
-}
-
-#### Computations --------------------------------------------------------------
 
 # Set seed.
 set.seed(19L)
@@ -719,28 +612,114 @@ x_right_skewed <- power.transform::ragn(10000L, location=0, scale=1/sqrt(2), alp
 # Left skewed data
 x_left_skewed <- power.transform::ragn(10000L, location=0, scale=1/sqrt(2), alpha=0.8, beta=2)
 
-# Generate all experiments.
-experiments <- coro::collect(generate_experiment_data(
-  x_normal = x_normal,
-  x_right_skewed = x_right_skewed,
-  x_left_skewed = x_left_skewed
-))
-
-# Start cluster
-cl <- parallel::makeCluster(16L)
-
-# Compute all data in parallel.
-data <- parallel::parLapply(
-  cl=cl,
-  X=experiments,
-  fun=.compute_lambda
-)
-
-# Stop cluster.
-parallel::stopCluster(cl)
-
-# Combine data into a single table.
-data <- data.table::rbindlist(data)
+if(!file.exists(file.path(manuscript_dir, "shifted_distributions_plot.RDS"))){
+  
+  # Generator for creating parameters and data for all experiments.
+  generate_experiment_data <- coro::generator(
+    function(
+    x_normal,
+    x_right_skewed,
+    x_left_skewed){
+      
+      shift_range <- 10^seq(from=0, to=6, by=0.1)
+      
+      for(d in shift_range){
+        for(distribution in c("normal", "right-skewed", "left-skewed")){
+          if(distribution == "normal"){
+            x <- x_normal
+            
+          } else if(distribution == "right-skewed"){
+            x <- x_right_skewed
+            
+          } else if(distribution == "left-skewed"){
+            x <- x_left_skewed
+          }
+          
+          for(method in c("box_cox", "yeo_johnson")){
+            for(shift in c(FALSE, TRUE)){
+              for(robust in c(FALSE)){
+                # for(robust in c(FALSE, TRUE)){
+                # Only 
+                # Skip if robust, but not shifted.
+                if(robust && !shift) next
+                
+                if(!shift && !robust){
+                  version <- "original"
+                  
+                } else if(!robust){
+                  version <- "shift-sensitive"
+                  
+                } else {
+                  version <- "robust shift-sensitive"
+                }
+                
+                yield(list(
+                  "x" = x + d,
+                  "d" = d,
+                  "distribution" = distribution,
+                  "method" = method,
+                  "shift" = shift,
+                  "robust" = robust,
+                  "version" = version
+                ))
+              }
+            }
+          }
+        }
+      }
+    })
+  
+  .compute_lambda <- function(parameter_set){
+    # Create transformer object.
+    transformer <- suppressWarnings(
+      power.transform::find_transformation_parameters(
+        x = parameter_set$x,
+        method = parameter_set$method,
+        robust = parameter_set$robust,
+        shift = parameter_set$shift,
+        lambda = NULL))
+    
+    return(
+      data.table::data.table(
+        "distribution" = parameter_set$distribution,
+        "method" = parameter_set$method,
+        "version" = parameter_set$version,
+        "d" = log10(parameter_set$d),
+        "lambda" = transformer@lambda
+      ))
+  }
+  
+  #### Computations --------------------------------------------------------------
+  
+  # Generate all experiments.
+  experiments <- coro::collect(generate_experiment_data(
+    x_normal = x_normal,
+    x_right_skewed = x_right_skewed,
+    x_left_skewed = x_left_skewed
+  ))
+  
+  # Start cluster
+  cl <- parallel::makeCluster(16L)
+  
+  # Compute all data in parallel.
+  data <- parallel::parLapply(
+    cl=cl,
+    X=experiments,
+    fun=.compute_lambda
+  )
+  
+  # Stop cluster.
+  parallel::stopCluster(cl)
+  
+  # Combine data into a single table.
+  data <- data.table::rbindlist(data)
+  
+  # Save to file.
+  saveRDS(data, file.path(manuscript_dir, "shifted_distributions_plot.RDS"))
+  
+} else {
+  data <- readRDS(file.path(manuscript_dir, "shifted_distributions_plot.RDS"))
+}
 
 # Update distribution, method and version to factors.
 data$distribution <- factor(
@@ -758,8 +737,8 @@ data$version <- factor(
 #### Normal distribution -------------------------------------------------------
 # Density
 p_dens_normal <- .create_density_plot(
-  x=x_normal,
-  plot_theme=plot_theme)
+  x = x_normal,
+  plot_theme = plot_theme)
 p_dens_normal <- p_dens_normal + ggplot2::ggtitle(label="normal distribution")
 
 # Box-Cox
@@ -784,7 +763,7 @@ p_dens_right <- p_dens_right + ggplot2::ggtitle(label="right-skewed distribution
 
 # Box-Cox
 p_bc_right <- .create_lambda_shift_plot(
-  data =data[distribution == "right-skewed" & method == "Box-Cox"],
+  data = data[distribution == "right-skewed" & method == "Box-Cox"],
   plot_theme = plot_theme,
   limits = c(-9.0, 1.0))
 
@@ -835,31 +814,50 @@ p <- egg::ggarrange(
 p
 ```
 
-The result is shown in Figure **INSERT REFERENCE**, and summarised in Table **INSERT REFERENCE**. For each distribution, transformation parameter $\lambda$ varies with $d$ when estimated using the original definitions. In contrast, estimations of $\lambda$ modified power transformations were invariant to $d$.
+The result is shown in Figure **INSERT**, and summarised in Table **INSERT**. For each distribution, transformation parameter $\hat{\lambda}$ varies with $d$ when estimated using the original definitions. In contrast, estimation of $\lambda$ using shift-sensitive power transformations was invariant to $d$.
 
-```{r, echo=FALSE, results="asis", include=FALSE, eval = FALSE}
+```{r, results="asis"}
 table_data <- data.table::dcast(
   aggregate_data,
   distribution ~ version + method,
   value.var = "text",
   sep = " ")
 
+data.table::setnames(
+  table_data,
+  old = c("original Box-Cox", "original Yeo-Johnson", "shift-sensitive Box-Cox", "shift-sensitive Yeo-Johnson"),
+  new = c("orig. Box-Cox", "orig. Yeo-Johnson", "shift-sens. Box-Cox", "shift-sens. Yeo-Johnson"))
+
 knitr::kable(
   table_data,
-  caption = "Estimates and deviation of transformation parameter $\\lambda$ under location shifts",
+  align = c("l", "c", "c", "c", "c"),
+  caption = paste0(
+    "Estimates and variability of transformation parameter $\\lambda$ under location shifts. ",
+    "Whereas the original (orig.) power transformations show considerable variability, ",
+    "whereas for shift-sensitive (shift-sens.) power transformations variability in the value of $\\lambda$ is negligible."),
   label = "shifted-distributions-table",
   format = "latex",
   escape = FALSE,
   booktabs = TRUE)
 ```
 
-## Weighting based on empirical distribution is the most robust
+## Empirical distribution yields consistent robust transformations
 
-Outliers may be presented in the data, and affect estimation of power transformation parameters. The log-likelihood function is weighted to assign less weight to outlier instances. Weighting is based on either probabilities of the empirical distribution of the original feature, the z-score of the transformed feature values, or the residual error between the z-score of the transformed feature values and their expected z-score based on the normal distribution. A weight is then assigned to each instance using one of three weighting functions: step, triangle and tapered cosine. The weighting functions have one (step) or two (triangle, tapered cosine) parameters. Here we investigate how these parameters should be set to yield weights that are robust to outliers.
+Outliers may be presented in the data, and affect estimation of power transformation parameters.
+The log-likelihood function is weighted to assign less weight to outlier instances.
+Weighting is based on either probabilities of the empirical distribution of the original feature, the z-score of the transformed feature values, or the residual error between the z-score of the transformed feature values and their expected z-score based on the normal distribution.
+A weight is then assigned to each instance using one of three weighting functions: step, triangle and tapered cosine.
+The weighting functions have one (step) or two (triangle, tapered cosine) parameters.
+Here we investigate how these parameters should be set to find transformation parameter $\hat{\lambda}^r$ that are robust to outliers.
 
 Let us randomly draw $m_d=100$ asymmetric generalised normal distributions. Each distribution is parametrised with a randomly chosen skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$. Location and scale parameters are set as $\mu = 0$ and $\sigma = 1$, respectively. $n = \lceil 10^\gamma \rceil$ values are then randomly drawn, with $\gamma \sim U\left(2, 4\right)$. That is between $100$ and $10000$ values are drawn to create $\mathbf{X}_i$. 
 
-Outlier values are then drawn to randomly replace a fraction of the values of $\mathbf{X}_i$. This is repeated $m_{out} = 10$ times, with outlier fractions $f_{out,j}$ regularly spaced in $[0.00, 0.10]$. Thus up to 10 percent of the values may be replaced by outliers. Outlier values are set according to @Tukey1977-xm. Let $x^{*} \sim U\left(-2, 2\right)$. Then the corresponding outlier value is:
+Outlier values are then drawn to randomly replace a fraction of the values of $\mathbf{X}_i$.
+This is repeated $m_{out} = 10$ times, with outlier fractions regularly spaced in $[0.00, 0.10]$.
+Thus up to 10 percent of the values may be replaced by outliers.
+Outlier values are set according to @Tukey1977-xm.
+Let $x^{*} \sim U\left(-2, 2\right)$.
+Then the corresponding outlier value is:
 
 ```{=latex}
 \begin{equation}
@@ -871,7 +869,8 @@ Q_3 + \left(1.5 + x^{*} \right) \text{IQR} & \text{if } x^{*} \geq 0
 \end{equation}
 ```
 
-Here, $Q_1$, $Q_3$ and $\text{IQR}$ are the first quartile, third quartile and interquartile range of $\mathbf{X}_i$, respectively. Outlier values randomly replace values in $\mathbf{X}_i$ to create $\mathbf{X}_{i,j}$.
+Here, $Q_1$, $Q_3$ and $\text{IQR}$ are the first quartile, third quartile and interquartile range of $\mathbf{X}_i$, respectively.
+Outlier values randomly replace values in $\mathbf{X}_i$ to create $\mathbf{X}_{i,j}$.
 
 To find the optimal values for the weighting function parameters $k_1$ and $k_2$ (if applicable), we minimise the absolute difference between the $\hat{\lambda}^r$ parameter obtained for transformation in the presence of outliers, and the $\hat{\lambda}_0$ parameter obtained using the non-robust modified transformation in absence of outliers:
 
@@ -880,10 +879,10 @@ To find the optimal values for the weighting function parameters $k_1$ and $k_2$
 \left\{ \hat{k}_1, \hat{k}_2 \right\} = \argmin_{k_1, k_2} \sum_{i=1}^{m_d} \sum_{j=1}^{m_{out}} \left| \hat{\lambda}^r \left(\mathbf{X}_{i, j}; k_1, k_2 \right) - \hat{\lambda}_{0} \left(\mathbf{X}_i \right) \right|
 \end{equation}
 ```
+The double sum in right-hand side of the above equation can be considered as the loss that should be minimised.
+Minimisation is performed using the subplex algorithm implemented in the *nloptr* package for R [@Rowan1990-sn; @Ypma2022-tc].
 
-Optimisation is performed using the subplex algorithm implemented in the *nloptr* package for R [@Rowan1990-sn, @Ypma2022-tc].
-
-```{r, echo=FALSE, warning=FALSE, message=FALSE, eval = FALSE}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, eval=FALSE}
 
 set.seed(95)
 
@@ -1192,70 +1191,203 @@ parallel::stopCluster(cl)
 saveRDS(experiment_results, file = file.path(manuscript_dir, "robustness_comparison.RDS"))
 ```
 
+```{=latex}
+\begin{table}
+\begin{center}
+\caption{Optimal weighting parameters and corresponding loss. $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values, and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column. The {optimal} column shows the optimal parameter values. The \textit{loss} column shows the loss achieved by each method, under optimised parameters. Lower loss indicates better robustness against outliers.}
+\begin{tabular}{l r r r r r r r}
 
+\toprule
+method & \multicolumn{3}{c}{$k_1$} & \multicolumn{3}{c}{$k_2$} & loss \\
+ & initial & limits & optimal & initial & limits & optimal & \\
 
-For robustness simulate:
-- A shifted normal distribution without, 0.1%, 0.2%, 0.5%, 1.0%, 2.0%, 5.0%, 10%, and 20% outliers mixed in.
-- A shifted left-skewed distribution without, 0.1%, 0.2%, 0.5%, 1.0%, 2.0%, 5.0%, 10%, and 20% outliers mixed in.
-- A shifted right-skewed distribution without, 0.1%, 0.2%, 0.5%, 1.0%, 2.0%, 5.0%, 10%, and 20% outliers mixed in.
-- To show: lambda for modified, and robust modified Yeo-Johnson distribution for: Raymaekers trimmed, Tukey Window
+\midrule
+non-robust               & ---  & ---       & ---  & ---  & ---       & ---   & 225 \\
+$p^{*}$ (step)           & 0.80 & $(0, 1]$  & 0.92 & ---  & ---       & ---   & 125 \\
+$p^{*}$ (triangle)       & 0.80 & $(0, 1]$  & 0.88 & 0.95 & $(0, 1]$  & 0.93  & 126 \\
+$p^{*}$ (tapered cosine) & 0.80 & $(0, 1]$  & 0.89 & 0.95 & $(0, 1]$  & 0.93  & 124 \\
+$z$ (step)               & 1.50 & $(0, 10]$ & 1.03 & ---  & ---       & ---   & 331 \\
+$z$ (triangle)           & 1.50 & $(0, 10]$ & 2.79 & 3.00 & $(0, 10]$ & 4.12  & 768 \\
+$z$ (tapered cosine)     & 1.50 & $(0, 10]$ & 2.69 & 3.00 & $(0, 10]$ & 4.21  & 772 \\
+$r$ (step)               & 0.15 & $(0, 10]$ & 0.05 & ---  & ---       & ---   & 1957 \\
+$r$ (triangle)           & 0.15 & $(0, 10]$ & 9.96 & 1.00 & $(0, 10]$ & 10.00 & 483 \\
+$r$ (tapered cosine)     & 0.15 & $(0, 10]$ & 9.97 & 1.00 & $(0, 10]$ & 10.00 & 484 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+```
 
-```{r, eval = FALSE}
-# Generator for creating parameters and data for all experiments.
-generate_experiment_data <- coro::generator(
-  function(
+Table **INSERT** shows weighting parameters and corresponding loss, after optimisation. Loss without any mitigation of outliers was $225$. Only weighting based on empirical probabilities ($p^(*)$) achieved better loss under optimised weighting parameters. For these data, all three window functions achieved a similar loss. Weighting based on the z-score of the transformed feature, or on their residual error, performed worse than non-robust shift-sensitive power transformation. Thus weighting of outliers should not be based on either of these two options. The likely reason for their poor performance is that they allow for a direct interaction with estimation of the $\lambda$ parameter. Because they both use transformed feature values, weights actually vary during the optimisation process for maximising the weighted log-likelihood function. This complicates the parameter search space, and leads to different parameter estimates. Weighting based on empirical probabilities does not suffer from this issue, because all weights are fixed during optimising the weighted log-likelihood function.
+For weighting based on the z-score of the transformed feature, or on their residual error, we can see two extreme strategies emerging. Firstly, the strategy to down-weight most instances ($r$ (step), and to a lesser degree $z$ (step)) and thereby force normality on the most central parts of the distribution. Second is an attempt to assign full-weight to almost all instances, with large values for $k_1$ and $k_2$, which leads to behaviour similar to non-robust power transformation.
+
+```{r outlier-values, warning=FALSE, message=FALSE, fig.cap=cap}
+cap <- paste0(
+  "CHECK. ")
+
+# Prevent warnings due to non-standard evaluation.
+weight_method <- distribution <- k <- NULL
+
+.create_outlier_fraction_plot <- function(
+    data,
+    plot_theme,
+    limits,
+    lambda_target,
+    guide=FALSE){
+  
+  # Prevent warnings due to non-standard evaluation.
+  weight_method <- k <- mean_lambda <- min_lambda <- max_lambda <- NULL
+  
+  # Annotation settings.
+  annotation_settings <- get_annotation_settings(ggplot2::theme_light(base_size = base_size))
+  
+  p <- ggplot2::ggplot(
+    data = data,
+    mapping = ggplot2::aes(
+      x = k,
+      y = mean_lambda,
+      ymin = min_lambda,
+      ymax = max_lambda))
+  p <- p + plot_theme
+  
+  p <- p + ggplot2::geom_ribbon(mapping=ggplot2::aes(fill=weight_method), alpha=0.10)
+  p <- p + ggplot2::geom_line(mapping=ggplot2::aes(colour=weight_method))
+  p <- p + ggplot2::scale_x_continuous(
+    name = latex2exp::TeX("outlier fraction"),
+    trans = "sqrt")
+  p <- p + ggplot2::scale_y_continuous(
+    name = latex2exp::TeX("$\\lambda$"),
+    limits = limits)
+  
+  p <- p + ggplot2::geom_hline(
+    yintercept = lambda_target, 
+    linetype="longdash", 
+    colour="grey40")
+  
+  p <- p + ggplot2::annotate(
+    geom = "text",
+    x = 0.1,
+    y = lambda_target,
+    label = "target",
+    colour=annotation_settings$colour,
+    family=annotation_settings$family,
+    fontface=annotation_settings$face,
+    size=annotation_settings$geom_text_size,
+    vjust=-1.0,
+    hjust=1.0)
+  
+  if(guide){
+    p <- p + paletteer::scale_color_paletteer_d(
+      palette="ggthemes::Tableau_10",
+      drop=FALSE,
+      guide=ggplot2::guide_legend("weighting method"))
+    
+    p <- p + paletteer::scale_fill_paletteer_d(
+      palette="ggthemes::Tableau_10",
+      drop=FALSE,
+      guide=ggplot2::guide_legend("weighting method"))
+    
+  } else {
+    p <- p + paletteer::scale_color_paletteer_d(
+      palette="ggthemes::Tableau_10",
+      drop=FALSE,
+      guide="none")
+    
+    p <- p + paletteer::scale_fill_paletteer_d(
+      palette="ggthemes::Tableau_10",
+      drop=FALSE,
+      guide="none")
+  }
+  
+  p <- p + ggplot2::scale_alpha(guide="none")
+  
+  # Update title.
+  p <- p + ggplot2::theme(
+    plot.title=ggplot2::element_text(
+      hjust=0.5,
+      size=ggplot2::rel(1.0)))
+  
+  return(p)
+}
+# Only process data if the file has not been created.
+if(!file.exists(file.path(manuscript_dir, "robustness_comparison_plot.RDS"))){
+  
+  # Generator for creating parameters and data for all experiments.
+  generate_experiment_data <- coro::generator(
+    function(
     x_normal,
     x_right_skewed,
     x_left_skewed){
-    
-    n <- 20
-    k_range <- (seq_len(n) - 1)^2 /((n-1)^2 * 5)  
-    # k_range <- c(0.0, 0.001, 0.002, 0.005, 0.010, 0.020, 0.050, 0.100, 0.200)
-    
-    for(distribution in c("normal", "right-skewed", "left-skewed")){
-      if(distribution == "normal"){
-        x <- x_normal
-        
-      } else if(distribution == "right-skewed"){
-        x <- x_right_skewed
-        
-      } else if(distribution == "left-skewed"){
-        x <- x_left_skewed
-      }
-      for(ii in seq_len(20)){
-        for(k in k_range){
-          # Compute interquartile range.
-          interquartile_range <- stats::IQR(x)
+      
+      n <- 20
+      k_range <- (seq_len(n) - 1)^2 /((n-1)^2 * 10)  
+      
+      for(distribution in c("normal", "right-skewed", "left-skewed")){
+        if(distribution == "normal"){
+          x <- x_normal
           
-          # Compute upper and lower quartiles.
-          q_lower <- stats::quantile(x, probs=0.25, names=FALSE)
-          q_upper <- stats::quantile(x, probs=0.75, names=FALSE)
+        } else if(distribution == "right-skewed"){
+          x <- x_right_skewed
           
-          # Set data where the outliers will be copied into.
-          x_outlier <- x
-          
-          if(k != 0.0){
-            n_draw <- ceiling(k * 0.5 * length(x))
+        } else if(distribution == "left-skewed"){
+          x <- x_left_skewed
+        }
+        for(ii in seq_len(100)){
+          for(k in k_range){
+            # Compute interquartile range.
+            interquartile_range <- stats::IQR(x)
             
-            # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
-            # than Q3 + 1.5 IQR.
-            outlier <- c(
-              q_lower - 1.5 * interquartile_range - 3.0 * stats::runif(n_draw),
-              q_upper + 1.5 * interquartile_range + 3.0 * stats::runif(n_draw))
+            # Compute upper and lower quartiles.
+            q_lower <- stats::quantile(x, probs=0.25, names=FALSE)
+            q_upper <- stats::quantile(x, probs=0.75, names=FALSE)
             
-            # Randomly insert outlier values.
-            x_outlier[sample(seq_along(x), size=2*n_draw, replace=FALSE)] <- outlier
-          }
-          
-          #for(method in c("box_cox", "yeo_johnson")){
-          for(method in c("yeo_johnson")){
-            for(weight_method in c("none", "tukey_window", "tapered_step_window")){
-            # for(weight_method in c("none", "tukey_window", "step_window", "tapered_step_window", "trim_transformation", "trim_residual", "tukey_biweight_transformation", "tukey_biweight_residual", "huber_weight_transformed", "huber_weight_residual")){
+            # Set data where the outliers will be copied into.
+            x_outlier <- x
+            
+            if(k != 0.0){
+              n_draw <- ceiling(k * length(x))
               
-              weight_method_name <- weight_method
+              # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
+              # than Q3 + 1.5 IQR.
+              x_random <- stats::runif(n_draw, min=-2.0, max=2.0)
+              outlier <- numeric(n_draw)
+              if(any(x_random < 0)){
+                outlier[x_random < 0] <- q_lower - 1.5 * interquartile_range + x_random[x_random < 0] * interquartile_range
+              }
               
-              for(tukey_window_k in c(0.80, 0.60, 0.40, 0.20, 0.00)){
-                if(weight_method == "none" && tukey_window_k != 0.00) next
+              if(any(x_random >= 0)){
+                outlier[x_random >= 0] <- q_upper + 1.5 * interquartile_range + x_random[x_random >= 0] * interquartile_range
+              }
+              
+              # Randomly insert outlier values.
+              x_outlier[sample(seq_along(x), size=n_draw, replace=FALSE)] <- outlier
+            }
+            
+            #for(method in c("box_cox", "yeo_johnson")){
+            for(method in c("yeo_johnson")){
+              for(weight_method in c("none", "original_cosine", "transformed_step", "transformed_cosine", "residual_step", "residual_cosine")){
+                
+                k1 <- k2 <- NULL
+                
+                # Optimal parameter values from the previous experiment.
+                if(weight_method == "original_cosine"){
+                  k1 <- 0.89
+                  k2 <- 0.93
+                  
+                } else if(weight_method == "transformed_step"){
+                  k1 <- 1.03
+                  
+                } else if(weight_method == "transformed_cosine"){
+                  k1 <- 2.69
+                  k2 <- 4.21
+                  
+                } else if(weight_method == "residual_step"){
+                  k1 <- 0.05
+                  
+                } else if(weight_method == "residual_cosine"){
+                  k1 <- 9.97
+                  k2 <- 10.0
+                }
                 
                 yield(list(
                   "ii" = ii,
@@ -1265,104 +1397,79 @@ generate_experiment_data <- coro::generator(
                   "method" = method,
                   "robust" = weight_method != "none",
                   "weight_method" = weight_method,
-                  "weight_method_name" = paste0(weight_method_name, "_k_", tukey_window_k),
-                  "tukey_window_k" = tukey_window_k
-                ))
+                  "k1" = k1,
+                  "k2" = k2))
               }
-              
-              
-              # if(weight_method == "tukey_window"){
-              #   for(tukey_window_k in c(0.9, 0.8, 0.7, 0.6, 0.5)){
-              #     yield(list(
-              #       "x" = x_outlier,
-              #       "k" = k,
-              #       "distribution" = distribution,
-              #       "method" = method,
-              #       "robust" = weight_method != "none",
-              #       "weight_method" = weight_method,
-              #       "weight_method_name" = paste0(weight_method_name, "_k_", tukey_window_k),
-              #       "tukey_window_k" = tukey_window_k
-              #     ))
-              #   }
-              # } else {
-              #   yield(list(
-              #     "x" = x_outlier,
-              #     "k" = k,
-              #     "distribution" = distribution,
-              #     "method" = method,
-              #     "robust" = weight_method != "none",
-              #     "weight_method" = weight_method,
-              #     "weight_method_name" = weight_method_name
-              #   ))
-              # }
             }
           }
         }
       }
-    }
-  })
-
-.compute_lambda <- function(parameter_set){
-  # Create transformer object.
-  transformer <- suppressWarnings(
-    power.transform::find_transformation_parameters(
-      x = parameter_set$x,
-      method = parameter_set$method,
-      robust = parameter_set$robust,
-      shift = TRUE,
-      weight_method = parameter_set$weight_method,
-      k = parameter_set$tukey_window_k,
-      lambda = NULL))
+    })
   
-  return(
-    data.table::data.table(
-      "distribution" = parameter_set$distribution,
-      "method" = parameter_set$method,
-      "weight_method" = parameter_set$weight_method,
-      "weight_method_name" = parameter_set$weight_method_name,
-      "k" = parameter_set$k,
-      "lambda" = transformer@lambda,
-      "kappa" = parameter_set$tukey_window_k,
-      "ii" = parameter_set$ii
-    ))
+  .compute_lambda <- function(parameter_set){
+    # Create transformer object.
+    transformer <- suppressWarnings(
+      power.transform::find_transformation_parameters(
+        x = parameter_set$x,
+        method = parameter_set$method,
+        robust = parameter_set$robust,
+        shift = TRUE,
+        weight_method = parameter_set$weight_method,
+        k1 = parameter_set$k1,
+        k2 = parameter_set$k2))
+    
+    return(
+      data.table::data.table(
+        "distribution" = parameter_set$distribution,
+        "method" = parameter_set$method,
+        "weight_method" = parameter_set$weight_method,
+        "k" = parameter_set$k,
+        "lambda" = transformer@lambda,
+        "ii" = parameter_set$ii))
+  }
+  
+  
+  #### Computations --------------------------------------------------------------
+  
+  # Set seed.
+  set.seed(19L)
+  
+  # Normal distribution.
+  x_normal <- power.transform::ragn(10000L, location=0, scale=1/sqrt(2), alpha=0.5, beta=2)
+  
+  # Right skewed data
+  x_right_skewed <- power.transform::ragn(10000L, location=0, scale=1/sqrt(2), alpha=0.2, beta=2)
+  
+  # Left skewed data
+  x_left_skewed <- power.transform::ragn(10000L, location=0, scale=1/sqrt(2), alpha=0.8, beta=2)
+  
+  # Generate all experiments.
+  experiments <- coro::collect(generate_experiment_data(
+    x_normal = x_normal,
+    x_right_skewed = x_right_skewed,
+    x_left_skewed = x_left_skewed
+  ))
+  # Start cluster
+  cl <- parallel::makeCluster(18L)
+  
+  # Compute all data in parallel.
+  data <- parallel::parLapply(
+    cl=cl,
+    X=experiments,
+    fun=.compute_lambda
+  )
+  
+  # Stop cluster.
+  parallel::stopCluster(cl)
+  
+  # Combine data into a single table.
+  data <- data.table::rbindlist(data)
+  
+  saveRDS(data, file.path(manuscript_dir, "robustness_comparison_plot.RDS"))
+  
+} else {
+  data <- readRDS(file.path(manuscript_dir, "robustness_comparison_plot.RDS"))
 }
-
-# Set seed.
-set.seed(19L)
-
-# Normal distribution.
-x_normal <- stats::rnorm(10000L)
-
-# Right skewed data
-x_right_skewed <- (x_normal - min(x_normal) + 1)^0.1
-x_right_skewed <- (x_right_skewed - mean(x_right_skewed)) / sd(x_right_skewed)
-
-# Left skewed data
-x_left_skewed <- (x_normal - min(x_normal))^3
-x_left_skewed <- (x_left_skewed - mean(x_left_skewed)) / sd(x_left_skewed)
-
-# Generate all experiments.
-experiments <- coro::collect(generate_experiment_data(
-  x_normal = x_normal,
-  x_right_skewed = x_right_skewed,
-  x_left_skewed = x_left_skewed
-))
-
-# Start cluster
-cl <- parallel::makeCluster(16L)
-
-# Compute all data in parallel.
-data <- parallel::parLapply(
-  cl=cl,
-  X=experiments,
-  fun=.compute_lambda
-)
-
-# Stop cluster.
-parallel::stopCluster(cl)
-
-# Combine data into a single table.
-data <- data.table::rbindlist(data)
 
 # Update distribution, method and version to factors.
 data$distribution <- factor(
@@ -1370,42 +1477,107 @@ data$distribution <- factor(
   levels = c("normal", "right-skewed", "left-skewed"))
 data$method <- factor(
   x = data$method,
-  levels = c("box_cox", "yeo_johnson"),
-  labels = c("Box-Cox", "Yeo-Johnson"))
-data$kappa <- factor(data$kappa)
+  levels = c("yeo_johnson"),
+  labels = c("Yeo-Johnson"))
+data$weight_method <- factor(
+  x = data$weight_method,
+  levels = c("none", "original_cosine", "transformed_step", "transformed_cosine", "residual_step", "residual_cosine"),
+  labels = c("non-robust", "emp. prob. (tap. cos.)", "z-score (step)", "z-score (tap. cos.)", "residual (step)", "residual (tap. cos.)"))
 
-# Find target lambda values in the absence of any outliers.
-target_data <- data[weight_method=="none" & k == 0.0, mget(c("distribution", "ii", "lambda", "method"))]
-data.table::setnames(target_data, old="lambda", new="target_lambda")
+data <- data[, list(
+  "mean_lambda"=mean(lambda),
+  "min_lambda"=min(lambda),
+  "max_lambda"=max(lambda)),
+  by=c("distribution", "method", "weight_method", "k")]
 
-# Merge target lambda values into the main data.
-data <- data[target_data, on=.NATURAL]
+top_group <- c("non-robust", "emp. prob. (tap. cos.)", "z-score (step)")
+bottom_group <- c("z-score (tap. cos.)", "residual (step)", "residual (tap. cos.)")
 
-# Compute difference with target lambda.
-data[, "diff_lambda":=lambda - target_lambda]
+#### Normal distribution -------------------------------------------------------
+p_normal_t <- .create_outlier_fraction_plot(
+  data = data[distribution == "normal" & weight_method %in% top_group],
+  plot_theme = plot_theme,
+  limits= c(0.0, 2.0),
+  lambda_target = data[distribution == "normal" & weight_method == "non-robust" & k == 0.0]$mean_lambda)
+p_normal_t <- p_normal_t + ggplot2::ggtitle(label="normal distribution")
+p_normal_t <- p_normal_t + ggplot2::theme(
+  axis.title.x = ggplot2::element_blank(),
+  axis.text.x = ggplot2::element_blank())
 
-summary_data[, list(deviation=sum(abs(diff_lambda))), by=c("distribution", "weight_method_name")][order(distribution, deviation)]
+p_normal_b <- .create_outlier_fraction_plot(
+  data = data[distribution == "normal" & weight_method %in% bottom_group],
+  plot_theme = plot_theme,
+  limits= c(-2.5,  4.0),
+  lambda_target = data[distribution == "normal" & weight_method == "non-robust" & k == 0.0]$mean_lambda)
+p_normal_b <- p_normal_b + ggplot2::theme(
+  axis.text.x = ggplot2::element_text(
+    angle=60.0,
+    hjust=1.0))
 
-# Compute average.
-new_data <- data[, list(lambda = mean(lambda)), by=c("k", "kappa", "weight_method", "distribution")]
+#### Right skewed distribution -------------------------------------------------
+p_right_t <- .create_outlier_fraction_plot(
+  data = data[distribution == "right-skewed" & weight_method %in% top_group],
+  plot_theme = plot_theme,
+  limits= c(0.0, 2.0),
+  lambda_target = data[distribution == "right-skewed" & weight_method == "non-robust" & k == 0.0]$mean_lambda)
+p_right_t <- p_right_t + ggplot2::ggtitle(label="right-skewed distribution")
+p_right_t <- p_right_t + ggplot2::theme(
+  axis.title.x = ggplot2::element_blank(),
+  axis.text.x = ggplot2::element_blank(),
+  axis.title.y = ggplot2::element_blank(),
+  axis.text.y = ggplot2::element_blank())
 
-p <- ggplot2::ggplot(
-  data = new_data[distribution=="left-skewed"],
-  mapping = ggplot2::aes(
-    x = k,
-    y = lambda,
-    colour = kappa,
-    linetype = weight_method))
-p <- p + plot_theme
-# p <- p + ggplot2::geom_point()
-p <- p + ggplot2::geom_line()
-p <- p + ggplot2::scale_x_continuous(
-  name = latex2exp::TeX("$k$"),
-  trans = "sqrt")
-p <- p + ggplot2::scale_y_continuous(
-  name = latex2exp::TeX("$\\lambda$"))
+p_right_b <- .create_outlier_fraction_plot(
+  data = data[distribution == "right-skewed" & weight_method %in% bottom_group],
+  plot_theme = plot_theme,
+  limits= c(-2.5,  4.0),
+  lambda_target = data[distribution == "right-skewed" & weight_method == "non-robust" & k == 0.0]$mean_lambda)
+p_right_b <- p_right_b + ggplot2::theme(
+  axis.title.y = ggplot2::element_blank(),
+  axis.text.y = ggplot2::element_blank(),
+  axis.text.x = ggplot2::element_text(
+    angle=60.0,
+    hjust=1.0))
 
+#### Left skewed distribution --------------------------------------------------
+p_left_t <- .create_outlier_fraction_plot(
+  data = data[distribution == "left-skewed" & weight_method %in% top_group],
+  plot_theme = plot_theme,
+  limits= c(0.0, 2.0),
+  lambda_target = data[distribution == "left-skewed" & weight_method == "non-robust" & k == 0.0]$mean_lambda,
+  guide = TRUE)
+p_left_t <- p_left_t + ggplot2::ggtitle(label="left-skewed distribution")
+p_left_t <- p_left_t + ggplot2::theme(
+  axis.title.x = ggplot2::element_blank(),
+  axis.text.x = ggplot2::element_blank(),
+  axis.title.y = ggplot2::element_blank(),
+  axis.text.y = ggplot2::element_blank())
+
+p_left_b <- .create_outlier_fraction_plot(
+  data = data[distribution == "left-skewed" & weight_method %in% bottom_group],
+  plot_theme = plot_theme,
+  limits= c(-2.5,  4.0),
+  lambda_target = data[distribution == "left-skewed" & weight_method == "non-robust" & k == 0.0]$mean_lambda)
+p_left_b <- p_left_b + ggplot2::theme(
+  axis.title.y = ggplot2::element_blank(),
+  axis.text.y = ggplot2::element_blank(),
+  axis.text.x = ggplot2::element_text(
+    angle=60.0,
+    hjust=1.0))
+
+#### Aggregate -----------------------------------------------------------------
+
+p <- egg::ggarrange(
+  plots=list(
+    p_normal_t, p_right_t, p_left_t,
+    p_normal_b, p_right_b, p_left_b),
+  ncol=3,
+  heights=c(1.0, 1.0),
+  byrow=TRUE,
+  draw=FALSE)
+p
 ```
+
 
 
 # Experimental Results
