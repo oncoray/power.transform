@@ -1365,12 +1365,15 @@ if(!file.exists(file.path(manuscript_dir, "robustness_comparison_plot.RDS"))){
             
             #for(method in c("box_cox", "yeo_johnson")){
             for(method in c("yeo_johnson")){
-              for(weight_method in c("none", "original_cosine", "transformed_step", "transformed_cosine", "residual_step", "residual_cosine")){
+              for(weight_method in c("none", "original_step", "original_cosine", "transformed_step", "transformed_cosine", "residual_step", "residual_cosine")){
                 
                 k1 <- k2 <- NULL
                 
                 # Optimal parameter values from the previous experiment.
-                if(weight_method == "original_cosine"){
+                if(weight_method == "original_step"){
+                  k1 <- 0.92
+                  
+                } else if(weight_method == "original_cosine"){
                   k1 <- 0.89
                   k2 <- 0.93
                   
@@ -1481,8 +1484,8 @@ data$method <- factor(
   labels = c("Yeo-Johnson"))
 data$weight_method <- factor(
   x = data$weight_method,
-  levels = c("none", "original_cosine", "transformed_step", "transformed_cosine", "residual_step", "residual_cosine"),
-  labels = c("non-robust", "emp. prob. (tap. cos.)", "z-score (step)", "z-score (tap. cos.)", "residual (step)", "residual (tap. cos.)"))
+  levels = c("none", "original_step", "original_cosine", "transformed_step", "transformed_cosine", "residual_step", "residual_cosine"),
+  labels = c("non-robust", "emp. prob. (step)", "emp. prob. (tap. cos.)", "z-score (step)", "z-score (tap. cos.)", "residual (step)", "residual (tap. cos.)"))
 
 data <- data[, list(
   "mean_lambda"=mean(lambda),
@@ -1490,14 +1493,17 @@ data <- data[, list(
   "max_lambda"=max(lambda)),
   by=c("distribution", "method", "weight_method", "k")]
 
-top_group <- c("non-robust", "emp. prob. (tap. cos.)", "z-score (step)")
-bottom_group <- c("z-score (tap. cos.)", "residual (step)", "residual (tap. cos.)")
+top_group <- c("non-robust", "emp. prob. (step)", "emp. prob. (tap. cos.)")
+bottom_group <- c("z-score (step)", "z-score (tap. cos.)", "residual (step)", "residual (tap. cos.)")
+
+top_limits <- c(0.2, 1.8)
+bottom_limits <- c(-2.5, 4.0)
 
 #### Normal distribution -------------------------------------------------------
 p_normal_t <- .create_outlier_fraction_plot(
   data = data[distribution == "normal" & weight_method %in% top_group],
   plot_theme = plot_theme,
-  limits= c(0.0, 2.0),
+  limits = top_limits,
   lambda_target = data[distribution == "normal" & weight_method == "non-robust" & k == 0.0]$mean_lambda)
 p_normal_t <- p_normal_t + ggplot2::ggtitle(label="normal distribution")
 p_normal_t <- p_normal_t + ggplot2::theme(
@@ -1507,7 +1513,7 @@ p_normal_t <- p_normal_t + ggplot2::theme(
 p_normal_b <- .create_outlier_fraction_plot(
   data = data[distribution == "normal" & weight_method %in% bottom_group],
   plot_theme = plot_theme,
-  limits= c(-2.5,  4.0),
+  limits = bottom_limits,
   lambda_target = data[distribution == "normal" & weight_method == "non-robust" & k == 0.0]$mean_lambda)
 p_normal_b <- p_normal_b + ggplot2::theme(
   axis.text.x = ggplot2::element_text(
@@ -1518,7 +1524,7 @@ p_normal_b <- p_normal_b + ggplot2::theme(
 p_right_t <- .create_outlier_fraction_plot(
   data = data[distribution == "right-skewed" & weight_method %in% top_group],
   plot_theme = plot_theme,
-  limits= c(0.0, 2.0),
+  limits= top_limits,
   lambda_target = data[distribution == "right-skewed" & weight_method == "non-robust" & k == 0.0]$mean_lambda)
 p_right_t <- p_right_t + ggplot2::ggtitle(label="right-skewed distribution")
 p_right_t <- p_right_t + ggplot2::theme(
@@ -1530,7 +1536,7 @@ p_right_t <- p_right_t + ggplot2::theme(
 p_right_b <- .create_outlier_fraction_plot(
   data = data[distribution == "right-skewed" & weight_method %in% bottom_group],
   plot_theme = plot_theme,
-  limits= c(-2.5,  4.0),
+  limits = bottom_limits,
   lambda_target = data[distribution == "right-skewed" & weight_method == "non-robust" & k == 0.0]$mean_lambda)
 p_right_b <- p_right_b + ggplot2::theme(
   axis.title.y = ggplot2::element_blank(),
@@ -1543,7 +1549,7 @@ p_right_b <- p_right_b + ggplot2::theme(
 p_left_t <- .create_outlier_fraction_plot(
   data = data[distribution == "left-skewed" & weight_method %in% top_group],
   plot_theme = plot_theme,
-  limits= c(0.0, 2.0),
+  limits = top_limits,
   lambda_target = data[distribution == "left-skewed" & weight_method == "non-robust" & k == 0.0]$mean_lambda,
   guide = TRUE)
 p_left_t <- p_left_t + ggplot2::ggtitle(label="left-skewed distribution")
@@ -1556,7 +1562,7 @@ p_left_t <- p_left_t + ggplot2::theme(
 p_left_b <- .create_outlier_fraction_plot(
   data = data[distribution == "left-skewed" & weight_method %in% bottom_group],
   plot_theme = plot_theme,
-  limits= c(-2.5,  4.0),
+  limits = bottom_limits,
   lambda_target = data[distribution == "left-skewed" & weight_method == "non-robust" & k == 0.0]$mean_lambda)
 p_left_b <- p_left_b + ggplot2::theme(
   axis.title.y = ggplot2::element_blank(),
