@@ -49,19 +49,19 @@ compute_expected_z <- function(x){
   if(is.unsorted(x)) stop(paste0("DEV: x is expected to be sorted in ascending order."))
 
   # Compute expected quantile.
-  q <- (seq_along(x) - 1/3) / (length(x) + 1/3)
+  p <- (seq_along(x) - 1/3) / (length(x) + 1/3)
 
   # Set up a data.table.
   data <- data.table::data.table(
     "x"=x,
-    "q"=q)
+    "p"=p)
 
   # Average quantile for when x has multiple values. Though this necessitates
   # using the data.table package, this is by far the fastest implementation.
-  data[, "q_group":=mean(q), by="x"]
+  data[, "p_group":=mean(p), by="x"]
 
   # Compute z-scores.
-  z <- stats::qnorm(p=data$q_group)
+  z <- stats::qnorm(p=data$p_group)
 
   return(z)
 }
