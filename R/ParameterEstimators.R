@@ -310,21 +310,14 @@ setMethod(
     stop(paste0("DEV: unknown estimation_method: ", estimation_method))
   }
 
-  # Set weighting function.
-  available_weighting_functions <- ..get_available_weighting_functions(
+  estimator@weighting_method <- .set_weighting_function(
     transformer = transformer,
-    estimator = estimator)
+    estimator = estimator,
+    weighting_function = weighting_function,
+    weighting_function_parameters = weighting_function_parameters)
 
-  if(is.null(weighting_function)) weighting_function <- ..get_default_weighting_function(
-    transformer = transformer,
-    estimator = estimator)
 
-  if(!weighting_function %in% available_weighting_functions){
-    stop(paste0(
-      "The desired weighting function ", weighting_function),
-    ))
-  }
-
+  return(estimator)
 }
 
 

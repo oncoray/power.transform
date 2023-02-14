@@ -1,3 +1,27 @@
+.set_weighting_function <- function(
+    transformer,
+    estimator,
+    weighting_function,
+    weighting_function_parameters){
+
+  # Set weighting function.
+  available_weighting_functions <- ..get_available_weighting_functions(
+    transformer = transformer,
+    estimator = estimator)
+
+  if(is.null(weighting_function)) weighting_function <- ..get_default_weighting_function(
+    transformer = transformer,
+    estimator = estimator)
+
+  if(!weighting_function %in% available_weighting_functions){
+    stop(paste0(
+      "The desired weighting function ", weighting_function,
+      " is not available."))
+  }
+}
+
+
+
 original_step <- function(x, k1=0.80, ...){
   return(.step_window(
     x = .compute_weight_original(x = x),
