@@ -60,7 +60,6 @@ setMethod(
     lambda,
     estimation_method = "mle",
     weighting_function = NULL,
-    weighting_source = NULL,
     weighting_function_parameters = NULL,
     optimiser="subplex",
     backup_use_default=TRUE,
@@ -97,7 +96,6 @@ setMethod(
       transformer = object,
       estimation_method = estimation_method,
       weighting_function = weighting_function,
-      weighting_source = weighting_source,
       weighting_function_parameters = weighting_function_parameters)
 
     # Optimise transformation parameters.

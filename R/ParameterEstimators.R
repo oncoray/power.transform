@@ -257,6 +257,56 @@ setMethod(
     return(..weighting_functions_all())
   }
 )
+
+
+
+.set_estimator <- function(
+  transformer,
+  estimation_method,
+  weighting_function,
+  weighting_function_parameters){
+
+  # Check estimation method.
+  available_estimators <- ..get_available_estimators(object=transformer)
+  if(!estimation_method %in% available_estimators){
+    stop(paste0(
+      "The desired estimator ", estimation_method, " is not available for ",
+      ifelse(transformer@robust, "robust ", ""),
+      "optimisation for ", paste_s(class(transformer)), " objects."))
+  }
+
+  # Create estimator instance.
+  if(estimation_method %in% ..estimators_mle()){
+    estimator <- methods::new("estimatorMaximumLikelihoodEstimation")
+
+  } else if(estimation_method %in% ..estimators_raymaekers_robust()){
+    estimator <- methods::new("estimatorRaymaekersRobust")
+
+  } else {
+    stop(paste0("DEV: unknown estimation_method: ", estimation_method))
+  }
+
+  # Set weighting function.
+  available_weighting_functions <- ..get_available_weighting_functions(
+    transformer = transformer,
+    estimator = estimator)
+
+  if(is.null(weighting_function)) weighting_function <- ..get_default_weighting_function(
+    transformer = transformer,
+    estimator = estimator)
+
+  if(!weighting_function %in% available_weighting_functions){
+    stop(paste0(
+      "The desired weighting function ", weighting_function),
+    ))
+  }
+
+}
+
+
+
+
+
 ..estimators_all <- function(){
   # Create a list with all estimators implemented in power.transform. Update
   # when more estimators are added.
