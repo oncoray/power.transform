@@ -19,19 +19,21 @@ Imports:
     rlang (>= 1.0.0),
     nloptr
 Collate: 
+    'TransformationObjects.R'
     'BoxCox.R'
     'Checks.R'
-    'TransformationObjects.R'
+    'YeoJohnson.R'
     'FindParameters.R'
     'GoodnessOfFit.R'
     'ModifiedTransformation.R'
+    'ParameterEstimators.R'
+    'ParameterEstimatorMLE.R'
+    'ParameterEstimatorRaymaekers.R'
     'PlotQQPlot.R'
     'PlotResidualPlot.R'
     'PlotUtilities.R'
-    'RobustTransformation.R'
     'Utilities.R'
-    'WeightMethods.R'
-    'YeoJohnson.R'
+    'WeightingFunctions.R'
     'power.transform-package.R'
 Suggests: 
     ggplot2 (>= 3.4.0),
