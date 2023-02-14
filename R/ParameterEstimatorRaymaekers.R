@@ -9,6 +9,18 @@ setClass(
 
 
 
+# ..get_available_weighting_functions (general) --------------------------------
+setMethod(
+  "..get_available_weighting_functions",
+  signature(transformer = "transformationPowerTransform", estimator = "estimatorRaymaekersRobust"),
+  function(transformer, estimator, ...){
+    # This method does not allow for weighting functions, but uses its own
+    # internal procedure.
+    return("none")
+  }
+)
+
+
 # ..optimise_transformation_parameters (Raymaekers robust) ---------------------
 setMethod(
   ".optimise_transformation_parameters",
