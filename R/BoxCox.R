@@ -133,6 +133,80 @@ setMethod(
 
 
 
+# .transform (Box-Cox) ---------------------------------------------------------
+setMethod(
+  ".transform",
+  signature(object="transformationBoxCox"),
+  function(object, x, ...){
+
+    # Set up vector to copy new values to.
+    y <- numeric(length(x))
+
+    # Find non-positive and non-finite instances.
+    na_entries <- which(x <= object@shift | !is.finite(x))
+    if(length(na_entries) > 0){
+      warning(paste0(
+        "Box-cox power transforms are only defined for strictly positive values. ",
+        "One or more zero, negative, NA or infinite values were found."))
+
+      y[na_entries] <- NA_real_
+    }
+
+    # Find remaining valid instances.
+    valid_entries <- setdiff(seq_along(x), na_entries)
+
+    # Perform transformation.
+    if(length(valid_entries) > 0) y[valid_entries] <- ..transform(
+      object = object,
+      x = x[valid_entries])
+
+    return(y)
+  })
+
+
+
+# ..transform (Box-Cox) --------------------------------------------------------
+setMethod(
+  "..transform",
+  signature(object = "transformationBoxCox"),
+  function(object, x, ...){
+
+    # Subtract shift.
+    x <- x - object@shift
+
+    if(object@lambda == 0){
+      y <- log(x)
+
+    } else {
+      y <- (x^object@lambda - 1) / object@lambda
+    }
+
+    return(y)
+  }
+)
+
+
+# .revert_transformation (Box-Cox) ---------------------------------------------
+setMethod(
+  ".revert_transform",
+  signature(object="transformationBoxCox"),
+  function(object, x, ...){
+
+    # Revert transformation.
+    if(object@lambda == 0){
+      y <- exp(x)
+
+    } else {
+      y <- (x * object@lambda + 1)^(1 / object@lambda)
+    }
+
+    # Apply shift.
+    y <- y + object@shift
+
+    return(y)
+  })
+
+
 # ..get_default_shift_range (Box-Cox) ------------------------------------------
 setMethod(
   "..get_default_shift_range",
@@ -234,86 +308,12 @@ setMethod(
 
 
 
-# .transform (Box-Cox) ---------------------------------------------------------
-setMethod(
-  ".transform",
-  signature(object="transformationBoxCox"),
-  function(object, x, ...){
-
-    # Set up vector to copy new values to.
-    y <- numeric(length(x))
-
-    # Find non-positive and non-finite instances.
-    na_entries <- which(x <= object@shift | !is.finite(x))
-    if(length(na_entries) > 0){
-      warning(paste0(
-        "Box-cox power transforms are only defined for strictly positive values. ",
-        "One or more zero, negative, NA or infinite values were found."))
-
-      y[na_entries] <- NA_real_
-    }
-
-    # Find remaining valid instances.
-    valid_entries <- setdiff(seq_along(x), na_entries)
-
-    # Perform transformation.
-    if(length(valid_entries) > 0) y[valid_entries] <- ..transform(
-      object = object,
-      x = x[valid_entries])
-
-    return(y)
-  })
-
-
-
-# ..transform (Box-Cox) --------------------------------------------------------
-setMethod(
-  "..transform",
-  signature(object = "transformationBoxCox"),
-  function(object, x, ...){
-
-    # Subtract shift.
-    x <- x - object@shift
-
-    if(object@lambda == 0){
-      y <- log(x)
-
-    } else {
-      y <- (x^object@lambda - 1) / object@lambda
-    }
-
-    return(y)
-  }
-)
-
-
-# .revert_transformation (Box-Cox) ---------------------------------------------
-setMethod(
-  ".revert_transform",
-  signature(object="transformationBoxCox"),
-  function(object, x, ...){
-
-    # Revert transformation.
-    if(object@lambda == 0){
-      y <- exp(x)
-
-    } else {
-      y <- (x * object@lambda + 1)^(1 / object@lambda)
-    }
-
-    # Apply shift.
-    y <- y + object@shift
-
-    return(y)
-  })
-
-
-
 # ..optimisation_parameters (Box-Cox) ------------------------------------------
 setMethod(
   "..optimisation_parameters",
   signature(object = "transformationBoxCox"),
   function(object, lambda, ...){
+
     if(length(lambda) == 1) return(NULL)
 
     return(
