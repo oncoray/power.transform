@@ -71,7 +71,7 @@ setClass(
 # .compute_objective (generic) -------------------------------------------------
 setGeneric(
   ".compute_objective",
-  function(object, ...) standardGeneric(".compute_estimator"))
+  function(object, ...) standardGeneric(".compute_objective"))
 
 
 
