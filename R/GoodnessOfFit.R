@@ -122,7 +122,7 @@ setMethod(
     if(is.unsorted(x)) x <- sort(x)
 
     # Perform transformation.
-    y <- .apply_transformation_parameters(
+    y <- ..transform(
       object=object,
       x=x)
 

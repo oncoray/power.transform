@@ -1,0 +1,249 @@
+..estimator_wrapper <- function(
+    par,
+    transformer,
+    estimator,
+    x,
+    parameter_type,
+    ...){
+
+  # Set lambda, shift, as provided by the optimisation algorithm.
+  if(setequal(parameter_type, c("lambda", "shift"))){
+    transformer@shift <- par[1]
+    transformer@lambda <- par[2]
+
+  } else if(parameter_type == "lambda" & length(par) == 1){
+    transformer@lambda <- par[1]
+
+  } else if(parameter_type == "shift" & length(par) == 1){
+    transformer@shift <- par[1]
+
+  } else {
+    stop("DEV: Optimisation function was not specified correctly.")
+  }
+
+  return(.compute_objective(
+    object = estimator,
+    transformer = transformer,
+    x = x,
+    ...))
+}
+
+
+
+# estimatorGeneric definition --------------------------------------------------
+setClass(
+  "estimatorGeneric",
+  slots = list(
+    "weighting_method" = "ANY"),
+  prototype = list(
+    "weighting_method" = NULL))
+
+setClass(
+  "estimatorEmpiricalDistributionFunction",
+  contains = "estimatorGeneric")
+
+setClass(
+  "estimatorAndersonDarling",
+  contains = "estimatorEmpiricalDistributionFunction")
+
+setClass(
+  "estimatorCramervonMises",
+  contains = "estimatorEmpiricalDistributionFunction")
+
+setClass(
+  "estimatorKolmogorovSmirnov",
+  contains = "estimatorEmpiricalDistributionFunction")
+
+setClass(
+  "estimatorSkewnessKurtosis",
+  contains = "estimatorGeneric")
+
+setClass(
+  "estimatorJarqueBera",
+  contains = "estimatorSkewnessKurtosis")
+
+setClass(
+  "estimatorDAgostino",
+  contains = "estimatorSkewnessKurtosis")
+
+
+
+# .compute_objective (generic) -------------------------------------------------
+setGeneric(
+  ".compute_objective",
+  function(object, ...) standardGeneric(".compute_estimator"))
+
+
+
+# .compute_objective (general) -------------------------------------------------
+setMethod(
+  ".compute_objective",
+  signature(object = "estimatorGeneric"),
+  function(object, ...){
+
+    # Estimators should be specified for each estimator - an error is thrown to
+    # ensure that this general method is never used.
+    stop(paste0("DEV: missing .compute_objective method for the ", paste_s(class(object)), " class."))
+  }
+)
+
+
+
+# .optimise_transformation_parameters (generic) --------------------------------
+setGeneric(
+  ".optimise_transformation_parameters",
+  function(object, ...) standardGeneric(".optimise_transformation_parameters"))
+
+
+
+# ..optimise_transformation_parameters (general) -------------------------------
+setMethod(
+  ".optimise_transformation_parameters",
+  signature(object = "estimatorGeneric"),
+  function(
+    object,
+    transformer,
+    optimiser,
+    optimisation_parameters,
+    x,
+    ...){
+
+    # Check that we do not inadvertently pass problems that do not require
+    # optimisation to the optimiser.
+    if(is.null(optimisation_parameters)) stop("DEV: optimisation_parameters cannot be empty.")
+    if(!is(transformer, "transformationPowerTransform")) stop("DEV: transformer should be a valid power transformation object.")
+    if(!is.numeric(x)) stop("DEV: x should be numeric.")
+
+    # Check fall-back option.
+    if(!is_package_installed("nloptr") & optimiser %in% c("direct-l", "subplex", "nelder-mead")){
+      warning(paste0(
+        "The nloptr package is required to optimise power transformation parameters using the ",
+        optimiser, " algoritm. stats::optim is used as a fallback option."))
+
+      optimiser <- "optim-nelder-mead"
+    }
+
+    if(optimiser == "direct-l"){
+      # DIRECT-L algorithm
+      #
+      # D. R. Jones, C. D. Perttunen, and B. E. Stuckmann, “Lipschitzian
+      # optimization without the lipschitz constant,” J. Optimization Theory and
+      # Applications, vol. 79, p. 157 (1993).
+      #
+      # J. M. Gablonsky and C. T. Kelley, “A locally-biased form of the DIRECT
+      # algorithm," J. Global Optimization, vol. 21 (1), p. 27-37 (2001).
+
+      results <- tryCatch(
+        nloptr::directL(
+          fn = ..estimator_wrapper,
+          lower = optimisation_parameters$lower,
+          upper = optimisation_parameters$upper,
+          control = list("xtol_rel"=1e-3, ftol_rel=1e-4),
+          transformer = transformer,
+          estimator = object,
+          x = x,
+          parameter_type = optimisation_parameters$parameter_type),
+        error = identity)
+
+    } else if(optimiser == "subplex"){
+      # SUBPLEX algorithm
+      #
+      # T. Rowan, “Functional Stability Analysis of Numerical
+      # Algorithms”, Ph.D. thesis, Department of Computer Sciences, University
+      # of Texas at Austin, 1990.
+
+      results <- tryCatch(
+        nloptr::sbplx(
+          x0 = optimisation_parameters$initial,
+          fn = ..estimator_wrapper,
+          lower = optimisation_parameters$lower,
+          upper = optimisation_parameters$upper,
+          control = list("xtol_rel"=1e-3, ftol_rel=1e-4),
+          transformer = transformer,
+          estimator = object,
+          x = x,
+          parameter_type = optimisation_parameters$parameter_type),
+        error = identity)
+
+    } else if(optimiser == "nelder-mead"){
+      # Nelder-Mead simplex algorithm
+      #
+      # J. A. Nelder and R. Mead, “A simplex method for function minimization,”
+      # The Computer Journal 7, p. 308-313 (1965).
+      #
+      # M. J. Box, “A new method of constrained optimization and a comparison
+      # with other methods,” Computer J. 8 (1), 42-52 (1965).
+
+      results <- tryCatch(
+        nloptr::neldermead(
+          x0 = optimisation_parameters$initial,
+          fn = ..estimator_wrapper,
+          lower = optimisation_parameters$lower,
+          upper = optimisation_parameters$upper,
+          control = list("xtol_rel"=1e-3, ftol_rel=1e-4),
+          transformer = transformer,
+          estimator = object,
+          x = x,
+          parameter_type = optimisation_parameters$parameter_type),
+        error = identity)
+
+    } else if(optimiser == "optim-nelder-mead"){
+      # Fall-back optimiser in case nloptr is not available. The Nelder-Mead
+      # algorithm in stats::optim does not yield results as consistent as the
+      # nloptr optimisers.
+      results <- stats::optim(
+        par = optimisation_parameters$initial,
+        fn = ..estimator_wrapper,
+        gr = NULL,
+        transformer = transformer,
+        estimator = object,
+        x = x,
+        parameter_type = optimisation_parameters$parameter_type,
+        control = list(
+          "abstol" = 1E-5,
+          "reltol" = 1E-5))
+
+    } else {
+      stop(paste0("Optimiser not recognised: ", optimiser))
+    }
+
+    # Check for known errors. If an unknown error is encountered, raise this
+    # error to the user.
+    if(inherits(results, "error")){
+      if(!results$message %in% c(
+        "objective in x0 returns NA")){
+        stop(results)
+      }
+    }
+
+    # Initialise a parameter list to return to the calling process.
+    parameter_list <- lapply(
+      optimisation_parameters$parameter_type,
+      function(x) (NA_real_))
+    names(parameter_list) <- optimisation_parameters$parameter_type
+
+    # Insert optimal parameter values into the parameter list, if any.
+    if(!inherits(results, "error")){
+      for(ii in seq_along(optimisation_parameters$parameter_type)){
+        parameter_value <- results$par[ii]
+        if(is.finite(parameter_value)){
+          parameter_list[[optimisation_parameters$parameter_type[ii]]] <- parameter_value
+        }
+      }
+    }
+
+    return(parameter_list)
+  }
+)
+
+
+
+..estimators_all <- function(){
+  # Create a list with all estimators implemented in power.transform. Update
+  # when more estimators are added.
+
+  return(c(
+    ..estimators_mle(),
+    ..estimators_raymaekers_robust()
+  ))
+}

@@ -1,4 +1,6 @@
 #' @include TransformationObjects.R
+#' @include BoxCox.R
+#' @include YeoJohnson.R
 NULL
 
 #' Set transformation parameters
@@ -181,7 +183,7 @@ power_transform <- function(
   }
 
   # Transform data using the transformer.
-  y <- .apply_transformation_parameters(
+  y <- .transform(
     object=transformer,
     x=x)
 
@@ -232,7 +234,7 @@ revert_power_transform <- function(
   .check_transformer(transformer)
 
   # Revert transformation.
-  x <- .invert_transformation(
+  x <- .revert_transform(
     object=transformer,
     x=y)
 
