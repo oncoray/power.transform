@@ -219,3 +219,19 @@ residual_cosine <- function(x, lambda, type, k1=0.30, k2=0.50, ...){
 
   return(w)
 }
+
+
+
+..weighting_functions_all <- function(){
+  return(c(
+    "none",
+    "empirical_probability_step",
+    "empirical_probability_triangle",
+    "empirical_probability_cosine",
+    "transformed_step",
+    "transformed_triangle",
+    "transformed_cosine",
+    "residual_step",
+    "residual_triangle",
+    "residual_cosine"))
+}
