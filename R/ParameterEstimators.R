@@ -260,6 +260,30 @@ setMethod(
 
 
 
+# ..get_default_weighting_function (generic) -----------------------------------
+setGeneric(
+  "..get_default_weighting_function",
+  function(transformer, estimator, ...) standardGeneric("..get_default_weighting_function"))
+
+
+
+# ..get_default_weighting_function (general) -----------------------------------
+setMethod(
+  "..get_default_weighting_function",
+  signature(transformer = "transformationPowerTransform", estimator = "estimatorGeneric"),
+  function(transformer, estimator, ...){
+
+    if(transformer@robust){
+      return("empirical_probability_cosine")
+
+    } else {
+      return("none")
+    }
+  }
+)
+
+
+
 .set_estimator <- function(
   transformer,
   estimation_method,

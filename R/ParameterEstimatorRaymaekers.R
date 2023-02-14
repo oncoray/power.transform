@@ -1,4 +1,5 @@
 #' @include ParameterEstimators.R
+#' @include TransformationObjects.R
 NULL
 
 
@@ -19,6 +20,18 @@ setMethod(
     return("none")
   }
 )
+
+
+
+# ..get_default_weighting_function (general) -----------------------------------
+setMethod(
+  "..get_default_weighting_function",
+  signature(transformer = "transformationPowerTransform", estimator = "estimatorRaymaekersRobust"),
+  function(transformer, estimator, ...){
+    return("none")
+  }
+)
+
 
 
 # ..optimise_transformation_parameters (Raymaekers robust) ---------------------
