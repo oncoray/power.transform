@@ -1,7 +1,7 @@
 #' @include TransformationObjects.R
 NULL
 
-# Yeo-Johnson transformation class ---------------------------------------------
+# transformationYeoJohnson definition ------------------------------------------
 
 #' Yeo-Johnson transformation object
 #'
@@ -36,6 +36,10 @@ setClass(
     "lambda" = NA_real_,
     "shift" = 0.0))
 
+
+
+# transformationYeoJohnsonShift definition -------------------------------------
+
 #' @rdname transformation_yeo_johnson
 #' @export
 setClass(
@@ -48,204 +52,72 @@ setClass(
 setMethod(
   ".set_transformation_parameters",
   signature("transformationYeoJohnson"),
-  function(object, x, lambda, ...){
+  function(
+    object,
+    x,
+    lambda,
+    estimation_method = "mle",
+    weighting_function = NULL,
+    weighting_function_parameters = NULL,
+    optimiser="subplex",
+    backup_use_default=TRUE,
+    ...){
 
-    if(is.null(lambda)){
-      # Pick very wide lambda-range, if lambda is NULL.
-      lambda_range <- c(-100.0, 100.0)
+    # Set lambda range. If lambda is NULL, set a very wide range.
+    if(is.null(lambda)) lambda <- ..get_default_lambda_range()
 
-    } else if(length(lambda) == 2){
-      lambda_range <- lambda
-    }
-
-    if(length(lambda) == 1){
-      # Set lambda parameter. Since we don't use any robust algorithm, set
-      # robust to FALSE.
-      object@lambda <- lambda
-      object@robust <- FALSE
-      object@complete <- TRUE
-
-    } else if(object@robust){
-      # Robust method based on Raymaekers J, Rousseeuw PJ. Transforming
-      # variables to central normality. Mach Learn. 2021.
-      # doi:10.1007/s10994-021-05960-5
-      lambda <- .transformation_robust_optimisation(
-        x = x,
-        type = "yeo_johnson",
-        lambda_range = lambda_range)
-
-      # Set lambda parameter.
-      object@lambda <- lambda
-      object@complete <- TRUE
-
-    } else {
-      # Standard method based on optimising log-likelihood of the normal
-      # distribution.
-      optimal_lambda <- suppressWarnings(
-        stats::optimise(
-          ..yeo_johnson_loglik,
-          interval=lambda_range,
-          x=x,
-          maximum=TRUE))
-
-      lambda <- ifelse(
-        is.finite(optimal_lambda$objective),
-        optimal_lambda$maximum,
-        1.0)
-
-      # Set lambda parameter.
-      object@lambda <- lambda
-      object@complete <- TRUE
-    }
-
-    return(object)
-  }
-)
-
-
-# .set_transformation_parameters (Yeo-Johnson (shift)) -------------------------
-setMethod(
-  ".set_transformation_parameters",
-  signature("transformationYeoJohnsonShift"),
-  function(object, x, lambda, optimiser="subplex", backup_use_default=TRUE, ...){
-
-    if(is.null(lambda)){
-      # Pick very wide lambda-range, if lambda is NULL.
-      lambda_range <- c(-100.0, 100.0)
-
-    } else if(length(lambda) == 2){
-      lambda_range <- lambda
-
-    } else {
-      return(methods::callNextMethod())
-    }
+    # Set lambda, in case a fixed lambda is provided.
+    object <- ..set_lambda(
+      object = object,
+      lambda = lambda)
 
     # Get optimisation parameters to initialise and configure the optimiser.
     optimisation_parameters <- ..optimisation_parameters(
-      object=object,
+      object = object,
       x = x,
-      lambda = lambda_range)
+      lambda = lambda)
 
-    if(object@robust){
-      # Sort values
-      x <- sort(x)
+    # Skip optimisation if there is nothing to optimise.
+    if(is.null(optimisation_parameters)){
+      object@complete <- TRUE
 
-      # Optimisation function.
-      opt_fun <- function(...) -.transformation_robust_shifted_optimisation(...)
-
-    } else {
-      # Optimisation function.
-      # opt_fun <- .transform_shifted_optimisation
-      opt_fun <- function(...) -.transform_shifted_optimisation(...)
+      return(object)
     }
 
-    if(!is_package_installed("nloptr") & optimiser %in% c("direct-l", "subplex", "nelder-mead")){
-      warning(paste0(
-        "The nloptr package is required to optimise power transformation parameters using the ",
-        optimiser, " algoritm. stats::optim is used as a fallback option."))
+    # Initialise the estimator.
+    estimator <- .set_estimator(
+      transformer = object,
+      estimation_method = estimation_method,
+      weighting_function = weighting_function,
+      weighting_function_parameters = weighting_function_parameters)
 
-      optimiser <- "optim-nelder-mead"
-    }
+    # Optimise transformation parameters.
+    optimised_parameters <- .optimise_transformation_parameters(
+      object = estimator,
+      transformer = object,
+      x = x,
+      optimiser = optimiser,
+      optimisation_parameters = optimisation_parameters)
 
-    if(optimiser == "direct-l"){
-      # DIRECT-L algorithm
-      #
-      # D. R. Jones, C. D. Perttunen, and B. E. Stuckmann, “Lipschitzian
-      # optimization without the lipschitz constant,” J. Optimization Theory and
-      # Applications, vol. 79, p. 157 (1993).
-      #
-      # J. M. Gablonsky and C. T. Kelley, “A locally-biased form of the DIRECT
-      # algorithm," J. Global Optimization, vol. 21 (1), p. 27-37 (2001).
+    # Update shift and lambda values with the optimised parameters.
+    if(!is.null(optimised_parameters$shift)){
+      if(is.finite(optimised_parameters$shift)){
+        object@shift <- optimised_parameters$shift
 
-      results <- nloptr::directL(
-        fn=opt_fun,
-        lower=optimisation_parameters$lower,
-        upper=optimisation_parameters$upper,
-        control=list("xtol_rel"=1e-3, ftol_rel=1e-4),
-        x=x,
-        ...,
-        type="yeo_johnson")
-
-    } else if(optimiser == "subplex"){
-      # SUBPLEX algorithm
-      #
-      # T. Rowan, “Functional Stability Analysis of Numerical
-      # Algorithms”, Ph.D. thesis, Department of Computer Sciences, University
-      # of Texas at Austin, 1990.
-
-      results <- tryCatch(
-        nloptr::sbplx(
-          x0=optimisation_parameters$initial,
-          fn=opt_fun,
-          lower=optimisation_parameters$lower,
-          upper=optimisation_parameters$upper,
-          control=list("xtol_rel"=1e-3, ftol_rel=1e-4),
-          x=x,
-          ...,
-          type="yeo_johnson"),
-        error = identity)
-
-    } else if(optimiser == "nelder-mead"){
-      # Nelder-Mead simplex algorithm
-      #
-      # J. A. Nelder and R. Mead, “A simplex method for function minimization,”
-      # The Computer Journal 7, p. 308-313 (1965).
-      #
-      # M. J. Box, “A new method of constrained optimization and a comparison
-      # with other methods,” Computer J. 8 (1), 42-52 (1965).
-
-      results <- nloptr::neldermead(
-        x0=optimisation_parameters$initial,
-        fn=opt_fun,
-        lower=optimisation_parameters$lower,
-        upper=optimisation_parameters$upper,
-        control=list("xtol_rel"=1e-3, ftol_rel=1e-4),
-        x=x,
-        ...,
-        type="yeo_johnson")
-
-    } else if(optimiser == "optim-nelder-mead"){
-      # Fall-back optimiser in case nloptr is not available. The Nelder-Mead
-      # algorithm in stats::optim does not yield results as consistent as the
-      # nloptr optimisers.
-      results <- stats::optim(
-        par=optimisation_parameters$initial,
-        fn=opt_fun,
-        gr=NULL,
-        x=x,
-        ...,
-        type="yeo_johnson",
-        control=list(
-          "abstol"=1E-5,
-          "reltol"=1E-5))
-
-    } else {
-      stop(paste0("Optimiser not recognised: ", optimiser))
-    }
-
-    if(inherits(results, "error")){
-      if(results$message == "objective in x0 returns NA"){
-        shift <- NA_real_
-        lambda <- NA_real_
-
-      } else {
-        stop(results)
+      } else if(!backup_use_default){
+        object@shift <- optimised_parameters$shift
       }
-
-    } else {
-      # Extract optimal values.
-      shift <- results$par[1]
-      lambda <- results$par[2]
     }
 
-    if(backup_use_default && (!is.finite(results$value) || !is.finite(shift) || !is.finite(lambda))){
-      shift <- 0.0
-      lambda <- 1.0
+    if(!is.null(optimised_parameters$lambda)){
+      if(is.finite(optimised_parameters$lambda)){
+        object@lambda <- optimised_parameters$lambda
+
+      } else if(!backup_use_default){
+        object@lambda <- optimised_parameters$lambda
+      }
     }
 
-    # Set parameters.
-    object@shift <- shift
-    object@lambda <- lambda
     object@complete <- TRUE
 
     return(object)
@@ -357,19 +229,66 @@ setMethod(
 
 
 
+# ..get_default_shift_range (Yeo-Johnson) --------------------------------------
+setMethod(
+  "..get_default_shift_range",
+  signature(object = "transformationYeoJohnson"),
+  function(object, x, ...){
+    # Set shift range.
+    shift_range <- c(min(x), max(x))
+
+    return(shift_range)
+  }
+)
+
+
+
+# ..get_default_lambda_range (Yeo-Johnson) -------------------------------------
+setMethod(
+  "..get_default_lambda_range",
+  signature(object = "transformationYeoJohnson"),
+  function(object, ...){
+    return(c(-100.0, 100.0))
+  }
+)
+
+
+
+# ..set_lambda (Yeo-Johnson) ---------------------------------------------------
+setMethod(
+  "..set_lambda",
+  signature(object = "transformationYeoJohnson"),
+  function(object, lambda, ...){
+
+    # Only update lambda if it is not a range.
+    if(length(lambda) != 1) return(object)
+
+    # Update lambda.
+    object@lambda <- lambda
+
+    return(object)
+  }
+)
+
+
+
 # ..optimisation_parameters (Yeo-Johnson) --------------------------------------
 setMethod(
   "..optimisation_parameters",
   signature(object = "transformationYeoJohnson"),
   function(object, lambda, ...){
 
+    if(length(lambda) == 1) return(NULL)
+
     return(
       list(
         "initial"=mean(lambda),
         "lower"=min(lambda),
-        "upper"=max(lambda)))
+        "upper"=max(lambda),
+        "parameter_type" = "lambda"))
   }
 )
+
 
 
 # ..optimisation_parameters (Yeo-Johnson (shift)) ------------------------------
@@ -378,16 +297,27 @@ setMethod(
   signature(object = "transformationYeoJohnsonShift"),
   function(object, x, lambda, ...){
 
-    # Find the (negative or zero) minimum value. We need to increment slightly
-    # to avoid x containing 0s.
-    min_value <- min(x, na.rm=TRUE)
-    max_value <- max(x, na.rm=TRUE)
+    # Set up x-range.
+    x_range <- ..get_default_shift_range(
+      object = object,
+      x = x)
 
-    return(
-      list(
-        "initial"=c(min_value, mean(lambda)),
-        "lower"=c(min_value, min(lambda)),
-        "upper"=c(max_value, max(lambda))))
+    if(length(lambda) == 1){
+      return(
+        list(
+          "initial" = x_range[1],
+          "lower" = x_range[1],
+          "upper" = x_range[2],
+          "parameter_type" = c("shift")))
+
+    } else {
+      return(
+        list(
+          "initial" = c(x_range[1], mean(lambda)),
+          "lower" = c(x_range[1], min(lambda)),
+          "upper" = c(x_range[2], max(lambda)),
+          "parameter_type" = c("shift", "lambda")))
+    }
   }
 )
 
@@ -458,7 +388,6 @@ setMethod(
 
 
 
-
 # show (Yeo-Johnson) -----------------------------------------------------------
 setMethod(
   "show",
@@ -510,188 +439,188 @@ setMethod(
 
 
 
-
-yeo_johnson_shift_range <- function(x){
-  # Default range would be any shift between all-positive (shift by lowest
-  # value) and all-negative (shift by highest value).
-
-  # Find the (negative or zero) minimum value. We need to increment slightly
-  # to avoid x containing 0s.
-  min_value <- min(x, na.rm=TRUE)
-  max_value <- max(x, na.rm=TRUE)
-
-  return(c(min_value, max_value))
-}
-
-
-
-yeo_johnson_parameter_grid <- function(x, lambda_range){
-
-  # Set up grid positions.
-  points_x <- unique(stats::quantile(x, c(0.05, 0.2, 0.35, 0.5, 0.65, 0.8, 0.95), names=FALSE))
-  points_lambda <- lambda_range[1] + (seq_len(11L) - 1.0) * (lambda_range[2] - lambda_range[1]) / 10.0
-
-  # Create parameter pairs that form the grid nodes.
-  parameters <- mapply(
-    function(x, lambda) (c(x, lambda)),
-    x=rep(points_x, each=length(points_lambda)),
-    lambda=rep(points_lambda, times=length(points_x)),
-    SIMPLIFY=FALSE,
-    USE.NAMES=FALSE)
-
-  return(list(
-    "x"=points_x,
-    "x_range"=c(min(points_x), max(points_x)),
-    "lambda"=points_lambda,
-    "lambda_range"=c(min(points_lambda), max(points_lambda)),
-    "parameter"=parameters))
-}
-
-
-
-..yeo_johnson_transform <- function(lambda, x, invert=FALSE){
-  # After Yeo, I. K., & Johnson, R. A. (2000). A new family of power
-  # transformations to improve normality or symmetry. Biometrika, 87(4),
-  # 954-959.
-
-  # Copy output
-  y <- x
-
-  # Determine positive and negative elements of the input vector
-  pos_index <- x >= 0 & is.finite(x)
-  neg_index <- x < 0 & is.finite(x)
-
-  if(invert) {
-    # Inverse transformations: From transformed value to original value
-    if(any(pos_index)){
-      if(lambda != 0){
-        y[pos_index] <- ((x[pos_index] * lambda + 1)^(1/lambda) - 1)
-
-      } else {
-        y[pos_index] <- exp(x[pos_index]) - 1
-      }
-    }
-
-    if(any(neg_index)){
-      if(lambda != 2) {
-        y[neg_index] <- 1 - (x[neg_index] * (lambda-2) + 1)^(1/(2-lambda))
-
-      } else {
-        y[neg_index] <- 1 - exp(-x[neg_index])
-      }
-    }
-
-  } else {
-
-    # From original value to transformed value
-    if(any(pos_index)){
-      if(lambda == 0.0){
-        y[pos_index] <- log1p(x[pos_index])
-
-      } else {
-        y[pos_index] <- ((x[pos_index] + 1)^lambda - 1) / lambda
-      }
-    }
-
-    if(any(neg_index)){
-      if(lambda == 2.0){
-        y[neg_index] <- -log1p(-x[neg_index])
-
-      } else {
-        y[neg_index] <- -((-x[neg_index] + 1)^(2-lambda) - 1) / (2-lambda)
-      }
-    }
-  }
-
-  return(y)
-}
-
-
-
-..yeo_johnson_dev <- function(lambda, x){
-  # First order derivative of the Yeo-Johnson transformation with respect to x.
-  return((1 + abs(x))^(sign(x) * (lambda - 1)))
-}
-
-
-
-..yeo_johnson_loglik <- function(lambda, x, w=NULL){
-
-  # Set w
-  if(is.null(w)) w <- numeric(length(x)) + 1.0
-
-  # Transform x under the provided lambda.
-  y <- ..yeo_johnson_transform(lambda=lambda, x=x)
-
-  # Compute the sum of the weights.
-  sum_w <- sum(w)
-  if(sum_w == 0) return(NA_real_)
-
-  # Compute the weighted estimates of the mean mu and variance sigma squared for
-  # y.
-  mu_hat <- sum(w * y) / sum_w
-  sigma_hat_squared <- sum(w * (y - mu_hat)^2) / sum_w
-
-  # Log-likelihood cannot be estimated if sigma is NaN.
-  if(!is.finite(sigma_hat_squared)) return(NA_real_)
-
-  # Log-likelihood cannot be determined if the sigma estimate equals 0.0
-  if(sigma_hat_squared == 0) return(NA_real_)
-
-  # Compute the log likelihood under the assumption that the transformed
-  # variable y follows the normal distribution.
-  llf <- (lambda - 1.0) * sum(w * sign(x) * log1p(abs(x))) - sum_w/2.0 * log(sigma_hat_squared)
-
-  return(llf)
-}
-
-
-
-..yeo_johnson_transform_rectified <- function(lambda, x){
-  # The rectified transform replaces part of the transformed values by a first
-  # order (linear) approximation. Linear approximation of a function f(x) at
-  # point a is defined as y = f(a) + (x - a) * f'(a), with f'(a) being the
-  # derivative of f(x=a). Here function f is the Yeo-Johnson transformation, and
-  # point a is the first or third quartile, depending on lambda.
-
-  # Find first and third quartiles.
-  cut_off <- stats::quantile(x, probs=c(0.25, 0.75), names=FALSE)
-
-  y <- numeric(length(x))
-
-  # Perform rectified transformation
-  if(lambda == 1.0){
-    # For lambda equal to 1, the mapping is linear, and no elements are
-    # out-of-range and require rectification.
-    out_of_range <- logical(length(x))
-
-  } else if(lambda > 1.0){
-    # Select the cut-off value, i.e. the first quartile.
-    cut_off <- cut_off[1]
-
-    # Elements that have value below Cl (1st quartile) are rectified.
-    out_of_range <- x < cut_off
-
-  } else {
-    # Lambda < 1.0.
-
-    # Select the cut-off value, i.e. the third quartile.
-    cut_off <- cut_off[2]
-
-    # Elements that have value above Cu (3rd quartile) are rectified.
-    out_of_range <- x > cut_off
-  }
-
-  if(any(out_of_range)){
-    # Linear approximation to out-of-range elements.
-    y[out_of_range] <- ..yeo_johnson_transform(lambda=lambda, x=cut_off) + (x[out_of_range]-cut_off) * ..yeo_johnson_dev(lambda=lambda, x=cut_off)
-  }
-
-  # Map elements that do not require rectification using the normal Box-Cox
-  # transformation.
-  if(any(!out_of_range)){
-    y[!out_of_range] <- ..yeo_johnson_transform(lambda=lambda, x=x[!out_of_range])
-  }
-
-  return(y)
-}
+#
+# yeo_johnson_shift_range <- function(x){
+#   # Default range would be any shift between all-positive (shift by lowest
+#   # value) and all-negative (shift by highest value).
+#
+#   # Find the (negative or zero) minimum value. We need to increment slightly
+#   # to avoid x containing 0s.
+#   min_value <- min(x, na.rm=TRUE)
+#   max_value <- max(x, na.rm=TRUE)
+#
+#   return(c(min_value, max_value))
+# }
+#
+#
+#
+# yeo_johnson_parameter_grid <- function(x, lambda_range){
+#
+#   # Set up grid positions.
+#   points_x <- unique(stats::quantile(x, c(0.05, 0.2, 0.35, 0.5, 0.65, 0.8, 0.95), names=FALSE))
+#   points_lambda <- lambda_range[1] + (seq_len(11L) - 1.0) * (lambda_range[2] - lambda_range[1]) / 10.0
+#
+#   # Create parameter pairs that form the grid nodes.
+#   parameters <- mapply(
+#     function(x, lambda) (c(x, lambda)),
+#     x=rep(points_x, each=length(points_lambda)),
+#     lambda=rep(points_lambda, times=length(points_x)),
+#     SIMPLIFY=FALSE,
+#     USE.NAMES=FALSE)
+#
+#   return(list(
+#     "x"=points_x,
+#     "x_range"=c(min(points_x), max(points_x)),
+#     "lambda"=points_lambda,
+#     "lambda_range"=c(min(points_lambda), max(points_lambda)),
+#     "parameter"=parameters))
+# }
+#
+#
+#
+# ..yeo_johnson_transform <- function(lambda, x, invert=FALSE){
+#   # After Yeo, I. K., & Johnson, R. A. (2000). A new family of power
+#   # transformations to improve normality or symmetry. Biometrika, 87(4),
+#   # 954-959.
+#
+#   # Copy output
+#   y <- x
+#
+#   # Determine positive and negative elements of the input vector
+#   pos_index <- x >= 0 & is.finite(x)
+#   neg_index <- x < 0 & is.finite(x)
+#
+#   if(invert) {
+#     # Inverse transformations: From transformed value to original value
+#     if(any(pos_index)){
+#       if(lambda != 0){
+#         y[pos_index] <- ((x[pos_index] * lambda + 1)^(1/lambda) - 1)
+#
+#       } else {
+#         y[pos_index] <- exp(x[pos_index]) - 1
+#       }
+#     }
+#
+#     if(any(neg_index)){
+#       if(lambda != 2) {
+#         y[neg_index] <- 1 - (x[neg_index] * (lambda-2) + 1)^(1/(2-lambda))
+#
+#       } else {
+#         y[neg_index] <- 1 - exp(-x[neg_index])
+#       }
+#     }
+#
+#   } else {
+#
+#     # From original value to transformed value
+#     if(any(pos_index)){
+#       if(lambda == 0.0){
+#         y[pos_index] <- log1p(x[pos_index])
+#
+#       } else {
+#         y[pos_index] <- ((x[pos_index] + 1)^lambda - 1) / lambda
+#       }
+#     }
+#
+#     if(any(neg_index)){
+#       if(lambda == 2.0){
+#         y[neg_index] <- -log1p(-x[neg_index])
+#
+#       } else {
+#         y[neg_index] <- -((-x[neg_index] + 1)^(2-lambda) - 1) / (2-lambda)
+#       }
+#     }
+#   }
+#
+#   return(y)
+# }
+#
+#
+#
+# ..yeo_johnson_dev <- function(lambda, x){
+#   # First order derivative of the Yeo-Johnson transformation with respect to x.
+#   return((1 + abs(x))^(sign(x) * (lambda - 1)))
+# }
+#
+#
+#
+# ..yeo_johnson_loglik <- function(lambda, x, w=NULL){
+#
+#   # Set w
+#   if(is.null(w)) w <- numeric(length(x)) + 1.0
+#
+#   # Transform x under the provided lambda.
+#   y <- ..yeo_johnson_transform(lambda=lambda, x=x)
+#
+#   # Compute the sum of the weights.
+#   sum_w <- sum(w)
+#   if(sum_w == 0) return(NA_real_)
+#
+#   # Compute the weighted estimates of the mean mu and variance sigma squared for
+#   # y.
+#   mu_hat <- sum(w * y) / sum_w
+#   sigma_hat_squared <- sum(w * (y - mu_hat)^2) / sum_w
+#
+#   # Log-likelihood cannot be estimated if sigma is NaN.
+#   if(!is.finite(sigma_hat_squared)) return(NA_real_)
+#
+#   # Log-likelihood cannot be determined if the sigma estimate equals 0.0
+#   if(sigma_hat_squared == 0) return(NA_real_)
+#
+#   # Compute the log likelihood under the assumption that the transformed
+#   # variable y follows the normal distribution.
+#   llf <- (lambda - 1.0) * sum(w * sign(x) * log1p(abs(x))) - sum_w/2.0 * log(sigma_hat_squared)
+#
+#   return(llf)
+# }
+#
+#
+#
+# ..yeo_johnson_transform_rectified <- function(lambda, x){
+#   # The rectified transform replaces part of the transformed values by a first
+#   # order (linear) approximation. Linear approximation of a function f(x) at
+#   # point a is defined as y = f(a) + (x - a) * f'(a), with f'(a) being the
+#   # derivative of f(x=a). Here function f is the Yeo-Johnson transformation, and
+#   # point a is the first or third quartile, depending on lambda.
+#
+#   # Find first and third quartiles.
+#   cut_off <- stats::quantile(x, probs=c(0.25, 0.75), names=FALSE)
+#
+#   y <- numeric(length(x))
+#
+#   # Perform rectified transformation
+#   if(lambda == 1.0){
+#     # For lambda equal to 1, the mapping is linear, and no elements are
+#     # out-of-range and require rectification.
+#     out_of_range <- logical(length(x))
+#
+#   } else if(lambda > 1.0){
+#     # Select the cut-off value, i.e. the first quartile.
+#     cut_off <- cut_off[1]
+#
+#     # Elements that have value below Cl (1st quartile) are rectified.
+#     out_of_range <- x < cut_off
+#
+#   } else {
+#     # Lambda < 1.0.
+#
+#     # Select the cut-off value, i.e. the third quartile.
+#     cut_off <- cut_off[2]
+#
+#     # Elements that have value above Cu (3rd quartile) are rectified.
+#     out_of_range <- x > cut_off
+#   }
+#
+#   if(any(out_of_range)){
+#     # Linear approximation to out-of-range elements.
+#     y[out_of_range] <- ..yeo_johnson_transform(lambda=lambda, x=cut_off) + (x[out_of_range]-cut_off) * ..yeo_johnson_dev(lambda=lambda, x=cut_off)
+#   }
+#
+#   # Map elements that do not require rectification using the normal Box-Cox
+#   # transformation.
+#   if(any(!out_of_range)){
+#     y[!out_of_range] <- ..yeo_johnson_transform(lambda=lambda, x=x[!out_of_range])
+#   }
+#
+#   return(y)
+# }
