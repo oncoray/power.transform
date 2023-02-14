@@ -125,7 +125,7 @@ setGeneric(
 # .revert_transform (general) --------------------------------------------------
 setMethod(
   ".revert_transform",
-  signature(object = ".revert_transform"),
+  signature(object = "transformationPowerTransform"),
   function(object, x, ...){
     # Default method.
 
