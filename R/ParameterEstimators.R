@@ -238,6 +238,25 @@ setMethod(
 
 
 
+# ..get_available_weighting_functions (generic) --------------------------------
+setGeneric(
+  "..get_available_weighting_functions",
+  function(transformer, estimator, ...) standardGeneric("..get_available_weighting_functions"))
+
+
+
+# ..get_available_weighting_functions (general) --------------------------------
+setMethod(
+  "..get_available_weighting_functions",
+  signature(transformer = "transformationPowerTransform", estimator = "estimatorGeneric"),
+  function(transformer, estimator, ...){
+
+    # If transformation methods is not robust, do not use weights.
+    if(!transformer@robust) return("none")
+
+    return(..weighting_functions_all())
+  }
+)
 ..estimators_all <- function(){
   # Create a list with all estimators implemented in power.transform. Update
   # when more estimators are added.
