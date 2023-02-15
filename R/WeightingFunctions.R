@@ -4,7 +4,8 @@
     weighting_function,
     weighting_function_parameters){
 
-  # Set weighting function.
+  # Find those weighting functions that are allowed for the particular
+  # combination of transformer and estimator.
   available_weighting_functions <- ..get_available_weighting_functions(
     transformer = transformer,
     estimator = estimator)
@@ -19,6 +20,48 @@
       " is not available."))
   }
 
+  # Create weighting function object.
+  if(weighting_function == "none"){
+    weighting_object <- methods::new("weightingMethodNone")
+
+  } else if(weighting_function == "empirical_probability_step"){
+    weighting_object <- methods::new("weightingMethodEmpiricalProbabilityStep")
+
+  } else if(weighting_function == "empirical_probability_triangle"){
+    weighting_object <- methods::new("weightingMethodEmpiricalProbabilityTriangle")
+
+  } else if(weighting_function == "empirical_probability_cosine"){
+    weighting_object <- methods::new("weightingMethodEmpiricalProbabilityCosine")
+
+  } else if(weighting_function == "transformed_step"){
+    .warn_poor_weighting_method(weighting_function)
+    weighting_object <- methods::new("weightingMethodTransformedStep")
+
+  } else if(weighting_function == "transformed_triangle"){
+    .warn_poor_weighting_method(weighting_function)
+    weighting_object <- methods::new("weightingMethodTransformedTriangle")
+
+  } else if(weighting_function == "transformed_cosine"){
+    .warn_poor_weighting_method(weighting_function)
+    weighting_object <- methods::new("weightingMethodTransformedCosine")
+
+  } else if(weighting_function == "residual_step"){
+    .warn_poor_weighting_method(weighting_function)
+    weighting_object <- methods::new("weightingMethodResidualStep")
+
+  } else if(weighting_function == "residual_triangle"){
+    .warn_poor_weighting_method(weighting_function)
+    weighting_object <- methods::new("weightingMethodResidualTriangle")
+
+  } else if(weighting_function == "residual_cosine"){
+    .warn_poor_weighting_method(weighting_function)
+    weighting_object <- methods::new("weightingMethodResidualCosine")
+
+  } else {
+    stop(paste0("DEV: the intended weighting method cannot be set: ", weighting_function))
+  }
+
+  # Set parameters.
 
 }
 
