@@ -70,3 +70,40 @@
 
   return(invisible(TRUE))
 }
+
+
+
+.check_weighting_function_parameters <- function(x, default_parameters){
+
+  # Skip if there is nothing to check.
+  if(length(x) == 0) return(invisible(TRUE))
+
+  # Throw an error if the parameters are not named.
+  if(is.null(names(x))){
+    stop(paste0(
+      "Names are currently missing from weighting_function_parameters. ",
+      "Parameters should be named, e.g. weighting_function_parameters = list(\"k1\" = 0.5). "))
+  }
+
+  unknown_parameters <- setdiff(names(x), names(default_parameters))
+  # Throw a warning if all provided parameters could not be matched.
+  if(length(unknown_parameters) > 0){
+    if(length(default_parameters) > 0){
+      warning(paste0(
+        "One or more weighting function parameters could not be matched: ",
+        paste_s(unknown_parameters), " ",
+        "The following parameters can be set: ",
+        paste_s(names(default_parameters))
+      ))
+
+    } else {
+      warning(paste0(
+        "One or more weighting function parameters could not be matched: ",
+        paste_s(unknown_parameters), " ",
+        "The weighting function does not require any parameters."
+      ))
+    }
+  }
+
+  return(invisible(TRUE))
+}
