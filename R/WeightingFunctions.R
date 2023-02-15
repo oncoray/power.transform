@@ -30,34 +30,34 @@ setClass("weightingSourceTransformed", contains = "weightingSourceGeneric")
 setClass("weightingSourceResidual", contains = "weightingSourceGeneric")
 
 setClass("weightingFunctionGeneric")
-setClass("WeightingFunctionNone", contains = "weightingFunctionGeneric")
+setClass("weightingFunctionNone", contains = "weightingFunctionGeneric")
 setClass(
-  "WeightingFunctionStep",
+  "weightingFunctionStep",
   contains = "weightingFunctionGeneric",
   slots = list("k1" = "numeric"),
   prototype = list("k1" = NA_real_))
 setClass(
-  "WeightingFunctionTriangle",
+  "weightingFunctionTriangle",
   contains = "weightingFunctionGeneric",
   slots = list("k1" = "numeric", "k2" = "numeric"),
   prototype = list("k1" = NA_real_, "k2" = NA_real_))
 setClass(
-  "WeightingFunctionCosine",
+  "weightingFunctionCosine",
   contains = "weightingFunctionGeneric",
   slots = list("k1" = "numeric", "k2" = "numeric"),
   prototype = list("k1" = NA_real_, "k2" = NA_real_))
 
 # Weighting method classes are a combination of weighting source and function.
 setClass("weightingMethodNone", contains=c("weightingSourceNone", "weightingFunctionNone"))
-setClass("weightingMethodEmpiricalProbabilityStep", contains=c("weightingSourceEmpiricalProbability", "WeightingFunctionStep"))
-setClass("weightingMethodEmpiricalProbabilityTriangle", contains=c("weightingSourceEmpiricalProbability", "WeightingFunctionTriangle"))
-setClass("weightingMethodEmpiricalProbabilityCosine", contains=c("weightingSourceEmpiricalProbability", "WeightingFunctionCosine"))
-setClass("weightingMethodTransformedStep", contains=c("weightingSourceTransformed", "WeightingFunctionStep"))
-setClass("weightingMethodTransformedTriangle", contains=c("weightingSourceTransformed", "WeightingFunctionTriangle"))
-setClass("weightingMethodTransformedCosine", contains=c("weightingSourceTransformed", "WeightingFunctionCosine"))
-setClass("weightingMethodResidualStep", contains=c("weightingSourceResidual", "WeightingFunctionStep"))
-setClass("weightingMethodResidualTriangle", contains=c("weightingSourceResidual", "WeightingFunctionTriangle"))
-setClass("weightingMethodResidualCosine", contains=c("weightingSourceResidual", "WeightingFunctionCosine"))
+setClass("weightingMethodEmpiricalProbabilityStep", contains=c("weightingSourceEmpiricalProbability", "weightingFunctionStep"))
+setClass("weightingMethodEmpiricalProbabilityTriangle", contains=c("weightingSourceEmpiricalProbability", "weightingFunctionTriangle"))
+setClass("weightingMethodEmpiricalProbabilityCosine", contains=c("weightingSourceEmpiricalProbability", "weightingFunctionCosine"))
+setClass("weightingMethodTransformedStep", contains=c("weightingSourceTransformed", "weightingFunctionStep"))
+setClass("weightingMethodTransformedTriangle", contains=c("weightingSourceTransformed", "weightingFunctionTriangle"))
+setClass("weightingMethodTransformedCosine", contains=c("weightingSourceTransformed", "weightingFunctionCosine"))
+setClass("weightingMethodResidualStep", contains=c("weightingSourceResidual", "weightingFunctionStep"))
+setClass("weightingMethodResidualTriangle", contains=c("weightingSourceResidual", "weightingFunctionTriangle"))
+setClass("weightingMethodResidualCosine", contains=c("weightingSourceResidual", "weightingFunctionCosine"))
 
 
 
