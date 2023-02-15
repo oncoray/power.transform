@@ -337,7 +337,6 @@ setMethod(
     weighting_function = weighting_function,
     weighting_function_parameters = weighting_function_parameters)
 
-
   return(estimator)
 }
 

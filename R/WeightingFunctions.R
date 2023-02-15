@@ -61,8 +61,23 @@
     stop(paste0("DEV: the intended weighting method cannot be set: ", weighting_function))
   }
 
-  # Set parameters.
+  # Set parameters of the weighting functions.
+  default_parameters <- ..get_default_weighting_parameters(object = weighting_object)
 
+  .check_weighting_function_parameters(
+    x = weighting_function_parameters,
+    default_parameters = default_parameters)
+
+  for(parameter in names(default_parameters)){
+    if(parameter %in% names(weighting_function_parameters)){
+      slot(weighting_object, parameter) <- weighting_function_parameters[[parameter]]
+
+    } else {
+      slot(weighting_object, parameter) <- default_parameters[[parameter]]
+    }
+  }
+
+  return(weighting_object)
 }
 
 
