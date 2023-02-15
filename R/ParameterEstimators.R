@@ -282,6 +282,10 @@ setMethod(
   }
 )
 
+# .get_weights (generic) -------------------------------------------------------
+setGeneric(
+  ".get_weights",
+  function(object, ...) standardGeneric(".get_weights"))
 
 
 .set_estimator <- function(
