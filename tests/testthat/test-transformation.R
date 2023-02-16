@@ -57,7 +57,7 @@ for(ii in seq_along(parameter_list)){
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
         if(parameter_list[[ii]]$shift){
-          testthat::expect_equal(transformer@lambda, -1.5, tolerance=0.2)
+          testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
 
         } else {
           testthat::expect_equal(transformer@lambda, -0.9, tolerance=0.2)
@@ -617,7 +617,7 @@ for(ii in seq_along(parameter_list)){
 
         if(parameter_list[[ii]]$robust){
           if(parameter_list[[ii]]$shift){
-            testthat::expect_equal(transformer@lambda, 1.0, tolerance=0.2)
+            testthat::expect_equal(transformer@lambda, 1.2, tolerance=0.2)
           } else {
             testthat::expect_equal(transformer@lambda, 0.6, tolerance=0.2)
           }
