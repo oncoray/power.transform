@@ -128,6 +128,9 @@ find_transformation_parameters <- function(
     )
   }
 
+  # Sort x.
+  x <- sort(x)
+
   # Set transformation parameters.
   object <- .set_transformation_parameters(
     object = object,
