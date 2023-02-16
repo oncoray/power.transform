@@ -117,7 +117,7 @@ setMethod(
     optimiser,
     optimisation_parameters,
     x,
-    optimiser_control = list("xtol_rel"=1e-3),
+    optimiser_control = list("xtol_rel"=1e-3, "ftol_abs"=1E-3),
     ...){
 
     # Check that we do not inadvertently pass problems that do not require
