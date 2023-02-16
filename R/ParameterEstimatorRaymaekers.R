@@ -195,7 +195,7 @@ setMethod(
 
   # Compute transformed values based on lambda.
   y <- ..transform(
-    transformer = transformer,
+    object = transformer,
     x = x)
 
   # Compute M-estimates for locality and scale
