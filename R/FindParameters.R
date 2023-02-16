@@ -1,7 +1,3 @@
-#' @include TransformationObjects.R
-#' @include BoxCox.R
-#' @include YeoJohnson.R
-NULL
 
 #' Set transformation parameters
 #'
