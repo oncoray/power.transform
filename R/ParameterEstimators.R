@@ -118,6 +118,7 @@ setMethod(
     optimisation_parameters,
     x,
     optimiser_control = list("xtol_rel"=1e-3, "ftol_abs"=1E-3),
+    verbose = FALSE,
     ...){
 
     # Check that we do not inadvertently pass problems that do not require
@@ -154,7 +155,8 @@ setMethod(
           transformer = transformer,
           estimator = object,
           x = x,
-          parameter_type = optimisation_parameters$parameter_type),
+          parameter_type = optimisation_parameters$parameter_type,
+          verbose = verbose),
         error = identity)
 
     } else if(optimiser == "subplex"){
@@ -174,7 +176,8 @@ setMethod(
           transformer = transformer,
           estimator = object,
           x = x,
-          parameter_type = optimisation_parameters$parameter_type),
+          parameter_type = optimisation_parameters$parameter_type,
+          verbose = verbose),
         error = identity)
 
     } else if(optimiser == "nelder-mead"){
@@ -196,7 +199,8 @@ setMethod(
           transformer = transformer,
           estimator = object,
           x = x,
-          parameter_type = optimisation_parameters$parameter_type),
+          parameter_type = optimisation_parameters$parameter_type,
+          verbose = verbose),
         error = identity)
 
     } else if(optimiser == "optim-nelder-mead"){
