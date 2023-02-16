@@ -106,6 +106,7 @@ setMethod(
     optimiser,
     optimisation_parameters,
     x,
+    optimiser_control = list("xtol_rel"=1e-3),
     ...){
 
     # Check that we do not inadvertently pass problems that do not require
@@ -138,7 +139,7 @@ setMethod(
           fn = ..estimator_wrapper,
           lower = optimisation_parameters$lower,
           upper = optimisation_parameters$upper,
-          control = list("xtol_rel"=1e-3, ftol_rel=1e-4),
+          control = optimiser_control,
           transformer = transformer,
           estimator = object,
           x = x,
@@ -158,7 +159,7 @@ setMethod(
           fn = ..estimator_wrapper,
           lower = optimisation_parameters$lower,
           upper = optimisation_parameters$upper,
-          control = list("xtol_rel"=1e-3, ftol_rel=1e-4),
+          control = optimiser_control,
           transformer = transformer,
           estimator = object,
           x = x,
@@ -180,7 +181,7 @@ setMethod(
           fn = ..estimator_wrapper,
           lower = optimisation_parameters$lower,
           upper = optimisation_parameters$upper,
-          control = list("xtol_rel"=1e-3, ftol_rel=1e-4),
+          control = optimiser_control,
           transformer = transformer,
           estimator = object,
           x = x,

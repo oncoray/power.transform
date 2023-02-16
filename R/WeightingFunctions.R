@@ -345,9 +345,6 @@ setGeneric(
 
 
 
-
-
-
 ..weighting_functions_all <- function(){
   return(c(
     "none",
