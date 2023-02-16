@@ -374,7 +374,7 @@ setMethod(
     # variable y follows the normal distribution. Note that shift is not
     # explicitly taken into account here, because this is handled by the
     # shifting x prior to computing the log-likelihood.
-    return((object@lambda - 1.0) * sum(w * log(x)) - sum(w) / 2.0 * log(sigma_hat_squared))
+    return((object@lambda - 1.0) * sum(w * log(x - object@shift)) - sum(w) / 2.0 * log(sigma_hat_squared))
   }
 )
 

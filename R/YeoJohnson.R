@@ -334,6 +334,9 @@ setMethod(
     sigma_hat_squared,
     ...){
 
+    # Ensure that data is shifted
+    x <- x - object@shift
+
     # Compute the log likelihood under the assumption that the transformed
     # variable y follows the normal distribution.
     return((object@lambda - 1.0) * sum(w * sign(x) * log1p(abs(x))) - sum(w)/2.0 * log(sigma_hat_squared))
