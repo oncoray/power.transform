@@ -22,6 +22,7 @@ Collate:
     'TransformationObjects.R'
     'BoxCox.R'
     'Checks.R'
+    'DefaultConditionSignals.R'
     'YeoJohnson.R'
     'FindParameters.R'
     'GoodnessOfFit.R'
@@ -34,6 +35,7 @@ Collate:
     'PlotUtilities.R'
     'Utilities.R'
     'WeightingFunctions.R'
+    'WeightingFunctionParameters.R'
     'power.transform-package.R'
 Suggests: 
     ggplot2 (>= 3.4.0),
