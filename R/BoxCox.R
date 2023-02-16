@@ -263,7 +263,7 @@ setMethod(
 setMethod(
   "..set_minimum_shift",
   signature(object = "transformationBoxCox"),
-  function(object, ...){
+  function(object, x, ...){
 
     # Shift is necessary to avoid transformation with negative or zero values.
     if(all(x > 0.0)) return(object)
