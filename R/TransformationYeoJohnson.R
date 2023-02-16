@@ -64,7 +64,7 @@ setMethod(
     ...){
 
     # Set lambda range. If lambda is NULL, set a very wide range.
-    if(is.null(lambda)) lambda <- ..get_default_lambda_range()
+    if(is.null(lambda)) lambda <- ..get_default_lambda_range(object=object)
 
     # Set lambda, in case a fixed lambda is provided.
     object <- ..set_lambda(

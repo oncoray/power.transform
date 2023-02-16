@@ -66,7 +66,7 @@ setMethod(
     ...){
 
     # Set lambda range. If lambda is NULL, set a very wide range.
-    if(is.null(lambda)) lambda <- ..get_default_lambda_range()
+    if(is.null(lambda)) lambda <- ..get_default_lambda_range(object=object)
 
     # Set minimum shift, in case any negative values are present.
     object <- ..set_minimum_shift(
