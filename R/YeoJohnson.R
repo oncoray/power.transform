@@ -311,7 +311,7 @@ setMethod(
     if(length(lambda) == 1){
       return(
         list(
-          "initial" = x_range[1],
+          "initial" = stats::median(x),
           "lower" = x_range[1],
           "upper" = x_range[2],
           "parameter_type" = c("shift")))
@@ -319,7 +319,7 @@ setMethod(
     } else {
       return(
         list(
-          "initial" = c(x_range[1], mean(lambda)),
+          "initial" = c(stats::median(x), mean(lambda)),
           "lower" = c(x_range[1], min(lambda)),
           "upper" = c(x_range[2], max(lambda)),
           "parameter_type" = c("shift", "lambda")))
