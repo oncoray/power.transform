@@ -215,6 +215,7 @@ setMethod(
         estimator = object,
         x = x,
         parameter_type = optimisation_parameters$parameter_type,
+        verbose = verbose,
         control = list(
           "abstol" = 1E-5,
           "reltol" = 1E-5))
