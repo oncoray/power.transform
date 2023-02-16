@@ -19,20 +19,19 @@ Imports:
     rlang (>= 1.0.0),
     nloptr
 Collate: 
-    'TransformationObjects.R'
-    'BoxCox.R'
     'Checks.R'
     'DefaultConditionSignals.R'
-    'YeoJohnson.R'
     'FindParameters.R'
+    'TransformationObjects.R'
     'GoodnessOfFit.R'
-    'ModifiedTransformation.R'
     'ParameterEstimators.R'
     'ParameterEstimatorMLE.R'
     'ParameterEstimatorRaymaekers.R'
     'PlotQQPlot.R'
     'PlotResidualPlot.R'
     'PlotUtilities.R'
+    'TransformationBoxCox.R'
+    'TransformationYeoJohnson.R'
     'Utilities.R'
     'WeightingFunctions.R'
     'WeightingFunctionParameters.R'
