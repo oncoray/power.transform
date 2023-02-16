@@ -97,7 +97,8 @@ setMethod(
       transformer = object,
       x = x,
       optimiser = optimiser,
-      optimisation_parameters = optimisation_parameters)
+      optimisation_parameters = optimisation_parameters,
+      ...)
 
     # Update shift and lambda values with the optimised parameters.
     if(!is.null(optimised_parameters$shift)){
