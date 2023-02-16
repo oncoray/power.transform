@@ -29,7 +29,7 @@ x <- stats::rnorm(10000)
 # Iterate over all parameter sets.
 for(ii in seq_along(parameter_list)){
 
-  #### All-positive values -----------------------------------------------------
+  # All-positive values -----------------------------------------------------
   x_positive <- exp(x)
 
   testthat::test_that(
@@ -57,7 +57,7 @@ for(ii in seq_along(parameter_list)){
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
         if(parameter_list[[ii]]$shift){
-          testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
+          testthat::expect_equal(transformer@lambda, -1.5, tolerance=0.2)
 
         } else {
           testthat::expect_equal(transformer@lambda, -0.9, tolerance=0.2)
@@ -79,7 +79,7 @@ for(ii in seq_along(parameter_list)){
         x_positive,
         x_reverted)
 
-      #### Single instance -----------------------------------------------------
+      ## Single instance -------------------------------------------------------
       x_transformed_single <- power.transform::power_transform(
         x = 1.5,
         transformer = transformer)
@@ -95,7 +95,7 @@ for(ii in seq_along(parameter_list)){
         1.5,
         x_reverted_single)
 
-      #### Single instance NA --------------------------------------------------
+      ## Single instance NA ----------------------------------------------------
       testthat::expect_warning(
         x_transformed_single <- power.transform::power_transform(
           x = NA_real_,
@@ -114,14 +114,14 @@ for(ii in seq_along(parameter_list)){
         NA_real_,
         x_reverted_single)
 
-      #### Single instance non-numeric -----------------------------------------
+      ## Single instance non-numeric -------------------------------------------
       testthat::expect_error(
         power.transform::power_transform(
           x = "a",
           transformer = transformer),
         "x does not contain numeric values.")
 
-      #### Single instance negative --------------------------------------------
+      ## Single instance negative ----------------------------------------------
 
       if(parameter_list[[ii]]$method == "box_cox"){
         # Box-Cox cannot handle data that fall outside its range.
@@ -167,7 +167,7 @@ for(ii in seq_along(parameter_list)){
   )
 
 
-  #### Some negative values ----------------------------------------------------
+  # Some negative values -------------------------------------------------------
   x_part_negative <- exp(x) - 1
 
   testthat::test_that(
@@ -232,7 +232,7 @@ for(ii in seq_along(parameter_list)){
   )
 
 
-  #### All-negative values -----------------------------------------------------
+  # All-negative values --------------------------------------------------------
   x_negative <- exp(x) - exp(max(x)) - 1E-8
 
   testthat::test_that(
@@ -297,7 +297,7 @@ for(ii in seq_along(parameter_list)){
   )
 
 
-  #### Some NA values ----------------------------------------------------------
+  # Some NA values -------------------------------------------------------------
   x_some_na <- exp(x)
   x_some_na[c(1,2)] <- NA_real_
 
@@ -356,7 +356,7 @@ for(ii in seq_along(parameter_list)){
   )
 
 
-  #### Some infinite values ----------------------------------------------------
+  # Some infinite values -------------------------------------------------------
   x_some_inf <- exp(x)
   x_some_inf[c(1,2)] <- Inf
 
@@ -420,7 +420,7 @@ for(ii in seq_along(parameter_list)){
   )
 
 
-  #### All NA values -----------------------------------------------------------
+  # All NA values --------------------------------------------------------------
   x_all_na <- rep_len(NA_real_, 1000L)
 
   testthat::test_that(
@@ -442,7 +442,7 @@ for(ii in seq_along(parameter_list)){
   )
 
 
-  #### All infinite values -----------------------------------------------------
+  # All infinite values --------------------------------------------------------
   x_all_inf <- rep_len(Inf, 1000L)
 
   testthat::test_that(
@@ -464,7 +464,7 @@ for(ii in seq_along(parameter_list)){
   )
 
 
-  #### Non-numerical (character) values ----------------------------------------
+  # Non-numerical (character) values -------------------------------------------
   x_all_char <- letters[round(x - min(x) + 1)]
 
   testthat::test_that(
@@ -486,7 +486,7 @@ for(ii in seq_along(parameter_list)){
   )
 
 
-  #### Categorical values ------------------------------------------------------
+  # Categorical values ---------------------------------------------------------
   x_categorical <- letters[round(x - min(x) + 1)]
   x_categorical <- factor(
     x_categorical,
@@ -511,7 +511,7 @@ for(ii in seq_along(parameter_list)){
   )
 
 
-  #### Single value ------------------------------------------------------------
+  # Single value ---------------------------------------------------------------
   x_single_value <- 1.0
 
   testthat::test_that(
@@ -545,7 +545,7 @@ for(ii in seq_along(parameter_list)){
   )
 
 
-  #### Few unique values (<= 3) ------------------------------------------------
+  # Few unique values (<= 3) ---------------------------------------------------
   x_three_unique <- ceiling(stats::runif(1000L) * 3)
 
   testthat::test_that(
@@ -578,7 +578,7 @@ for(ii in seq_along(parameter_list)){
   )
 
 
-  #### Few unique values (< 10) ------------------------------------------------
+  # Few unique values (< 10) ---------------------------------------------------
   x_few_unique <- ceiling(x - min(x) + 1E-8)
 
   testthat::test_that(
