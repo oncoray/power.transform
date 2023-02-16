@@ -224,7 +224,10 @@ setMethod(
       }
     }
 
-    return(x)
+    # Apply shift.
+    y <- y + object@shift
+
+    return(y)
   })
 
 
