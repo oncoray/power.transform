@@ -1,18 +1,19 @@
 
-# power.transform
+# power.transform <img src="icon/hexicon.svg" align="right" width="120"/>
 
-<!-- badges: start -->
-<!-- badges: end -->
-
-The goal of power.transform is to ...
+`power.transformation` is an R-package for power transformation of data to
+normality.
 
 ## Installation
 
-You can install the development version of power.transform like so:
+Stable versions of `power.transformation` can be installed from CRAN.
 
-``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
-```
+    install.packages("power.transformation", dependencies=TRUE)
+
+`power.transformation` can also be directly installed from Github:
+
+    require(devtools)
+    devtools::install_github("https://github.com/alexzwanenburg/power.transform")
 
 ## Example
 
