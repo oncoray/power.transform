@@ -62,7 +62,10 @@
   }
 
   # Set parameters of the weighting functions.
-  default_parameters <- ..get_default_weighting_parameters(object = weighting_object)
+  default_parameters <- ..get_default_weighting_parameters(
+    object = weighting_object,
+    transformer = transformer,
+    estimator = estimator)
 
   .check_weighting_function_parameters(
     x = weighting_function_parameters,
