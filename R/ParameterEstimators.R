@@ -4,6 +4,7 @@
     estimator,
     x,
     parameter_type,
+    verbose = FALSE,
     ...){
 
   # Set lambda, shift, as provided by the optimisation algorithm.
@@ -21,11 +22,21 @@
     stop("DEV: Optimisation function was not specified correctly.")
   }
 
-  return(.compute_objective(
+  # Compute target value.
+  target <- .compute_objective(
     object = estimator,
     transformer = transformer,
     x = x,
-    ...))
+    ...)
+
+  if(verbose){
+    cat(paste0(
+      "target: ", target, "; ",
+      paste0(mapply(function(type, value) (paste0(type, ": ", value)), type=parameter_type, value=par), collapse="; "),
+      "\n"))
+  }
+
+  return(target)
 }
 
 
