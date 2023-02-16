@@ -163,11 +163,14 @@ setMethod(
   function(object, x, ...){
 
     # Subtract shift.
-    y <- x - object@shift
+    x <- x - object@shift
 
     # Determine positive and negative elements of the input vector
-    pos_index <- y >= 0
-    neg_index <- y < 0
+    pos_index <- x >= 0
+    neg_index <- x < 0
+
+    # Initialise y.
+    y <- rep(NA_real_, length(x))
 
     if(any(pos_index)){
       if(object@lambda == 0.0){
