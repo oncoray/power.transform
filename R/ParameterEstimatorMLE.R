@@ -36,6 +36,7 @@ setMethod(
     # Compute log-likelihood
     llf <- .log_likelihood(
       transformer = transformer,
+      x = x,
       y = y,
       w = w)
 
@@ -48,6 +49,7 @@ setMethod(
 
 .log_likelihood <- function(
     transformer,
+    x,
     y,
     w){
 
