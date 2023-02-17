@@ -50,22 +50,6 @@ setClass(
     "weighting_method" = NULL))
 
 setClass(
-  "estimatorEmpiricalDistributionFunction",
-  contains = "estimatorGeneric")
-
-setClass(
-  "estimatorAndersonDarling",
-  contains = "estimatorEmpiricalDistributionFunction")
-
-setClass(
-  "estimatorCramervonMises",
-  contains = "estimatorEmpiricalDistributionFunction")
-
-setClass(
-  "estimatorKolmogorovSmirnov",
-  contains = "estimatorEmpiricalDistributionFunction")
-
-setClass(
   "estimatorSkewnessKurtosis",
   contains = "estimatorGeneric")
 
