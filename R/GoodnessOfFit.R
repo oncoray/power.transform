@@ -142,7 +142,7 @@ setMethod(
       "z_expected" = z_expected,
       "z_observed" = z_observed,
       "residual" = residual,
-      "p" = (seq_along(x) - 1/3) / (length(x) + 1/3)))
+      "p_observed" = (seq_along(x) - 1/3) / (length(x) + 1/3)))
   }
 )
 
