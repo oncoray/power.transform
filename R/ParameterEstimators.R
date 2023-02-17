@@ -49,18 +49,6 @@ setClass(
   prototype = list(
     "weighting_method" = NULL))
 
-setClass(
-  "estimatorSkewnessKurtosis",
-  contains = "estimatorGeneric")
-
-setClass(
-  "estimatorJarqueBera",
-  contains = "estimatorSkewnessKurtosis")
-
-setClass(
-  "estimatorDAgostino",
-  contains = "estimatorSkewnessKurtosis")
-
 
 
 # .compute_objective (generic) -------------------------------------------------
