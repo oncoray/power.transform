@@ -199,6 +199,39 @@ setMethod(
 
 
 
+# ..get_default_optimiser_control (Anderson-Darling) ---------------------------
+setMethod(
+  "..get_default_optimiser_control",
+  signature(object = "estimatorAndersonDarling"),
+  function(object, ...){
+    return(list("xtol_rel"=1E-3, "ftol_abs"=1E-3))
+  }
+)
+
+
+
+# ..get_default_optimiser_control (Cramér-von Mises) ---------------------------
+setMethod(
+  "..get_default_optimiser_control",
+  signature(object = "estimatorCramervonMises"),
+  function(object, ...){
+    return(list("xtol_rel"=1E-3, "ftol_abs"=1E-3))
+  }
+)
+
+
+
+# ..get_default_optimiser_control (Kolmogorov-Smirnov) -------------------------
+setMethod(
+  "..get_default_optimiser_control",
+  signature(object = "estimatorKolmogorovSmirnov"),
+  function(object, ...){
+    return(list("xtol_rel"=1E-3, "ftol_abs"=1E-3))
+  }
+)
+
+
+
 ..estimators_anderson_darling <- function(){
   return(c("anderson_darling"))
 }
