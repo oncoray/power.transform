@@ -149,8 +149,9 @@ setMethod(
     sum_w <- sum(w)
     if(sum_w == 0.0) return(NA_real_)
 
-    # Compute (weighted) statistic.
-    t <- w * (p$p_empirical - p$p_expected)^2
+    # Compute (weighted) statistic. Multiplication with 1E2 is not really
+    # required, but does not really hurt either.
+    t <- sum(w * (1E2*(p$p_empirical - p$p_expected))^2)
 
     # Normalise by weights. This is to prevent the optimiser from cheating by
     # finding fitting parameters where most of the weights will be (close to)
@@ -184,7 +185,7 @@ setMethod(
     if(all(w == 0.0)) return(NA_real_)
 
     # Compute absolute error between empirical and theoretic probabilities.
-    t <- abs(p$p_empirical - p$p_expected)
+    t <- 1E2 * abs(p$p_empirical - p$p_expected)
 
     # Find maximum value. The weights are only used for finding the maximum
     # value, and unlike other EDF-based tests we do not normalise by the sum of
