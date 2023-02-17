@@ -42,6 +42,8 @@ setMethod(
       object = object,
       x = x)
 
+    if(any(!is.finite(y))) return(NA_real_)
+
     # Compute (merged) empirical probabilities. Average empirical probabilities
     # for when x has multiple values. Though this necessitates using the
     # data.table package, this is by far the fastest implementation.
@@ -86,6 +88,7 @@ setMethod(
   ".compute_objective",
   signature(object="estimatorAndersonDarling"),
   function(object, transformer, x, ...){
+    # Based on the Anderson-Darling test statistic.
 
     # Get general EDF data first.
     p <- callNextMethod()
@@ -96,6 +99,11 @@ setMethod(
       transformer = transformer,
       x = x)
 
+    if(!all(is.finite(w))) return(NA_real_)
+
+    sum_w <- sum(w)
+    if(sum_w == 0.0) return(NA_real_)
+
     # Get weights for Anderson-Darling.
     w_ad <- 1.0 / (p$p_expected * (1.0 - p$p_expected))
 
@@ -105,7 +113,7 @@ setMethod(
     # Normalise by weights. This is to prevent the optimiser from cheating by
     # finding fitting parameters where most of the weights will be (close to)
     # zero.
-    t <- t / sum(w)
+    t <- t / sum_w
 
     # Statistic should be minimised for better fits.
     return(t)
@@ -130,13 +138,18 @@ setMethod(
       transformer = transformer,
       x = x)
 
+    if(!all(is.finite(w))) return(NA_real_)
+
+    sum_w <- sum(w)
+    if(sum_w == 0.0) return(NA_real_)
+
     # Compute (weighted) statistic.
     t <- w * (p$p_empirical - p$p_expected)^2
 
     # Normalise by weights. This is to prevent the optimiser from cheating by
     # finding fitting parameters where most of the weights will be (close to)
     # zero.
-    t <- t / sum(w)
+    t <- t / sum_w
 
     # Statistic should be minimised for better fits.
     return(t)
@@ -160,6 +173,9 @@ setMethod(
       object = object,
       transformer = transformer,
       x = x)
+
+    if(!all(is.finite(w))) return(NA_real_)
+    if(all(w == 0.0)) return(NA_real_)
 
     # Compute absolute error between empirical and theoretic probabilities.
     t <- abs(p$p_empirical - p$p_expected)
