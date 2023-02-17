@@ -40,11 +40,17 @@ setMethod(
       y = y,
       w = w)
 
+    # Normalise by weights. This is to prevent the optimiser from cheating by
+    # finding fitting parameters where most of the weights will be (close to)
+    # zero.
+    llf <- llf / sum(w)
+
     # Log-likelihood should be maximised, hence return -llf because optimisers
     # use minimisation.
     return(-llf)
   }
 )
+
 
 
 .log_likelihood <- function(
