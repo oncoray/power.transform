@@ -165,7 +165,8 @@ compute_lambda <- function(mu, x, method){
       method = method,
       robust = FALSE,
       shift = FALSE,
-      lambda = NULL))
+      lambda = NULL,
+      optimiser_control = list("xtol_rel"=1e-3)))
   
   # Return lambda value.
   return(transformer@lambda)
@@ -677,7 +678,8 @@ if(!file.exists(file.path(manuscript_dir, "shifted_distributions_plot.RDS"))){
         method = parameter_set$method,
         robust = parameter_set$robust,
         shift = parameter_set$shift,
-        lambda = NULL))
+        lambda = NULL,
+        optimiser_control = list("xtol_rel"=1e-3)))
     
     return(
       data.table::data.table(
@@ -1018,11 +1020,11 @@ if(!file.exists(file.path(manuscript_dir, "robustness_comparison.RDS"))){
         ))
       }
       
-      for(robustness_source in c("original", "transformed", "residual")){
+      for(robustness_source in c("empirical_probability", "transformed", "residual")){
         
         def_opt_limits <- list("k1"=c(0.0, 10.0), "k2"=c(0.0, 10.0))
         
-        if(robustness_source == "original"){
+        if(robustness_source == "empirical_probability"){
           def_opt_limits$k1[2] <- 1.0
           def_opt_limits$k2[2] <- 1.0
           
@@ -1042,7 +1044,7 @@ if(!file.exists(file.path(manuscript_dir, "robustness_comparison.RDS"))){
               "method" = method,
               "robust" = TRUE,
               "shift" = TRUE,
-              "weight_method" = paste0(robustness_source, "_", robustness_weighting_function),
+              "weighting_function" = paste0(robustness_source, "_", robustness_weighting_function),
               "backup_use_default" = FALSE)
             
             opt_limits <- def_opt_limits
@@ -1063,7 +1065,8 @@ if(!file.exists(file.path(manuscript_dir, "robustness_comparison.RDS"))){
           }
         }
       }
-    })
+    }
+  )
   
   # Function for computing transformer parameters under optimisation constraints.
   compute_robust_lambda <- function(
@@ -1083,8 +1086,8 @@ if(!file.exists(file.path(manuscript_dir, "robustness_comparison.RDS"))){
         power.transform::find_transformation_parameters,
         args=c(
           list("x" = x$x),
-          fun_args,
-          opt_args)))
+          list("weighting_function_parameters" = opt_args),
+          fun_args)))
       
       parameter_data <- c(
         x$parameters,
@@ -1148,8 +1151,8 @@ if(!file.exists(file.path(manuscript_dir, "robustness_comparison.RDS"))){
         parameter_data,
         function(x) (abs(x$lambda - x$target_lambda_yj)))
     }
-    
-    return(sum(lambda_error))
+    cat(paste0("target: ", mean(lambda_error), "; k1: ", opt_param[1], "; k2: ", opt_param[2], "\n"))
+    return(mean(lambda_error))
   }
   
   
@@ -1179,7 +1182,7 @@ if(!file.exists(file.path(manuscript_dir, "robustness_comparison.RDS"))){
         fn = ..optimisation_function,
         lower = lower,
         upper = upper,
-        control=list("xtol_rel"=1e-3, "ftol_rel"=1e-4),
+        control=list("xtol_rel"=1e-2),
         x = data,
         fun_args = experiment$fun_args,
         cl_internal = cl_internal)
