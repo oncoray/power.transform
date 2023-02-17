@@ -93,6 +93,11 @@ setMethod(
     # Get general EDF data first.
     p <- callNextMethod()
 
+    # Prevent numerical issues due to very small or very large expected values.
+    p_expected <- p$p_expected
+    p_expected[p_expected <= 1E-4] <- 1E-4
+    p_expected[p_expected >= 1.0 - 1E-4] <- 1.0 - 1E-4
+
     # Get weights from the weighting function..
     w <- .get_weights(
       object = object,
@@ -105,10 +110,11 @@ setMethod(
     if(sum_w == 0.0) return(NA_real_)
 
     # Get weights for Anderson-Darling.
-    w_ad <- 1.0 / (p$p_expected * (1.0 - p$p_expected))
+    w_ad <- 1.0 / (p_expected * (1.0 - p_expected))
 
-    # Compute (weighted) statistic.
-    t <- w * w_ad * (p$p_empirical - p$p_expected)^2
+    # Compute (weighted) statistic. Multiplication with 1E2 prevents values from
+    # becoming vanishingly small.
+    t <- sum(w * w_ad * (1E2*(p$p_empirical - p$p_expected))^2)
 
     # Normalise by weights. This is to prevent the optimiser from cheating by
     # finding fitting parameters where most of the weights will be (close to)
