@@ -18,9 +18,11 @@ setClass(
   "estimatorCramervonMises",
   contains = "estimatorEmpiricalDistributionFunction")
 
+# estimatorKolmogorovSmirnov definition -----------------------------------------
 setClass(
   "estimatorKolmogorovSmirnov",
   contains = "estimatorEmpiricalDistributionFunction")
+
 
 
 # .compute_objective (general EDF) ---------------------------------------------
@@ -117,6 +119,7 @@ setMethod(
   ".compute_objective",
   signature(object="estimatorCramervonMises"),
   function(object, transformer, x, ...){
+    # Based on the Cramér-von Mises test statistic.
 
     # Get general EDF data first.
     p <- callNextMethod()
@@ -147,6 +150,7 @@ setMethod(
   ".compute_objective",
   signature(object="estimatorKolmogorovSmirnov"),
   function(object, transformer, x, ...){
+    # Based on the Kolmogorov-Smirnov test statistic.
 
     # Get general EDF data first.
     p <- callNextMethod()
