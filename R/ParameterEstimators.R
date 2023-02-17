@@ -89,7 +89,7 @@ setMethod(
     optimiser,
     optimisation_parameters,
     x,
-    optimiser_control = list("xtol_rel"=1e-3, "ftol_abs"=1E-3),
+    optimiser_control = NULL,
     verbose = FALSE,
     ...){
 
@@ -107,6 +107,9 @@ setMethod(
 
       optimiser <- "optim-nelder-mead"
     }
+
+    # Set default optimiser values.
+    if(is.null(optimiser_control)) optimiser_control <- ..get_default_optimiser_control(object = object)
 
     if(optimiser == "direct-l"){
       # DIRECT-L algorithm
@@ -291,6 +294,13 @@ setMethod(
       x = x))
   }
 )
+
+
+
+# ..get_default_optimiser_control (generic) ------------------------------------
+setGeneric(
+  "..get_default_optimiser_control",
+  function(object, ...) standardGeneric("..get_default_optimiser_control"))
 
 
 

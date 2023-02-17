@@ -13,7 +13,7 @@ setClass(
 # .compute_objective (MLE) -----------------------------------------------------
 setMethod(
   ".compute_objective",
-  signature(object="estimatorMaximumLikelihoodEstimation"),
+  signature(object = "estimatorMaximumLikelihoodEstimation"),
   function(object, transformer, x, ...){
 
     # Make sure that x is sorted.
@@ -48,6 +48,16 @@ setMethod(
     # Log-likelihood should be maximised, hence return -llf because optimisers
     # use minimisation.
     return(-llf)
+  }
+)
+
+
+# ..get_default_optimiser_control (MLE) ----------------------------------------
+setMethod(
+  "..get_default_optimiser_control",
+  signature(object = "estimatorMaximumLikelihoodEstimation"),
+  function(object, ...){
+    return(list("xtol_rel"=1e-3, "ftol_abs"=1E-5))
   }
 )
 
