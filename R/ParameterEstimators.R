@@ -326,6 +326,21 @@ setGeneric(
   } else if(estimation_method %in% ..estimators_raymaekers_robust()){
     estimator <- methods::new("estimatorRaymaekersRobust")
 
+  } else if(estimation_method %in% ..estimators_anderson_darling()){
+    estimator <- methods::new("estimatorAndersonDarling")
+
+  } else if(estimation_method %in% ..estimators_mises_von_cramer()){
+    estimator <- methods::new("estimatorCramervonMises")
+
+  } else if(estimation_method %in% ..estimators_kolmogorov_smirnov()){
+    estimator <- methods::new("estimatorKolmogorovSmirnov")
+
+  } else if(estimation_method %in% ..estimators_jarque_bera()){
+    estimator <- methods::new("estimatorJarqueBera")
+
+  } else if(estimation_method %in% ..estimators_dagostino()){
+    estimator <- methods::new("estimatorSkewnessKurtosis")
+
   } else {
     stop(paste0("DEV: unknown estimation_method: ", estimation_method))
   }
@@ -347,6 +362,11 @@ setGeneric(
 
   return(c(
     ..estimators_mle(),
-    ..estimators_raymaekers_robust()
+    ..estimators_raymaekers_robust(),
+    ..estimators_anderson_darling(),
+    ..estimators_mises_von_cramer(),
+    ..estimators_kolmogorov_smirnov(),
+    ..estimators_jarque_bera(),
+    ..estimators_dagostino()
   ))
 }

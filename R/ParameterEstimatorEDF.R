@@ -189,3 +189,17 @@ setMethod(
     return(t)
   }
 )
+
+
+
+..estimators_anderson_darling <- function(){
+  return(c("anderson_darling"))
+}
+
+..estimators_mises_von_cramer <- function(){
+  return(c("mises_von_cramer"))
+}
+
+..estimators_kolmogorov_smirnov <- function(){
+  return(c("kolmogorov_smirnov"))
+}

@@ -139,3 +139,13 @@ setMethod(
     return(t)
   }
 )
+
+
+
+..estimators_jarque_bera <- function(){
+  return(c("jarque_bera"))
+}
+
+..estimators_dagostino <- function(){
+  return(c("dagostino"))
+}
