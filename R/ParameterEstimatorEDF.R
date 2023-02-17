@@ -39,7 +39,7 @@ setMethod(
 
     # Transform feature values
     y <- ..transform(
-      object = object,
+      object = transformer,
       x = x)
 
     if(any(!is.finite(y))) return(NA_real_)
@@ -47,11 +47,11 @@ setMethod(
     # Compute (merged) empirical probabilities. Average empirical probabilities
     # for when x has multiple values. Though this necessitates using the
     # data.table package, this is by far the fastest implementation.
-    p_empirical <- (seq_along(x) - 1/3) / (length(x) + 1/3)
+    p_empirical <- (seq_along(y) - 1/3) / (length(y) + 1/3)
 
     # Set up a data.table.
     data <- data.table::data.table("y"=y, "p"=p_empirical)
-    data[, "p_group":=mean(p_empirical), by="y"]
+    data[, "p_group":=mean(p), by=c("y")]
     p_empirical <- data$p_group
 
     # Determine mu and sigma for putative normal distribution from the data.
