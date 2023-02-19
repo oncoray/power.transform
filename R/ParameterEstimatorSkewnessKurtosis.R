@@ -31,7 +31,7 @@ setMethod(
 
     # Transform feature values
     y <- ..transform(
-      object = object,
+      object = transformer,
       x = x)
 
     if(any(!is.finite(y))) return(NA_real_)
@@ -122,7 +122,7 @@ setMethod(
     if(!is.finite(z_1)) return(NA_real_)
 
     # Kurtosis test statistic following Anscombe and Glynn (1983).
-    g_2 <- moments$kurtosis
+    g_2 <- moments$kurtosis - 3.0
 
     mu_1 <- - 6.0 / (n + 1.0)
     mu_2 <- 24.0 * n * (n - 2.0) * (n - 3.0) / ((n + 1.0)^2 * (n + 3.0) * (n + 5.0))
@@ -137,6 +137,28 @@ setMethod(
 
     # Statistic should be minimised for better fits.
     return(t)
+  }
+)
+
+
+
+# ..get_default_optimiser_control (Jarque-Bera) --------------------------------
+setMethod(
+  "..get_default_optimiser_control",
+  signature(object = "estimatorJarqueBera"),
+  function(object, ...){
+    return(list("xtol_rel"=1E-3, "ftol_abs"=1E-3))
+  }
+)
+
+
+
+# ..get_default_optimiser_control (D'Agostino)) --------------------------------
+setMethod(
+  "..get_default_optimiser_control",
+  signature(object = "estimatorDAgostino"),
+  function(object, ...){
+    return(list("xtol_rel"=1E-3, "ftol_abs"=1E-3))
   }
 )
 

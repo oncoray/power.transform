@@ -339,7 +339,7 @@ setGeneric(
     estimator <- methods::new("estimatorJarqueBera")
 
   } else if(estimation_method %in% ..estimators_dagostino()){
-    estimator <- methods::new("estimatorSkewnessKurtosis")
+    estimator <- methods::new("estimatorDAgostino")
 
   } else {
     stop(paste0("DEV: unknown estimation_method: ", estimation_method))
