@@ -131,8 +131,10 @@ setMethod(
     z_2 <- sqrt(9.0 * a / 2.0) * (1.0 - 2.0 / (9.0 * a) - ((1.0 - 2.0 / a) / (1.0 + (g_2 - mu_1) / sqrt(mu_2) * sqrt(2.0 / (a - 4.0)))^(1/3)))
     if(!is.finite(z_2)) return(NA_real_)
 
-    # Compute test statistic.
-    t <- z_1^2 + z_2^2
+    # Compute test statistic. Instead of the test statistic, we compute the
+    # square root of the test statistic to make it more palatable for the
+    # optimiser.
+    t <- sqrt(z_1^2 + z_2^2)
 
     # Statistic should be minimised for better fits.
     return(t)
