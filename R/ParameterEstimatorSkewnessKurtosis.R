@@ -159,7 +159,7 @@ setMethod(
   "..get_default_optimiser_control",
   signature(object = "estimatorJarqueBera"),
   function(object, ...){
-    return(list("xtol_rel"=1E-3, "ftol_abs"=1E-3))
+    return(list("xtol_rel"=1E-3, "ftol_abs"=1E-5))
   }
 )
 
@@ -170,7 +170,7 @@ setMethod(
   "..get_default_optimiser_control",
   signature(object = "estimatorDAgostino"),
   function(object, ...){
-    return(list("xtol_rel"=1E-3, "ftol_abs"=1E-3))
+    return(list("xtol_rel"=1E-3, "ftol_abs"=1E-5))
   }
 )
 
