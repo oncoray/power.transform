@@ -113,7 +113,6 @@ setMethod(
     mu_2 <- 6.0 * (n - 2.0) / ((n + 1.0) * n + 3.0)
     gamma_2 <- 36.0 * (n - 7.0) * (n^2 + 2.0*n - 5.0) / ((n - 2.0) * (n + 5.0) * (n + 7.0) * (n + 9.0))
 
-
     w <- sqrt(sqrt(2.0 * gamma_2 + 4.0) - 1.0)
     delta <- 1.0 / sqrt(log(w))
     alpha <- sqrt(2.0 / (w^2 - 1.0))
@@ -137,6 +136,17 @@ setMethod(
 
     # Statistic should be minimised for better fits.
     return(t)
+  }
+)
+
+
+
+# ..get_default_optimiser (general) --------------------------------------------
+setMethod(
+  "..get_default_optimiser",
+  signature(object = "estimatorDAgostino"),
+  function(object, ...){
+    return("direct-l")
   }
 )
 

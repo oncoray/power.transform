@@ -59,7 +59,7 @@ setMethod(
     estimation_method = "mle",
     weighting_function = NULL,
     weighting_function_parameters = NULL,
-    optimiser="subplex",
+    optimiser=NULL,
     backup_use_default=TRUE,
     ...){
 

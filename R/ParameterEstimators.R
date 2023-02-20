@@ -86,7 +86,7 @@ setMethod(
   function(
     object,
     transformer,
-    optimiser,
+    optimiser = NULL,
     optimisation_parameters,
     x,
     optimiser_control = NULL,
@@ -98,6 +98,10 @@ setMethod(
     if(is.null(optimisation_parameters)) stop("DEV: optimisation_parameters cannot be empty.")
     if(!is(transformer, "transformationPowerTransform")) stop("DEV: transformer should be a valid power transformation object.")
     if(!is.numeric(x)) stop("DEV: x should be numeric.")
+
+    if(is.null(optimiser)) optimiser <- ..get_default_optimiser(
+      object = object,
+      transformer = transformer)
 
     # Check fall-back option.
     if(!is_package_installed("nloptr") & optimiser %in% c("direct-l", "subplex", "nelder-mead")){
@@ -292,6 +296,24 @@ setMethod(
       object = object@weighting_method,
       transformer = transformer,
       x = x))
+  }
+)
+
+
+
+# ..get_default_optimiser (generic) --------------------------------------------
+setGeneric(
+  "..get_default_optimiser",
+  function(object, ...) standardGeneric("..get_default_optimiser"))
+
+
+
+# ..get_default_optimiser (general) --------------------------------------------
+setMethod(
+  "..get_default_optimiser",
+  signature(object = "estimatorGeneric"),
+  function(object, ...){
+    return("subplex")
   }
 )
 
