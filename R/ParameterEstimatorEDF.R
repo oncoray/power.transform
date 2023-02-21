@@ -93,6 +93,8 @@ setMethod(
     # Get general EDF data first.
     p <- callNextMethod()
 
+    if(!is.list(p)) return(NA_real_)
+
     # Prevent numerical issues due to very small or very large expected values.
     p_expected <- p$p_expected
     p_expected[p_expected <= 1E-4] <- 1E-4
@@ -138,6 +140,8 @@ setMethod(
     # Get general EDF data first.
     p <- callNextMethod()
 
+    if(!is.list(p)) return(NA_real_)
+
     # Get weights from the weighting function..
     w <- .get_weights(
       object = object,
@@ -174,6 +178,8 @@ setMethod(
 
     # Get general EDF data first.
     p <- callNextMethod()
+
+    if(!is.list(p)) return(NA_real_)
 
     # Get weights from the weighting function..
     w <- .get_weights(
