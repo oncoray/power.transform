@@ -171,7 +171,7 @@ setMethod(
   "..get_default_optimiser_control",
   signature(object = "estimatorDAgostino"),
   function(object, ...){
-    return(list("xtol_rel"=1E-3, "ftol_abs"=1E-5))
+    return(list("xtol_rel"=0, "ftol_abs"=1E-8))
   }
 )
 
