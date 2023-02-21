@@ -109,32 +109,33 @@ setMethod(
     if(n < 20) return(NA_real_)
 
     # Skewness test statistic following D'Agostino and Pearson (1973).
-    g_1 <- moments$skewness
-    mu_2 <- 6.0 * (n - 2.0) / ((n + 1.0) * n + 3.0)
-    gamma_2 <- 36.0 * (n - 7.0) * (n^2 + 2.0*n - 5.0) / ((n - 2.0) * (n + 5.0) * (n + 7.0) * (n + 9.0))
+    s <- moments$skewness
 
-    w <- sqrt(sqrt(2.0 * gamma_2 + 4.0) - 1.0)
-    delta <- 1.0 / sqrt(log(w))
-    alpha <- sqrt(2.0 / (w^2 - 1.0))
+    beta_1 <- s * sqrt(((n + 1.0) * n + 3.0) / 6.0 * (n - 2.0))
+    beta_2 <- 3.0 * (n^2 + 27.0*n - 70.0) * (n + 1.0) * (n + 3.0) / ((n - 2.0) * (n + 5.0) * (n + 7.0) * (n + 9.0))
+    alpha <- sqrt(2.0 / (sqrt(2 * beta_2 - 1) - 2))
 
-    z_1 <- delta * asinh(g_1 / (alpha * sqrt(mu_2)))
-    if(!is.finite(z_1)) return(NA_real_)
+    z_s2 <- 2 * (log(beta_1 / alpha + sqrt(beta_1^2 / alpha^2 +1)))^2 / log(sqrt(2 * beta_2 - 1) - 1)
+
+    if(!is.finite(z_s2)) return(NA_real_)
 
     # Kurtosis test statistic following Anscombe and Glynn (1983).
-    g_2 <- moments$kurtosis - 3.0
+    k <- moments$kurtosis
 
-    mu_1 <- - 6.0 / (n + 1.0)
-    mu_2 <- 24.0 * n * (n - 2.0) * (n - 3.0) / ((n + 1.0)^2 * (n + 3.0) * (n + 5.0))
-    gamma_1 <- sqrt(6.0 * (n + 3.0) * (n + 5.0) / (n * (n - 2.0) * (n - 3.0))) * 6.0 * (n^2 - 5.0 * n + 2.0) / ((n + 7.0) * (n + 9.0))
+    beta_1 <- 3.0 * (n - 1.0) / (n + 1.0)
+    beta_2 <- 24.0 * n * (n - 2.0) * (n - 3.0) / ((n + 1.0)^2 * (n + 3.0) * (n + 5.0))
+    beta_3 <- sqrt(6.0 * (n + 3.0) * (n + 5.0) / (n * (n - 2.0) * (n - 3.0))) * 6.0 * (n^2 - 5.0 * n + 2.0) / ((n + 7.0) * (n + 9.0))
+    alpha_1 <- 6.0 + 8.0 / beta_3 * (2.0 / beta_3 + sqrt(1 + 4.0 / beta_3^2))
+    alpha_2 <- (k - beta_1) / sqrt(beta_2)
 
-    a <- 6.0 + 8.0 / gamma_1 * (2.0 / gamma_1 + sqrt(1 + 4.0 / gamma_1^2))
-    z_2 <- sqrt(9.0 * a / 2.0) * (1.0 - 2.0 / (9.0 * a) - ((1.0 - 2.0 / a) / (1.0 + (g_2 - mu_1) / sqrt(mu_2) * sqrt(2.0 / (a - 4.0)))^(1/3)))
-    if(!is.finite(z_2)) return(NA_real_)
+    z_k2 <- 9.0 * alpha_1 / 2.0 * (1.0 - 2.0 / (9.0 * alpha_1) -((1.0 - 2.0 / alpha_1) / (1.0 + alpha_2 * sqrt(2.0 / (alpha_1 - 4.0))))^(1/3) )^2
+
+    if(!is.finite(z_k2)) return(NA_real_)
 
     # Compute test statistic. Instead of the test statistic, we compute the
     # square root of the test statistic to make it more palatable for the
     # optimiser.
-    t <- sqrt(z_1^2 + z_2^2)
+    t <- z_s2 + z_k2
 
     # Statistic should be minimised for better fits.
     return(t)
