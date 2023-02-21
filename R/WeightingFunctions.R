@@ -345,6 +345,33 @@ setGeneric(
 
 
 
+..weight_function_external <- function(
+    x,
+    weight_function,
+    ...){
+  # Used for externally showing weight functions. Not used internally by the
+  # package, but a convenience function for the manuscript.
+
+  if(weight_function == "step"){
+    object <- methods::new("weightingFunctionStep", ...)
+
+  } else if(weight_function == "triangle"){
+    object <- methods::new("weightingFunctionTriangle", ...)
+
+  } else if(weight_function == "cosine"){
+    object <- methods::new("weightingFunctionCosine", ...)
+
+  } else {
+    stop("weight_function was not recognised.")
+  }
+
+  return(.apply_weight_function(
+    object = object,
+    x = x))
+}
+
+
+
 ..weighting_functions_all <- function(){
   return(c(
     "none",
