@@ -32,7 +32,7 @@ setMethod(
   function(object, transformer, x, ...){
 
     # Prevent NOTE due to non-standard evaluation in data.table.
-    p_empirical <- NULL
+    p <- NULL
 
     # Make sure that x is sorted.
     if(is.unsorted(x)) x <- sort(x)
