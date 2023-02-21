@@ -104,7 +104,7 @@ setMethod(
       transformer = transformer)
 
     # Check fall-back option.
-    if(!is_package_installed("nloptr") & optimiser %in% c("direct-l", "subplex", "nelder-mead")){
+    if(!is_package_installed("nloptr") & optimiser %in% c("direct", "direct-l", "subplex", "nelder-mead")){
       warning(paste0(
         "The nloptr package is required to optimise power transformation parameters using the ",
         optimiser, " algoritm. stats::optim is used as a fallback option."))
@@ -127,6 +127,27 @@ setMethod(
 
       results <- tryCatch(
         nloptr::directL(
+          fn = ..estimator_wrapper,
+          lower = optimisation_parameters$lower,
+          upper = optimisation_parameters$upper,
+          control = optimiser_control,
+          transformer = transformer,
+          estimator = object,
+          x = x,
+          parameter_type = optimisation_parameters$parameter_type,
+          verbose = verbose),
+        error = identity)
+
+    } else if(optimiser == "direct"){
+
+      # DIRECT-L algorithm
+      #
+      # D. R. Jones, C. D. Perttunen, and B. E. Stuckmann, “Lipschitzian
+      # optimization without the lipschitz constant,” J. Optimization Theory and
+      # Applications, vol. 79, p. 157 (1993).
+
+      results <- tryCatch(
+        nloptr::direct(
           fn = ..estimator_wrapper,
           lower = optimisation_parameters$lower,
           upper = optimisation_parameters$upper,
