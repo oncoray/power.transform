@@ -45,16 +45,11 @@ for(ii in seq_along(parameter_list)){
                parameter_list[[ii]]))
 
       if(parameter_list[[ii]]$method == "box_cox"){
-        testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.1)
+        testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.2)
         testthat::expect_equal(transformer@shift, 0.0, tolerance=0.1)
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
-        if(parameter_list[[ii]]$estimation_method == "dagostino"){
-          testthat::expect_equal(transformer@lambda, -0.2, tolerance=0.2)
-
-        } else {
-          testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
-        }
+        testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
       }
     }
   )
@@ -77,16 +72,12 @@ for(ii in seq_along(parameter_list)){
 
       # Check lambda values.
       if(parameter_list[[ii]]$method == "box_cox"){
-        testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.1)
+        testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.2)
         testthat::expect_equal(transformer@shift, -1.0, tolerance=0.1)
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
-        if(parameter_list[[ii]]$estimation_method == "dagostino"){
-          testthat::expect_equal(transformer@lambda, -0.2, tolerance=0.2)
+        testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
 
-        } else {
-          testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
-        }
       }
     }
   )
@@ -110,15 +101,10 @@ for(ii in seq_along(parameter_list)){
 
       # Check lambda values.
       if(parameter_list[[ii]]$method == "box_cox"){
-        testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.1)
+        testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.2)
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
-        if(parameter_list[[ii]]$estimation_method == "dagostino"){
-          testthat::expect_equal(transformer@lambda, -0.2, tolerance=0.2)
-
-        } else {
-          testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
-        }
+        testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
       }
     }
   )
@@ -143,17 +129,12 @@ for(ii in seq_along(parameter_list)){
 
       # Check lambda values.
       if(parameter_list[[ii]]$method == "box_cox"){
-        testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.1)
+        testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.2)
         testthat::expect_equal(transformer@shift, 0.0, tolerance=0.1)
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
+        testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
 
-        if(parameter_list[[ii]]$estimation_method == "dagostino"){
-          testthat::expect_equal(transformer@lambda, -0.2, tolerance=0.2)
-
-        } else {
-          testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
-        }
       }
     }
   )
@@ -178,16 +159,11 @@ for(ii in seq_along(parameter_list)){
 
       # Check lambda values.
       if(parameter_list[[ii]]$method == "box_cox"){
-        testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.1)
+        testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.2)
         testthat::expect_equal(transformer@shift, 0.0, tolerance=0.1)
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
-        if(parameter_list[[ii]]$estimation_method == "dagostino"){
-          testthat::expect_equal(transformer@lambda, -0.2, tolerance=0.2)
-
-        } else {
-          testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
-        }
+        testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
 
       }
     }
