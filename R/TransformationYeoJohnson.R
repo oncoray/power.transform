@@ -320,10 +320,24 @@ setMethod(
       object = object,
       x = x)
 
+    # Compute skewness.
+    mu <- sum(x) / length(x)
+    sigma_squared <- sum((x - mu)^2) / length(x)
+
+    # Compute (weighted) skewness and kurtosis.
+    skewness <- (1.0 / sigma_squared^(3/2)) * (sum((x - mu)^3)) / length(x)
+    if(is.na(skewness)) skewness <- 0.0
+
+    if(skewness < 0.0){
+      x_initial <- stats::quantile(x, 0.95)
+    } else {
+      x_initial <- stats::quantile(x, 0.05)
+    }
+
     if(length(lambda) == 1){
       return(
         list(
-          "initial" = stats::median(x),
+          "initial" = x_initial,
           "lower" = x_range[1],
           "upper" = x_range[2],
           "parameter_type" = c("shift")))
@@ -331,7 +345,7 @@ setMethod(
     } else {
       return(
         list(
-          "initial" = c(stats::median(x), mean(lambda)),
+          "initial" = c(x_initial, mean(lambda)),
           "lower" = c(x_range[1], min(lambda)),
           "upper" = c(x_range[2], max(lambda)),
           "parameter_type" = c("shift", "lambda")))
