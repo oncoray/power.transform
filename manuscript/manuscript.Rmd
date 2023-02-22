@@ -2307,6 +2307,160 @@ For conventional power transformations with a fixed shift parameter, the transfo
 
 
 
+```{r shifted-distributions-other-criteria, warning=FALSE, message=FALSE, fig.cap=cap}
+cap <- paste0(
+  "Shift-sensitive power transformation produces transformation parameters that are invariant to location. ",
+  "Samples were drawn from normal, right-skewed and left-skewed distributions, respectively,  which then underwent a shift $d$. ",
+  "Estimates of transformation parameter $\\lambda$ with the original power transformations (circle) show strong dependency on the overall location of the distribution, ",
+  "whereas estimates with the shift-sensitive power transformations (triangle) are constant.")
+
+# Lambda plot,
+.create_lambda_shift_plot <- function(data, plot_theme, limits, guide=FALSE){
+  
+  p <- ggplot2::ggplot(
+    data = data,
+    mapping = ggplot2::aes(
+      x = d,
+      y = lambda,
+      colour = estimation_method))
+  p <- p + plot_theme
+  p <- p + ggplot2::geom_point()
+  p <- p + ggplot2::scale_x_continuous(
+    name = latex2exp::TeX("$d$"),
+    labels = scales::math_format())
+  p <- p + ggplot2::scale_y_continuous(
+    name = latex2exp::TeX("$\\lambda$"),
+    limits = limits)
+  p <- p + ggplot2::theme(
+    plot.title=ggplot2::element_text(
+      hjust=0.5,
+      size=ggplot2::rel(1.0)))
+  
+  if(guide){
+    p <- p + paletteer::scale_color_paletteer_d(
+      palette = "ggthemes::Tableau_10",
+      drop = FALSE)
+    p <- p + guides(colour = ggplot2::guide_legend(title = "Optimisation criterion"))
+    
+  } else {
+    p <- p + paletteer::scale_color_paletteer_d(
+      palette = "ggthemes::Tableau_10",
+      drop = FALSE,
+      guide = "none")
+  }
+  
+  return(p)
+}
+
+if(!file.exists(file.path(manuscript_dir, "shifted_distributions_plot.RDS"))){
+  stop("Data are missing for creating shifted-distribution plots.")
+  
+} else {
+  data <- readRDS(file.path(manuscript_dir, "shifted_distributions_plot.RDS"))
+}
+
+# Update distribution, method and version to factors.
+data$distribution <- factor(
+  x = data$distribution,
+  levels = c("normal", "right-skewed", "left-skewed"))
+data$method <- factor(
+  x = data$method,
+  levels = c("box_cox", "yeo_johnson"),
+  labels = c("Box-Cox", "Yeo-Johnson"))
+data$version <- factor(
+  x = data$version,
+  levels = c("original", "shift-sensitive"))
+data$estimation_method <- factor(
+  x = data$estimation_method,
+  levels = c("mle", "anderson_darling", "cramer_von_mises", "jarque_bera", "dagostino"),
+  labels = c("MLE", "Anderson-Darling", "Cramér-von Mises", "Jarque-Bera", "D'Agostino")
+)
+
+
+#### Normal distribution -------------------------------------------------------
+
+# Box-Cox-original
+p_bc_normal <- .create_lambda_shift_plot(
+  data = data[distribution == "normal" & method == "Box-Cox" & version == "original"],
+  plot_theme = plot_theme,
+  limits = c(-20.0, 35.0))
+p_bc_normal <- p_bc_normal + ggplot2::ggtitle(label="normal distribution")
+
+# Yeo-Johnson
+p_yj_normal <- .create_lambda_shift_plot(
+  data=data[distribution == "normal" & method == "Yeo-Johnson" & version == "original"],
+  plot_theme = plot_theme,
+  limits = c(-20.0, 35.0))
+
+#### Right skewed distribution -------------------------------------------------
+
+# Box-Cox
+p_bc_right <- .create_lambda_shift_plot(
+  data = data[distribution == "right-skewed" & method == "Box-Cox" & version == "original"],
+  plot_theme = plot_theme,
+  limits = c(-15.0, 1.0))
+p_bc_right <- p_bc_right + ggplot2::ggtitle(label="right-skewed distribution")
+
+# Yeo-Johnson
+p_yj_right <- .create_lambda_shift_plot(
+  data = data[distribution == "right-skewed" & method == "Yeo-Johnson" & version == "original"],
+  plot_theme = plot_theme,
+  limits = c(-15.0, 1.0))
+
+#### Left skewed distribution --------------------------------------------------
+
+# Box-Cox
+p_bc_left <- .create_lambda_shift_plot(
+  data = data[distribution == "left-skewed" & method == "Box-Cox" & version == "original"],
+  plot_theme = plot_theme,
+  limits = c(-50.0, 60.0),
+  guide = TRUE)
+p_bc_left <- p_bc_left + ggplot2::ggtitle(label="left-skewed distribution")
+
+# Yeo-Johnson
+p_yj_left <- .create_lambda_shift_plot(
+  data = data[distribution == "left-skewed" & method == "Yeo-Johnson" & version == "original"],
+  plot_theme = plot_theme,
+  limits = c(-50.0, 60.0))
+
+p <- egg::ggarrange(
+  plots=list(
+    p_bc_normal, p_yj_normal,
+    p_bc_right, p_yj_right,
+    p_bc_left, p_yj_left),
+  ncol=3,
+  heights=c(1.0, 1.0),
+  byrow=FALSE,
+  draw=FALSE)
+p
+
+p <- ggplot2::ggplot(
+  data = data,
+  mapping = ggplot2::aes(
+    x = d,
+    y = lambda,
+    colour = estimation_method))
+p <- p + plot_theme
+p <- p + ggplot2::geom_point()
+p <- p + ggplot2::scale_x_continuous(
+  name = latex2exp::TeX("$d$"),
+  labels = scales::math_format())
+p <- p + ggplot2::scale_y_continuous(
+  name = latex2exp::TeX("$\\lambda$"))
+p <- p + paletteer::scale_color_paletteer_d(
+  palette = "ggthemes::Tableau_10",
+  drop = FALSE)
+p <- p + guides(colour = ggplot2::guide_legend(title = "optimisation criterion"))
+
+p <- p + ggplot2::facet_grid(
+  method + version ~ distribution,
+  scales = "free")
+
+
+```
+
+
+
 ```{r eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
 
 if(!file.exists(file.path(manuscript_dir, "robustness_comparison_rightside_outlier.RDS"))){
