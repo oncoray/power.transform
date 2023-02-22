@@ -436,7 +436,7 @@ setGeneric(
     ..estimators_mle(),
     ..estimators_raymaekers_robust(),
     ..estimators_anderson_darling(),
-    ..estimators_mises_von_cramer(),
+    ..estimators_cramer_von_mises(),
     # ..estimators_kolmogorov_smirnov(), <-- The optimiser has trouble with this one for larger sample sizes.
     ..estimators_jarque_bera(),
     ..estimators_dagostino()

@@ -260,8 +260,8 @@ setMethod(
   return(c("anderson_darling"))
 }
 
-..estimators_mises_von_cramer <- function(){
-  return(c("mises_von_cramer"))
+..estimators_cramer_von_mises <- function(){
+  return(c("cramer_von_mises"))
 }
 
 ..estimators_kolmogorov_smirnov <- function(){
