@@ -401,7 +401,7 @@ setGeneric(
   } else if(estimation_method %in% ..estimators_anderson_darling()){
     estimator <- methods::new("estimatorAndersonDarling")
 
-  } else if(estimation_method %in% ..estimators_mises_von_cramer()){
+  } else if(estimation_method %in% ..estimators_cramer_von_mises()){
     estimator <- methods::new("estimatorCramervonMises")
 
   } else if(estimation_method %in% ..estimators_kolmogorov_smirnov()){
