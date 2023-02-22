@@ -113,7 +113,9 @@ setMethod(
     }
 
     # Set default optimiser values.
-    if(is.null(optimiser_control)) optimiser_control <- ..get_default_optimiser_control(object = object)
+    if(is.null(optimiser_control)) optimiser_control <- ..get_default_optimiser_control(
+      object = object,
+      optimiser = optimiser)
 
     if(optimiser == "direct-l"){
       # DIRECT-L algorithm

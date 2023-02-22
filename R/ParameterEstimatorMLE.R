@@ -52,12 +52,19 @@ setMethod(
 )
 
 
+
 # ..get_default_optimiser_control (MLE) ----------------------------------------
 setMethod(
   "..get_default_optimiser_control",
   signature(object = "estimatorMaximumLikelihoodEstimation"),
-  function(object, ...){
-    return(list("xtol_rel"=1e-3, "ftol_abs"=1E-5))
+  function(object, optimiser, ...){
+    if(optimiser %in% c("direct", "direct-l")){
+      parameters <- list("xtol_rel"=1E-3, "maxeval"=300)
+    } else {
+      parameters <- list("xtol_rel"=1E-3, "ftol_abs"=1E-5)
+    }
+
+    return(parameters)
   }
 )
 
