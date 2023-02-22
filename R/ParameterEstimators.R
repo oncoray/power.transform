@@ -104,7 +104,7 @@ setMethod(
       transformer = transformer)
 
     # Check fall-back option.
-    if(!is_package_installed("nloptr") & optimiser %in% c("direct", "direct-l", "subplex", "nelder-mead")){
+    if(!is_package_installed("nloptr") & optimiser %in% c("direct", "direct-l", "mlsl", "subplex", "nelder-mead")){
       warning(paste0(
         "The nloptr package is required to optimise power transformation parameters using the ",
         optimiser, " algoritm. stats::optim is used as a fallback option."))
@@ -141,8 +141,7 @@ setMethod(
         error = identity)
 
     } else if(optimiser == "direct"){
-
-      # DIRECT-L algorithm
+      # DIRECT algorithm
       #
       # D. R. Jones, C. D. Perttunen, and B. E. Stuckmann, “Lipschitzian
       # optimization without the lipschitz constant,” J. Optimization Theory and
@@ -150,6 +149,29 @@ setMethod(
 
       results <- tryCatch(
         nloptr::direct(
+          fn = ..estimator_wrapper,
+          lower = optimisation_parameters$lower,
+          upper = optimisation_parameters$upper,
+          control = optimiser_control,
+          transformer = transformer,
+          estimator = object,
+          x = x,
+          parameter_type = optimisation_parameters$parameter_type,
+          verbose = verbose),
+        error = identity)
+
+    } else if(optimiser == "mlsl"){
+      # Multi-Level Single-Linkage algorithm (MLSL)
+      #
+      # A. H. G. Rinnooy Kan and G. T. Timmer, "Stochastic global optimization
+      # methods," Mathematical Programming, vol. 39, p. 27-78 (1987).
+      #
+      # Sergei Kucherenko and Yury Sytsko, "Application of deterministic
+      # low-discrepancy sequences in global optimization," Computational
+      # Optimization and Applications, vol. 30, p. 297-318 (2005).
+      results <- tryCatch(
+        nloptr::mlsl(
+          x0 = optimisation_parameters$initial,
           fn = ..estimator_wrapper,
           lower = optimisation_parameters$lower,
           upper = optimisation_parameters$upper,
