@@ -357,8 +357,13 @@ setGeneric(
 setMethod(
   "..get_default_optimiser",
   signature(object = "estimatorGeneric"),
-  function(object, ...){
-    return("subplex")
+  function(object, transformer, ...){
+    if(..requires_shift_optimisation(transformer)){
+      return("direct")
+
+    } else {
+      return("subplex")
+    }
   }
 )
 
