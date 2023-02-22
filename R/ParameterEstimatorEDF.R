@@ -47,11 +47,11 @@ setMethod(
     # Compute (merged) empirical probabilities. Average empirical probabilities
     # for when x has multiple values. Though this necessitates using the
     # data.table package, this is by far the fastest implementation.
-    p_empirical <- (seq_along(y) - 1/3) / (length(y) + 1/3)
+    p_empirical <- (seq_along(x) - 1/3) / (length(x) + 1/3)
 
     # Set up a data.table.
-    data <- data.table::data.table("y"=y, "p"=p_empirical)
-    data[, "p_group":=mean(p), by=c("y")]
+    data <- data.table::data.table("x"=x, "p"=p_empirical)
+    data[, "p_group":=mean(p), by=c("x")]
     p_empirical <- data$p_group
 
     # Determine mu and sigma for putative normal distribution from the data.
@@ -211,7 +211,7 @@ setMethod(
   signature(object = "estimatorAndersonDarling"),
   function(object, optimiser, ...){
     if(optimiser %in% c("direct", "direct-l")){
-      parameters <- list("xtol_rel"=1E-3, "maxeval"=300)
+      parameters <- list("xtol_rel"=1E-3, "maxeval"=500)
     } else {
       parameters <- list("xtol_rel"=1E-3, "ftol_abs"=1E-3)
     }
@@ -228,7 +228,7 @@ setMethod(
   signature(object = "estimatorCramervonMises"),
   function(object, optimiser, ...){
     if(optimiser %in% c("direct", "direct-l")){
-      parameters <- list("xtol_rel"=1E-3, "maxeval"=300)
+      parameters <- list("xtol_rel"=1E-3, "maxeval"=500)
     } else {
       parameters <- list("xtol_rel"=1E-3, "ftol_abs"=1E-3)
     }
@@ -245,7 +245,7 @@ setMethod(
   signature(object = "estimatorKolmogorovSmirnov"),
   function(object, optimiser, ...){
     if(optimiser %in% c("direct", "direct-l")){
-      parameters <- list("xtol_rel"=1E-3, "maxeval"=300)
+      parameters <- list("xtol_rel"=1E-3, "maxeval"=500)
     } else {
       parameters <- list("xtol_rel"=1E-3, "ftol_abs"=1E-3)
     }
