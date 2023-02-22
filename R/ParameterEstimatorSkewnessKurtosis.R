@@ -54,7 +54,7 @@ setMethod(
 
     # Check problematic values.
     if(!is.finite(sigma_squared)) return(NA_real_)
-    if(sigma_squared == 0.0) return(NA_real_)
+    if(sigma_squared <= .Machine$double.eps) return(NA_real_)
 
     # Compute (weighted) skewness and kurtosis.
     skewness <- (1.0 / sigma_squared^(3/2)) * (sum(w * (y - mu)^3)) / sum_w

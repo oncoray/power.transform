@@ -87,7 +87,7 @@ setMethod(
 
   # Log-likelihood cannot be estimated if sigma is NaN, or equals 0.0.
   if(!is.finite(sigma_hat_squared)) return(NA_real_)
-  if(sigma_hat_squared == 0) return(NA_real_)
+  if(sigma_hat_squared <= .Machine$double.eps) return(NA_real_)
 
   # Compute the log likelihood under the assumption that the transformed
   # variable y follows the normal distribution.
