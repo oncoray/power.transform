@@ -208,6 +208,18 @@ setMethod(
   })
 
 
+
+# ..requires_shift_optimisation (Box-Cox (shift)) ------------------------------
+setMethod(
+  "..requires_shift_optimisation",
+  signature(object = "transformationBoxCoxShift"),
+  function(object, ...){
+    return(TRUE)
+  }
+)
+
+
+
 # ..get_default_shift_range (Box-Cox) ------------------------------------------
 setMethod(
   "..get_default_shift_range",

@@ -236,6 +236,17 @@ setMethod(
 
 
 
+# ..requires_shift_optimisation (Yeo-Johnson (shift)) --------------------------
+setMethod(
+  "..requires_shift_optimisation",
+  signature(object = "transformationYeoJohnsonShift"),
+  function(object, ...){
+    return(TRUE)
+  }
+)
+
+
+
 # ..get_default_shift_range (Yeo-Johnson) --------------------------------------
 setMethod(
   "..get_default_shift_range",

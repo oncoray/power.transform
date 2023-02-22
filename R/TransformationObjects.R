@@ -135,6 +135,25 @@ setMethod(
 
 
 
+# ..requires_shift_optimisation (generic) --------------------------------------
+setGeneric(
+  "..requires_shift_optimisation",
+  function(object, ...) standardGeneric("..requires_shift_optimisation"))
+
+
+
+
+# ..requires_shift_optimisation (general) --------------------------------------
+setMethod(
+  "..requires_shift_optimisation",
+  signature(object = "transformationPowerTransform"),
+  function(object, ...){
+    return(FALSE)
+  }
+)
+
+
+
 # ..set_minimum_shift (generic) ------------------------------------------------
 setGeneric(
   "..set_minimum_shift",
