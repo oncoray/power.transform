@@ -541,7 +541,7 @@ cap <- paste0(
   "whereas estimates with the shift-sensitive power transformations (triangle) are constant.")
 
 # Non-standard evaluation
-d <- distribution <- method <- mean_lambda <- sd_lambda <- NULL
+d <- distribution <- method <- mean_lambda <- sd_lambda <- estimation_method <- NULL
 
 # Density plot.
 .create_density_plot <- function(x, plot_theme, limits=c(-5, 5)){
@@ -639,52 +639,69 @@ if(!file.exists(file.path(manuscript_dir, "shifted_distributions_plot.RDS"))){
           for(method in c("box_cox", "yeo_johnson")){
             for(shift in c(FALSE, TRUE)){
               for(robust in c(FALSE)){
-                # for(robust in c(FALSE, TRUE)){
-                # Only 
-                # Skip if robust, but not shifted.
-                if(robust && !shift) next
-                
-                if(!shift && !robust){
-                  version <- "original"
+                for(estimation_method in setdiff(power.transform:::..estimators_all(), power.transform:::..estimators_raymaekers_robust())){
                   
-                } else if(!robust){
-                  version <- "shift-sensitive"
+                  # Skip if robust, but not shifted.
+                  if(robust && !shift) next
                   
-                } else {
-                  version <- "robust shift-sensitive"
+                  if(!shift && !robust){
+                    version <- "original"
+                    
+                  } else if(!robust){
+                    version <- "shift-sensitive"
+                    
+                  } else {
+                    version <- "robust shift-sensitive"
+                  }
+                  
+                  yield(list(
+                    "x" = x + d,
+                    "d" = d,
+                    "distribution" = distribution,
+                    "method" = method,
+                    "shift" = shift,
+                    "robust" = robust,
+                    "version" = version,
+                    "estimation_method" = estimation_method
+                  ))
                 }
-                
-                yield(list(
-                  "x" = x + d,
-                  "d" = d,
-                  "distribution" = distribution,
-                  "method" = method,
-                  "shift" = shift,
-                  "robust" = robust,
-                  "version" = version
-                ))
               }
             }
           }
         }
       }
-    })
+    }
+  )
   
   .compute_lambda <- function(parameter_set){
     # Create transformer object.
-    transformer <- suppressWarnings(
+    if(parameter_set$version == "original"){
+      transformer <- suppressWarnings(
       power.transform::find_transformation_parameters(
         x = parameter_set$x,
         method = parameter_set$method,
         robust = parameter_set$robust,
         shift = parameter_set$shift,
+        estimation_method = parameter_set$estimation_method,
         lambda = NULL,
-        optimiser_control = list("xtol_rel"=1e-3)))
+        optimiser_control = list("xtol_rel"=1e-5)))
+      
+    } else {
+      transformer <- suppressWarnings(
+      power.transform::find_transformation_parameters(
+        x = parameter_set$x,
+        method = parameter_set$method,
+        robust = parameter_set$robust,
+        shift = parameter_set$shift,
+        estimation_method = parameter_set$estimation_method))
+    }
+    
     
     return(
       data.table::data.table(
         "distribution" = parameter_set$distribution,
         "method" = parameter_set$method,
+        "estimation_method" = parameter_set$estimation_method,
         "version" = parameter_set$version,
         "d" = log10(parameter_set$d),
         "lambda" = transformer@lambda,
@@ -700,6 +717,10 @@ if(!file.exists(file.path(manuscript_dir, "shifted_distributions_plot.RDS"))){
     x_right_skewed = x_right_skewed,
     x_left_skewed = x_left_skewed
   ))
+  
+  # data <- lapply(
+  #   X = experiments,
+  #   FUN = .compute_lambda)
   
   # Start cluster
   cl <- parallel::makeCluster(16L)
@@ -723,6 +744,9 @@ if(!file.exists(file.path(manuscript_dir, "shifted_distributions_plot.RDS"))){
 } else {
   data <- readRDS(file.path(manuscript_dir, "shifted_distributions_plot.RDS"))
 }
+
+# Only evaluate the MLE method here.
+data <- data[estimation_method == "mle"]
 
 # Update distribution, method and version to factors.
 data$distribution <- factor(
@@ -2140,8 +2164,6 @@ U_{\text{AD}} \left(\mathbf{X}, \lambda, x_0 \right) = \frac{1}{\sum_{i=1}^n w_i
 
 Here $\mu$ and $\sigma$ are location and scale parameters as described above, and $w_i$ are weights as described in section **Insert**. For non-robust power transformations, all $w_i = 1$. Note that this criterion is not the same as the Anderson-Darling test statistic [@Anderson1952-gz], which involves solving (or approximating) an integral function, contains an extra scalar multiplication term, and does not include any extraneous weights $w_i$. The Anderson-Darling criterion seeks to minimise the squared Euclidean distance between the EDF and the normal CDF, with differences at the upper and lower end of the normal CDF receiving more weight than those at the the centre of the CDF.
 
-For conventional power transformations with a fixed shift parameter, the transformation $\phi^{\lambda, x_0} (\mathbf{X})$ may be substituted by $\phi^{\lambda} (\mathbf{X})$ in the definition of the Anderson-Darling criterion.
-
 ### Cramér-von Mises criterion
 
 The Cramér-von Mises criterion is also based on the empirical distribution function of $\mathbf{X}$. We define the Cramér-von Mises criterion as follows:
@@ -2265,6 +2287,24 @@ U_{\text{JB}} \left(\mathbf{X}, \lambda, x_0 \right) = s^2 + \left(k - 3\right)^
 ```
 
 The main difference between the above criterion and the Jarque-Bera test statistic [@Jarque1980-hw] is that a scalar multiplication is absent.
+
+## Optimisation using non-MLE criteria
+
+Each of the criteria above can be used for optimisation, i.e.:
+
+```{=latex}
+\begin{equation}
+\left\{ \hat{\lambda}, \hat{x}_0 \right\} = \argmin_{\lambda, x_0} U\left(\mathbf{X}, \lambda, x_0 \right)
+\end{equation}
+```
+
+For conventional power transformations with a fixed shift parameter, the transformation $\phi^{\lambda, x_0} (\mathbf{X})$ may be substituted by $\phi^{\lambda} (\mathbf{X})$, or equivalently, $x_0$ is fixed:
+```{=latex}
+\begin{equation}
+\left\{ \hat{\lambda}\right\} = \argmin_{\lambda} U\left(\mathbf{X}, \lambda; x_0 \right)
+\end{equation}
+```
+
 
 
 ```{r eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
