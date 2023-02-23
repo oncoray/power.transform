@@ -907,141 +907,56 @@ To find the optimal values for the weighting function parameters $k_1$ and $k_2$
 \end{equation}
 ```
 The double sum in right-hand side of the above equation can be considered as the loss that should be minimised.
-Minimisation is performed using the subplex algorithm implemented in the `nloptr` package for R [@Rowan1990-sn; @Ypma2022-tc].
+Minimisation is performed using the `sbplx` algorithm implemented in the `nloptr` package for R [@Rowan1990-sn; @Ypma2022-tc].
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, eval=FALSE}
 
-if(!file.exists(file.path(manuscript_dir, "robustness_comparison.RDS"))){
-  set.seed(95)
-  
-  .compute_lambda <- function(x, method){
-    # Create transformer object.
-    transformer <- suppressWarnings(
-      power.transform::find_transformation_parameters(
-        x = x,
-        method = method,
-        robust = FALSE,
-        shift = TRUE))
+# Generate experiments.
+experiment_args <- coro::generator(
+  function(
+    manuscript_dir,
+    transformation_methods = NULL,
+    estimation_methods = NULL){
     
-    return(transformer@lambda)
-  }
-  
-  # Generate table of asymmetric generalised normal distribution parameters.
-  n_distributions <- 100
-  
-  # Generate alpha, beta and n.
-  n <- stats::runif(n=n_distributions, min=2, max=4)
-  n <- ceiling(10^n)
-  
-  alpha <- stats::runif(n=n_distributions, min=0.01, max=0.99)
-  beta <- stats::runif(n=n_distributions, min=1.00, max=5.00)
-  
-  # Generate corresponding distributions.
-  x <- mapply(
-    power.transform::ragn,
-    n = n,
-    alpha = alpha,
-    beta = beta)
-  
-  # Compute lambda values without weighting for Box-Cox.
-  target_lambda_bc <- sapply(
-    x,
-    .compute_lambda,
-    method = "box_cox")
-  
-  # Compute lambda values without weighting for Yeo-Johnson
-  target_lambda_yj <- sapply(
-    x,
-    .compute_lambda,
-    method = "yeo_johnson")
-  
-  # Add outliers, between 0.00 and 0.10.
-  n_outliers <- 10
-  outlier_fraction <- (seq_len(n_outliers) - 1)^2 /((n_outliers-1)^2 * 10)
-  
-  # Find optimised k1 and k2 values for all combinations of weight sources and
-  # weighting functions.
-  x <- mapply(
-    function(x, n, alpha, beta, target_lambda_bc, target_lambda_yj, outlier_fraction){
+    if(is.null(transformation_methods)){
+      transformation_methods <- c("box_cox", "yeo_johnson")
+    }
+    
+    if(is.null(estimation_methods)){
+      estimation_methods <- setdiff(power.transform:::..estimators_all(), power.transform:::..estimators_raymaekers_robust())
+    }
+    
+    for(estimation_method in estimation_methods){
       
-      parameters <- list("n" = n, "alpha"=alpha, "beta" = beta, "target_lambda_bc"=target_lambda_bc, "target_lambda_yj"=target_lambda_yj)
-      
-      x <- lapply(
-        outlier_fraction,
-        function(k, x, parameters){
-          # Set parameters.
-          parameters$k <- k
-          
-          # Compute interquartile range.
-          interquartile_range <- stats::IQR(x)
-          
-          # Compute upper and lower quartiles.
-          q_lower <- stats::quantile(x, probs=0.25, names=FALSE)
-          q_upper <- stats::quantile(x, probs=0.75, names=FALSE)
-          
-          # Set data where the outliers will be copied into.
-          x_outlier <- x
-          
-          if(k != 0.0){
-            n_draw <- ceiling(k * length(x))
-            
-            # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
-            # than Q3 + 1.5 IQR.
-            x_random <- stats::runif(n_draw, min=-2.0, max=2.0)
-            outlier <- numeric(n_draw)
-            if(any(x_random < 0)){
-              outlier[x_random < 0] <- q_lower - 1.5 * interquartile_range + x_random[x_random < 0] * interquartile_range
-            }
-            
-            if(any(x_random >= 0)){
-              outlier[x_random >= 0] <- q_upper + 1.5 * interquartile_range + x_random[x_random >= 0] * interquartile_range
-            }
-            
-            # Randomly insert outlier values.
-            x_outlier[sample(seq_along(x), size=n_draw, replace=FALSE)] <- outlier
-          }
-          
-          return(list(
-            "x" = x_outlier,
-            "parameters" = parameters))
-        },
-        x = x,
-        parameters)
-      
-      return(x)
-    },
-    x = x,
-    n = n,
-    alpha = alpha,
-    beta = beta,
-    target_lambda_bc = target_lambda_bc,
-    target_lambda_yj = target_lambda_yj,
-    MoreArgs=list("outlier_fraction"=outlier_fraction),
-    SIMPLIFY=FALSE,
-    USE.NAMES=FALSE)
-  
-  x <- unlist(x, recursive = FALSE)
-  
-  # Optimise k1, k2 so that sum of absolute differences with target-lambda is
-  # minimised for each combination of source and weighting method.
-  experiment_args <- coro::generator(
-    function(){
-      
-      for(method in c("box_cox", "yeo_johnson")){
+      for(transformation_method in transformation_methods){
         # Non-robust transformation.
         fun_args <- list(
-          "method" = method,
+          "method" = transformation_method,
+          "estimation_method" = estimation_method,
           "robust" = FALSE,
           "shift" = TRUE)
         
         opt_args <- list()
         
-        yield(list(
-          "name" = "non-robust",
-          "method" = method,
-          "fun_args" = fun_args,
-          "opt_args" = opt_args
-        ))
+        file_name <- file.path(
+          manuscript_dir,
+          paste0(
+            "robustness_comparison_",
+            transformation_method, "_",
+            estimation_method, "_", "non_robust.RDS"))
+        
+        if(!file.exists(file_name)){
+          # Only yield arguments if the file does not exist.
+          yield(list(
+            "name" = "non-robust",
+            "method" = transformation_method,
+            "estimation_method" = estimation_method,
+            "file_name" = file_name,
+            "fun_args" = fun_args,
+            "opt_args" = opt_args))
+        } else {
+          yield(file_name)
+        }
       }
       
       for(robustness_source in c("empirical_probability", "transformed", "residual")){
@@ -1065,7 +980,8 @@ if(!file.exists(file.path(manuscript_dir, "robustness_comparison.RDS"))){
           for(robustness_weighting_function in c("step", "triangle", "cosine")){
             
             fun_args <- list(
-              "method" = method,
+              "method" = transformation_method,
+              "estimation_method" = estimation_method,
               "robust" = TRUE,
               "shift" = TRUE,
               "weighting_function" = paste0(robustness_source, "_", robustness_weighting_function),
@@ -1080,154 +996,324 @@ if(!file.exists(file.path(manuscript_dir, "robustness_comparison.RDS"))){
               opt_init$k2 <- NULL
             }
             
-            yield(list(
-              "name" = paste0(robustness_source, "-", robustness_weighting_function),
-              "method" = method,
-              "fun_args" = fun_args,
-              "opt_args" = list("initial" = opt_init, "limits" = opt_limits)
-            ))
+            file_name <- file.path(
+              manuscript_dir,
+              paste0(
+                "robustness_comparison_",
+                transformation_method, "_",
+                estimation_method, "_",
+                robustness_source, "_",
+                robustness_weighting_function, ".RDS"))
+            
+            if(!file.exists(file_name)){
+              # Only yield arguments if the file does not exist.
+              yield(list(
+                "name" = paste0(robustness_source, "-", robustness_weighting_function),
+                "method" = transformation_method,
+                "estimation_method" = estimation_method,
+                "file_name" = file_name,
+                "fun_args" = fun_args,
+                "opt_args" = list("initial" = opt_init, "limits" = opt_limits)))
+              
+            } else {
+              yield(file_name)
+            }
           }
         }
       }
     }
-  )
+  }
+)
+
+
+
+# Helper function for computing the target lambda value.
+.compute_target_lambda <- function(
+    x,
+    transformation_methods = NULL,
+    estimation_methods = NULL){
   
-  # Function for computing transformer parameters under optimisation constraints.
-  compute_robust_lambda <- function(
+  if(is.null(transformation_methods)){
+    transformation_methods <- c("box_cox", "yeo_johnson")
+  }
+  
+  if(is.null(estimation_methods)){
+    estimation_methods <- setdiff(power.transform:::..estimators_all(), power.transform:::..estimators_raymaekers_robust())
+  }
+  
+  lambda_list <- list()
+  ii <- 1L
+  for(transformation_method in transformation_methods){
+    for(estimation_method in estimation_methods){
+      # Create transformer object.
+      transformer <- suppressWarnings(
+        power.transform::find_transformation_parameters(
+          x = x,
+          method = transformation_method,
+          estimation_method = estimation_method,
+          robust = FALSE,
+          shift = TRUE))
+      
+      lambda_list[[ii]] <- data.table::data.table(
+        "method" = transformation_method,
+        "estimation_method" = estimation_method,
+        "lambda" = transformer@lambda)
+      
+      ii <- ii + 1L
+    }
+  }
+  
+  return(data.table::rbindlist(lambda_list))
+}
+
+
+# Helper function for population distributions with outliers.
+.populate_outliers <- function(
+    x,
+    n,
+    alpha,
+    beta,
+    target_lambda,
+    outlier_fraction){
+  
+  # Set parameters.
+  parameters <- list(
+    "n" = n,
+    "alpha" = alpha,
+    "beta" = beta,
+    "target_lambda" = target_lambda)
+  
+  # Add outliers.
+  x <- lapply(
+    outlier_fraction,
+    function(k, x, parameters){
+      # Set parameters.
+      parameters$k <- k
+      
+      # Compute interquartile range.
+      interquartile_range <- stats::IQR(x)
+      
+      # Compute upper and lower quartiles.
+      q_lower <- stats::quantile(x, probs=0.25, names=FALSE)
+      q_upper <- stats::quantile(x, probs=0.75, names=FALSE)
+      
+      # Set data where the outliers will be copied into.
+      x_outlier <- x
+      
+      if(k != 0.0){
+        n_draw <- ceiling(k * length(x))
+        
+        # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
+        # than Q3 + 1.5 IQR.
+        x_random <- stats::runif(n_draw, min=-2.0, max=2.0)
+        outlier <- numeric(n_draw)
+        if(any(x_random < 0)){
+          outlier[x_random < 0] <- q_lower - 1.5 * interquartile_range + x_random[x_random < 0] * interquartile_range
+        }
+        
+        if(any(x_random >= 0)){
+          outlier[x_random >= 0] <- q_upper + 1.5 * interquartile_range + x_random[x_random >= 0] * interquartile_range
+        }
+        
+        # Randomly insert outlier values.
+        x_outlier[sample(seq_along(x), size=n_draw, replace=FALSE)] <- outlier
+      }
+      
+      return(list(
+        "x" = x_outlier,
+        "parameters" = parameters))
+    },
+    x = x,
+    parameters)
+  
+  return(x)
+}
+
+# Helper function for computing transformer parameters under optimisation
+# constraints.
+.compute_robust_lambda <- function(
     x,
     fun_args,
-    opt_args,
-    cl_internal=NULL){
-    
-    # Custom parser.
-    ..outlier_parser <- function(
+    opt_args){
+  
+  # Custom parser.
+  ..outlier_parser <- function(
     x,
     fun_args,
-    opt_args
-    ){
-      # Create transformer.
-      transformer <- suppressWarnings(do.call(
-        power.transform::find_transformation_parameters,
-        args=c(
-          list("x" = x$x),
-          list("weighting_function_parameters" = opt_args),
-          fun_args)))
-      
-      parameter_data <- c(
-        x$parameters,
-        opt_args,
-        list(
-          "method" = fun_args$method,
-          "weight_method" = fun_args$weight_method,
-          "lambda" = transformer@lambda,
-          "shift" = transformer@shift)
-      )
-      
-      return(parameter_data)
-    }
+    opt_args){
+    # Create transformer.
+    transformer <- suppressWarnings(do.call(
+      power.transform::find_transformation_parameters,
+      args=c(
+        list("x" = x$x),
+        list("weighting_function_parameters" = opt_args),
+        fun_args)))
     
-    if(is.null(cl_internal)){
-      parameter_data <- lapply(
-        x,
-        ..outlier_parser,
-        fun_args = fun_args,
-        opt_args = opt_args)
-      
-    } else {
-      parameter_data <- parallel::parLapply(
-        cl = cl_internal,
-        X = x,
-        fun = ..outlier_parser,
-        fun_args = fun_args,
-        opt_args = opt_args)
-    }
+    target_lambda <- x$parameters$target_lambda[method == fun_args$method & estimation_method == fun_args$estimation_method]$lambda
+    
+    parameter_data <- c(
+      opt_args,
+      list(
+        "method" = fun_args$method,
+        "estimation_method" = fun_args$estimation_method,
+        "weight_method" = fun_args$weight_method,
+        "lambda" = transformer@lambda,
+        "target_lambda" = target_lambda,
+        "shift" = transformer@shift)
+    )
     
     return(parameter_data)
   }
   
+  parameter_data <- lapply(
+    x,
+    ..outlier_parser,
+    fun_args = fun_args,
+    opt_args = opt_args)
   
-  # Inner optimisation function that sets the loss.
-  ..optimisation_function <- function(
+  return(parameter_data)
+}
+
+# Outer optimisation function used to optimise the weighting function parameters
+# over a dataset.
+.optimisation_outer <- function(
+    experiment,
+    data,
+    verbose = FALSE){
+  
+  set.seed(9)
+
+  results_list <- list(
+    "name" = experiment$name,
+    "method" = experiment$method,
+    "estimation_method" = experiment$estimation_method)
+  
+  # Run optimiser.
+  if(length(experiment$opt_args) > 0){
+    
+    x0 <- unlist(experiment$opt_args$initial)
+    
+    lower <- experiment$opt_args$limits$k1[1]
+    upper <- experiment$opt_args$limits$k1[2]
+    
+    if(length(experiment$opt_args$limits) > 1){
+      lower <- c(lower, experiment$opt_args$limits$k2[1])
+      upper <- c(upper, experiment$opt_args$limits$k2[2])
+    }
+    
+    h <- nloptr::sbplx(
+      x0 = x0,
+      fn = .optimisation_inner,
+      lower = lower,
+      upper = upper,
+      control=list("xtol_rel"=1e-2),
+      x = data,
+      fun_args = experiment$fun_args,
+      verbose = verbose)
+    
+    results_list <- c(results_list, list("k1" = h$par[1]))
+    if(length(h$par) > 1) results_list <- c(results_list, list("k2" = h$par[2]))
+    results_list <- c(results_list, list("value" = h$value))
+    
+  } else {
+    value <- .optimisation_inner(
+      opt_param=list(),
+      x = data,
+      fun_args=experiment$fun_args)
+    
+    results_list <- c(results_list, list("value" = value))
+  }
+  
+  # Save to file.
+  saveRDS(results_list, file=experiment$file_name)
+  
+  return(invisible(TRUE))
+}
+
+# Inner optimisation function that sets the loss.
+.optimisation_inner <- function(
     opt_param,
     x,
     fun_args,
-    cl_internal = NULL){
-    
-    # Parse options.
-    opt_args <- list()
-    if(length(opt_param) >= 1) opt_args <- c(opt_args, list("k1"=opt_param[1]))
-    if(length(opt_param) >= 2) opt_args <- c(opt_args, list("k2"=opt_param[2]))
-    
-    parameter_data <- compute_robust_lambda(
-      x = x,
-      fun_args = fun_args,
-      opt_args = opt_args,
-      cl_internal = cl_internal)
-    
-    if(fun_args$method == "box_cox"){
-      lambda_error <- sapply(
-        parameter_data,
-        function(x) (abs(x$lambda - x$target_lambda_bc)))
-      
-    } else {
-      # Yeo-Johnson.
-      lambda_error <- sapply(
-        parameter_data,
-        function(x) (abs(x$lambda - x$target_lambda_yj)))
-    }
-    cat(paste0("target: ", mean(lambda_error), "; k1: ", opt_param[1], "; k2: ", opt_param[2], "\n"))
-    return(mean(lambda_error))
+    verbose = FALSE){
+  
+  # Parse options.
+  opt_args <- list()
+  if(length(opt_param) >= 1) opt_args <- c(opt_args, list("k1"=opt_param[1]))
+  if(length(opt_param) >= 2) opt_args <- c(opt_args, list("k2"=opt_param[2]))
+  
+  parameter_data <- .compute_robust_lambda(
+    x = x,
+    fun_args = fun_args,
+    opt_args = opt_args)
+  
+  lambda_error <- sapply(
+    parameter_data,
+    function(x) (abs(x$lambda - x$target_lambda)))
+  
+  if(verbose){
+    message <- paste0("target: ", mean(lambda_error))
+    if(length(opt_args) > 0) message <- c(message, paste0("k1: ", opt_param[1]))
+    if(length(opt_args) > 1) message <- c(message, paste0("k2: ", opt_param[2]))
+    cat(paste0(message, collapse="; "))
+    cat("\n")
   }
   
+  return(mean(lambda_error))
+}
+
+
+# Select experiments to conduct by filtering out experiments that are file
+# names.
+experiments <- coro::collect(experiment_args(manuscript_dir = manuscript_dir))
+experiments <- experiments[!sapply(experiments, is.character)]
+
+if(length(experiments) > 0){
+  set.seed(95)
   
-  # Outer optimisation function
-  .optimisation_function <- function(
-    experiment,
-    data,
-    cl_internal = NULL){
-    
-    set.seed(9)
-    
-    # Run optimiser.
-    if(length(experiment$opt_args) > 0){
-      
-      x0 <- unlist(experiment$opt_args$initial)
-      
-      lower <- experiment$opt_args$limits$k1[1]
-      upper <- experiment$opt_args$limits$k1[2]
-      
-      if(length(experiment$opt_args$limits) > 1){
-        lower <- c(lower, experiment$opt_args$limits$k2[1])
-        upper <- c(upper, experiment$opt_args$limits$k2[2])
-      }
-      
-      h <- nloptr::sbplx(
-        x0 = x0,
-        fn = ..optimisation_function,
-        lower = lower,
-        upper = upper,
-        control=list("xtol_rel"=1e-2),
-        x = data,
-        fun_args = experiment$fun_args,
-        cl_internal = cl_internal)
-      
-      if(length(h$par) == 1){
-        return(list("name"=experiment$name, "method"=experiment$method, "k1" = h$par, "value" = h$value))
-        
-      } else {
-        return(list("name"=experiment$name, "method"=experiment$method, "k1" = h$par[1], "k2" = h$par[2], "value" = h$value))
-      }
-      
-    } else {
-      value <- ..optimisation_function(
-        opt_param=list(),
-        x = data,
-        fun_args=experiment$fun_args,
-        cl = cl_internal)
-      
-      return(list("name"=experiment$name, "method"=experiment$method, "value" = value))
-    }
-  }
+  # Generate table of asymmetric generalised normal distribution parameters.
+  n_distributions <- 3
+  
+  # Generate alpha, beta and n.
+  n <- stats::runif(n=n_distributions, min=2, max=4)
+  n <- ceiling(10^n)
+  
+  alpha <- stats::runif(n=n_distributions, min=0.01, max=0.99)
+  beta <- stats::runif(n=n_distributions, min=1.00, max=5.00)
+  
+  # Generate corresponding distributions.
+  x <- mapply(
+    power.transform::ragn,
+    n = n,
+    alpha = alpha,
+    beta = beta)
+  
+  # Compute lambda values without weighting.
+  target_lambda <- lapply(x, .compute_target_lambda)
+  
+  # Add outliers, between 0.00 and 0.10.
+  n_outliers <- 10
+  outlier_fraction <- (seq_len(n_outliers) - 1)^2 /((n_outliers-1)^2 * 10)
+  
+  # Generate outliers in the data.
+  x <- mapply(
+    FUN = .populate_outliers,
+    x = x,
+    n = n,
+    alpha = alpha,
+    beta = beta,
+    target_lambda = target_lambda,
+    MoreArgs=list("outlier_fraction"=outlier_fraction),
+    SIMPLIFY=FALSE,
+    USE.NAMES=FALSE)
+  
+  x <- unlist(x, recursive = FALSE)
+  
+  
+  lapply(experiments, .optimisation_outer, data=x, verbose=TRUE)
+  
+  
+  
   
   
   # Start cluster
@@ -1235,21 +1321,25 @@ if(!file.exists(file.path(manuscript_dir, "robustness_comparison.RDS"))){
   
   parallel::clusterExport(
     cl=cl,
-    varlist = c("compute_robust_lambda", "..optimisation_function")
+    varlist = c(".compute_robust_lambda", ".optimisation_inner")
   )
   
-  experiment_results <- parallel::parLapplyLB(
+  parallel::parLapplyLB(
     cl = cl,
-    X = coro::collect(experiment_args()),
-    fun = .optimisation_function,
+    X = experiments,
+    fun = .optimisation_outer,
     data = x,
     chunk.size = 1L)
   
   # Stop cluster.
   parallel::stopCluster(cl)
-  
-  saveRDS(experiment_results, file = file.path(manuscript_dir, "robustness_comparison.RDS"))
 }
+
+# Collect all files
+experiments <- coro::collect(experiment_args(manuscript_dir = manuscript_dir))
+optimisation_data <- lapply(experiments, readRDS)
+optimisation_data <- lapply(optimisation_data, data.table::as.data.table)
+optimisation_data <- data.table::rbindlist(optimisation_data, fill=TRUE)
 ```
 
 
@@ -2747,7 +2837,7 @@ if(!file.exists(file.path(manuscript_dir, "robustness_comparison_rightside_outli
       
       h <- nloptr::sbplx(
         x0 = x0,
-        fn = ..optimisation_function,
+        fn = .optimisation_inner,
         lower = lower,
         upper = upper,
         control=list("xtol_rel"=1e-3, "ftol_rel"=1e-4),
