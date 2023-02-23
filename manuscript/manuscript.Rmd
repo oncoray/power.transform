@@ -976,7 +976,7 @@ experiment_args <- coro::generator(
           def_opt_init <- list("k1" = 0.50, "k2" = 1.0)
         }
         
-        for(method in c("box_cox", "yeo_johnson")){
+        for(transformation_method in transformation_methods){
           for(robustness_weighting_function in c("step", "triangle", "cosine")){
             
             fun_args <- list(
@@ -1314,25 +1314,25 @@ if(length(experiments) > 0){
   
   
   
-  
-  
-  # Start cluster
-  cl <- parallel::makeCluster(18L)
-  
-  parallel::clusterExport(
-    cl=cl,
-    varlist = c(".compute_robust_lambda", ".optimisation_inner")
-  )
-  
-  parallel::parLapplyLB(
-    cl = cl,
-    X = experiments,
-    fun = .optimisation_outer,
-    data = x,
-    chunk.size = 1L)
-  
-  # Stop cluster.
-  parallel::stopCluster(cl)
+  # 
+  # 
+  # # Start cluster
+  # cl <- parallel::makeCluster(18L)
+  # 
+  # parallel::clusterExport(
+  #   cl=cl,
+  #   varlist = c(".compute_robust_lambda", ".optimisation_inner")
+  # )
+  # 
+  # parallel::parLapplyLB(
+  #   cl = cl,
+  #   X = experiments,
+  #   fun = .optimisation_outer,
+  #   data = x,
+  #   chunk.size = 1L)
+  # 
+  # # Stop cluster.
+  # parallel::stopCluster(cl)
 }
 
 # Collect all files
