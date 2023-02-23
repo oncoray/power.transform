@@ -126,12 +126,13 @@ setClass("weightingMethodResidualCosine", contains=c("weightingSourceResidual", 
 setMethod(
   ".get_weights",
   signature(object = "weightingFunctionGeneric"),
-  function(object, x, ...){
+  function(object, transformer, x, ...){
     # Weights are set by first processing the data, and then applying the
     # weight function to the processed input data.
 
     y <- .compute_weight_input(
       object = object,
+      transformer = transformer,
       x = x)
 
     w <- .apply_weight_function(
@@ -189,7 +190,7 @@ setMethod(
   function(object, transformer, x, ...){
     # Find transformed feature values.
     y <- ..transform(
-      object = object,
+      object = transformer,
       x = x)
 
     # Approximate Huber's M-estimates for locality and scale.
@@ -212,7 +213,7 @@ setMethod(
   function(object, transformer, x, ...){
     # Find transformed feature values.
     y <- ..transform(
-      object = object,
+      object = transformer,
       x = x)
 
     # Compute the expected z-score.
