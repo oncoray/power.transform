@@ -320,7 +320,8 @@ setMethod(
       object = object,
       x = x)
 
-    # Compute skewness.
+    # Compute skewness. This prevent local optimisers from becoming stuck in a
+    # local optimum at the edge of the search grid.
     mu <- sum(x) / length(x)
     sigma_squared <- sum((x - mu)^2) / length(x)
 
