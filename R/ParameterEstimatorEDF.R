@@ -66,7 +66,7 @@ setMethod(
 
     # Check problematic values.
     if(!is.finite(estimates$sigma)) return(NA_real_)
-    if(estimates$sigma == 0.0) return(NA_real_)
+    if(estimates$sigma <= .Machine$double.eps) return(NA_real_)
 
     # Compute expected probabilities according to the cumulative density
     # function of the normal distribution parametrised by mu and sigma.

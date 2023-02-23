@@ -197,7 +197,7 @@ setMethod(
 
     # Check problematic values.
     if(!is.finite(robust_estimates$sigma)) return(NA_real_)
-    if(robust_estimates$sigma == 0.0) return(NA_real_)
+    if(robust_estimates$sigma <= .Machine$double.eps) return(NA_real_)
 
     return((y - robust_estimates$mu) / robust_estimates$sigma)
   }
@@ -223,7 +223,7 @@ setMethod(
 
     # Check problematic values.
     if(!is.finite(robust_estimates$sigma)) return(NA_real_)
-    if(robust_estimates$sigma == 0.0) return(NA_real_)
+    if(robust_estimates$sigma <= .Machine$double.eps) return(NA_real_)
 
     # Compute the observed z-score.
     z_observed <- (y - robust_estimates$mu) / robust_estimates$sigma

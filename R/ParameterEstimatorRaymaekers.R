@@ -115,7 +115,7 @@ setMethod(
 
   # Check problematic values.
   if(!is.finite(robust_estimates$sigma)) return(NA_real_)
-  if(robust_estimates$sigma == 0.0) return(NA_real_)
+  if(robust_estimates$sigma <= .Machine$double.eps) return(NA_real_)
 
   # Compute residuals.
   residual <- (y - robust_estimates$mu) / robust_estimates$sigma - z
@@ -203,7 +203,7 @@ setMethod(
 
   # Check problematic values.
   if(!is.finite(robust_estimates$sigma)) return(NA_real_)
-  if(robust_estimates$sigma == 0.0) return(NA_real_)
+  if(robust_estimates$sigma <= .Machine$double.eps) return(NA_real_)
 
   # Compute weights.
   weights <- as.numeric(abs(y - robust_estimates$mu) / robust_estimates$sigma <= stats::qnorm(0.99))
