@@ -740,6 +740,7 @@
     alpha,
     beta,
     target_lambda,
+    ii,
     outlier_fraction){
 
       # Set parameters.
@@ -747,7 +748,8 @@
         "n" = n,
         "alpha" = alpha,
         "beta" = beta,
-        "target_lambda" = target_lambda)
+        "target_lambda" = target_lambda,
+        "ii" = ii)
 
       # Add outliers.
       x <- lapply(
@@ -826,7 +828,8 @@
           "lambda" = transformer@lambda,
           "target_lambda" = target_lambda,
           "shift" = transformer@shift,
-          "k" = x$parameters$k)
+          "k" = x$parameters$k,
+          "ii" = x$parameters$ii)
 
         return(parameter_data)
       }
@@ -878,6 +881,7 @@
       alpha = alpha,
       beta = beta,
       target_lambda = target_lambda,
+      ii = seq_along(x),
       MoreArgs=list("outlier_fraction"=outlier_fraction),
       SIMPLIFY=FALSE,
       USE.NAMES=FALSE)
