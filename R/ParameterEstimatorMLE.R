@@ -6,7 +6,9 @@ NULL
 # estimatorMaximumLikelihoodEstimation definition ------------------------------
 setClass(
   "estimatorMaximumLikelihoodEstimation",
-  contains = "estimatorGeneric")
+  contains = "estimatorGeneric",
+  slots = list("method" = "character"),
+  prototype = list("method" = "mle"))
 
 
 

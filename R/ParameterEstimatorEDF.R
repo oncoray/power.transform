@@ -11,24 +11,30 @@ setClass(
 # estimatorAndersonDarling definition ------------------------------------------
 setClass(
   "estimatorAndersonDarling",
-  contains = "estimatorEmpiricalDistributionFunction")
+  contains = "estimatorEmpiricalDistributionFunction",
+  slots = list("method" = "character"),
+  prototype = list("method" = "anderson_darling"))
 
 # estimatorCramervonMises definition -------------------------------------------
 setClass(
   "estimatorCramervonMises",
-  contains = "estimatorEmpiricalDistributionFunction")
+  contains = "estimatorEmpiricalDistributionFunction",
+  slots = list("method" = "character"),
+  prototype = list("method" = "cramer_von_mises"))
 
 # estimatorKolmogorovSmirnov definition -----------------------------------------
 setClass(
   "estimatorKolmogorovSmirnov",
-  contains = "estimatorEmpiricalDistributionFunction")
+  contains = "estimatorEmpiricalDistributionFunction",
+  slots = list("method" = "character"),
+  prototype = list("method" = "kolmogorov_smirnov"))
 
 
 
 # .compute_objective (general EDF) ---------------------------------------------
 setMethod(
   ".compute_objective",
-  signature(object="estimatorEmpiricalDistributionFunction"),
+  signature(object = "estimatorEmpiricalDistributionFunction"),
   function(object, transformer, x, ...){
 
     # Prevent NOTE due to non-standard evaluation in data.table.

@@ -11,12 +11,16 @@ setClass(
 # estimatorJarqueBera definition -----------------------------------------------
 setClass(
   "estimatorJarqueBera",
-  contains = "estimatorSkewnessKurtosis")
+  contains = "estimatorSkewnessKurtosis",
+  slots = list("method" = "character"),
+  prototype = list("method" = "jarque_bera"))
 
 # estimatorDAgostino definition ------------------------------------------------
 setClass(
   "estimatorDAgostino",
-  contains = "estimatorSkewnessKurtosis")
+  contains = "estimatorSkewnessKurtosis",
+  slots = list("method" = "character"),
+  prototype = list("method" = "dagostino"))
 
 
 

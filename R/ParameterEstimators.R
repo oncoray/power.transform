@@ -45,8 +45,10 @@
 setClass(
   "estimatorGeneric",
   slots = list(
+    "method" = "character",
     "weighting_method" = "ANY"),
   prototype = list(
+    "method" = "none",
     "weighting_method" = NULL))
 
 
