@@ -4,7 +4,7 @@
 setMethod(
   "..get_default_weighting_parameters",
   signature(object = "weightingMethodNone"),
-  function(object, transformer, estimator, ...){
+  function(object, transformer, estimator, ...) {
 
     # No weights required.
     return(NULL)
@@ -17,7 +17,7 @@ setMethod(
 setMethod(
   "..get_default_weighting_parameters",
   signature(object = "weightingMethodEmpiricalProbabilityStep"),
-  function(object, transformer, estimator, ...){
+  function(object, transformer, estimator, ...) {
 
     # Prevent NOTE due to non-standard evaluation.
     name <- method <- estimation_method <- NULL
@@ -45,7 +45,7 @@ setMethod(
 setMethod(
   "..get_default_weighting_parameters",
   signature(object = "weightingMethodEmpiricalProbabilityTriangle"),
-  function(object, transformer, estimator, ...){
+  function(object, transformer, estimator, ...) {
 
     # Prevent NOTE due to non-standard evaluation.
     name <- method <- estimation_method <- NULL
@@ -74,7 +74,7 @@ setMethod(
 setMethod(
   "..get_default_weighting_parameters",
   signature(object = "weightingMethodEmpiricalProbabilityCosine"),
-  function(object, transformer, estimator, ...){
+  function(object, transformer, estimator, ...) {
 
     # Prevent NOTE due to non-standard evaluation.
     name <- method <- estimation_method <- NULL
@@ -103,7 +103,7 @@ setMethod(
 setMethod(
   "..get_default_weighting_parameters",
   signature(object = "weightingMethodTransformedStep"),
-  function(object, transformer, estimator, ...){
+  function(object, transformer, estimator, ...) {
 
     # Prevent NOTE due to non-standard evaluation.
     name <- method <- estimation_method <- NULL
@@ -131,7 +131,7 @@ setMethod(
 setMethod(
   "..get_default_weighting_parameters",
   signature(object = "weightingMethodTransformedTriangle"),
-  function(object, transformer, estimator, ...){
+  function(object, transformer, estimator, ...) {
 
     # Prevent NOTE due to non-standard evaluation.
     name <- method <- estimation_method <- NULL
@@ -160,7 +160,7 @@ setMethod(
 setMethod(
   "..get_default_weighting_parameters",
   signature(object = "weightingMethodTransformedCosine"),
-  function(object, transformer, estimator, ...){
+  function(object, transformer, estimator, ...) {
 
     # Prevent NOTE due to non-standard evaluation.
     name <- method <- estimation_method <- NULL
@@ -189,7 +189,7 @@ setMethod(
 setMethod(
   "..get_default_weighting_parameters",
   signature(object = "weightingMethodResidualStep"),
-  function(object, transformer, estimator, ...){
+  function(object, transformer, estimator, ...) {
 
     # Prevent NOTE due to non-standard evaluation.
     name <- method <- estimation_method <- NULL
