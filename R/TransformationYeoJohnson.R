@@ -24,13 +24,13 @@ NULL
 
 setClass(
   "transformationYeoJohnson",
-  contains="transformationPowerTransform",
-  slots=list(
+  contains = "transformationPowerTransform",
+  slots = list(
     "method" = "character",
     "robust" = "logical",
     "lambda" = "numeric",
     "shift" = "numeric"),
-  prototype=list(
+  prototype = list(
     "method" = "yeo_johnson",
     "robust" = FALSE,
     "lambda" = NA_real_,
@@ -44,14 +44,14 @@ setClass(
 #' @export
 setClass(
   "transformationYeoJohnsonShift",
-  contains="transformationYeoJohnson")
+  contains = "transformationYeoJohnson")
 
 
 
 # .set_transformation_parameters (Yeo-Johnson) ---------------------------------
 setMethod(
   ".set_transformation_parameters",
-  signature("transformationYeoJohnson"),
+  signature(object = "transformationYeoJohnson"),
   function(
     object,
     x,
@@ -59,12 +59,12 @@ setMethod(
     estimation_method = "mle",
     weighting_function = NULL,
     weighting_function_parameters = NULL,
-    optimiser=NULL,
-    backup_use_default=TRUE,
-    ...){
+    optimiser = NULL,
+    backup_use_default = TRUE,
+    ...) {
 
     # Set lambda range. If lambda is NULL, set a very wide range.
-    if(is.null(lambda)) lambda <- ..get_default_lambda_range(object=object)
+    if (is.null(lambda)) lambda <- ..get_default_lambda_range(object = object)
 
     # Set lambda, in case a fixed lambda is provided.
     object <- ..set_lambda(
@@ -78,7 +78,7 @@ setMethod(
       lambda = lambda)
 
     # Skip optimisation if there is nothing to optimise.
-    if(is.null(optimisation_parameters)){
+    if (is.null(optimisation_parameters)) {
       object@complete <- TRUE
 
       return(object)
@@ -101,20 +101,20 @@ setMethod(
       ...)
 
     # Update shift and lambda values with the optimised parameters.
-    if(!is.null(optimised_parameters$shift)){
-      if(is.finite(optimised_parameters$shift)){
+    if (!is.null(optimised_parameters$shift)) {
+      if (is.finite(optimised_parameters$shift)) {
         object@shift <- optimised_parameters$shift
 
-      } else if(!backup_use_default){
+      } else if (!backup_use_default) {
         object@shift <- optimised_parameters$shift
       }
     }
 
-    if(!is.null(optimised_parameters$lambda)){
-      if(is.finite(optimised_parameters$lambda)){
+    if (!is.null(optimised_parameters$lambda)) {
+      if (is.finite(optimised_parameters$lambda)) {
         object@lambda <- optimised_parameters$lambda
 
-      } else if(!backup_use_default){
+      } else if (!backup_use_default) {
         object@lambda <- optimised_parameters$lambda
       }
     }
@@ -130,15 +130,15 @@ setMethod(
 # .transform (Yeo-Johnson) -----------------------------------------------------
 setMethod(
   ".transform",
-  signature(object="transformationYeoJohnson"),
-  function(object, x, ...){
+  signature(object = "transformationYeoJohnson"),
+  function(object, x, ...) {
 
     # Set up vector to copy new values to.
     y <- numeric(length(x))
 
     # Find non-finite instances.
     na_entries <- which(!is.finite(x))
-    if(length(na_entries) > 0){
+    if (length(na_entries) > 0) {
       warning("One or more NA or infinite values were found.")
 
       y[na_entries] <- NA_real_
@@ -148,12 +148,13 @@ setMethod(
     valid_entries <- setdiff(seq_along(x), na_entries)
 
     # Perform transformation.
-    if(length(valid_entries) > 0) y[valid_entries] <- ..transform(
+    if (length(valid_entries) > 0) y[valid_entries] <- ..transform(
       object = object,
       x = x[valid_entries])
 
     return(y)
-  })
+  }
+)
 
 
 
@@ -161,7 +162,7 @@ setMethod(
 setMethod(
   "..transform",
   signature(object = "transformationYeoJohnson"),
-  function(object, x, ...){
+  function(object, x, ...) {
 
     # Subtract shift.
     x <- x - object@shift
@@ -173,8 +174,8 @@ setMethod(
     # Initialise y.
     y <- rep(NA_real_, length(x))
 
-    if(any(pos_index)){
-      if(object@lambda == 0.0){
+    if (any(pos_index)) {
+      if (object@lambda == 0.0) {
         y[pos_index] <- log1p(x[pos_index])
 
       } else {
@@ -182,8 +183,8 @@ setMethod(
       }
     }
 
-    if(any(neg_index)){
-      if(object@lambda == 2.0){
+    if (any(neg_index)) {
+      if (object@lambda == 2.0) {
         y[neg_index] <- -log1p(-x[neg_index])
 
       } else {
@@ -200,8 +201,8 @@ setMethod(
 # .revert_transform (Yeo-Johnson) ----------------------------------------------
 setMethod(
   ".revert_transform",
-  signature(object="transformationYeoJohnson"),
-  function(object, x, ...){
+  signature(object = "transformationYeoJohnson"),
+  function(object, x, ...) {
 
     # Copy output
     y <- x
@@ -210,8 +211,8 @@ setMethod(
     pos_index <- x >= 0 & is.finite(x)
     neg_index <- x < 0 & is.finite(x)
 
-    if(any(pos_index)){
-      if(object@lambda != 0){
+    if (any(pos_index)) {
+      if (object@lambda != 0) {
         y[pos_index] <- ((x[pos_index] * object@lambda + 1)^(1 / object@lambda) - 1)
 
       } else {
@@ -219,8 +220,8 @@ setMethod(
       }
     }
 
-    if(any(neg_index)){
-      if(object@lambda != 2) {
+    if (any(neg_index)) {
+      if (object@lambda != 2) {
         y[neg_index] <- 1 - (x[neg_index] * (object@lambda - 2) + 1)^(1 / (2 - object@lambda))
 
       } else {
@@ -240,7 +241,7 @@ setMethod(
 setMethod(
   "..requires_shift_optimisation",
   signature(object = "transformationYeoJohnsonShift"),
-  function(object, ...){
+  function(object, ...) {
     return(TRUE)
   }
 )
@@ -251,7 +252,7 @@ setMethod(
 setMethod(
   "..get_default_shift_range",
   signature(object = "transformationYeoJohnson"),
-  function(object, x, ...){
+  function(object, x, ...) {
     # Set shift range.
     shift_range <- c(min(x), max(x))
 
@@ -265,7 +266,7 @@ setMethod(
 setMethod(
   "..get_default_lambda_range",
   signature(object = "transformationYeoJohnson"),
-  function(object, ...){
+  function(object, ...) {
     return(c(-100.0, 100.0))
   }
 )
@@ -276,10 +277,10 @@ setMethod(
 setMethod(
   "..set_lambda",
   signature(object = "transformationYeoJohnson"),
-  function(object, lambda, ...){
+  function(object, lambda, ...) {
 
     # Only update lambda if it is not a range.
-    if(length(lambda) != 1) return(object)
+    if (length(lambda) != 1) return(object)
 
     # Update lambda.
     object@lambda <- lambda
@@ -294,15 +295,15 @@ setMethod(
 setMethod(
   "..optimisation_parameters",
   signature(object = "transformationYeoJohnson"),
-  function(object, lambda, ...){
+  function(object, lambda, ...) {
 
-    if(length(lambda) == 1) return(NULL)
+    if (length(lambda) == 1) return(NULL)
 
     return(
       list(
-        "initial"=mean(lambda),
-        "lower"=min(lambda),
-        "upper"=max(lambda),
+        "initial" = mean(lambda),
+        "lower" = min(lambda),
+        "upper" = max(lambda),
         "parameter_type" = "lambda"))
   }
 )
@@ -313,7 +314,7 @@ setMethod(
 setMethod(
   "..optimisation_parameters",
   signature(object = "transformationYeoJohnsonShift"),
-  function(object, x, lambda, ...){
+  function(object, x, lambda, ...) {
 
     # Set up x-range.
     x_range <- ..get_default_shift_range(
@@ -326,16 +327,17 @@ setMethod(
     sigma_squared <- sum((x - mu)^2) / length(x)
 
     # Compute (weighted) skewness and kurtosis.
-    skewness <- (1.0 / sigma_squared^(3/2)) * (sum((x - mu)^3)) / length(x)
-    if(is.na(skewness)) skewness <- 0.0
+    skewness <- (1.0 / sigma_squared^(3 / 2)) * (sum((x - mu)^3)) / length(x)
+    if (is.na(skewness)) skewness <- 0.0
 
-    if(skewness < 0.0){
+    if (skewness < 0.0) {
       x_initial <- stats::quantile(x, 0.95)
+
     } else {
       x_initial <- stats::quantile(x, 0.05)
     }
 
-    if(length(lambda) == 1){
+    if (length(lambda) == 1) {
       return(
         list(
           "initial" = x_initial,
@@ -365,14 +367,14 @@ setMethod(
     x,
     w,
     sigma_hat_squared,
-    ...){
+    ...) {
 
     # Ensure that data is shifted
     x <- x - object@shift
 
     # Compute the log likelihood under the assumption that the transformed
     # variable y follows the normal distribution.
-    return((object@lambda - 1.0) * sum(w * sign(x) * log1p(abs(x))) - sum(w)/2.0 * log(sigma_hat_squared))
+    return((object@lambda - 1.0) * sum(w * sign(x) * log1p(abs(x))) - sum(w) / 2.0 * log(sigma_hat_squared))
   }
 )
 
@@ -382,7 +384,7 @@ setMethod(
 setMethod(
   "..first_derivative",
   signature(object = "transformationYeoJohnson"),
-  function(object, x){
+  function(object, x) {
     return((1 + abs(x))^(sign(x) * (object@lambda - 1)))
   }
 )
@@ -393,12 +395,14 @@ setMethod(
 setMethod(
   "..get_available_estimators",
   signature(object = "transformationYeoJohnson"),
-  function(object, ...){
+  function(object, ...) {
 
     available_estimators <- ..estimators_all()
 
     # Only allow Raymaekers and Rousseeuw's method for robust optimisation.
-    if(!object@robust) available_estimators <- setdiff(available_estimators, ..estimators_raymaekers_robust())
+    if (!object@robust) {
+      available_estimators <- setdiff(available_estimators, ..estimators_raymaekers_robust())
+    }
 
     return(available_estimators)
   }
@@ -410,7 +414,7 @@ setMethod(
 setMethod(
   "..get_available_estimators",
   signature(object = "transformationYeoJohnsonShift"),
-  function(object, ...){
+  function(object, ...) {
 
     available_estimators <- ..estimators_all()
 
@@ -427,8 +431,8 @@ setMethod(
 # show (Yeo-Johnson) -----------------------------------------------------------
 setMethod(
   "show",
-  signature("transformationYeoJohnson"),
-  function(object){
+  signature(object = "transformationYeoJohnson"),
+  function(object) {
 
     str <- paste0(
       "A ", ifelse(object@robust, "robust ", ""),
@@ -436,11 +440,11 @@ setMethod(
       "Yeo-Johnson transformation object"
     )
 
-    if(object@complete){
+    if (object@complete) {
       cat(paste0(str, ".\n"))
       cat("  lambda: ", object@lambda, "\n")
 
-      if(object@shift != 0.0) cat(paste0("  shift: ", object@shift, "\n"))
+      if (object@shift != 0.0) cat(paste0("  shift: ", object@shift, "\n"))
 
     } else {
       cat(paste0(str, " with unset transformation parameters.\n"))
@@ -453,8 +457,8 @@ setMethod(
 # show (Yeo-Johnson (shift)) ---------------------------------------------------
 setMethod(
   "show",
-  signature("transformationYeoJohnsonShift"),
-  function(object){
+  signature(object = "transformationYeoJohnsonShift"),
+  function(object) {
 
     str <- paste0(
       "A ", ifelse(object@robust, "robust ", ""),
@@ -462,7 +466,7 @@ setMethod(
       "Yeo-Johnson transformation object"
     )
 
-    if(object@complete){
+    if (object@complete) {
       cat(paste0(str, ".\n"))
       cat("  lambda: ", object@lambda, "\n")
       cat("  shift: ", object@shift, "\n")

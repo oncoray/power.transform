@@ -35,17 +35,17 @@
 plot_residual_plot <- function(
     x,
     transformer,
-    centre_width=NULL,
-    show_original=TRUE,
-    use_alpha=TRUE,
-    use_absolute_deviation=TRUE,
-    ggtheme=NULL){
+    centre_width = NULL,
+    show_original = TRUE,
+    use_alpha = TRUE,
+    use_absolute_deviation = TRUE,
+    ggtheme = NULL) {
 
   # Prevent CRAN NOTE due to non-standard use of variables by data.table.
   type <- residual <- z_expected <- NULL
 
   # Check that packages are present.
-  require_package(c("ggplot2", "rlang"), purpose="to create a residual plot")
+  require_package(c("ggplot2", "rlang"), purpose = "to create a residual plot")
 
   # Perform checks on x.
   .check_data(x)
@@ -63,18 +63,18 @@ plot_residual_plot <- function(
   residual_data_transformed <- get_residuals(
     x = x,
     transformer = transformer)
-  residual_data_transformed[, "type":="transformed"]
+  residual_data_transformed[, "type" := "transformed"]
 
   # Compute residuals for original data.
   residual_data_original <- get_residuals(
     x = x,
     transformer = transformer_none)
-  residual_data_original[, "type":="original"]
+  residual_data_original[, "type" := "original"]
 
   # Combine residual data for plotting.
   data <- data.table::rbindlist(
     list(residual_data_transformed, residual_data_original),
-    use.names=TRUE)
+    use.names = TRUE)
 
   # Check ggtheme.
   ggtheme <- .check_ggtheme(ggtheme)
@@ -82,10 +82,10 @@ plot_residual_plot <- function(
   # Compute alpha values for the points based on the number of instances.
   n_instances <- nrow(residual_data_transformed)
 
-  if(n_instances < 100L || !use_alpha){
+  if (n_instances < 100L || !use_alpha) {
     point_alpha <- 1.0
 
-  } else if(n_instances > 1E5){
+  } else if (n_instances > 1E5) {
     point_alpha <- 0.01
 
   } else {
@@ -94,33 +94,33 @@ plot_residual_plot <- function(
   }
 
   # Encode type.
-  data$type <- factor(data$type, levels=c("original", "transformed"))
+  data$type <- factor(data$type, levels = c("original", "transformed"))
 
   # Keep only transformed data.
-  if(!show_original) data <- data[type == "transformed", ]
+  if (!show_original) data <- data[type == "transformed", ]
 
   # Assign full weight to central elements. We do this to ensure that poor fits
   # don't get down-weighted in the centre, and in that way produce
   # log-likelihood values that are too optimistic.
-  if(!is.null(centre_width)){
-    if(centre_width < 0.0 || centre_width > 1.0){
+  if (!is.null(centre_width)) {
+    if (centre_width < 0.0 || centre_width > 1.0) {
       stop(paste0("centre_width should be NULL or between 0.0 and 1.0. Found: ", centre_width))
     }
 
     data <- data[abs(z_expected) <= stats::qnorm(0.50 + centre_width / 2), ]
-    if(nrow(data) == 0){
+    if (nrow(data) == 0) {
       stop(paste0("centre_width may be too small: no residuals were selected."))
     }
   }
 
   # Use absolute values, if required.
-  if(use_absolute_deviation) data[, "residual":=abs(residual)]
+  if (use_absolute_deviation) data[, "residual" := abs(residual)]
 
   # Start plotting.
-  p <- ggplot2::ggplot(data=data)
+  p <- ggplot2::ggplot(data = data)
   p <- p + ggtheme
 
-  if(show_original){
+  if (show_original) {
 
     # Add points.
     p <- p + ggplot2::geom_point(
@@ -132,9 +132,9 @@ plot_residual_plot <- function(
 
     # Add colour scale.
     p <- p + ggplot2::scale_colour_manual(
-      name="data",
-      values=c("#4e79a7", "#f28e2b"),
-      breaks=c("original", "transformed"))
+      name = "data",
+      values = c("#4e79a7", "#f28e2b"),
+      breaks = c("original", "transformed"))
 
   } else {
 
@@ -143,14 +143,14 @@ plot_residual_plot <- function(
       mapping = ggplot2::aes(
         x = .data$z_expected,
         y = .data$residual,
-        alpha=point_alpha))
+        alpha = point_alpha))
   }
 
   # Remove guide for alpha.
-  p <- p + ggplot2::guides(alpha="none")
+  p <- p + ggplot2::guides(alpha = "none")
 
   # Set x-limits.
-  if(is.null(centre_width)){
+  if (is.null(centre_width)) {
     x_limits <- c(-3.0, 3.0)
 
   } else {
@@ -160,17 +160,17 @@ plot_residual_plot <- function(
   # Set y-limits.
   # Check that 0 is contained in the residual plot.
   y_limits <- c(NA_real_, NA_real_)
-  if(all(data$residual > 0.0)){
+  if (all(data$residual > 0.0)) {
     y_limits <- c(0.0, NA_real_)
 
-  } else if(all(data$residual < 0.0)){
+  } else if (all(data$residual < 0.0)) {
     y_limits <- c(NA_real_, 0.0)
   }
 
   # Set limit.
   p <- p + ggplot2::coord_cartesian(
-    xlim=x_limits,
-    ylim=y_limits)
+    xlim = x_limits,
+    ylim = y_limits)
 
   # Set labels.
   p <- p + ggplot2::xlab("Expected theoretical quantiles")

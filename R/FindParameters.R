@@ -59,10 +59,10 @@ find_transformation_parameters <- function(
     robust = TRUE,
     shift = TRUE,
     lambda = c(-4.0, 6.0),
-    ...){
+    ...) {
 
   # Check transformation methods.
-  if(!method %in% c("box_cox", "yeo_johnson", "none")){
+  if (!method %in% c("box_cox", "yeo_johnson", "none")) {
     stop(paste0(
       "The method argument should be one of \"box_cox\", \"yeo_johnson\" or \"none\". ",
       "Found: ", method))
@@ -76,25 +76,25 @@ find_transformation_parameters <- function(
 
   # Check number of unique values.
   n_unique_values <- length(unique(x))
-  if(n_unique_values <= 3 && method != "none"){
+  if (n_unique_values <= 3 && method != "none") {
     warning("x contains three or fewer unique values, and power transformation is not performed.")
     method <- "none"
   }
 
-  if(n_unique_values > 3 && n_unique_values <= 10){
+  if (n_unique_values > 3 && n_unique_values <= 10) {
     warning("x contains ten or fewer unique values. Power transformation may be difficult.")
   }
 
   # Create transformation objects.
-  if(method == "none"){
+  if (method == "none") {
     object <- methods::new("transformationNone")
 
-  } else if(method == "box_cox"){
+  } else if (method == "box_cox") {
     object <- methods::new(
       "transformationBoxCox",
-      robust=robust)
+      robust = robust)
 
-    if(shift){
+    if (shift) {
       object <- methods::new(
         "transformationBoxCoxShift",
         object)
@@ -103,12 +103,12 @@ find_transformation_parameters <- function(
     # Check lambda.
     .check_lambda(lambda)
 
-  } else if(method == "yeo_johnson"){
+  } else if (method == "yeo_johnson") {
     object <- methods::new(
       "transformationYeoJohnson",
-      robust=robust)
+      robust = robust)
 
-    if(shift){
+    if (shift) {
       object <- methods::new(
         "transformationYeoJohnsonShift",
         object)
@@ -119,8 +119,7 @@ find_transformation_parameters <- function(
 
   } else {
     stop(
-      paste0("Encountered an unknown transformation method: ",
-             method)
+      paste0("Encountered an unknown transformation method: ", method)
     )
   }
 
@@ -164,27 +163,27 @@ find_transformation_parameters <- function(
 power_transform <- function(
     x,
     transformer = NULL,
-    ...){
+    ...) {
 
   # Create a transformer.
-  if(is.null(transformer)){
+  if (is.null(transformer)) {
     transformer <- do.call(
       find_transformation_parameters,
-      c(list("x"=x), list(...)))
+      c(list("x" = x), list(...)))
   }
 
   # Check the transformer.
   .check_transformer(transformer)
 
   # Check that x is numeric.
-  if(!is.numeric(x)){
+  if (!is.numeric(x)) {
     stop("x does not contain numeric values.")
   }
 
   # Transform data using the transformer.
   y <- .transform(
-    object=transformer,
-    x=x)
+    object = transformer,
+    x = x)
 
   return(y)
 }
@@ -221,9 +220,9 @@ power_transform <- function(
 #'   transformer = transformer)
 revert_power_transform <- function(
     y,
-    transformer){
+    transformer) {
 
-  if(missing(transformer)){
+  if (missing(transformer)) {
     stop(paste0(
       "A transformer object is required to revert the transformation."
     ))
@@ -234,8 +233,8 @@ revert_power_transform <- function(
 
   # Revert transformation.
   x <- .revert_transform(
-    object=transformer,
-    x=y)
+    object = transformer,
+    x = y)
 
   return(x)
 }

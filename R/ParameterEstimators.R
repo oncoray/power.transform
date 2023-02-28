@@ -5,17 +5,17 @@
     x,
     parameter_type,
     verbose = FALSE,
-    ...){
+    ...) {
 
   # Set lambda, shift, as provided by the optimisation algorithm.
-  if(setequal(parameter_type, c("lambda", "shift"))){
+  if (setequal(parameter_type, c("lambda", "shift"))) {
     transformer@shift <- par[1]
     transformer@lambda <- par[2]
 
-  } else if(parameter_type == "lambda" & length(par) == 1){
+  } else if (parameter_type == "lambda" && length(par) == 1) {
     transformer@lambda <- par[1]
 
-  } else if(parameter_type == "shift" & length(par) == 1){
+  } else if (parameter_type == "shift" && length(par) == 1) {
     transformer@shift <- par[1]
 
   } else {
@@ -29,10 +29,15 @@
     x = x,
     ...)
 
-  if(verbose){
+  if (verbose) {
     cat(paste0(
       "target: ", target, "; ",
-      paste0(mapply(function(type, value) (paste0(type, ": ", value)), type=parameter_type, value=par), collapse="; "),
+      paste0(
+        mapply(
+          function(type, value) (paste0(type, ": ", value)),
+          type = parameter_type,
+          value = par),
+        collapse = "; "),
       "\n"))
   }
 
@@ -64,7 +69,7 @@ setGeneric(
 setMethod(
   ".compute_objective",
   signature(object = "estimatorGeneric"),
-  function(object, ...){
+  function(object, ...) {
 
     # Estimators should be specified for each estimator - an error is thrown to
     # ensure that this general method is never used.
@@ -93,20 +98,22 @@ setMethod(
     x,
     optimiser_control = NULL,
     verbose = FALSE,
-    ...){
+    ...) {
 
     # Check that we do not inadvertently pass problems that do not require
     # optimisation to the optimiser.
-    if(is.null(optimisation_parameters)) stop("DEV: optimisation_parameters cannot be empty.")
-    if(!is(transformer, "transformationPowerTransform")) stop("DEV: transformer should be a valid power transformation object.")
-    if(!is.numeric(x)) stop("DEV: x should be numeric.")
+    if (is.null(optimisation_parameters)) stop(
+      "DEV: optimisation_parameters cannot be empty.")
+    if (!is(transformer, "transformationPowerTransform")) stop(
+      "DEV: transformer should be a valid power transformation object.")
+    if (!is.numeric(x)) stop("DEV: x should be numeric.")
 
-    if(is.null(optimiser)) optimiser <- ..get_default_optimiser(
+    if (is.null(optimiser)) optimiser <- ..get_default_optimiser(
       object = object,
       transformer = transformer)
 
     # Check fall-back option.
-    if(!is_package_installed("nloptr") & optimiser %in% c("direct", "direct-l", "mlsl", "subplex", "nelder-mead")){
+    if (!is_package_installed("nloptr") && optimiser %in% c("direct", "direct-l", "mlsl", "subplex", "nelder-mead")) {
       warning(paste0(
         "The nloptr package is required to optimise power transformation parameters using the ",
         optimiser, " algoritm. stats::optim is used as a fallback option."))
@@ -115,11 +122,11 @@ setMethod(
     }
 
     # Set default optimiser values.
-    if(is.null(optimiser_control)) optimiser_control <- ..get_default_optimiser_control(
+    if (is.null(optimiser_control)) optimiser_control <- ..get_default_optimiser_control(
       object = object,
       optimiser = optimiser)
 
-    if(optimiser == "direct-l"){
+    if (optimiser == "direct-l") {
       # DIRECT-L algorithm
       #
       # D. R. Jones, C. D. Perttunen, and B. E. Stuckmann, “Lipschitzian
@@ -128,7 +135,6 @@ setMethod(
       #
       # J. M. Gablonsky and C. T. Kelley, “A locally-biased form of the DIRECT
       # algorithm," J. Global Optimization, vol. 21 (1), p. 27-37 (2001).
-
       results <- tryCatch(
         nloptr::directL(
           fn = ..estimator_wrapper,
@@ -142,13 +148,12 @@ setMethod(
           verbose = verbose),
         error = identity)
 
-    } else if(optimiser == "direct"){
+    } else if (optimiser == "direct") {
       # DIRECT algorithm
       #
       # D. R. Jones, C. D. Perttunen, and B. E. Stuckmann, “Lipschitzian
       # optimization without the lipschitz constant,” J. Optimization Theory and
       # Applications, vol. 79, p. 157 (1993).
-
       results <- tryCatch(
         nloptr::direct(
           fn = ..estimator_wrapper,
@@ -162,7 +167,7 @@ setMethod(
           verbose = verbose),
         error = identity)
 
-    } else if(optimiser == "mlsl"){
+    } else if (optimiser == "mlsl") {
       # Multi-Level Single-Linkage algorithm (MLSL)
       #
       # A. H. G. Rinnooy Kan and G. T. Timmer, "Stochastic global optimization
@@ -185,13 +190,12 @@ setMethod(
           verbose = verbose),
         error = identity)
 
-    } else if(optimiser == "subplex"){
+    } else if (optimiser == "subplex") {
       # SUBPLEX algorithm
       #
       # T. Rowan, “Functional Stability Analysis of Numerical
       # Algorithms”, Ph.D. thesis, Department of Computer Sciences, University
       # of Texas at Austin, 1990.
-
       results <- tryCatch(
         nloptr::sbplx(
           x0 = optimisation_parameters$initial,
@@ -206,7 +210,7 @@ setMethod(
           verbose = verbose),
         error = identity)
 
-    } else if(optimiser == "nelder-mead"){
+    } else if (optimiser == "nelder-mead") {
       # Nelder-Mead simplex algorithm
       #
       # J. A. Nelder and R. Mead, “A simplex method for function minimization,”
@@ -214,7 +218,6 @@ setMethod(
       #
       # M. J. Box, “A new method of constrained optimization and a comparison
       # with other methods,” Computer J. 8 (1), 42-52 (1965).
-
       results <- tryCatch(
         nloptr::neldermead(
           x0 = optimisation_parameters$initial,
@@ -229,7 +232,7 @@ setMethod(
           verbose = verbose),
         error = identity)
 
-    } else if(optimiser == "optim-nelder-mead"){
+    } else if (optimiser == "optim-nelder-mead") {
       # Fall-back optimiser in case nloptr is not available. The Nelder-Mead
       # algorithm in stats::optim does not yield results as consistent as the
       # nloptr optimisers.
@@ -252,9 +255,8 @@ setMethod(
 
     # Check for known errors. If an unknown error is encountered, raise this
     # error to the user.
-    if(inherits(results, "error")){
-      if(!results$message %in% c(
-        "objective in x0 returns NA")){
+    if (inherits(results, "error")) {
+      if (!results$message %in% c("objective in x0 returns NA")) {
         stop(results)
       }
     }
@@ -266,10 +268,10 @@ setMethod(
     names(parameter_list) <- optimisation_parameters$parameter_type
 
     # Insert optimal parameter values into the parameter list, if any.
-    if(!inherits(results, "error")){
-      for(ii in seq_along(optimisation_parameters$parameter_type)){
+    if (!inherits(results, "error")) {
+      for (ii in seq_along(optimisation_parameters$parameter_type)) {
         parameter_value <- results$par[ii]
-        if(is.finite(parameter_value)){
+        if (is.finite(parameter_value)) {
           parameter_list[[optimisation_parameters$parameter_type[ii]]] <- parameter_value
         }
       }
@@ -292,10 +294,10 @@ setGeneric(
 setMethod(
   "..get_available_weighting_functions",
   signature(transformer = "transformationPowerTransform", estimator = "estimatorGeneric"),
-  function(transformer, estimator, ...){
+  function(transformer, estimator, ...) {
 
     # If transformation methods is not robust, do not use weights.
-    if(!transformer@robust) return("none")
+    if (!transformer@robust) return("none")
 
     return(..weighting_functions_all())
   }
@@ -314,9 +316,9 @@ setGeneric(
 setMethod(
   "..get_default_weighting_function",
   signature(transformer = "transformationPowerTransform", estimator = "estimatorGeneric"),
-  function(transformer, estimator, ...){
+  function(transformer, estimator, ...) {
 
-    if(transformer@robust){
+    if (transformer@robust) {
       return("empirical_probability_cosine")
 
     } else {
@@ -338,7 +340,7 @@ setGeneric(
 setMethod(
   ".get_weights",
   signature(object = "estimatorGeneric"),
-  function(object, transformer, x, ...){
+  function(object, transformer, x, ...) {
     return(.get_weights(
       object = object@weighting_method,
       transformer = transformer,
@@ -359,8 +361,9 @@ setGeneric(
 setMethod(
   "..get_default_optimiser",
   signature(object = "estimatorGeneric"),
-  function(object, transformer, ...){
-    if(..requires_shift_optimisation(transformer)){
+  function(object, transformer, ...) {
+
+    if (..requires_shift_optimisation(transformer)) {
       return("subplex")
 
     } else {
@@ -382,11 +385,11 @@ setGeneric(
   transformer,
   estimation_method,
   weighting_function,
-  weighting_function_parameters){
+  weighting_function_parameters) {
 
   # Check estimation method.
-  available_estimators <- ..get_available_estimators(object=transformer)
-  if(!estimation_method %in% available_estimators){
+  available_estimators <- ..get_available_estimators(object = transformer)
+  if (!estimation_method %in% available_estimators) {
     stop(paste0(
       "The desired estimator ", estimation_method, " is not available for ",
       ifelse(transformer@robust, "robust ", ""),
@@ -394,25 +397,25 @@ setGeneric(
   }
 
   # Create estimator instance.
-  if(estimation_method %in% ..estimators_mle()){
+  if (estimation_method %in% ..estimators_mle()) {
     estimator <- methods::new("estimatorMaximumLikelihoodEstimation")
 
-  } else if(estimation_method %in% ..estimators_raymaekers_robust()){
+  } else if (estimation_method %in% ..estimators_raymaekers_robust()) {
     estimator <- methods::new("estimatorRaymaekersRobust")
 
-  } else if(estimation_method %in% ..estimators_anderson_darling()){
+  } else if (estimation_method %in% ..estimators_anderson_darling()) {
     estimator <- methods::new("estimatorAndersonDarling")
 
-  } else if(estimation_method %in% ..estimators_cramer_von_mises()){
+  } else if (estimation_method %in% ..estimators_cramer_von_mises()) {
     estimator <- methods::new("estimatorCramervonMises")
 
-  } else if(estimation_method %in% ..estimators_kolmogorov_smirnov()){
+  } else if (estimation_method %in% ..estimators_kolmogorov_smirnov()) {
     estimator <- methods::new("estimatorKolmogorovSmirnov")
 
-  } else if(estimation_method %in% ..estimators_jarque_bera()){
+  } else if (estimation_method %in% ..estimators_jarque_bera()) {
     estimator <- methods::new("estimatorJarqueBera")
 
-  } else if(estimation_method %in% ..estimators_dagostino()){
+  } else if (estimation_method %in% ..estimators_dagostino()) {
     estimator <- methods::new("estimatorDAgostino")
 
   } else {
@@ -430,7 +433,7 @@ setGeneric(
 
 
 
-..estimators_all <- function(){
+..estimators_all <- function() {
   # Create a list with all estimators implemented in power.transform. Update
   # when more estimators are added.
 

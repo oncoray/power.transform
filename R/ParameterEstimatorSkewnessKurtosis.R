@@ -27,18 +27,18 @@ setClass(
 # .compute_objective (general SK) ---------------------------------------------
 setMethod(
   ".compute_objective",
-  signature(object="estimatorSkewnessKurtosis"),
-  function(object, transformer, x, ...){
+  signature(object = "estimatorSkewnessKurtosis"),
+  function(object, transformer, x, ...) {
 
     # Make sure that x is sorted.
-    if(is.unsorted(x)) x <- sort(x)
+    if (is.unsorted(x)) x <- sort(x)
 
     # Transform feature values
     y <- ..transform(
       object = transformer,
       x = x)
 
-    if(any(!is.finite(y))) return(NA_real_)
+    if (any(!is.finite(y))) return(NA_real_)
 
     # Compute weights.
     w <- .get_weights(
@@ -46,10 +46,10 @@ setMethod(
       transformer = transformer,
       x = x)
 
-    if(!all(is.finite(w))) return(NA_real_)
+    if (!all(is.finite(w))) return(NA_real_)
 
     sum_w <- sum(w)
-    if(sum_w == 0) return(NA_real_)
+    if (sum_w == 0) return(NA_real_)
 
     # Compute (weighted) mean and variance, because this is used for skewness
     # and kurtosis.
@@ -57,11 +57,11 @@ setMethod(
     sigma_squared <- sum(w * (y - mu)^2) / sum_w
 
     # Check problematic values.
-    if(!is.finite(sigma_squared)) return(NA_real_)
-    if(sigma_squared <= .Machine$double.eps) return(NA_real_)
+    if (!is.finite(sigma_squared)) return(NA_real_)
+    if (sigma_squared <= .Machine$double.eps) return(NA_real_)
 
     # Compute (weighted) skewness and kurtosis.
-    skewness <- (1.0 / sigma_squared^(3/2)) * (sum(w * (y - mu)^3)) / sum_w
+    skewness <- (1.0 / sigma_squared^(3 / 2)) * (sum(w * (y - mu)^3)) / sum_w
     kurtosis <- (1.0 / sigma_squared^2) * (sum(w * (y - mu)^4)) / sum_w
 
     return(list(
@@ -76,14 +76,14 @@ setMethod(
 # .compute_objective (Jarque-Bera) ---------------------------------------------
 setMethod(
   ".compute_objective",
-  signature(object="estimatorJarqueBera"),
-  function(object, transformer, x, ...){
+  signature(object = "estimatorJarqueBera"),
+  function(object, transformer, x, ...) {
     # Based on the Jarque-Bera test statistic.
 
     # Compute skewness and kurtosis first.
     moments <- callNextMethod()
 
-    if(any(is.na(moments))) return(NA_real_)
+    if (any(is.na(moments))) return(NA_real_)
 
     # Compute the interesting part of the test statistic.
     t <- moments$skewness^2 + 0.25 * (moments$kurtosis - 3.0)^2
@@ -98,30 +98,30 @@ setMethod(
 # .compute_objective (D'Agostino) ----------------------------------------------
 setMethod(
   ".compute_objective",
-  signature(object="estimatorDAgostino"),
-  function(object, transformer, x, ...){
+  signature(object = "estimatorDAgostino"),
+  function(object, transformer, x, ...) {
     # Based on the D'Agostino's K-squared test statistic.
 
     # Compute skewness and kurtosis first.
     moments <- callNextMethod()
 
-    if(any(is.na(moments))) return(NA_real_)
+    if (any(is.na(moments))) return(NA_real_)
     n <- moments$n
 
     # Division by 0 is possible for n = 2 and n = 3, and the kurtosis-based
     # statistic doesn't work well for n less than 20.
-    if(n < 20) return(NA_real_)
+    if (n < 20) return(NA_real_)
 
     # Skewness test statistic following D'Agostino and Pearson (1973).
     s <- moments$skewness
 
     beta_1 <- s * sqrt(((n + 1.0) * n + 3.0) / 6.0 * (n - 2.0))
-    beta_2 <- 3.0 * (n^2 + 27.0*n - 70.0) * (n + 1.0) * (n + 3.0) / ((n - 2.0) * (n + 5.0) * (n + 7.0) * (n + 9.0))
+    beta_2 <- 3.0 * (n^2 + 27.0 * n - 70.0) * (n + 1.0) * (n + 3.0) / ((n - 2.0) * (n + 5.0) * (n + 7.0) * (n + 9.0))
     alpha <- sqrt(2.0 / (sqrt(2 * beta_2 - 1) - 2))
 
-    z_s2 <- 2 * (log(beta_1 / alpha + sqrt(beta_1^2 / alpha^2 +1)))^2 / log(sqrt(2 * beta_2 - 1) - 1)
+    z_s2 <- 2 * (log(beta_1 / alpha + sqrt(beta_1^2 / alpha^2 + 1)))^2 / log(sqrt(2 * beta_2 - 1) - 1)
 
-    if(!is.finite(z_s2)) return(NA_real_)
+    if (!is.finite(z_s2)) return(NA_real_)
 
     # Kurtosis test statistic following Anscombe and Glynn (1983).
     k <- moments$kurtosis
@@ -132,9 +132,9 @@ setMethod(
     alpha_1 <- 6.0 + 8.0 / beta_3 * (2.0 / beta_3 + sqrt(1 + 4.0 / beta_3^2))
     alpha_2 <- (k - beta_1) / sqrt(beta_2)
 
-    z_k2 <- 9.0 * alpha_1 / 2.0 * (1.0 - 2.0 / (9.0 * alpha_1) -((1.0 - 2.0 / alpha_1) / (1.0 + alpha_2 * sqrt(2.0 / (alpha_1 - 4.0))))^(1/3) )^2
+    z_k2 <- 9.0 * alpha_1 / 2.0 * (1.0 - 2.0 / (9.0 * alpha_1) - ((1.0 - 2.0 / alpha_1) / (1.0 + alpha_2 * sqrt(2.0 / (alpha_1 - 4.0))))^(1 / 3))^2
 
-    if(!is.finite(z_k2)) return(NA_real_)
+    if (!is.finite(z_k2)) return(NA_real_)
 
     # Compute test statistic. Instead of the test statistic, we compute the
     # square root of the test statistic to make it more palatable for the
@@ -152,7 +152,7 @@ setMethod(
 setMethod(
   "..get_default_optimiser",
   signature(object = "estimatorDAgostino"),
-  function(object, ...){
+  function(object, ...) {
     return("direct-l")
   }
 )
@@ -163,11 +163,13 @@ setMethod(
 setMethod(
   "..get_default_optimiser_control",
   signature(object = "estimatorJarqueBera"),
-  function(object, optimiser, ...){
-    if(optimiser %in% c("direct", "direct-l")){
-      parameters <- list("xtol_rel"=1E-3, "maxeval"=300)
+  function(object, optimiser, ...) {
+
+    if (optimiser %in% c("direct", "direct-l")) {
+      parameters <- list("xtol_rel" = 1E-3, "maxeval" = 300)
+
     } else {
-      parameters <- list("xtol_rel"=1E-3, "ftol_abs"=1E-5)
+      parameters <- list("xtol_rel" = 1E-3, "ftol_abs" = 1E-5)
     }
 
     return(parameters)
@@ -180,11 +182,13 @@ setMethod(
 setMethod(
   "..get_default_optimiser_control",
   signature(object = "estimatorDAgostino"),
-  function(object, optimiser, ...){
-    if(optimiser %in% c("direct", "direct-l")){
-      parameters <- list("xtol_rel"=1E-3, "maxeval"=300)
+  function(object, optimiser, ...) {
+
+    if (optimiser %in% c("direct", "direct-l")) {
+      parameters <- list("xtol_rel" = 1E-3, "maxeval" = 300)
+
     } else {
-      parameters <- list("xtol_rel"=1E-3, "ftol_abs"=1E-5)
+      parameters <- list("xtol_rel" = 1E-3, "ftol_abs" = 1E-5)
     }
 
     return(parameters)
@@ -193,10 +197,10 @@ setMethod(
 
 
 
-..estimators_jarque_bera <- function(){
+..estimators_jarque_bera <- function() {
   return(c("jarque_bera"))
 }
 
-..estimators_dagostino <- function(){
+..estimators_dagostino <- function() {
   return(c("dagostino"))
 }

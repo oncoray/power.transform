@@ -11,10 +11,10 @@
 
 setClass(
   "transformationPowerTransform",
-  slots=list(
+  slots = list(
     "method" = "character",
     "complete" = "logical"),
-  prototype=list(
+  prototype = list(
     "method" = "none",
     "complete" = FALSE))
 
@@ -31,7 +31,7 @@ setClass(
 
 setClass(
   "transformationNone",
-  contains="transformationPowerTransform")
+  contains = "transformationPowerTransform")
 
 
 
@@ -46,7 +46,7 @@ setGeneric(
 setMethod(
   ".set_transformation_parameters",
   signature(object = "transformationPowerTransform"),
-  function(object, x, ...){
+  function(object, x, ...) {
     # Default method.
 
     # Mark as complete.
@@ -69,7 +69,7 @@ setGeneric(
 setMethod(
   ".transform",
   signature(object = "transformationPowerTransform"),
-  function(object, x, ...){
+  function(object, x, ...) {
     # Default method.
 
     # Set up vector to copy new values to.
@@ -77,7 +77,7 @@ setMethod(
 
     # Find non-finite instances.
     na_entries <- which(!is.finite(x))
-    if(length(na_entries) > 0){
+    if (length(na_entries) > 0) {
       warning("One or more NA or infinite values were found.")
 
       y[na_entries] <- NA_real_
@@ -87,7 +87,7 @@ setMethod(
     valid_entries <- setdiff(seq_along(x), na_entries)
 
     # Perform transformation.
-    if(length(valid_entries) > 0) y[valid_entries] <- ..transform(
+    if (length(valid_entries) > 0) y[valid_entries] <- ..transform(
       object = object,
       x = x[valid_entries])
 
@@ -108,7 +108,7 @@ setGeneric(
 setMethod(
   "..transform",
   signature(object = "transformationPowerTransform"),
-  function(object, x, ...){
+  function(object, x, ...) {
     return(x)
   }
 )
@@ -126,7 +126,7 @@ setGeneric(
 setMethod(
   ".revert_transform",
   signature(object = "transformationPowerTransform"),
-  function(object, x, ...){
+  function(object, x, ...) {
     # Default method.
 
     return(x)
@@ -147,7 +147,7 @@ setGeneric(
 setMethod(
   "..requires_shift_optimisation",
   signature(object = "transformationPowerTransform"),
-  function(object, ...){
+  function(object, ...) {
     return(FALSE)
   }
 )
@@ -165,7 +165,7 @@ setGeneric(
 setMethod(
   "..set_minimum_shift",
   signature(object = "transformationPowerTransform"),
-  function(object, ...){
+  function(object, ...) {
     # Default action is to not change the shift attribute.
     return(object)
   }
@@ -184,7 +184,7 @@ setGeneric(
 setMethod(
   "..set_lambda",
   signature(object = "transformationPowerTransform"),
-  function(object, ...){
+  function(object, ...) {
     # Default action is to not change the lambda attribute.
     return(object)
   }
@@ -203,7 +203,7 @@ setGeneric(
 setMethod(
   "..optimisation_parameters",
   signature(object = "transformationPowerTransform"),
-  function(object, ...){
+  function(object, ...) {
     # Default method
 
     return(NULL)
@@ -238,7 +238,7 @@ setGeneric(
 setMethod(
   "..log_likelihood",
   signature(object = "transformationPowerTransform"),
-  function(object, ...){
+  function(object, ...) {
     return(NA_real_)
   }
 )
@@ -255,8 +255,8 @@ setGeneric(
 # show (general) ---------------------------------------------------------------
 setMethod(
   "show",
-  signature("transformationPowerTransform"),
-  function(object){
+  signature(object = "transformationPowerTransform"),
+  function(object) {
     cat(paste0("A generic power transformation object."))
   }
 )

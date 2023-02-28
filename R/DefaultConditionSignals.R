@@ -1,4 +1,4 @@
-.warn_poor_weighting_method <- function(x){
+.warn_poor_weighting_method <- function(x) {
 
   # Throw a warning.
   rlang::warn(

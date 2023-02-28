@@ -26,13 +26,13 @@ NULL
 
 setClass(
   "transformationBoxCox",
-  contains="transformationPowerTransform",
-  slots=list(
+  contains = "transformationPowerTransform",
+  slots = list(
     "method" = "character",
     "robust" = "logical",
     "lambda" = "numeric",
     "shift" = "numeric"),
-  prototype=list(
+  prototype = list(
     "method" = "box_cox",
     "robust" = FALSE,
     "lambda" = 1.0,
@@ -46,14 +46,14 @@ setClass(
 #' @export
 setClass(
   "transformationBoxCoxShift",
-  contains="transformationBoxCox")
+  contains = "transformationBoxCox")
 
 
 
 # .set_transformation_parameters (Box-Cox) -------------------------------------
 setMethod(
   ".set_transformation_parameters",
-  signature("transformationBoxCox"),
+  signature(object = "transformationBoxCox"),
   function(
     object,
     x,
@@ -61,12 +61,12 @@ setMethod(
     estimation_method = "mle",
     weighting_function = NULL,
     weighting_function_parameters = NULL,
-    optimiser=NULL,
-    backup_use_default=TRUE,
-    ...){
+    optimiser = NULL,
+    backup_use_default = TRUE,
+    ...) {
 
     # Set lambda range. If lambda is NULL, set a very wide range.
-    if(is.null(lambda)) lambda <- ..get_default_lambda_range(object=object)
+    if (is.null(lambda)) lambda <- ..get_default_lambda_range(object = object)
 
     # Set minimum shift, in case any negative values are present.
     object <- ..set_minimum_shift(
@@ -85,7 +85,7 @@ setMethod(
       lambda = lambda)
 
     # Skip optimisation if there is nothing to optimise.
-    if(is.null(optimisation_parameters)){
+    if (is.null(optimisation_parameters)) {
       object@complete <- TRUE
 
       return(object)
@@ -108,20 +108,20 @@ setMethod(
       ...)
 
     # Update shift and lambda values with the optimised parameters.
-    if(!is.null(optimised_parameters$shift)){
-      if(is.finite(optimised_parameters$shift)){
+    if (!is.null(optimised_parameters$shift)) {
+      if (is.finite(optimised_parameters$shift)) {
         object@shift <- optimised_parameters$shift
 
-      } else if(!backup_use_default){
+      } else if (!backup_use_default) {
         object@shift <- optimised_parameters$shift
       }
     }
 
-    if(!is.null(optimised_parameters$lambda)){
-      if(is.finite(optimised_parameters$lambda)){
+    if (!is.null(optimised_parameters$lambda)) {
+      if (is.finite(optimised_parameters$lambda)) {
         object@lambda <- optimised_parameters$lambda
 
-      } else if(!backup_use_default){
+      } else if (!backup_use_default) {
         object@lambda <- optimised_parameters$lambda
       }
     }
@@ -137,15 +137,15 @@ setMethod(
 # .transform (Box-Cox) ---------------------------------------------------------
 setMethod(
   ".transform",
-  signature(object="transformationBoxCox"),
-  function(object, x, ...){
+  signature(object = "transformationBoxCox"),
+  function(object, x, ...) {
 
     # Set up vector to copy new values to.
     y <- numeric(length(x))
 
     # Find non-positive and non-finite instances.
     na_entries <- which(x <= object@shift | !is.finite(x))
-    if(length(na_entries) > 0){
+    if (length(na_entries) > 0) {
       warning(paste0(
         "Box-cox power transforms are only defined for strictly positive values. ",
         "One or more zero, negative, NA or infinite values were found."))
@@ -157,12 +157,13 @@ setMethod(
     valid_entries <- setdiff(seq_along(x), na_entries)
 
     # Perform transformation.
-    if(length(valid_entries) > 0) y[valid_entries] <- ..transform(
+    if (length(valid_entries) > 0) y[valid_entries] <- ..transform(
       object = object,
       x = x[valid_entries])
 
     return(y)
-  })
+  }
+)
 
 
 
@@ -170,12 +171,12 @@ setMethod(
 setMethod(
   "..transform",
   signature(object = "transformationBoxCox"),
-  function(object, x, ...){
+  function(object, x, ...) {
 
     # Subtract shift.
     x <- x - object@shift
 
-    if(object@lambda == 0){
+    if (object@lambda == 0) {
       y <- log(x)
 
     } else {
@@ -190,11 +191,11 @@ setMethod(
 # .revert_transformation (Box-Cox) ---------------------------------------------
 setMethod(
   ".revert_transform",
-  signature(object="transformationBoxCox"),
-  function(object, x, ...){
+  signature(object = "transformationBoxCox"),
+  function(object, x, ...) {
 
     # Revert transformation.
-    if(object@lambda == 0){
+    if (object@lambda == 0) {
       y <- exp(x)
 
     } else {
@@ -213,7 +214,7 @@ setMethod(
 setMethod(
   "..requires_shift_optimisation",
   signature(object = "transformationBoxCoxShift"),
-  function(object, ...){
+  function(object, ...) {
     return(TRUE)
   }
 )
@@ -224,27 +225,27 @@ setMethod(
 setMethod(
   "..get_default_shift_range",
   signature(object = "transformationBoxCox"),
-  function(object, x, ...){
+  function(object, x, ...) {
     # Find the value that brings the entire distribution to 0. We need to
     # increment slightly to avoid x containing 0s.
-    max_value <- min(x, na.rm=TRUE)
+    max_value <- min(x, na.rm = TRUE)
     max_value_offset <- 1.0
     min_value_offset <- 1.0
 
     # Find the typical, non-zero, distance between values. NA values should be
     # removed.
-    dx <- unique(diff(sort(x, na.last=NA)))
+    dx <- unique(diff(sort(x, na.last = NA)))
     dx <- dx[dx > 0.0]
 
     # It shouldn't happen that all values are the same - but better check it.
-    if(length(dx) > 0) max_value_offset <- stats::median(dx)
+    if (length(dx) > 0) max_value_offset <- stats::median(dx)
 
     # The increment should not grow too much.
-    if(max_value_offset > 0.5) max_value_offset <- 0.5
+    if (max_value_offset > 0.5) max_value_offset <- 0.5
 
     # Update min_value_offset.
-    min_value_offset <- stats::median(x - max_value, na.rm=TRUE)
-    if(min_value_offset < 1.0) min_value_offset <- 1.0
+    min_value_offset <- stats::median(x - max_value, na.rm = TRUE)
+    if (min_value_offset < 1.0) min_value_offset <- 1.0
 
     # Set minimum shift value.
     min_value <- max_value - min_value_offset
@@ -265,7 +266,7 @@ setMethod(
 setMethod(
   "..get_default_lambda_range",
   signature(object = "transformationBoxCox"),
-  function(object, ...){
+  function(object, ...) {
     return(c(-100.0, 100.0))
   }
 )
@@ -276,13 +277,13 @@ setMethod(
 setMethod(
   "..set_minimum_shift",
   signature(object = "transformationBoxCox"),
-  function(object, x, ...){
+  function(object, x, ...) {
 
     # Shift is necessary to avoid transformation with negative or zero values.
-    if(all(x > 0.0)) return(object)
+    if (all(x > 0.0)) return(object)
 
     # Warn to notify that zero or negative values are present. Avoid warning if shifts are optimised.
-    if(!is(object, "transformationBoxCoxShift")){
+    if (!is(object, "transformationBoxCoxShift")) {
       warning(paste0(
         "Box-cox power transforms are only defined for strictly positive values. ",
         "One or more zero or negative values are present in \"x\". ",
@@ -307,10 +308,10 @@ setMethod(
 setMethod(
   "..set_lambda",
   signature(object = "transformationBoxCox"),
-  function(object, lambda, ...){
+  function(object, lambda, ...) {
 
     # Only update lambda if it is not a range.
-    if(length(lambda) != 1) return(object)
+    if (length(lambda) != 1) return(object)
 
     # Update lambda.
     object@lambda <- lambda
@@ -325,9 +326,9 @@ setMethod(
 setMethod(
   "..optimisation_parameters",
   signature(object = "transformationBoxCox"),
-  function(object, lambda, ...){
+  function(object, lambda, ...) {
 
-    if(length(lambda) == 1) return(NULL)
+    if (length(lambda) == 1) return(NULL)
 
     return(
       list(
@@ -344,14 +345,14 @@ setMethod(
 setMethod(
   "..optimisation_parameters",
   signature(object = "transformationBoxCoxShift"),
-  function(object, x, lambda, ...){
+  function(object, x, lambda, ...) {
 
     # Set up x-range.
     x_range <- ..get_default_shift_range(
       object = object,
       x = x)
 
-    if(length(lambda) == 1){
+    if (length(lambda) == 1) {
       return(
         list(
           "initial" = x_range[1],
@@ -381,7 +382,7 @@ setMethod(
     x,
     w,
     sigma_hat_squared,
-    ...){
+    ...) {
 
     # Compute the log likelihood under the assumption that the transformed
     # variable y follows the normal distribution. Note that shift is not
@@ -397,7 +398,7 @@ setMethod(
 setMethod(
   "..first_derivative",
   signature(object = "transformationBoxCox"),
-  function(object, x){
+  function(object, x) {
     return(x^(object@lambda - 1.0))
   }
 )
@@ -408,12 +409,14 @@ setMethod(
 setMethod(
   "..get_available_estimators",
   signature(object = "transformationBoxCox"),
-  function(object, ...){
+  function(object, ...) {
 
     available_estimators <- ..estimators_all()
 
     # Only allow Raymaekers and Rousseeuw's method for robust optimisation.
-    if(!object@robust) available_estimators <- setdiff(available_estimators, ..estimators_raymaekers_robust())
+    if (!object@robust) {
+      available_estimators <- setdiff(available_estimators, ..estimators_raymaekers_robust())
+    }
 
     return(available_estimators)
   }
@@ -424,7 +427,7 @@ setMethod(
 setMethod(
   "..get_available_estimators",
   signature(object = "transformationBoxCoxShift"),
-  function(object, ...){
+  function(object, ...) {
 
     available_estimators <- ..estimators_all()
 
@@ -442,7 +445,7 @@ setMethod(
 setMethod(
   "show",
   signature("transformationBoxCox"),
-  function(object){
+  function(object) {
 
     str <- paste0(
       "A ", ifelse(object@robust, "robust ", ""),
@@ -450,11 +453,11 @@ setMethod(
       "Box-Cox transformation object"
     )
 
-    if(object@complete){
+    if (object@complete) {
       cat(paste0(str, ".\n"))
       cat("  lambda: ", object@lambda, "\n")
 
-      if(object@shift != 0.0) cat(paste0("  shift: ", object@shift, "\n"))
+      if (object@shift != 0.0) cat(paste0("  shift: ", object@shift, "\n"))
 
     } else {
       cat(paste0(str, " with unset transformation parameters.\n"))

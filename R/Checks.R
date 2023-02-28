@@ -1,18 +1,18 @@
-.check_data <- function(x){
+.check_data <- function(x) {
   # Perform checks on x.
-  if(length(x) == 0){
+  if (length(x) == 0) {
     stop("x does not contain any values.")
   }
 
-  if(is.factor(x)){
+  if (is.factor(x)) {
     stop("x is categorical, and power transformations are not applicable.")
   }
 
-  if(!is.numeric(x)){
+  if (!is.numeric(x)) {
     stop("x does not contain numeric values.")
   }
 
-  if(all(!is.finite(x))){
+  if (all(!is.finite(x))) {
     stop("x only contains NA or inf values.")
   }
 
@@ -21,16 +21,16 @@
 
 
 
-.check_transformer <- function(x){
+.check_transformer <- function(x) {
 
-  if(!is(x, "transformationPowerTransform")){
+  if (!is(x, "transformationPowerTransform")) {
     stop(paste0(
       "The transformer object does not have the expected class. ",
       "Expected: transformationPowerTransform (or subclass). ",
       "Found: ", class(x)[1]))
   }
 
-  if(!x@complete){
+  if (!x@complete) {
     stop(paste0(
       "The transformer object did not have all fitting parameters set."))
   }
@@ -40,30 +40,30 @@
 
 
 
-.check_lambda <- function(x){
+.check_lambda <- function(x) {
 
   # NULL is a valid value.
-  if(is.null(x)) return(invisible(TRUE))
+  if (is.null(x)) return(invisible(TRUE))
 
   # Otherwise, must be length 2, numeric, finite and sorted.
-  if(!length(x) %in% c(1L, 2L)){
+  if (!length(x) %in% c(1L, 2L)) {
     stop(paste0("lambda should consist of 1 or 2 numeric values. ", length(x), " values were found."))
   }
 
-  if(!is.numeric(x)){
+  if (!is.numeric(x)) {
     stop("lambda should consist of 1 or 2 numeric values. The values are not numeric.")
   }
 
-  if(any(!is.finite(x))){
+  if (any(!is.finite(x))) {
     stop("lambda should consist of 1 or 2 numeric values. One or both values are not finite.")
   }
 
-  if(length(x) == 2){
-    if(diff(x) == 0.0){
+  if (length(x) == 2) {
+    if (diff(x) == 0.0) {
       stop("If lambda consists of 2 numeric values, these can not be identical.")
     }
 
-    if(is.unsorted(x)){
+    if (is.unsorted(x)) {
       stop("If lambda consists of 2 numeric values, the values should be ordered by increasing value.")
     }
   }
@@ -73,13 +73,13 @@
 
 
 
-.check_weighting_function_parameters <- function(x, default_parameters){
+.check_weighting_function_parameters <- function(x, default_parameters) {
 
   # Skip if there is nothing to check.
-  if(length(x) == 0) return(invisible(TRUE))
+  if (length(x) == 0) return(invisible(TRUE))
 
   # Throw an error if the parameters are not named.
-  if(is.null(names(x))){
+  if (is.null(names(x))) {
     stop(paste0(
       "Names are currently missing from weighting_function_parameters. ",
       "Parameters should be named, e.g. weighting_function_parameters = list(\"k1\" = 0.5). "))
@@ -87,8 +87,8 @@
 
   unknown_parameters <- setdiff(names(x), names(default_parameters))
   # Throw a warning if all provided parameters could not be matched.
-  if(length(unknown_parameters) > 0){
-    if(length(default_parameters) > 0){
+  if (length(unknown_parameters) > 0) {
+    if (length(default_parameters) > 0) {
       warning(paste0(
         "One or more weighting function parameters could not be matched: ",
         paste_s(unknown_parameters), " ",

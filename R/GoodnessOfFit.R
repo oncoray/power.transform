@@ -38,7 +38,7 @@ assess_transformation <- function(
     transformer,
     threshold = 0.15,
     centre_width = 0.80,
-    ...){
+    ...) {
 
   # Prevent CRAN NOTE due to non-standard use of variables by data.table.
   z_expected <- NULL
@@ -51,13 +51,13 @@ assess_transformation <- function(
   # Assign full weight to central elements. We do this to ensure that poor fits
   # don't get down-weighted in the centre, and in that way produce
   # log-likelihood values that are too optimistic.
-  if(!is.null(centre_width)){
-    if(centre_width < 0.0 || centre_width > 1.0){
+  if (!is.null(centre_width)) {
+    if (centre_width < 0.0 || centre_width > 1.0) {
       stop(paste0("centre_width should be NULL or between 0.0 and 1.0. Found: ", centre_width))
     }
 
     residual_data <- residual_data[abs(z_expected) <= stats::qnorm(0.50 + centre_width / 2), ]
-    if(nrow(residual_data) == 0){
+    if (nrow(residual_data) == 0) {
       stop(paste0("centre_width may be too small: no residuals were selected."))
     }
   }
@@ -87,7 +87,7 @@ assess_transformation <- function(
 get_residuals <- function(
     x,
     transformer,
-    ...){
+    ...) {
 
   # Perform checks on x.
   .check_data(x)
@@ -116,21 +116,21 @@ setMethod(
   function(
     object,
     x,
-    ...){
+    ...) {
 
     # Sort x, if required.
-    if(is.unsorted(x)) x <- sort(x)
+    if (is.unsorted(x)) x <- sort(x)
 
     # Perform transformation.
     y <- ..transform(
-      object=object,
-      x=x)
+      object = object,
+      x = x)
 
     # Compute the expected z-score.
-    z_expected <- compute_expected_z(x=x)
+    z_expected <- compute_expected_z(x = x)
 
     # Compute M-estimates for locality and scale
-    robust_estimates <- huber_estimate(y, tol=1E-3)
+    robust_estimates <- huber_estimate(y, tol = 1E-3)
 
     # Compute the observed z-score.
     z_observed <- (y - robust_estimates$mu) / robust_estimates$sigma
@@ -142,8 +142,6 @@ setMethod(
       "z_expected" = z_expected,
       "z_observed" = z_observed,
       "residual" = residual,
-      "p_observed" = (seq_along(x) - 1/3) / (length(x) + 1/3)))
+      "p_observed" = (seq_along(x) - 1 / 3) / (length(x) + 1 / 3)))
   }
 )
-
-

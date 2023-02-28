@@ -29,16 +29,16 @@
 plot_qq_plot <- function(
     x,
     transformer,
-    show_original=TRUE,
-    show_identity=TRUE,
-    use_alpha=TRUE,
-    ggtheme=NULL){
+    show_original = TRUE,
+    show_identity = TRUE,
+    use_alpha = TRUE,
+    ggtheme = NULL) {
 
   # Prevent CRAN NOTE due to non-standard use of variables by data.table.
   type <- NULL
 
   # Check that packages are present.
-  require_package(c("ggplot2", "rlang"), purpose="to create a QQ-plot")
+  require_package(c("ggplot2", "rlang"), purpose = "to create a QQ-plot")
 
   # Perform checks on x.
   .check_data(x)
@@ -56,18 +56,18 @@ plot_qq_plot <- function(
   residual_data_transformed <- get_residuals(
     x = x,
     transformer = transformer)
-  residual_data_transformed[, "type":="transformed"]
+  residual_data_transformed[, "type" := "transformed"]
 
   # Compute residuals for original data.
   residual_data_original <- get_residuals(
     x = x,
     transformer = transformer_none)
-  residual_data_original[, "type":="original"]
+  residual_data_original[, "type" := "original"]
 
   # Combine residual data for plotting.
   data <- data.table::rbindlist(
     list(residual_data_transformed, residual_data_original),
-    use.names=TRUE)
+    use.names = TRUE)
 
   # Check ggtheme.
   ggtheme <- .check_ggtheme(ggtheme)
@@ -75,10 +75,10 @@ plot_qq_plot <- function(
   # Compute alpha values for the points based on the number of instances.
   n_instances <- nrow(residual_data_transformed)
 
-  if(n_instances < 100L || !use_alpha){
+  if (n_instances < 100L || !use_alpha) {
     point_alpha <- 1.0
 
-  } else if(n_instances > 1E5){
+  } else if (n_instances > 1E5) {
     point_alpha <- 0.01
 
   } else {
@@ -87,16 +87,16 @@ plot_qq_plot <- function(
   }
 
   # Encode type.
-  data$type <- factor(data$type, levels=c("original", "transformed"))
+  data$type <- factor(data$type, levels = c("original", "transformed"))
 
   # Keep only transformed data.
-  if(!show_original) data <- data[type == "transformed", ]
+  if (!show_original) data <- data[type == "transformed", ]
 
   # Start plotting.
-  p <- ggplot2::ggplot(data=data)
+  p <- ggplot2::ggplot(data = data)
   p <- p + ggtheme
 
-  if(show_original){
+  if (show_original) {
 
     # Add points.
     p <- p + ggplot2::geom_point(
@@ -108,9 +108,9 @@ plot_qq_plot <- function(
 
     # Add colour scale.
     p <- p + ggplot2::scale_colour_manual(
-      name="data",
-      values=c("#4e79a7", "#f28e2b"),
-      breaks=c("original", "transformed"))
+      name = "data",
+      values = c("#4e79a7", "#f28e2b"),
+      breaks = c("original", "transformed"))
 
   } else {
 
@@ -119,22 +119,21 @@ plot_qq_plot <- function(
       mapping = ggplot2::aes(
         x = .data$z_expected,
         y = .data$z_observed,
-        alpha=point_alpha))
+        alpha = point_alpha))
   }
 
   # Add identity-line
-  if(show_identity){
+  if (show_identity) {
     p <- p + ggplot2::geom_abline(
       intercept = 0.0,
       slope = 1.0)
   }
 
   # Remove guide for alpha.
-  p <- p + ggplot2::guides(alpha="none")
+  p <- p + ggplot2::guides(alpha = "none")
 
   # Set limit.
-  p <- p + ggplot2::coord_cartesian(
-    xlim=c(-3.0, 3.0))
+  p <- p + ggplot2::coord_cartesian(xlim = c(-3.0, 3.0))
 
   # Set labels.
   p <- p + ggplot2::xlab("Expected normal quantiles")
