@@ -19,20 +19,23 @@ setMethod(
   signature(object = "weightingMethodEmpiricalProbabilityStep"),
   function(object, transformer, estimator, ...){
 
-    values <- list("k1" = 0.90)
+    # Prevent NOTE due to non-standard evaluation.
+    name <- method <- estimation_method <- NULL
 
-    if(is(transformer, "transformationBoxCox")){
-      if(is(estimator, "estimatorMaximumLikelihoodEstimation")){
-        values <- list("k1" = 0.84)
-      }
+    default_values <- list("k1" = 0.90)
 
-    } else if(is(transformer, "transformationYeoJohnson")){
-      if(is(estimator, "estimatorMaximumLikelihoodEstimation")){
-        values <- list("k1" = 0.92)
+    # Check for known values that where obtained for the manuscript.
+    if (..requires_shift_optimisation(transformer)) {
+      optimal_values <- two_sided_function_parameters[
+        name == "empirical_probability-step" & method == transformer@method & estimation_method == estimator@method
+      ]
+
+      if (nrow(optimal_values) == 1) {
+        default_values$k1 <- optimal_values$k1
       }
     }
 
-    return(values)
+    return(default_values)
   }
 )
 
@@ -44,20 +47,24 @@ setMethod(
   signature(object = "weightingMethodEmpiricalProbabilityTriangle"),
   function(object, transformer, estimator, ...){
 
-    values <- list("k1" = 0.85, "k2" = 0.95)
+    # Prevent NOTE due to non-standard evaluation.
+    name <- method <- estimation_method <- NULL
 
-    if(is(transformer, "transformationBoxCox")){
-      if(is(estimator, "estimatorMaximumLikelihoodEstimation")){
-        values <- list("k1" = 0.78, "k2" = 0.99)
-      }
+    default_values <- list("k1" = 0.85, "k2" = 0.95)
 
-    } else if(is(transformer, "transformationYeoJohnson")){
-      if(is(estimator, "estimatorMaximumLikelihoodEstimation")){
-        values <- list("k1" = 0.88, "k2" = 0.93)
+    # Check for known values that where obtained for the manuscript.
+    if (..requires_shift_optimisation(transformer)) {
+      optimal_values <- two_sided_function_parameters[
+        name == "empirical_probability-triangle" & method == transformer@method & estimation_method == estimator@method
+      ]
+
+      if (nrow(optimal_values) == 1) {
+        default_values$k1 <- optimal_values$k1
+        default_values$k2 <- optimal_values$k2
       }
     }
 
-    return(values)
+    return(default_values)
   }
 )
 
@@ -69,20 +76,24 @@ setMethod(
   signature(object = "weightingMethodEmpiricalProbabilityCosine"),
   function(object, transformer, estimator, ...){
 
-    values <- list("k1" = 0.85, "k2" = 0.95)
+    # Prevent NOTE due to non-standard evaluation.
+    name <- method <- estimation_method <- NULL
 
-    if(is(transformer, "transformationBoxCox")){
-      if(is(estimator, "estimatorMaximumLikelihoodEstimation")){
-        values <- list("k1" = 0.76, "k2" = 0.98)
-      }
+    default_values <- list("k1" = 0.85, "k2" = 0.95)
 
-    } else if(is(transformer, "transformationYeoJohnson")){
-      if(is(estimator, "estimatorMaximumLikelihoodEstimation")){
-        values <- list("k1" = 0.89, "k2" = 0.93)
+    # Check for known values that where obtained for the manuscript.
+    if (..requires_shift_optimisation(transformer)) {
+      optimal_values <- two_sided_function_parameters[
+        name == "empirical_probability-cosine" & method == transformer@method & estimation_method == estimator@method
+      ]
+
+      if (nrow(optimal_values) == 1) {
+        default_values$k1 <- optimal_values$k1
+        default_values$k2 <- optimal_values$k2
       }
     }
 
-    return(values)
+    return(default_values)
   }
 )
 
@@ -94,20 +105,23 @@ setMethod(
   signature(object = "weightingMethodTransformedStep"),
   function(object, transformer, estimator, ...){
 
-    values <- list("k1" = 1.96)
+    # Prevent NOTE due to non-standard evaluation.
+    name <- method <- estimation_method <- NULL
 
-    if(is(transformer, "transformationBoxCox")){
-      if(is(estimator, "estimatorMaximumLikelihoodEstimation")){
-        values <- list("k1" = 1.09)
-      }
+    default_values <- list("k1" = 1.96)
 
-    } else if(is(transformer, "transformationYeoJohnson")){
-      if(is(estimator, "estimatorMaximumLikelihoodEstimation")){
-        values <- list("k1" = 1.04)
+    # Check for known values that where obtained for the manuscript.
+    if (..requires_shift_optimisation(transformer)) {
+      optimal_values <- two_sided_function_parameters[
+        name == "transformed-step" & method == transformer@method & estimation_method == estimator@method
+      ]
+
+      if (nrow(optimal_values) == 1) {
+        default_values$k1 <- optimal_values$k1
       }
     }
 
-    return(values)
+    return(default_values)
   }
 )
 
@@ -119,20 +133,24 @@ setMethod(
   signature(object = "weightingMethodTransformedTriangle"),
   function(object, transformer, estimator, ...){
 
-    values <- list("k1" = 0.50, "k2" = 8.00)
+    # Prevent NOTE due to non-standard evaluation.
+    name <- method <- estimation_method <- NULL
 
-    if(is(transformer, "transformationBoxCox")){
-      if(is(estimator, "estimatorMaximumLikelihoodEstimation")){
-        values <- list("k1" = 0.26, "k2" = 5.47)
-      }
+    default_values <- list("k1" = 0.50, "k2" = 8.00)
 
-    } else if(is(transformer, "transformationYeoJohnson")){
-      if(is(estimator, "estimatorMaximumLikelihoodEstimation")){
-        values <- list("k1" = 0.12, "k2" = 9.91)
+    # Check for known values that where obtained for the manuscript.
+    if (..requires_shift_optimisation(transformer)) {
+      optimal_values <- two_sided_function_parameters[
+        name == "transformed-triangle" & method == transformer@method & estimation_method == estimator@method
+      ]
+
+      if (nrow(optimal_values) == 1) {
+        default_values$k1 <- optimal_values$k1
+        default_values$k2 <- optimal_values$k2
       }
     }
 
-    return(values)
+    return(default_values)
   }
 )
 
@@ -144,20 +162,24 @@ setMethod(
   signature(object = "weightingMethodTransformedCosine"),
   function(object, transformer, estimator, ...){
 
-    values <- list("k1" = 0.50, "k2" = 8.00)
+    # Prevent NOTE due to non-standard evaluation.
+    name <- method <- estimation_method <- NULL
 
-    if(is(transformer, "transformationBoxCox")){
-      if(is(estimator, "estimatorMaximumLikelihoodEstimation")){
-        values <- list("k1" = 0.03, "k2" = 6.91)
-      }
+    default_values <- list("k1" = 0.50, "k2" = 8.00)
 
-    } else if(is(transformer, "transformationYeoJohnson")){
-      if(is(estimator, "estimatorMaximumLikelihoodEstimation")){
-        values <- list("k1" = 0.23, "k2" = 5.63)
+    # Check for known values that where obtained for the manuscript.
+    if (..requires_shift_optimisation(transformer)) {
+      optimal_values <- two_sided_function_parameters[
+        name == "transformed-cosine" & method == transformer@method & estimation_method == estimator@method
+      ]
+
+      if (nrow(optimal_values) == 1) {
+        default_values$k1 <- optimal_values$k1
+        default_values$k2 <- optimal_values$k2
       }
     }
 
-    return(values)
+    return(default_values)
   }
 )
 
@@ -169,20 +191,23 @@ setMethod(
   signature(object = "weightingMethodResidualStep"),
   function(object, transformer, estimator, ...){
 
-    values <- list("k1" = 2.00)
+    # Prevent NOTE due to non-standard evaluation.
+    name <- method <- estimation_method <- NULL
 
-    if(is(transformer, "transformationBoxCox")){
-      if(is(estimator, "estimatorMaximumLikelihoodEstimation")){
-        values <- list("k1" = 1.56)
-      }
+    default_values <- list("k1" = 2.00)
 
-    } else if(is(transformer, "transformationYeoJohnson")){
-      if(is(estimator, "estimatorMaximumLikelihoodEstimation")){
-        values <- list("k1" = 10.00)
+    # Check for known values that where obtained for the manuscript.
+    if (..requires_shift_optimisation(transformer)) {
+      optimal_values <- two_sided_function_parameters[
+        name == "residual-step" & method == transformer@method & estimation_method == estimator@method
+      ]
+
+      if (nrow(optimal_values) == 1) {
+        default_values$k1 <- optimal_values$k1
       }
     }
 
-    return(values)
+    return(default_values)
   }
 )
 
@@ -192,22 +217,26 @@ setMethod(
 setMethod(
   "..get_default_weighting_parameters",
   signature(object = "weightingMethodResidualTriangle"),
-  function(object, transformer, estimator, ...){
+  function(object, transformer, estimator, ...) {
 
-    values <- list("k1" = 0.50, "k2" = 8.00)
+    # Prevent NOTE due to non-standard evaluation.
+    name <- method <- estimation_method <- NULL
 
-    if(is(transformer, "transformationBoxCox")){
-      if(is(estimator, "estimatorMaximumLikelihoodEstimation")){
-        values <- list("k1" = 1.49, "k2" = 1.51)
-      }
+    default_values <- list("k1" = 0.50, "k2" = 8.00)
 
-    } else if(is(transformer, "transformationYeoJohnson")){
-      if(is(estimator, "estimatorMaximumLikelihoodEstimation")){
-        values <- list("k1" = 9.96, "k2" = 10.00)
+    # Check for known values that where obtained for the manuscript.
+    if (..requires_shift_optimisation(transformer)) {
+      optimal_values <- two_sided_function_parameters[
+        name == "residual-triangle" & method == transformer@method & estimation_method == estimator@method
+      ]
+
+      if (nrow(optimal_values) == 1) {
+        default_values$k1 <- optimal_values$k1
+        default_values$k2 <- optimal_values$k2
       }
     }
 
-    return(values)
+    return(default_values)
   }
 )
 
@@ -217,21 +246,25 @@ setMethod(
 setMethod(
   "..get_default_weighting_parameters",
   signature(object = "weightingMethodResidualCosine"),
-  function(object, transformer, estimator, ...){
+  function(object, transformer, estimator, ...) {
 
-    values <- list("k1" = 0.50, "k2" = 8.00)
+    # Prevent NOTE due to non-standard evaluation.
+    name <- method <- estimation_method <- NULL
 
-    if(is(transformer, "transformationBoxCox")){
-      if(is(estimator, "estimatorMaximumLikelihoodEstimation")){
-        values <- list("k1" = 1.32, "k2" = 1.65)
-      }
+    default_values <- list("k1" = 0.50, "k2" = 8.00)
 
-    } else if(is(transformer, "transformationYeoJohnson")){
-      if(is(estimator, "estimatorMaximumLikelihoodEstimation")){
-        values <- list("k1" = 9.97, "k2" = 10.00)
+    # Check for known values that where obtained for the manuscript.
+    if (..requires_shift_optimisation(transformer)) {
+      optimal_values <- two_sided_function_parameters[
+        name == "residual-cosine" & method == transformer@method & estimation_method == estimator@method
+      ]
+
+      if (nrow(optimal_values) == 1) {
+        default_values$k1 <- optimal_values$k1
+        default_values$k2 <- optimal_values$k2
       }
     }
 
-    return(values)
+    return(default_values)
   }
 )
