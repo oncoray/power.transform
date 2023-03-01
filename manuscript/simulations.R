@@ -910,8 +910,31 @@
     saveRDS(data, file=file.path(manuscript_dir, "robustness_comparison_marginal_parameter_data.RDS"))
 
   } else {
-    readRDS(data, file=file.path(manuscript_dir, "robustness_comparison_marginal_parameter_data.RDS"))
+    data <- readRDS(data, file=file.path(manuscript_dir, "robustness_comparison_marginal_parameter_data.RDS"))
   }
+
+  data[is.na(weight_method), "weight_method" := "none"]
+
+  data$method <- factor(
+    x = data$method,
+    levels = c("box_cox", "yeo_johnson"),
+    labels = c("Box-Cox", "Yeo-Johnson"))
+  data$weight_method <- factor(
+    x = data$weight_method,
+    levels = c(
+      "none",
+      "empirical_probability_step", "empirical_probability_triangle", "empirical_probability_cosine",
+      "transformed_step", "transformed_triangle", "transformed_cosine",
+      "residual_step", "residual_triangle", "residual_cosine"),
+    labels = c(
+      "non-robust",
+      "emp. prob. (step)", "emp. prob. (triangle)", "emp. prob. (tap. cos.)",
+      "z-score (step)", "z-score (triangle)", "z-score (tap. cos.)",
+      "residual (step)", "residual (triangle)", "residual (tap. cos.)"))
+  data$estimation_method <- factor(
+    x = data$estimation_method,
+    levels = c("mle", "anderson_darling", "cramer_von_mises", "jarque_bera", "dagostino"),
+    labels = c("MLE", "Anderson-Darling", "Cramér-von Mises", "Jarque-Bera", "D'Agostino"))
 
   return(data)
 }
