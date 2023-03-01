@@ -26,89 +26,23 @@ knitr::opts_knit$set(
 
 require(power.transform)
 require(ggplot2)
+require(patchwork)
 require(data.table)
 require(latex2exp)
 require(coro)
 
 manuscript_dir <- file.path("C:/Users/alexz/Documents/GitHub/power.transform/manuscript")
 source(file.path(manuscript_dir, "simulations.R"))
+source(file.path(manuscript_dir, "plots.R"))
 
 # Base font size.
 base_size <- 10
 
 # Set general theme.
 plot_theme <- ggplot2::theme_light(base_size=base_size)
-
-get_annotation_settings <- function(ggtheme=NULL){
-  # Import formatting settings from the provided ggtheme.
-  
-  # Find the text size for the table. This is based on text sizes in the
-  # ggtheme.
-  fontsize <- ggtheme$text$size
-  fontsize_rel <- 1.0
-  
-  # Attempt to base the text size on the general axis.text attribute.
-  if(!is.null(ggtheme$axis.text$size)){
-    if(inherits(ggtheme$axis.text$size, "rel")){
-      # Find the relative text size of axis text.
-      fontsize_rel <- as.numeric(ggtheme$axis.text$size)
-      
-    } else {
-      # Set absolute text size.
-      fontsize <- ggtheme$axis.text$size
-      fontsize_rel <- 1.0
-    }
-  }
-  
-  # Attempt to refine the text size using the axis.text.y attribute in
-  # particular.
-  if(!is.null(ggtheme$axis.text.y$size)){
-    if(inherits(ggtheme$axis.text.y$size, "rel")){
-      # Set relative text size of axis text
-      fontsize_rel <- as.numeric(ggtheme$axis.text.y$size)
-      
-    } else {
-      # Set absolute text size.
-      fontsize <- as.numeric(ggtheme$axis.text.y$size)
-      fontsize_rel <- 1.0
-    }
-  }
-  
-  # Update the text size using the magical ggplot2 point size (ggplot2:::.pt).
-  geom_text_size <- fontsize * fontsize_rel / 2.845276
-  
-  # Obtain lineheight
-  lineheight <- ggtheme$text$lineheight
-  if(!is.null(ggtheme$axis.text$lineheight)) lineheight <- ggtheme$axis.text$lineheight
-  if(!is.null(ggtheme$axis.text.y$lineheight)) lineheight <- ggtheme$axis.text.y$lineheight
-  
-  # Obtain family
-  fontfamily <- ggtheme$text$family
-  if(!is.null(ggtheme$axis.text$family)) fontfamily <- ggtheme$axis.text$family
-  if(!is.null(ggtheme$axis.text.y$family)) fontfamily <- ggtheme$axis.text.y$family
-  if(!is.null(ggtheme$axis.text.x$family)) fontfamily <- ggtheme$axis.text.x$family
-  
-  # Obtain face
-  fontface <- ggtheme$text$face
-  if(!is.null(ggtheme$axis.text$face)) fontface <- ggtheme$axis.text$face
-  if(!is.null(ggtheme$axis.text.y$face)) fontface <- ggtheme$axis.text.y$face
-  if(!is.null(ggtheme$axis.text.x$face)) fontface <- ggtheme$axis.text.x$face
-  
-  # Obtain colour
-  colour <- ggtheme$text$colour
-  if(!is.null(ggtheme$axis.text$colour)) colour <- ggtheme$axis.text$colour
-  if(!is.null(ggtheme$axis.text.y$colour)) colour <- ggtheme$axis.text.y$colour
-  if(!is.null(ggtheme$axis.text.x$colour)) colour <- ggtheme$axis.text.x$colour
-  
-  return(list(
-    "geom_text_size"=geom_text_size,
-    "fontsize"=fontsize,
-    "fontsize_rel"=fontsize_rel,
-    "colour"=colour,
-    "family"=fontfamily,
-    "face"=fontface,
-    "lineheight"=lineheight))
-}
+plot_theme$strip.background <- ggplot2::element_blank()
+plot_theme$strip.text$colour <- NULL
+plot_theme$plot.margin <- grid::unit(c(2, 2, 2, 2), "points")
 
 parse_mean_sd_latex <- function(mu, sigma, digits=2L){
   return(paste0(
@@ -158,125 +92,8 @@ cap <- paste0(
   "The figure shows that instead, $\\lambda$ is strongly dependent on the location $\\mu$, ",
   "and even breaks down due to numerical issues for $\\mu > 5 10^4$.")
 
-compute_lambda <- function(mu, x, method){
-  # Create transformer object.
-  transformer <- suppressWarnings(
-    power.transform::find_transformation_parameters(
-      x = x + mu,
-      method = method,
-      robust = FALSE,
-      shift = FALSE,
-      lambda = NULL,
-      optimiser_control = list("xtol_rel"=1e-3)))
-  
-  # Return lambda value.
-  return(transformer@lambda)
-}
+.plot_reduced_normality(plot_theme = plot_theme, manuscript_dir = manuscript_dir)
 
-# Non-standard evaluation
-mu <- lambda <- method <- NULL
-
-# Set seed.
-set.seed(19L)
-
-x <- power.transform::ragn(10000L, location=0, scale=1/sqrt(2), alpha=0.5, beta=2)
-shift_range <- 10^seq(from=0, to=6, by=0.1)
-
-box_cox_values <- sapply(
-  shift_range,
-  compute_lambda,
-  x = x,
-  method = "box_cox")
-
-yeo_johnson_values <- sapply(
-  shift_range,
-  compute_lambda,
-  x = x,
-  method = "yeo_johnson")
-
-data <- data.table::data.table(
-  "mu" = log10(c(shift_range, shift_range)),
-  "lambda" = c(box_cox_values, yeo_johnson_values),
-  "method" = factor(
-    x=rep(
-      c("Box-Cox", "Yeo-Johnson"),
-      each = length(shift_range)),
-    levels=c("Box-Cox", "Yeo-Johnson")))
-
-annotation_settings <- get_annotation_settings(ggplot2::theme_light(base_size = base_size))
-
-p_bc <- ggplot2::ggplot(
-  data = data[method == "Box-Cox"],
-  mapping = ggplot2::aes(
-    x = mu,
-    y = lambda,
-    colour = method))
-p_bc <- p_bc + plot_theme
-p_bc <- p_bc + ggplot2::geom_point()
-p_bc <- p_bc + ggplot2::geom_hline(
-  yintercept = 1.0, 
-  linetype="longdash", 
-  colour="grey40")
-p_bc <- p_bc + ggplot2::annotate(
-  geom = "text",
-  x = 6,
-  y = 1,
-  label = "expected",
-  colour=annotation_settings$colour,
-  family=annotation_settings$family,
-  fontface=annotation_settings$face,
-  size=annotation_settings$geom_text_size,
-  vjust=-1.0,
-  hjust=1.0)
-p_bc <- p_bc + ggplot2::scale_x_continuous(
-  name = latex2exp::TeX("$\\mu$"),
-  labels = scales::math_format())
-p_bc <- p_bc + ggplot2::scale_y_continuous(
-  name = latex2exp::TeX("$\\lambda$"),
-  limits = c(0.0, 35.0))
-p_bc <- p_bc + paletteer::scale_color_paletteer_d(
-  palette="ggthemes::Tableau_10",
-  drop=FALSE,
-  guide="none")
-
-p_yj <- ggplot2::ggplot(
-  data = data[method == "Yeo-Johnson"],
-  mapping = ggplot2::aes(
-    x = mu,
-    y = lambda,
-    colour = method))
-p_yj <- p_yj + plot_theme
-p_yj <- p_yj + ggplot2::geom_point()
-p_yj <- p_yj + ggplot2::geom_hline(
-  yintercept = 1.0,
-  linetype="longdash",
-  colour="grey40")
-p_yj <- p_yj + ggplot2::annotate(
-  geom = "text",
-  x = 6,
-  y = 1,
-  label = "expected",
-  colour=annotation_settings$colour,
-  family=annotation_settings$family,
-  fontface=annotation_settings$face,
-  size=annotation_settings$geom_text_size,
-  vjust=-1.0,
-  hjust=1.0)
-p_yj <- p_yj + ggplot2::scale_x_continuous(
-  name = latex2exp::TeX("$\\mu$"),
-  labels = scales::math_format())
-p_yj <- p_yj + ggplot2::scale_y_continuous(
-  name = latex2exp::TeX("$\\lambda$"),
-  limits = c(0.0, 35.0))
-p_yj <- p_yj + paletteer::scale_color_paletteer_d(
-  palette="ggthemes::Tableau_10",
-  drop=FALSE)
-p_yj <- p_yj + ggplot2::theme(
-  axis.title.y=ggplot2::element_blank(),
-  axis.text.y=ggplot2::element_blank())
-
-p <- egg::ggarrange(plots=list(p_bc, p_yj), ncol=2, draw=FALSE)
-p
 ```
 
 Here we make the following contributions:
@@ -543,161 +360,7 @@ cap <- paste0(
   "Estimates of transformation parameter $\\lambda$ with the original power transformations (circle) show strong dependency on the overall location of the distribution, ",
   "whereas estimates with the shift-sensitive power transformations (triangle) are constant.")
 
-# Non-standard evaluation
-d <- distribution <- method <- mean_lambda <- sd_lambda <- estimation_method <- NULL
-
-# Density plot.
-.create_density_plot <- function(x, plot_theme, limits=c(-5, 5)){
-  p <- ggplot2::ggplot(
-    data = data.table::data.table("x"=x),
-    mapping = ggplot2::aes(
-      x = x))
-  p <- p + plot_theme
-  p <- p + ggplot2::geom_density()
-  p <- p + ggplot2::theme(
-    axis.title = ggplot2::element_blank(),
-    axis.line = ggplot2::element_blank(),
-    axis.ticks = ggplot2::element_blank(),
-    axis.text = ggplot2::element_blank(),
-    panel.grid = ggplot2::element_blank(),
-    panel.border = ggplot2::element_blank(),
-    plot.title=ggplot2::element_text(
-      hjust=0.5,
-      size=ggplot2::rel(1.0)))
-  p <- p + ggplot2::xlim(limits)
-  
-  return(p)
-}
-
-# Lambda plot,
-.create_lambda_shift_plot <- function(data, plot_theme, limits, guide=FALSE){
-  
-  p <- ggplot2::ggplot(
-    data = data,
-    mapping = ggplot2::aes(
-      x = d,
-      y = lambda,
-      colour = method,
-      shape = version))
-  p <- p + plot_theme
-  p <- p + ggplot2::geom_point()
-  p <- p + ggplot2::scale_x_continuous(
-    name = latex2exp::TeX("$d$"),
-    labels = scales::math_format())
-  p <- p + ggplot2::scale_y_continuous(
-    name = latex2exp::TeX("$\\lambda$"),
-    limits = limits)
-  
-  if(guide){
-    p <- p + paletteer::scale_color_paletteer_d(
-      palette = "ggthemes::Tableau_10",
-      drop = FALSE)
-    
-  } else {
-    p <- p + paletteer::scale_color_paletteer_d(
-      palette = "ggthemes::Tableau_10",
-      drop = FALSE,
-      guide = "none")
-    p <- p + ggplot2::scale_shape_discrete(guide="none")
-  }
-  
-  return(p)
-}
-
-# Set seed.
-set.seed(19L)
-
-# Normal distribution.
-x_normal <- power.transform::ragn(10000L, location=0, scale=1/sqrt(2), alpha=0.5, beta=2)
-
-# Right skewed data
-x_right_skewed <- power.transform::ragn(10000L, location=0, scale=1/sqrt(2), alpha=0.2, beta=2)
-
-# Left skewed data
-x_left_skewed <- power.transform::ragn(10000L, location=0, scale=1/sqrt(2), alpha=0.8, beta=2)
-
-# Load data.
-data <- .get_shifted_distribution_data(manuscript_dir=manuscript_dir)
-data[estimation_method == "MLE"]
-
-#### Normal distribution -------------------------------------------------------
-# Density
-p_dens_normal <- .create_density_plot(
-  x = x_normal,
-  plot_theme = plot_theme)
-p_dens_normal <- p_dens_normal + ggplot2::ggtitle(label="normal distribution")
-
-# Box-Cox
-p_bc_normal <- .create_lambda_shift_plot(
-  data = data[distribution == "normal" & method == "Box-Cox"],
-  plot_theme = plot_theme,
-  limits = c(0.0, 35.0))
-
-# Yeo-Johnson
-p_yj_normal <- .create_lambda_shift_plot(
-  data=data[distribution == "normal" & method == "Yeo-Johnson"],
-  plot_theme = plot_theme,
-  limits = c(0.0, 35.0))
-
-#### Right skewed distribution -------------------------------------------------
-
-# Density
-p_dens_right <- .create_density_plot(
-  x = x_right_skewed,
-  plot_theme = plot_theme)
-p_dens_right <- p_dens_right + ggplot2::ggtitle(label="right-skewed distribution")
-
-# Box-Cox
-p_bc_right <- .create_lambda_shift_plot(
-  data = data[distribution == "right-skewed" & method == "Box-Cox"],
-  plot_theme = plot_theme,
-  limits = c(-9.0, 1.0))
-
-# Yeo-Johnson
-p_yj_right <- .create_lambda_shift_plot(
-  data = data[distribution == "right-skewed" & method == "Yeo-Johnson"],
-  plot_theme = plot_theme,
-  limits = c(-9.0, 1.0))
-
-#### Left skewed distribution --------------------------------------------------
-
-# Density
-p_dens_left <- .create_density_plot(
-  x = x_left_skewed,
-  plot_theme = plot_theme)
-p_dens_left <- p_dens_left + ggplot2::ggtitle(label="left-skewed distribution")
-
-# Box-Cox
-p_bc_left <- .create_lambda_shift_plot(
-  data = data[distribution == "left-skewed" & method == "Box-Cox"],
-  plot_theme = plot_theme,
-  limits = c(0.0, 60.0),
-  guide = TRUE)
-
-# Yeo-Johnson
-p_yj_left <- .create_lambda_shift_plot(
-  data = data[distribution == "left-skewed" & method == "Yeo-Johnson"],
-  plot_theme = plot_theme,
-  limits = c(0.0, 60.0))
-
-#### Aggregate -----------------------------------------------------------------
-
-aggregate_data <- data[, list("mean_lambda"=mean(lambda), "sd_lambda"=stats::sd(lambda)), by=c("method", "version", "distribution")]
-aggregate_data$distribution <- factor(
-  x=aggregate_data$distribution,
-  levels = c("normal", "left-skewed", "right-skewed"))
-aggregate_data[, "text":=parse_mean_sd_latex(mu=mean_lambda, sigma=sd_lambda)]
-
-p <- egg::ggarrange(
-  plots=list(
-    p_dens_normal, p_bc_normal, p_yj_normal,
-    p_dens_right, p_bc_right, p_yj_right,
-    p_dens_left, p_bc_left, p_yj_left),
-  ncol=3,
-  heights=c(0.5, 1.0, 1.0),
-  byrow=FALSE,
-  draw=FALSE)
-p
+.plot_shifted_distributions(manuscript_dir = manuscript_dir, plot_theme = plot_theme)
 ```
 
 The result is shown in Figure **INSERT**, and summarised in Table **INSERT**. For each distribution, transformation parameter $\hat{\lambda}$ varies with $d$ when estimated using the original definitions. In contrast, estimation of $\lambda$ using shift-sensitive power transformations was invariant to $d$.
@@ -768,15 +431,52 @@ To find the optimal values for the weighting function parameters $k_1$ and $k_2$
 The double sum in right-hand side of the above equation can be considered as the loss that should be minimised.
 Minimisation is performed using the `sbplx` algorithm implemented in the `nloptr` package for R [@Rowan1990-sn; @Ypma2022-tc].
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, eval=FALSE}
+```{r optimal_criteria, warning=FALSE, message=FALSE, fig.cap=cap}
+cap <- paste0(
+  "Things."
+)
+
+# This find the optimal weighting parameter settings that are used within the
+# package.
 two_sided_function_parameters <- .get_optimised_weighting_function_parameters_two_sided(manuscript_dir = manuscript_dir)
 
-```
+# This finds lambda values at the optimised weighting parameter settings.
+data <- .get_transformation_parameters_two_sided(manuscript_dir = manuscript_dir)
 
+data <- data[estimation_method == "MLE"]
+data <- data[, "lambda_error" := abs(lambda - target_lambda)]
+non_robust_data <- data[weight_method == "non-robust", mget(c("method", "estimation_method", "k", "ii", "lambda_error"))]
+data[non_robust_data, on=c("method", "estimation_method", "k", "ii"), "non_robust_lambda_error" := i.lambda_error]
 
+data[, "better_than_non_robust" := lambda_error <= non_robust_lambda_error]
+data[k == 0.0, "better_than_non_robust" := NA_integer_]
+data[weight_method == "non-robust", "better_than_non_robust" := NA_integer_]
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, eval=FALSE}
-two_sided_transformation_parameters <- .get_transformation_parameters_two_sided(manuscript_dir = manuscript_dir)
+pass_rate_data <- data[, list(
+  "pass_rate" = sum(better_than_non_robust, na.rm=TRUE),
+  "n" = sum(!is.na(better_than_non_robust)),
+  "median_error" = stats::median(lambda_error)),
+  by=c("method", "estimation_method", "weight_method")]
+pass_rate_data[, "pass_rate" := round(pass_rate / n * 100.0, 1)][order(pass_rate)]
+
+p <- ggplot2::ggplot(
+  data = data,
+  mapping = ggplot2::aes(
+    x = weight_method,
+    y = lambda_error,
+    fill = method))
+p <- p + plot_theme
+p <- p + ggplot2::geom_violin(draw_quantiles = 0.5)
+p <- p + ggplot2::facet_wrap("method", nrow=2)
+p <- p + paletteer::scale_fill_paletteer_d(
+  palette = "ggthemes::Tableau_10",
+  drop = FALSE)
+p <- p + ggplot2::scale_y_sqrt(name = latex2exp::TeX("$| \\hat{\\lambda}^r - \\hat{\\lambda}_{0}|$"))
+p <- p + ggplot2::xlab("weighting method")
+p <- p + ggplot2::theme(
+  axis.text.x = ggplot2::element_text(
+    angle=60.0,
+    hjust=1.0))
 
 ```
 
@@ -1819,7 +1519,7 @@ The main difference between the above criterion and the Jarque-Bera test statist
 
 ## Optimisation using non-MLE criteria
 
-Each of the criteria above can be used for optimisation, i.e.:
+Each of the criteria described in the previous section can be used for optimisation, i.e.:
 
 ```{=latex}
 \begin{equation}
@@ -1834,7 +1534,7 @@ For conventional power transformations with a fixed shift parameter, the transfo
 \end{equation}
 ```
 
-
+# Appendix B: Simulations with other optimisation criteria
 
 ```{r shifted-distributions-other-criteria, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
@@ -1843,128 +1543,102 @@ cap <- paste0(
   "Estimates of transformation parameter $\\lambda$ with the original power transformations (circle) show strong dependency on the overall location of the distribution, ",
   "whereas estimates with the shift-sensitive power transformations (triangle) are constant.")
 
-# Lambda plot,
-.create_lambda_shift_plot <- function(data, plot_theme, limits, guide=FALSE){
-  
-  p <- ggplot2::ggplot(
-    data = data,
-    mapping = ggplot2::aes(
-      x = d,
-      y = lambda,
-      colour = estimation_method))
-  p <- p + plot_theme
-  p <- p + ggplot2::geom_point()
-  p <- p + ggplot2::scale_x_continuous(
-    name = latex2exp::TeX("$d$"),
-    labels = scales::math_format())
-  p <- p + ggplot2::scale_y_continuous(
-    name = latex2exp::TeX("$\\lambda$"),
-    limits = limits)
-  p <- p + ggplot2::theme(
-    plot.title=ggplot2::element_text(
-      hjust=0.5,
-      size=ggplot2::rel(1.0)))
-  
-  if(guide){
-    p <- p + paletteer::scale_color_paletteer_d(
-      palette = "ggthemes::Tableau_10",
-      drop = FALSE)
-    p <- p + guides(colour = ggplot2::guide_legend(title = "Optimisation criterion"))
-    
-  } else {
-    p <- p + paletteer::scale_color_paletteer_d(
-      palette = "ggthemes::Tableau_10",
-      drop = FALSE,
-      guide = "none")
-  }
-  
-  return(p)
-}
+  .plot_shifted_distributions_other_criteria(manuscript_dir = manuscript_dir, plot_theme = plot_theme)
+```
 
-data <- .get_shifted_distribution_data(manuscript_dir = manuscript_dir)
 
-#### Normal distribution -------------------------------------------------------
+```{r optimal_weighting_function_all_criteria_box_cox, warning=FALSE, message=FALSE, fig.cap=cap}
+cap <- paste0(
+  "Things."
+)
+# This finds lambda values at the optimised weighting parameter settings.
+data <- .get_transformation_parameters_two_sided(manuscript_dir = manuscript_dir)
 
-# Box-Cox-original
-p_bc_normal <- .create_lambda_shift_plot(
-  data = data[distribution == "normal" & method == "Box-Cox" & version == "original"],
-  plot_theme = plot_theme,
-  limits = c(-20.0, 35.0))
-p_bc_normal <- p_bc_normal + ggplot2::ggtitle(label="normal distribution")
+data <- data[method == "Box-Cox"]
+data <- data[, "lambda_error" := abs(lambda - target_lambda)]
+non_robust_data <- data[weight_method == "non-robust", mget(c("method", "estimation_method", "k", "ii", "lambda_error"))]
+data[non_robust_data, on=c("method", "estimation_method", "k", "ii"), "non_robust_lambda_error" := i.lambda_error]
 
-# Yeo-Johnson
-p_yj_normal <- .create_lambda_shift_plot(
-  data=data[distribution == "normal" & method == "Yeo-Johnson" & version == "original"],
-  plot_theme = plot_theme,
-  limits = c(-20.0, 35.0))
+data[, "better_than_non_robust" := lambda_error <= non_robust_lambda_error]
+data[k == 0.0, "better_than_non_robust" := NA_integer_]
+data[weight_method == "non-robust", "better_than_non_robust" := NA_integer_]
 
-#### Right skewed distribution -------------------------------------------------
-
-# Box-Cox
-p_bc_right <- .create_lambda_shift_plot(
-  data = data[distribution == "right-skewed" & method == "Box-Cox" & version == "original"],
-  plot_theme = plot_theme,
-  limits = c(-15.0, 1.0))
-p_bc_right <- p_bc_right + ggplot2::ggtitle(label="right-skewed distribution")
-
-# Yeo-Johnson
-p_yj_right <- .create_lambda_shift_plot(
-  data = data[distribution == "right-skewed" & method == "Yeo-Johnson" & version == "original"],
-  plot_theme = plot_theme,
-  limits = c(-15.0, 1.0))
-
-#### Left skewed distribution --------------------------------------------------
-
-# Box-Cox
-p_bc_left <- .create_lambda_shift_plot(
-  data = data[distribution == "left-skewed" & method == "Box-Cox" & version == "original"],
-  plot_theme = plot_theme,
-  limits = c(-50.0, 60.0),
-  guide = TRUE)
-p_bc_left <- p_bc_left + ggplot2::ggtitle(label="left-skewed distribution")
-
-# Yeo-Johnson
-p_yj_left <- .create_lambda_shift_plot(
-  data = data[distribution == "left-skewed" & method == "Yeo-Johnson" & version == "original"],
-  plot_theme = plot_theme,
-  limits = c(-50.0, 60.0))
-
-p <- egg::ggarrange(
-  plots=list(
-    p_bc_normal, p_yj_normal,
-    p_bc_right, p_yj_right,
-    p_bc_left, p_yj_left),
-  ncol=3,
-  heights=c(1.0, 1.0),
-  byrow=FALSE,
-  draw=FALSE)
-p
+pass_rate_data <- data[, list(
+  "pass_rate" = sum(better_than_non_robust, na.rm=TRUE),
+  "n" = sum(!is.na(better_than_non_robust)),
+  "median_error" = stats::median(lambda_error)),
+  by=c("method", "estimation_method", "weight_method")]
+pass_rate_data <- pass_rate_data[, "pass_rate" := round(pass_rate / n * 100.0, 1)]
 
 p <- ggplot2::ggplot(
   data = data,
   mapping = ggplot2::aes(
-    x = d,
-    y = lambda,
-    colour = estimation_method))
+    x = weight_method,
+    y = lambda_error,
+    fill = estimation_method))
 p <- p + plot_theme
-p <- p + ggplot2::geom_point()
-p <- p + ggplot2::scale_x_continuous(
-  name = latex2exp::TeX("$d$"),
-  labels = scales::math_format())
-p <- p + ggplot2::scale_y_continuous(
-  name = latex2exp::TeX("$\\lambda$"))
-p <- p + paletteer::scale_color_paletteer_d(
+p <- p + ggplot2::geom_violin(draw_quantiles = 0.5)
+p <- p + ggplot2::facet_wrap("estimation_method", nrow=nlevels(data$estimation_method))
+p <- p + paletteer::scale_fill_paletteer_d(
   palette = "ggthemes::Tableau_10",
   drop = FALSE)
-p <- p + guides(colour = ggplot2::guide_legend(title = "optimisation criterion"))
-
-p <- p + ggplot2::facet_grid(
-  method + version ~ distribution,
-  scales = "free")
-
-
+p <- p + ggplot2::scale_y_sqrt(name = latex2exp::TeX("$| \\hat{\\lambda}^r - \\hat{\\lambda}_{0}|$"))
+p <- p + ggplot2::xlab("weighting method")
+p <- p + ggplot2::ggtitle("shift-sensitive Box-Cox transformation")
+p <- p + ggplot2::theme(
+  axis.text.x = ggplot2::element_text(
+    angle=30.0,
+    hjust=1.0))
+p
 ```
 
+
+```{r optimal_weighting_function_all_criteria_yeo_johnson, warning=FALSE, message=FALSE, fig.cap=cap}
+cap <- paste0(
+  "Things."
+)
+# This finds lambda values at the optimised weighting parameter settings.
+data <- .get_transformation_parameters_two_sided(manuscript_dir = manuscript_dir)
+
+data <- data[method == "Yeo-Johnson"]
+data <- data[, "lambda_error" := abs(lambda - target_lambda)]
+non_robust_data <- data[weight_method == "non-robust", mget(c("method", "estimation_method", "k", "ii", "lambda_error"))]
+data[non_robust_data, on=c("method", "estimation_method", "k", "ii"), "non_robust_lambda_error" := i.lambda_error]
+
+data[, "better_than_non_robust" := lambda_error <= non_robust_lambda_error]
+data[k == 0.0, "better_than_non_robust" := NA_integer_]
+data[weight_method == "non-robust", "better_than_non_robust" := NA_integer_]
+
+pass_rate_data <- data[, list(
+  "pass_rate" = sum(better_than_non_robust, na.rm=TRUE),
+  "n" = sum(!is.na(better_than_non_robust)),
+  "median_error" = stats::median(lambda_error)),
+  by=c("method", "estimation_method", "weight_method")]
+pass_rate_data[, "pass_rate" := round(pass_rate / n * 100.0, 1)][order(pass_rate)]
+
+p <- ggplot2::ggplot(
+  data = data,
+  mapping = ggplot2::aes(
+    x = weight_method,
+    y = lambda_error,
+    fill = estimation_method))
+p <- p + plot_theme
+p <- p + ggplot2::geom_violin(draw_quantiles = 0.5)
+p <- p + ggplot2::facet_wrap("estimation_method", nrow=nlevels(data$estimation_method))
+p <- p + paletteer::scale_fill_paletteer_d(
+  palette = "ggthemes::Tableau_10",
+  drop = FALSE)
+p <- p + guides(fill = ggplot2::guide_legend(title = "optimisation criterion"))
+p <- p + ggplot2::scale_y_sqrt(name = latex2exp::TeX("$| \\hat{\\lambda}^r - \\hat{\\lambda}_{0}|$"))
+p <- p + ggplot2::xlab("weighting method")
+p <- p + ggplot2::ggtitle("shift-sensitive Yeo-Johnson transformation")
+p <- p + ggplot2::theme(
+  axis.text.x = ggplot2::element_text(
+    angle=30.0,
+    hjust=1.0))
+p
+
+```
 
 
 ```{r eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}

@@ -1,0 +1,552 @@
+get_annotation_settings <- function(ggtheme = NULL) {
+  # Import formatting settings from the provided ggtheme.
+
+  # Find the text size for the table. This is based on text sizes in the
+  # ggtheme.
+  fontsize <- ggtheme$text$size
+  fontsize_rel <- 1.0
+
+  # Attempt to base the text size on the general axis.text attribute.
+  if (!is.null(ggtheme$axis.text$size)) {
+    if (inherits(ggtheme$axis.text$size, "rel")) {
+      # Find the relative text size of axis text.
+      fontsize_rel <- as.numeric(ggtheme$axis.text$size)
+
+    } else {
+      # Set absolute text size.
+      fontsize <- ggtheme$axis.text$size
+      fontsize_rel <- 1.0
+    }
+  }
+
+  # Attempt to refine the text size using the axis.text.y attribute in
+  # particular.
+  if (!is.null(ggtheme$axis.text.y$size)) {
+    if (inherits(ggtheme$axis.text.y$size, "rel")) {
+      # Set relative text size of axis text
+      fontsize_rel <- as.numeric(ggtheme$axis.text.y$size)
+
+    } else {
+      # Set absolute text size.
+      fontsize <- as.numeric(ggtheme$axis.text.y$size)
+      fontsize_rel <- 1.0
+    }
+  }
+
+  # Update the text size using the magical ggplot2 point size (ggplot2:::.pt).
+  geom_text_size <- fontsize * fontsize_rel / 2.845276
+
+  # Obtain lineheight
+  lineheight <- ggtheme$text$lineheight
+  if (!is.null(ggtheme$axis.text$lineheight)) lineheight <- ggtheme$axis.text$lineheight
+  if (!is.null(ggtheme$axis.text.y$lineheight)) lineheight <- ggtheme$axis.text.y$lineheight
+
+  # Obtain family
+  fontfamily <- ggtheme$text$family
+  if (!is.null(ggtheme$axis.text$family)) fontfamily <- ggtheme$axis.text$family
+  if (!is.null(ggtheme$axis.text.y$family)) fontfamily <- ggtheme$axis.text.y$family
+  if (!is.null(ggtheme$axis.text.x$family)) fontfamily <- ggtheme$axis.text.x$family
+
+  # Obtain face
+  fontface <- ggtheme$text$face
+  if (!is.null(ggtheme$axis.text$face)) fontface <- ggtheme$axis.text$face
+  if (!is.null(ggtheme$axis.text.y$face)) fontface <- ggtheme$axis.text.y$face
+  if (!is.null(ggtheme$axis.text.x$face)) fontface <- ggtheme$axis.text.x$face
+
+  # Obtain colour
+  colour <- ggtheme$text$colour
+  if (!is.null(ggtheme$axis.text$colour)) colour <- ggtheme$axis.text$colour
+  if (!is.null(ggtheme$axis.text.y$colour)) colour <- ggtheme$axis.text.y$colour
+  if (!is.null(ggtheme$axis.text.x$colour)) colour <- ggtheme$axis.text.x$colour
+
+  return(list(
+    "geom_text_size" = geom_text_size,
+    "fontsize" = fontsize,
+    "fontsize_rel" = fontsize_rel,
+    "colour" = colour,
+    "family" = fontfamily,
+    "face" = fontface,
+    "lineheight" = lineheight))
+}
+
+
+
+.plot_reduced_normality <- function(plot_theme, manuscript_dir) {
+  # Creates the plot that shows how transformation parameter lambda depends on
+  # the location for conventional power transformations.
+
+  require(patchwork)
+  require(ggplot2)
+
+  # Lambda plot,
+  .create_lambda_shift_plot <- function(
+    data,
+    plot_theme,
+    limits,
+    guide = FALSE,
+    strip_y_axis = TRUE) {
+
+    # Prevent warnings due to non-standard evaluation.
+    d <- lambda <- method <- version <- NULL
+
+    annotation_settings <- get_annotation_settings(plot_theme)
+
+    p <- ggplot2::ggplot(
+      data = data,
+      mapping = ggplot2::aes(
+        x = d,
+        y = lambda,
+        colour = method))
+    p <- p + plot_theme
+    p <- p + ggplot2::geom_point()
+    p <- p + ggplot2::geom_hline(
+      yintercept = 1.0,
+      linetype="longdash",
+      colour="grey40")
+    p <- p + ggplot2::annotate(
+      geom = "text",
+      x = 6,
+      y = 1,
+      label = "expected",
+      colour = annotation_settings$colour,
+      family = annotation_settings$family,
+      fontface = annotation_settings$face,
+      size = annotation_settings$geom_text_size,
+      vjust = -1.0,
+      hjust = 1.0)
+    p <- p + ggplot2::scale_x_continuous(
+      name = latex2exp::TeX("$\\mu$"),
+      labels = scales::math_format())
+    p <- p + ggplot2::scale_y_continuous(
+      name = latex2exp::TeX("$\\lambda$"),
+      limits = limits)
+
+    if (guide) {
+      p <- p + paletteer::scale_color_paletteer_d(
+        palette = "ggthemes::Tableau_10",
+        drop = FALSE)
+      p <- p + guides(colour = ggplot2::guide_legend(title = "method"))
+
+    } else {
+      p <- p + paletteer::scale_color_paletteer_d(
+        palette = "ggthemes::Tableau_10",
+        drop = FALSE,
+        guide = "none")
+    }
+
+    if (strip_y_axis) {
+      p <- p + ggplot2::theme(
+        axis.text.y = ggplot2::element_blank(),
+        axis.title.y = ggplot2::element_blank(),
+        axis.ticks.y = ggplot2::element_blank())
+    }
+
+    return(p)
+  }
+
+  # Prevent warnings due to non-standard evaluation.
+  distribution <- method <- version <- NULL
+
+  # Process / read data.
+  data <- .get_shifted_distribution_data(manuscript_dir = manuscript_dir)
+  data <- data[estimation_method == "MLE" & version == "original" & distribution == "normal"]
+
+  # Normal distribution --------------------------------------------------------
+
+  # Box-Cox
+  p_bc_normal <- .create_lambda_shift_plot(
+    data = data[method == "Box-Cox"],
+    plot_theme = plot_theme,
+    limits = c(-5.0, 35.0),
+    strip_y_axis = FALSE)
+
+  # Yeo-Johnson
+  p_yj_normal <- .create_lambda_shift_plot(
+    data = data[method == "Yeo-Johnson"],
+    plot_theme = plot_theme,
+    limits = c(-5.0, 35.0),
+    guide = TRUE)
+
+  # Patch all the plots together.
+  p <- p_bc_normal + p_yj_normal + patchwork::plot_layout(
+    ncol = 2,
+    guides = "collect")
+
+  return(p)
+}
+
+
+
+.plot_shifted_distributions <- function(plot_theme, manuscript_dir) {
+  # Creates the plot for lambda values under location shift for MLE
+
+  require(patchwork)
+  require(ggplot2)
+
+  .create_density_plot <- function(
+    x,
+    plot_theme,
+    limits) {
+
+    p <- ggplot2::ggplot(
+      data = data.table::data.table("x" = x),
+      mapping = ggplot2::aes(x = x))
+    p <- p + plot_theme
+    p <- p + ggplot2::geom_density()
+    p <- p + ggplot2::theme(
+      axis.title = ggplot2::element_blank(),
+      axis.line = ggplot2::element_blank(),
+      axis.ticks = ggplot2::element_blank(),
+      axis.text = ggplot2::element_blank(),
+      panel.grid = ggplot2::element_blank(),
+      panel.border = ggplot2::element_blank())
+    p <- p + ggplot2::xlim(limits)
+
+    return(p)
+  }
+
+  # Lambda plot,
+  .create_lambda_shift_plot <- function(
+    data,
+    plot_theme,
+    limits,
+    guide = FALSE,
+    strip_x_axis = TRUE,
+    strip_y_label = TRUE) {
+
+    # Prevent warnings due to non-standard evaluation.
+    d <- lambda <- method <- version <- NULL
+
+    p <- ggplot2::ggplot(
+      data = data,
+      mapping = ggplot2::aes(
+        x = d,
+        y = lambda,
+        colour = method,
+        shape = version))
+    p <- p + plot_theme
+    p <- p + ggplot2::geom_point()
+    p <- p + ggplot2::scale_x_continuous(
+      name = latex2exp::TeX("$d$"),
+      labels = scales::math_format())
+    p <- p + ggplot2::scale_y_continuous(
+      name = latex2exp::TeX("$\\lambda$"),
+      limits = limits)
+
+    if (guide) {
+      p <- p + paletteer::scale_color_paletteer_d(
+        palette = "ggthemes::Tableau_10",
+        drop = FALSE)
+      p <- p + guides(colour = ggplot2::guide_legend(title = "method"))
+
+    } else {
+      p <- p + paletteer::scale_color_paletteer_d(
+        palette = "ggthemes::Tableau_10",
+        drop = FALSE,
+        guide = "none")
+      p <- p + ggplot2::scale_shape_discrete(guide = "none")
+    }
+
+    if (strip_x_axis) {
+      p <- p + ggplot2::theme(
+        axis.text.x = ggplot2::element_blank(),
+        axis.title.x = ggplot2::element_blank(),
+        axis.ticks.x = ggplot2::element_blank())
+    }
+
+    if (strip_y_label) {
+      p <- p + ggplot2::theme(
+        axis.title.y = ggplot2::element_blank())
+    }
+
+    return(p)
+  }
+
+  # Prevent warnings due to non-standard evaluation.
+  estimation_method <- distribution <- method <- version <- NULL
+
+  # Set seed.
+  set.seed(19L)
+
+  # Normal distribution.
+  x_normal <- power.transform::ragn(
+    10000L,
+    location = 0,
+    scale = 1 / sqrt(2),
+    alpha = 0.5,
+    beta = 2)
+
+  # Right skewed data
+  x_right_skewed <- power.transform::ragn(
+    10000L,
+    location = 0,
+    scale = 1 / sqrt(2),
+    alpha = 0.2,
+    beta = 2)
+
+  # Left skewed data
+  x_left_skewed <- power.transform::ragn(
+    10000L,
+    location = 0,
+    scale = 1 / sqrt(2),
+    alpha = 0.8,
+    beta = 2)
+
+  # Process / read data.
+  data <- .get_shifted_distribution_data(manuscript_dir = manuscript_dir)
+  data <- data[estimation_method == "MLE"]
+
+  # Normal distribution --------------------------------------------------------
+
+  # Density plot
+  p_dens_normal <- .create_density_plot(
+    x = x_normal,
+    plot_theme = plot_theme,
+    limits = c(-6.0, 6.0))
+  p_dens_normal <- p_dens_normal + ggplot2::facet_grid(cols=vars("normal distribution"))
+
+  # Box-Cox
+  p_bc_normal <- .create_lambda_shift_plot(
+    data = data[distribution == "normal" & method == "Box-Cox"],
+    plot_theme = plot_theme,
+    limits = c(-5.0, 35.0),
+    strip_y_label = FALSE)
+
+  # Yeo-Johnson
+  p_yj_normal <- .create_lambda_shift_plot(
+    data=data[distribution == "normal" & method == "Yeo-Johnson"],
+    plot_theme = plot_theme,
+    limits = c(-5.0, 35.0),
+    strip_y_label = FALSE,
+    strip_x_axis = FALSE)
+
+  # Right skewed distribution --------------------------------------------------
+
+  # Density
+  p_dens_right <- .create_density_plot(
+    x = x_right_skewed,
+    plot_theme = plot_theme,
+    limits = c(-3.0, 10.0))
+  p_dens_right <- p_dens_right + ggplot2::facet_grid(cols=vars("right-skewed distribution"))
+
+  # Box-Cox-original
+  p_bc_right <- .create_lambda_shift_plot(
+    data = data[distribution == "right-skewed" & method == "Box-Cox"],
+    plot_theme = plot_theme,
+    limits = c(-5.0, 1.0))
+
+  # Yeo-Johnson
+  p_yj_right <- .create_lambda_shift_plot(
+    data = data[distribution == "right-skewed" & method == "Yeo-Johnson"],
+    plot_theme = plot_theme,
+    limits = c(-5.0, 1.0),
+    strip_x_axis = FALSE)
+
+  # Left skewed distribution ---------------------------------------------------
+
+  # Density
+  p_dens_left <- .create_density_plot(
+    x = x_left_skewed,
+    plot_theme = plot_theme,
+    limits = c(-10.0, 3.0))
+  p_dens_left <- p_dens_left + ggplot2::facet_grid(cols=vars("left-skewed distribution"))
+
+  # Box-Cox
+  p_bc_left <- .create_lambda_shift_plot(
+    data = data[distribution == "left-skewed" & method == "Box-Cox"],
+    plot_theme = plot_theme,
+    limits = c(0.0, 65.0),
+    guide = TRUE)
+
+  # Yeo-Johnson
+  p_yj_left <- .create_lambda_shift_plot(
+    data = data[distribution == "left-skewed" & method == "Yeo-Johnson"],
+    plot_theme = plot_theme,
+    limits = c(0.0, 65.0),
+    strip_x_axis = FALSE)
+
+  # Patch all the plots together.
+  p <- p_dens_normal + p_dens_right + p_dens_left +
+    p_bc_normal + p_bc_right + p_bc_left +
+    p_yj_normal + p_yj_right + p_yj_left +
+    patchwork::plot_layout(
+      ncol = 3,
+      heights = c(0.5, 1.0, 1.0),
+      guides = "collect")
+
+  return(p)
+}
+
+
+
+.plot_shifted_distributions_other_criteria <- function(plot_theme, manuscript_dir) {
+  # Creates the plot for lambda values under location shift for all optimisation
+  # criteria.
+
+  require(patchwork)
+  require(ggplot2)
+
+  # Lambda plot,
+  .create_lambda_shift_plot <- function(
+    data,
+    plot_theme,
+    limits,
+    guide = FALSE,
+    strip_x_axis = TRUE,
+    strip_y_label = TRUE) {
+
+    # Prevent warnings due to non-standard evaluation.
+    d <- lambda <- estimation_method <- NULL
+
+    p <- ggplot2::ggplot(
+      data = data,
+      mapping = ggplot2::aes(
+        x = d,
+        y = lambda,
+        colour = estimation_method))
+    p <- p + plot_theme
+    p <- p + ggplot2::geom_point()
+    p <- p + ggplot2::scale_x_continuous(
+      name = latex2exp::TeX("$d$"),
+      labels = scales::math_format())
+    p <- p + ggplot2::scale_y_continuous(
+      name = latex2exp::TeX("$\\lambda$"),
+      limits = limits)
+
+    if (guide) {
+      p <- p + paletteer::scale_color_paletteer_d(
+        palette = "ggthemes::Tableau_10",
+        drop = FALSE)
+      p <- p + guides(colour = ggplot2::guide_legend(title = "optimisation criterion"))
+
+    } else {
+      p <- p + paletteer::scale_color_paletteer_d(
+        palette = "ggthemes::Tableau_10",
+        drop = FALSE,
+        guide = "none")
+    }
+
+    if (strip_x_axis) {
+      p <- p + ggplot2::theme(
+        axis.text.x = ggplot2::element_blank(),
+        axis.title.x = ggplot2::element_blank(),
+        axis.ticks.x = ggplot2::element_blank())
+    }
+
+    if (strip_y_label) {
+      p <- p + ggplot2::theme(
+        axis.title.y = ggplot2::element_blank())
+    }
+
+    return(p)
+  }
+
+  # Prevent warnings due to non-standard evaluation.
+  distribution <- method <- version <- NULL
+
+  # Process / read data.
+  data <- .get_shifted_distribution_data(manuscript_dir = manuscript_dir)
+
+  # Normal distribution --------------------------------------------------------
+
+  # Box-Cox-original
+  p_bc_normal_orig <- .create_lambda_shift_plot(
+    data = data[distribution == "normal" & method == "Box-Cox" & version == "original"],
+    plot_theme = plot_theme,
+    limits = c(-5.0, 35.0),
+    strip_y_label = FALSE)
+  p_bc_normal_orig <- p_bc_normal_orig + ggplot2::facet_grid(cols=vars("normal distribution"))
+
+
+  # Box-Cox-shift-sensitive
+  p_bc_normal_ss <- .create_lambda_shift_plot(
+    data = data[distribution == "normal" & method == "Box-Cox" & version == "shift-sensitive"],
+    plot_theme = plot_theme,
+    limits = c(0.5, 1.5),
+    strip_y_label = FALSE)
+
+  # Yeo-Johnson-original
+  p_yj_normal_orig <- .create_lambda_shift_plot(
+    data=data[distribution == "normal" & method == "Yeo-Johnson" & version == "original"],
+    plot_theme = plot_theme,
+    limits = c(-5.0, 35.0),
+    strip_y_label = FALSE)
+
+  # Yeo-Johnson-shift-sensitive
+  p_yj_normal_ss <- .create_lambda_shift_plot(
+    data=data[distribution == "normal" & method == "Yeo-Johnson" & version == "shift-sensitive"],
+    plot_theme = plot_theme,
+    limits = c(0.5, 1.5),
+    strip_x_axis = FALSE,
+    strip_y_label = FALSE)
+
+  # Right skewed distribution --------------------------------------------------
+
+  # Box-Cox-original
+  p_bc_right_orig <- .create_lambda_shift_plot(
+    data = data[distribution == "right-skewed" & method == "Box-Cox" & version == "original"],
+    plot_theme = plot_theme,
+    limits = c(-10.0, 1.0))
+  p_bc_right_orig <- p_bc_right_orig + ggplot2::facet_grid(cols=vars("right-skewed distribution"))
+
+  # Box-Cox-shift-sensitive
+  p_bc_right_ss <- .create_lambda_shift_plot(
+    data = data[distribution == "right-skewed" & method == "Box-Cox" & version == "shift-sensitive"],
+    plot_theme = plot_theme,
+    limits = c(-0.5, 0.5))
+
+  # Yeo-Johnson-original
+  p_yj_right_orig <- .create_lambda_shift_plot(
+    data = data[distribution == "right-skewed" & method == "Yeo-Johnson" & version == "original"],
+    plot_theme = plot_theme,
+    limits = c(-10.0, 1.0))
+
+  # Yeo-Johnson-shift-sensitive
+  p_yj_right_ss <- .create_lambda_shift_plot(
+    data=data[distribution == "right-skewed" & method == "Yeo-Johnson" & version == "shift-sensitive"],
+    plot_theme = plot_theme,
+    limits = c(0.0, 1.0),
+    strip_x_axis = FALSE)
+
+  # Left skewed distribution ---------------------------------------------------
+
+  # Box-Cox-original
+  p_bc_left_orig <- .create_lambda_shift_plot(
+    data = data[distribution == "left-skewed" & method == "Box-Cox" & version == "original"],
+    plot_theme = plot_theme,
+    limits = c(0.0, 65.0),
+    guide = TRUE)
+  p_bc_left_orig <- p_bc_left_orig + ggplot2::facet_grid(cols=vars("left-skewed distribution"), rows=vars("Box-Cox"))
+
+  # Box-Cox-shift-sensitive
+  p_bc_left_ss <- .create_lambda_shift_plot(
+    data = data[distribution == "left-skewed" & method == "Box-Cox" & version == "shift-sensitive"],
+    plot_theme = plot_theme,
+    limits = c(3.5, 4.5))
+  p_bc_left_ss <- p_bc_left_ss + ggplot2::facet_grid(rows=vars("shift-sens. Box-Cox"))
+
+  # Yeo-Johnson-original
+  p_yj_left_orig <- .create_lambda_shift_plot(
+    data = data[distribution == "left-skewed" & method == "Yeo-Johnson" & version == "original"],
+    plot_theme = plot_theme,
+    limits = c(0.0, 65.0))
+  p_yj_left_orig <- p_yj_left_orig + ggplot2::facet_grid(rows=vars("Yeo-Johnson"))
+
+  # Yeo-Johnson-shift-sensitive
+  p_yj_left_ss <- .create_lambda_shift_plot(
+    data = data[distribution == "left-skewed" & method == "Yeo-Johnson" & version == "shift-sensitive"],
+    plot_theme = plot_theme,
+    limits = c(1.0, 2.0),
+    strip_x_axis = FALSE)
+  p_yj_left_ss <- p_yj_left_ss + ggplot2::facet_grid(rows=vars("shift-sens. Yeo-Johnson"))
+
+  # Patch all the plots together.
+  p <- p_bc_normal_orig + p_bc_right_orig + p_bc_left_orig +
+    p_bc_normal_ss + p_bc_right_ss + p_bc_left_ss +
+    p_yj_normal_orig + p_yj_right_orig + p_yj_left_orig +
+    p_yj_normal_ss + p_yj_right_ss + p_yj_left_ss +
+    patchwork::plot_layout(ncol=3, guides="collect")
+
+  return(p)
+}
+
