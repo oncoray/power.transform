@@ -236,63 +236,7 @@ cap <- paste0(
   "The step function was parameterised with $k_1 = 0.60$. ",
   "The triangle and tapered cosine functions were both parameterised with $k_1 = 0.30$ and $k_2 = 0.90$.")
 
-# Non-standard evaluation
-d <- distribution <- method <- mean_lambda <- sd_lambda <- weight <- NULL
-
-data_step <- data.table::data.table(x = seq(from=-1.0, to=1.0, by=0.001))
-data_step[, "weight":=power.transform:::..weight_function_external(x, "step", k1=0.60)]
-
-p_step <- ggplot2::ggplot(
-  data = data_step,
-  mapping = ggplot2::aes(
-    x = x,
-    y = weight))
-p_step <- p_step + plot_theme
-p_step <- p_step + ggplot2::geom_line()
-p_step <- p_step + ggplot2::ggtitle(label="step")
-p_step <- p_step + ggplot2::theme(
-  plot.title=ggplot2::element_text(
-    hjust=0.5,
-    size=ggplot2::rel(1.0)))
-
-data_triangle <- data.table::data.table(x = seq(from=-1.0, to=1.0, by=0.001))
-data_triangle[, "weight":=power.transform:::..weight_function_external(x, "triangle", k1=0.30, k2=0.90)]
-
-p_triangle <- ggplot2::ggplot(
-  data = data_triangle,
-  mapping = ggplot2::aes(
-    x = x,
-    y = weight))
-p_triangle <- p_triangle + plot_theme
-p_triangle <- p_triangle + ggplot2::geom_line()
-p_triangle <- p_triangle + ggplot2::ggtitle(label="triangle")
-p_triangle <- p_triangle + ggplot2::theme(
-  plot.title=ggplot2::element_text(
-    hjust=0.5,
-    size=ggplot2::rel(1.0)),
-  axis.text.y = ggplot2::element_blank(),
-  axis.title.y = ggplot2::element_blank())
-
-data_cosine <- data.table::data.table(x = seq(from=-1.0, to=1.0, by=0.001))
-data_cosine[, "weight":=power.transform:::..weight_function_external(x, "cosine", k1=0.30, k2=0.90)]
-
-p_cosine <- ggplot2::ggplot(
-  data = data_cosine,
-  mapping = ggplot2::aes(
-    x = x,
-    y = weight))
-p_cosine <- p_cosine + plot_theme
-p_cosine <- p_cosine + ggplot2::geom_line()
-p_cosine <- p_cosine + ggplot2::ggtitle(label="tapered cosine")
-p_cosine <- p_cosine + ggplot2::theme(
-  plot.title = ggplot2::element_text(
-    hjust = 0.5,
-    size = ggplot2::rel(1.0)),
-  axis.text.y = ggplot2::element_blank(),
-  axis.title.y = ggplot2::element_blank())
-
-p <- egg::ggarrange(plots=list(p_step, p_triangle, p_cosine), ncol=3, draw=FALSE)
-p
+.plot_weighting_functions(plot_theme = plot_theme)
 ```
 
 ## Asymmetric generalised normal distributions

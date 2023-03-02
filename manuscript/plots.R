@@ -550,3 +550,60 @@ get_annotation_settings <- function(ggtheme = NULL) {
   return(p)
 }
 
+
+
+.plot_weighting_functions <- function(plot_theme){
+  # Non-standard evaluation
+  weight <- NULL
+
+  # Step function --------------------------------------------------------------
+  data_step <- data.table::data.table("x" = seq(from = -1.0, to = 1.0, by = 0.001))
+  data_step[, "weight" := power.transform:::..weight_function_external(x, "step", k1 = 0.60)]
+
+  p_step <- ggplot2::ggplot(
+    data = data_step,
+    mapping = ggplot2::aes(
+      x = x,
+      y = weight))
+  p_step <- p_step + plot_theme
+  p_step <- p_step + ggplot2::geom_line()
+  p_step <- p_step + ggplot2::facet_grid(cols = vars("step"))
+
+  # Triangle function ----------------------------------------------------------
+  data_triangle <- data.table::data.table("x" = seq(from = -1.0, to = 1.0, by = 0.001))
+  data_triangle[, "weight" := power.transform:::..weight_function_external(x, "triangle", k1 = 0.30, k2 = 0.90)]
+
+  p_triangle <- ggplot2::ggplot(
+    data = data_triangle,
+    mapping = ggplot2::aes(
+      x = x,
+      y = weight))
+  p_triangle <- p_triangle + plot_theme
+  p_triangle <- p_triangle + ggplot2::geom_line()
+  p_triangle <- p_triangle + ggplot2::facet_grid(cols = vars("triangle"))
+  p_triangle <- p_triangle + ggplot2::theme(
+    axis.text.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_blank())
+
+  # Cosine function ------------------------------------------------------------
+  data_cosine <- data.table::data.table(x = seq(from = -1.0, to = 1.0, by = 0.001))
+  data_cosine[, "weight" := power.transform:::..weight_function_external(x, "cosine", k1 = 0.30, k2 = 0.90)]
+
+  p_cosine <- ggplot2::ggplot(
+    data = data_cosine,
+    mapping = ggplot2::aes(
+      x = x,
+      y = weight))
+  p_cosine <- p_cosine + plot_theme
+  p_cosine <- p_cosine + ggplot2::geom_line()
+  p_cosine <- p_cosine + ggplot2::facet_grid(cols = vars("tapered cosine"))
+   p_cosine <- p_cosine + ggplot2::theme(
+    axis.text.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_blank())
+
+  p <- p_step + p_triangle + p_cosine +  patchwork::plot_layout(ncol = 3)
+
+  return(p)
+}
