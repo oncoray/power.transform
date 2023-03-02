@@ -607,3 +607,78 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   return(p)
 }
+
+
+
+.plot_optimised_weighting_function_parameters <- function(plot_theme, manuscript_dir) {
+
+  # Prevent warnings due to non-standard evaluation.
+  estimation_method <- weight_method <- method <- k <- NULL
+  lambda <- target_lambda <- lambda_error <- i.lambda_error <- non_robust_lambda_error <- NULL
+  better_than_non_robust <- pass_rate <- median_error_round <- NULL
+
+  # This find the optimal weighting parameter settings that are used within the
+  # package. The output is not used here, but its presence is required for
+  # processing.
+  two_sided_function_parameters <- .get_optimised_weighting_function_parameters_two_sided(
+    manuscript_dir = manuscript_dir)
+
+  # This finds lambda values at the optimised weighting parameter settings.
+  data <- .get_transformation_parameters_two_sided(manuscript_dir = manuscript_dir)
+
+  # Select only MLE here.
+  data <- data[estimation_method == "MLE"]
+
+  # Compute difference to target.
+  data <- data[, "lambda_error" := abs(lambda - target_lambda)]
+
+  # Join with error for non-robust values.
+  non_robust_data <- data[weight_method == "non-robust", mget(c("method", "estimation_method", "k", "ii", "lambda_error"))]
+  data[
+    non_robust_data,
+    on = c("method", "estimation_method", "k", "ii"),
+    "non_robust_lambda_error" := i.lambda_error]
+
+  data[, "better_than_non_robust" := lambda_error <= non_robust_lambda_error]
+  data[k == 0.0, "better_than_non_robust" := NA_integer_]
+  data[weight_method == "non-robust", "better_than_non_robust" := NA_integer_]
+
+  pass_rate_data <- data[, list(
+    "pass_rate" = sum(better_than_non_robust, na.rm=TRUE),
+    "n" = sum(!is.na(better_than_non_robust)),
+    "median_error" = stats::median(lambda_error)),
+    by=c("method", "estimation_method", "weight_method")]
+  pass_rate_data[, "pass_rate" := round(pass_rate / n * 100.0, 1)]
+  pass_rate_data[, "median_error_round" := format(pass_rate_data$median_error, digits = 1)]
+
+  annotation_settings <- get_annotation_settings(plot_theme)
+
+  p <- ggplot2::ggplot(
+    data = data,
+    mapping = ggplot2::aes(
+      x = weight_method,
+      y = lambda_error,
+      fill = method))
+  p <- p + plot_theme
+  p <- p + ggplot2::geom_violin(draw_quantiles = 0.5)
+  p <- p + ggplot2::facet_wrap("method", nrow=2)
+  p <- p + paletteer::scale_fill_paletteer_d(
+    palette = "ggthemes::Tableau_10",
+    drop = FALSE)
+  p <- p + geom_text(
+    data = pass_rate_data,
+    mapping = ggplot2::aes(
+      x = weight_method,
+      label = median_error_round,
+      y = 10.0),
+    colour = annotation_settings$colour,
+    family = annotation_settings$family,
+    fontface = annotation_settings$face,
+    size = annotation_settings$geom_text_size,
+    vjust = 0.5)
+  p <- p + ggplot2::scale_y_sqrt(name = latex2exp::TeX("$| \\hat{\\lambda}^r - \\hat{\\lambda}_{0}|$"))
+  p <- p + ggplot2::scale_x_discrete(guide = ggplot2::guide_axis(n.dodge = 2))
+  p <- p + ggplot2::xlab("weighting method")
+
+  return(p)
+}
