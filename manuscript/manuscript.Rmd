@@ -419,7 +419,7 @@ cap <- paste0(
   "of the distribution. The top and bottom panel show errors for the shift-sensitive Box-Cox transformation, ",
   "and shift-sensitive Yeo-Johnson transformation, respectively. ",
   "In each panel, the error distribution for the non-robust transformation is shown to the left ",
-  "for comparison with different weighting functions. ",
+  "for comparison with different weighting methods. ",
   "Note that a square root transformation was used along the $y$-axis. Median errors are shown above each distribution."
 )
 
@@ -1530,9 +1530,11 @@ p <- p + ggplot2::theme(
 p
 
 ```
-
+# Appendix C: Right-sided outliers
 
 ```{r eval=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+
+.get_optimised_weighting_function_parameters(manuscript_dir = manuscript_dir, side = "right")
 
 if(!file.exists(file.path(manuscript_dir, "robustness_comparison_rightside_outlier.RDS"))){
   set.seed(95)

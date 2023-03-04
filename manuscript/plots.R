@@ -620,8 +620,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
   # This find the optimal weighting parameter settings that are used within the
   # package. The output is not used here, but its presence is required for
   # processing.
-  two_sided_function_parameters <- .get_optimised_weighting_function_parameters_two_sided(
-    manuscript_dir = manuscript_dir)
+  two_sided_function_parameters <- .get_optimised_weighting_function_parameters(
+    manuscript_dir = manuscript_dir,
+    side = "both")
 
   # This finds lambda values at the optimised weighting parameter settings.
   data <- .get_transformation_parameters_two_sided(manuscript_dir = manuscript_dir)

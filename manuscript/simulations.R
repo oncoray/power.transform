@@ -165,14 +165,22 @@
 
 
 
-.get_optimised_weighting_function_parameters_two_sided <- function(manuscript_dir){
+.get_optimised_weighting_function_parameters <- function(manuscript_dir, side = "both") {
 
   # generator ------------------------------------------------------------------
   experiment_args <- coro::generator(
     function(
     manuscript_dir,
+    side,
     transformation_methods = NULL,
-    estimation_methods = NULL){
+    estimation_methods = NULL) {
+
+      if (side == "both") {
+        file_dir <- "robustness_comparison"
+
+      } else if (side == "right") {
+        file_dir <- "robustness_comparison_right"
+      }
 
       if(is.null(transformation_methods)){
         transformation_methods <- c("box_cox", "yeo_johnson")
@@ -196,7 +204,7 @@
 
           file_name <- file.path(
             manuscript_dir,
-            "robustness_comparison",
+            file_dir,
             paste0(
               transformation_method, "_",
               estimation_method, "_",
@@ -255,7 +263,7 @@
 
               file_name <- file.path(
                 manuscript_dir,
-                "robustness_comparison",
+                file_dir,
                 paste0(
                   transformation_method, "_",
                   estimation_method, "_",
@@ -330,7 +338,8 @@
     alpha,
     beta,
     target_lambda,
-    outlier_fraction){
+    outlier_fraction,
+    side){
 
     # Set parameters.
     parameters <- list(
@@ -361,7 +370,16 @@
 
           # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
           # than Q3 + 1.5 IQR.
-          x_random <- stats::runif(n_draw, min=-2.0, max=2.0)
+          if (side == "both") {
+            x_random <- stats::runif(n_draw, min=-2.0, max=2.0)
+          } else if (side == "right") {
+            x_random <- stats::runif(n_draw, min=0.0, max=2.0)
+          } else if (side == "left") {
+            x_random <- stats::runif(n_draw, min=-2.0, max=0.0)
+          } else {
+            stop(paste0("side was not recognised: ", side))
+          }
+
           outlier <- numeric(n_draw)
           if(any(x_random < 0)){
             outlier[x_random < 0] <- q_lower - 1.5 * interquartile_range + x_random[x_random < 0] * interquartile_range
@@ -526,7 +544,9 @@
 
   # Select experiments to conduct by filtering out experiments that are file
   # names.
-  experiments <- coro::collect(experiment_args(manuscript_dir = manuscript_dir))
+  experiments <- coro::collect(experiment_args(
+    manuscript_dir = manuscript_dir,
+    side = side))
   experiments <- experiments[!sapply(experiments, is.character)]
 
   if(length(experiments) > 0){
@@ -564,9 +584,11 @@
       alpha = alpha,
       beta = beta,
       target_lambda = target_lambda,
-      MoreArgs=list("outlier_fraction"=outlier_fraction),
-      SIMPLIFY=FALSE,
-      USE.NAMES=FALSE)
+      MoreArgs = list(
+        "outlier_fraction" = outlier_fraction,
+        "side" = side),
+      SIMPLIFY = FALSE,
+      USE.NAMES = FALSE)
 
     x <- unlist(x, recursive = FALSE)
 
@@ -577,7 +599,8 @@
 
     parallel::clusterExport(
       cl=cl,
-      varlist = c(".compute_robust_lambda", ".optimisation_inner")
+      varlist = c(".compute_robust_lambda", ".optimisation_inner"),
+      envir = environment()
     )
 
     parallel::parLapplyLB(
@@ -592,12 +615,14 @@
   }
 
   # Collect all files
-  experiments <- coro::collect(experiment_args(manuscript_dir = manuscript_dir))
-  weighting_parameters_two_sided <- lapply(experiments, readRDS)
-  weighting_parameters_two_sided <- lapply(weighting_parameters_two_sided, data.table::as.data.table)
-  weighting_parameters_two_sided <- data.table::rbindlist(weighting_parameters_two_sided, fill=TRUE)
+  experiments <- coro::collect(experiment_args(
+    manuscript_dir = manuscript_dir,
+    side = side))
+  weighting_parameters <- lapply(experiments, readRDS)
+  weighting_parameters <- lapply(weighting_parameters, data.table::as.data.table)
+  weighting_parameters <- data.table::rbindlist(weighting_parameters, fill = TRUE)
 
-  return(weighting_parameters_two_sided)
+  return(weighting_parameters)
 }
 
 
