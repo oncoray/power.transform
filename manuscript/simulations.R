@@ -351,7 +351,7 @@
     # Add outliers.
     x <- lapply(
       outlier_fraction,
-      function(k, x, parameters){
+      function(k, x, parameters, side){
         # Set parameters.
         parameters$k <- k
 
@@ -398,7 +398,8 @@
           "parameters" = parameters))
       },
       x = x,
-      parameters)
+      parameters = parameters,
+      side = side)
 
     return(x)
   }
@@ -627,18 +628,33 @@
 
 
 
-.get_transformation_parameters_two_sided <- function(manuscript_dir){
+.get_transformation_parameters <- function(manuscript_dir, side = "both"){
 
-  if(!file.exists(file.path(manuscript_dir, "robustness_comparison_marginal_parameter_data.RDS"))){
+  if (side == "both"){
+    file_name <- file.path(manuscript_dir, "robustness_comparison_marginal_parameter_data.RDS")
+
+  } else if (side == "right") {
+    file_name <- file.path(manuscript_dir, "robustness_comparison_marginal_parameter_data_right.RDS")
+  }
+
+  if(!file.exists(file_name)){
 
     # generator ----------------------------------------------------------------
     experiment_args <- coro::generator(
       function(
-    manuscript_dir,
-    transformation_methods = NULL,
-    estimation_methods = NULL){
+        manuscript_dir,
+        side,
+        transformation_methods = NULL,
+        estimation_methods = NULL) {
 
-        if(is.null(transformation_methods)){
+        if (side == "both") {
+          file_dir <- "robustness_comparison"
+
+        } else if (side == "right") {
+          file_dir <- "robustness_comparison_right"
+        }
+
+        if (is.null(transformation_methods)) {
           transformation_methods <- c("box_cox", "yeo_johnson")
         }
 
@@ -658,7 +674,7 @@
 
             file_name <- file.path(
               manuscript_dir,
-              "robustness_comparison",
+              file_dir,
               paste0(
                 transformation_method, "_",
                 estimation_method, "_",
@@ -679,7 +695,7 @@
 
                 file_name <- file.path(
                   manuscript_dir,
-                  "robustness_comparison",
+                  file_dir,
                   paste0(
                     transformation_method, "_",
                     estimation_method, "_",
@@ -720,9 +736,9 @@
 
     # Helper function for computing the target lambda value.
     .compute_target_lambda <- function(
-    x,
-    transformation_methods = NULL,
-    estimation_methods = NULL){
+      x,
+      transformation_methods = NULL,
+      estimation_methods = NULL) {
 
       if(is.null(transformation_methods)){
         transformation_methods <- c("box_cox", "yeo_johnson")
@@ -760,13 +776,14 @@
 
     # Helper function for population distributions with outliers.
     .populate_outliers <- function(
-    x,
-    n,
-    alpha,
-    beta,
-    target_lambda,
-    ii,
-    outlier_fraction){
+      x,
+      n,
+      alpha,
+      beta,
+      target_lambda,
+      ii,
+      outlier_fraction,
+      side) {
 
       # Set parameters.
       parameters <- list(
@@ -779,7 +796,7 @@
       # Add outliers.
       x <- lapply(
         outlier_fraction,
-        function(k, x, parameters){
+        function(k, x, parameters, side){
           # Set parameters.
           parameters$k <- k
 
@@ -798,7 +815,16 @@
 
             # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
             # than Q3 + 1.5 IQR.
-            x_random <- stats::runif(n_draw, min=-2.0, max=2.0)
+            if (side == "both") {
+              x_random <- stats::runif(n_draw, min=-2.0, max=2.0)
+            } else if (side == "right") {
+              x_random <- stats::runif(n_draw, min=0.0, max=2.0)
+            } else if (side == "left") {
+              x_random <- stats::runif(n_draw, min=-2.0, max=0.0)
+            } else {
+              stop(paste0("side was not recognised: ", side))
+            }
+
             outlier <- numeric(n_draw)
             if(any(x_random < 0)){
               outlier[x_random < 0] <- q_lower - 1.5 * interquartile_range + x_random[x_random < 0] * interquartile_range
@@ -817,7 +843,8 @@
             "parameters" = parameters))
         },
         x = x,
-        parameters)
+        parameters = parameters,
+        side = side)
 
       return(x)
     }
@@ -827,13 +854,13 @@
     # Helper function for computing transformer parameters under optimisation
     # constraints.
     .compute_robust_lambda <- function(
-    experiment,
-    data){
+      experiment,
+      data) {
 
       # Custom parser.
       ..outlier_parser <- function(
-    x,
-    fun_args){
+        x,
+        fun_args) {
         # Create transformer.
         transformer <- suppressWarnings(do.call(
           power.transform::find_transformation_parameters,
@@ -907,13 +934,17 @@
       beta = beta,
       target_lambda = target_lambda,
       ii = seq_along(x),
-      MoreArgs=list("outlier_fraction"=outlier_fraction),
+      MoreArgs=list(
+        "outlier_fraction"=outlier_fraction,
+        "side" = side),
       SIMPLIFY=FALSE,
       USE.NAMES=FALSE)
 
     x <- unlist(x, recursive = FALSE)
 
-    experiments <- coro::collect(experiment_args(manuscript_dir = manuscript_dir))
+    experiments <- coro::collect(experiment_args(
+      manuscript_dir = manuscript_dir,
+      side = side))
 
     cl <- parallel::makeCluster(18L)
 

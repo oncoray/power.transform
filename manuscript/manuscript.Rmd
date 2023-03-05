@@ -1443,7 +1443,7 @@ cap <- paste0(
   "Things."
 )
 # This finds lambda values at the optimised weighting parameter settings.
-data <- .get_transformation_parameters_two_sided(manuscript_dir = manuscript_dir)
+data <- .get_transformation_parameters(manuscript_dir = manuscript_dir)
 
 data <- data[method == "Box-Cox"]
 data <- data[, "lambda_error" := abs(lambda - target_lambda)]
@@ -1489,7 +1489,7 @@ cap <- paste0(
   "Things."
 )
 # This finds lambda values at the optimised weighting parameter settings.
-data <- .get_transformation_parameters_two_sided(manuscript_dir = manuscript_dir)
+data <- .get_transformation_parameters(manuscript_dir = manuscript_dir)
 
 data <- data[method == "Yeo-Johnson"]
 data <- data[, "lambda_error" := abs(lambda - target_lambda)]

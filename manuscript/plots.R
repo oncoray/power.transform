@@ -625,7 +625,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     side = "both")
 
   # This finds lambda values at the optimised weighting parameter settings.
-  data <- .get_transformation_parameters_two_sided(manuscript_dir = manuscript_dir)
+  data <- .get_transformation_parameters(manuscript_dir = manuscript_dir)
 
   # Select only MLE here.
   data <- data[estimation_method == "MLE"]
