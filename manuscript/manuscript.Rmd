@@ -286,7 +286,13 @@ Here, $F_{\Gamma}^{-1}$ is the quantile function of the gamma distribution with 
 
 ## Goodness of fit
 
-To be added.
+Power transformations aim to transform features to a normal distribution. However, this may not always be successful or possible. Deviations from normality can be detected by normality tests, such as the Shapiro-Wilk test [@Shapiro1965-zd]. In practice, normality tests may be too stringent to assess goodness of fit in presence of large sample sizes, outliers or a combination of the two. Here we develop an empirical test for central normality.
+
+Let central normality be defined as normality of central $\kappa$ portion of the data, i.e. $\mathbf{X}_{\text{central}} = \left\{x_i \in \mathbf{X} \, | \,  \frac{1-\kappa}{2} \leq  p_i \leq \frac{1 + \kappa}{2}\right\}$, with $p_i$ probabilities of the empirical distribution, as previously.
+We then compute the residual errors between the z-scores of the transformed feature $\phi^{\lambda, x_0} (\mathbf{X})$ and the expected z-scores from a standard normal distribution: $r_i =\left| \left( \phi^{\lambda, x_0}(x_i) - \mu_M)\right) / \sigma_M - F^{-1}_{\mathcal{N}}(p_i) \right|$, with $\mu_M$ and $\sigma_M$ are robust Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0} (\mathbf{X})$ [@Huber1981-su].
+The set of residual errors for the central portion of the data is then $\mathbf{R}_{\text{central}} = \left\{ r_i \in \left\{ r_1, r_2, \ldots, r_n\right\} \, | \,  \frac{1-\kappa}{2} \leq  p_i \leq \frac{1 + \kappa}{2}\right\}$.
+
+To be continued.
 
 # Simulation
 
