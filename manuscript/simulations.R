@@ -994,3 +994,218 @@
 
   return(data)
 }
+
+
+
+.get_goodness_of_fit_data <- function(manuscript_dir) {
+
+  # Helper function for population distributions with outliers.
+  .populate_outliers <- function(
+    x,
+    n,
+    alpha,
+    beta,
+    ii,
+    outlier_fraction,
+    side = "both") {
+
+    # Set parameters.
+    parameters <- list(
+      "n" = n,
+      "alpha" = alpha,
+      "beta" = beta,
+      "ii" = ii)
+
+    # Add outliers.
+    x <- lapply(
+      outlier_fraction,
+      function(k, x, parameters, side){
+        # Set parameters.
+        parameters$k <- k
+
+        # Compute interquartile range.
+        interquartile_range <- stats::IQR(x)
+
+        # Compute upper and lower quartiles.
+        q_lower <- stats::quantile(x, probs=0.25, names=FALSE)
+        q_upper <- stats::quantile(x, probs=0.75, names=FALSE)
+
+        # Set data where the outliers will be copied into.
+        x_outlier <- x
+
+        if(k != 0.0){
+          n_draw <- ceiling(k * length(x))
+
+          # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
+          # than Q3 + 1.5 IQR.
+          if (side == "both") {
+            x_random <- stats::runif(n_draw, min=-2.0, max=2.0)
+          } else if (side == "right") {
+            x_random <- stats::runif(n_draw, min=0.0, max=2.0)
+          } else if (side == "left") {
+            x_random <- stats::runif(n_draw, min=-2.0, max=0.0)
+          } else {
+            stop(paste0("side was not recognised: ", side))
+          }
+
+          outlier <- numeric(n_draw)
+          if(any(x_random < 0)){
+            outlier[x_random < 0] <- q_lower - 1.5 * interquartile_range + x_random[x_random < 0] * interquartile_range
+          }
+
+          if(any(x_random >= 0)){
+            outlier[x_random >= 0] <- q_upper + 1.5 * interquartile_range + x_random[x_random >= 0] * interquartile_range
+          }
+
+          # Randomly insert outlier values.
+          x_outlier[sample(seq_along(x), size = n_draw, replace = FALSE)] <- outlier
+        }
+
+        return(list(
+          "x" = x_outlier,
+          "parameters" = parameters))
+      },
+      x = x,
+      parameters = parameters,
+      side = side)
+
+    return(x)
+  }
+
+
+  .compute_residuals <- function(x, n_sample = 200L) {
+    # Set interpolation points.
+    p_sample <- (seq_len(n_sample) - 1/3) / (n_sample + 1/3)
+
+    # Determine residuals for Box-Cox transformations.
+    transformer_bc <- suppressWarnings(power.transform::find_transformation_parameters(
+      x = x$x,
+      method = "box_cox",
+      shift = TRUE,
+      robust = TRUE,
+      estimation_method = "mle",
+      weighting_function = "empirical_probability_cosine"))
+
+    residual_data <- power.transform::get_residuals(
+      x = x$x,
+      transformer = transformer_bc)
+
+    residual <- stats::approx(
+      x = residual_data$p,
+      y = abs(residual_data$residual),
+      xout = p_sample,
+      rule = 2,
+      ties = max)$y
+
+    residual_bc <- data.table::data.table(
+      "distribution_id" = x$parameter$ii,
+      "p" = p_sample,
+      "k" = x$parameter$k,
+      "residual" = residual,
+      "method" = "box_cox",
+      "has_outliers" = x$parameters$k > 0)
+
+    # Determine residuals for Yeo-Johnson transformations.
+    transformer_yj <- suppressWarnings(power.transform::find_transformation_parameters(
+      x = x$x,
+      method = "yeo_johnson",
+      shift = TRUE,
+      robust = TRUE,
+      estimation_method = "mle",
+      weighting_function = "empirical_probability_cosine"))
+
+    residual_data <- power.transform::get_residuals(
+      x = x$x,
+      transformer = transformer_yj)
+
+    residual <- stats::approx(
+      x = residual_data$p,
+      y = abs(residual_data$residual),
+      xout = p_sample,
+      rule = 2,
+      ties = max)$y
+
+    residual_yj <- data.table::data.table(
+      "distribution_id" = x$parameter$ii,
+      "p" = p_sample,
+      "k" = x$parameter$k,
+      "residual" = residual,
+      "method" = "yeo_johnson",
+      "has_outliers" = x$parameters$k > 0)
+
+    return(data.table::rbindlist(list(residual_bc, residual_yj)))
+  }
+
+
+  if(!file.exists(file.path(manuscript_dir, "residual_plot.RDS"))){
+
+    # computations -------------------------------------------------------------
+    set.seed(95)
+
+    # Generate table of asymmetric generalised normal distribution parameters.
+    n_distributions <- 100L
+
+    # Generate alpha, beta and n.
+    n <- stats::runif(n=n_distributions, min=2, max=4)
+    n <- ceiling(10^n)
+
+    alpha <- stats::runif(n=n_distributions, min=0.01, max=0.99)
+    beta <- stats::runif(n=n_distributions, min=1.00, max=5.00)
+
+    # Generate corresponding distributions.
+    x <- mapply(
+      power.transform::ragn,
+      n = n,
+      alpha = alpha,
+      beta = beta)
+
+    # Add outliers, between 0.00 and 0.10.
+    n_outliers <- 10
+    outlier_fraction <- (seq_len(n_outliers) - 1)^2 /((n_outliers-1)^2 * 10)
+
+    # Generate outliers in the data.
+    x <- mapply(
+      FUN = .populate_outliers,
+      x = x,
+      n = n,
+      alpha = alpha,
+      beta = beta,
+      ii = seq_along(x),
+      MoreArgs=list(
+        "outlier_fraction"=outlier_fraction),
+      SIMPLIFY=FALSE,
+      USE.NAMES=FALSE)
+
+    set.seed(95)
+
+    x <- unlist(x, recursive = FALSE)
+
+    # Start cluster
+    cl <- parallel::makeCluster(18L)
+
+    # Compute all data in parallel.
+    data <- parallel::parLapply(
+      cl=cl,
+      X=x,
+      fun=.compute_residuals)
+
+    # Stop cluster.
+    parallel::stopCluster(cl)
+
+    data <- data.table::rbindlist(data)
+
+    saveRDS(
+      object = data,
+      file = file.path(manuscript_dir, "residual_plot.RDS"))
+
+  } else {
+    data <- readRDS(file.path(manuscript_dir, "residual_plot.RDS"))
+  }
+
+  data$method <- factor(
+    x = data$method,
+    levels = c("box_cox", "yeo_johnson"),
+    labels = c("Box-Cox", "Yeo-Johnson"))
+
+  return(data)
+}

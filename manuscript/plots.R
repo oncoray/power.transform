@@ -613,7 +613,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
 .plot_optimised_weighting_function_parameters <- function(plot_theme, manuscript_dir) {
 
   # Prevent warnings due to non-standard evaluation.
-  estimation_method <- weight_method <- method <- k <- NULL
+  estimation_method <- weight_method <- method <- k <- n <- NULL
   lambda <- target_lambda <- lambda_error <- i.lambda_error <- non_robust_lambda_error <- NULL
   better_than_non_robust <- pass_rate <- median_error_round <- NULL
 
@@ -682,4 +682,150 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p <- p + ggplot2::xlab("weighting method")
 
   return(p)
+}
+
+
+
+.plot_residuals <- function(plot_theme, manuscript_dir){
+
+  # Prevent warnings due to non-standard evaluation.
+  has_outliers <- residual <- threshold <- residual_error <- method <- p <- NULL
+
+  # Get data
+  data <- .get_goodness_of_fit_data(manuscript_dir = manuscript_dir)
+
+  outlier_free_data <- data[
+    has_outliers == FALSE,
+    list("residual_error"=stats::quantile(residual, probs=0.99)),
+    by=c("p", "method")]
+
+  data <- data[, list(
+    "residual_50"=stats::quantile(residual, probs=0.50),
+    "residual_90"=stats::quantile(residual, probs=0.90),
+    "residual_95"=stats::quantile(residual, probs=0.95),
+    "residual_99"=stats::quantile(residual, probs=0.99),
+    "residual_max"=max(residual)),
+    by=c("p", "method")]
+
+  data <- data.table::melt(
+    data = data,
+    id.vars = c("p", "method"),
+    variable.name = "threshold",
+    value.name = "residual_error")
+
+  data$threshold <- factor(
+    x = data$threshold,
+    levels = c("residual_50", "residual_90", "residual_95", "residual_99", "residual_max"),
+    labels = c("50 %", "90 %", "95 %", "99 %", "100 %"))
+
+  p_bc <- ggplot2::ggplot(
+    data = data[method == "Box-Cox"],
+    mapping = ggplot2::aes(
+      x = p,
+      y = residual_error,
+      colour = threshold))
+  p_bc <- p_bc + plot_theme
+  p_bc <- p_bc + ggplot2::geom_line()
+  p_bc <- p_bc + ggplot2::geom_line(
+    data = outlier_free_data[method == "Box-Cox"],
+    mapping = ggplot2::aes(
+      x = p,
+      y = residual_error),
+    colour = "gray40",
+    linetype = "dashed")
+  p_bc <- p_bc + ggplot2::scale_colour_discrete(
+    name = "percentile (Box-Cox)",
+    type=c("50 %" = "#ABC6E2", "90 %" = "#779EC6", "95 %" = "#4E79A7", "99 %" = "#346394", "100 %" = "#1D4D7E"))
+  p_bc <- p_bc + ggplot2::xlab("empirical probability")
+  p_bc <- p_bc + ggplot2::ylab("absolute residual error")
+  p_bc <- p_bc + ggplot2::coord_cartesian(
+    xlim = c(0, 1),
+    ylim = c(0, 1))
+
+  p_yj <- ggplot2::ggplot(
+    data = data[method == "Yeo-Johnson"],
+    mapping = ggplot2::aes(
+      x = p,
+      y = residual_error,
+      colour = threshold))
+  p_yj <- p_yj + plot_theme
+  p_yj <- p_yj + ggplot2::geom_line()
+  p_yj <- p_yj + ggplot2::geom_line(
+    data = outlier_free_data[method == "Yeo-Johnson"],
+    mapping = ggplot2::aes(
+      x = p,
+      y = residual_error),
+    colour = "gray40",
+    linetype = "dashed")
+  p_yj <- p_yj + ggplot2::scale_colour_discrete(
+    name = "percentile (Yeo-Johnson)",
+    type=c("50 %" = "#FFBD7D", "90 %" = "#FFA954", "95 %" = "#F28E2B", "99 %" = "#CD6B0B", "100 %" = "#A25000"))
+  p_yj <- p_yj + ggplot2::xlab("empirical probability")
+  p_yj <- p_yj + ggplot2::ylab("absolute residual error")
+  p_yj <- p_yj + ggplot2::coord_cartesian(
+    xlim = c(0, 1),
+    ylim = c(0, 1))
+  p_yj <- p_yj + ggplot2::theme(
+    axis.title.y = ggplot2::element_blank(),
+    axis.text.y = ggplot2::element_blank())
+
+  p <- p_bc + p_yj +  patchwork::plot_layout(ncol = 2, guides = "collect")
+
+  return(p)
+}
+
+
+
+.plot_mean_absolute_residual_error <- function(plot_theme, manuscript_dir){
+
+  # Get data
+  data <- .get_goodness_of_fit_data(manuscript_dir = manuscript_dir)
+
+  central_width <- c(0.60, 0.70, 0.80, 0.90, 0.95, 1.00)
+
+  mare_data <- list()
+
+  for (ii in seq_along(central_width)) {
+    p_lower <- 0.50 - central_width[ii] / 2
+    p_upper <- 0.50 + central_width[ii] / 2
+
+    x <- data.table::copy(data)
+
+    # Clip empirical probabilities to centre.
+    x <- x[p >= p_lower & p <= p_upper]
+
+    # Compute mean absolute residual error per feature.
+    x <- x[, list("mare"=mean(residual)), by=c("distribution_id", "method")]
+    x <- x[, list("n"=.N), by=c("mare", "method")][order(mare, method)]
+    x[, "rejected" := 1.0 - cumsum(n) / sum(n), by = "method"]
+    x <- rbind(
+      data.table::data.table(
+        "mare"=c(0.0, 0.0),
+        "method"=c("box_cox", "yeo_johnson"),
+        "n"=0L,
+        "rejected"=1.0),
+      x)
+
+    x[, "kappa" := central_width[ii]]
+
+    mare_data[[ii]] <- x
+  }
+
+  mare_data <- data.table::rbindlist(mare_data)
+
+  p <- ggplot2::ggplot(
+    data = mare_data,
+    mapping = ggplot2::aes(
+      x = mare,
+      y = rejected,
+      colour = method))
+  p <- p + plot_theme
+  p <- p + ggplot2::geom_step()
+  p <- p + ggplot2::xlab("mean absolute residual error")
+  p <- p + paletteer::scale_color_paletteer_d(
+    palette="ggthemes::Tableau_10",
+    drop=FALSE)
+  p <- p + ggplot2::coord_cartesian(xlim = c(0, 0.25))
+  p <- p + ggplot2::facet_wrap("kappa", ncol = 3)
+
 }
