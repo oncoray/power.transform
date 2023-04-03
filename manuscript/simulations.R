@@ -1150,7 +1150,7 @@
     set.seed(95)
 
     # Generate table of asymmetric generalised normal distribution parameters.
-    n_distributions <- 100L
+    n_distributions <- 10000L
 
     # Generate alpha, beta and n.
     n <- stats::runif(n=n_distributions, min=2, max=4)

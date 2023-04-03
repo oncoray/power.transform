@@ -286,11 +286,19 @@ Here, $F_{\Gamma}^{-1}$ is the quantile function of the gamma distribution with 
 
 ## Goodness of fit
 
-Power transformations aim to transform features to a normal distribution. However, this may not always be successful or possible. Deviations from normality can be detected by normality tests, such as the Shapiro-Wilk test [@Shapiro1965-zd]. In practice, normality tests may be too stringent to assess goodness of fit in presence of large sample sizes, outliers or a combination of the two. Here we develop an empirical test for central normality.
+Power transformations aim to transform features to a normal distribution. However, this may not always be successful or possible. Deviations from normality can be detected by normality tests, such as the Shapiro-Wilk test [@Shapiro1965-zd]. In practice, normality tests may be too stringent to assess goodness of fit in presence of large sample sizes, outliers or a combination of the two. Here we develop an empirical test for central normality. The null hypothesis $H_0$ is that the distribution is centrally normal. The alternative hypothesis $H_1$ is that the distribution is not centrally normal.
 
-Let central normality be defined as normality of central $\kappa$ portion of the data, i.e. $\mathbf{X}_{\text{central}} = \left\{x_i \in \mathbf{X} \, | \,  \frac{1-\kappa}{2} \leq  p_i \leq \frac{1 + \kappa}{2}\right\}$, with $p_i$ probabilities of the empirical distribution, as previously.
+Let central normality be defined as normality of central portion $\kappa$ of the data, i.e. $\mathbf{X}_{\text{central}} = \left\{x_i \in \mathbf{X} \, | \,  \frac{1-\kappa}{2} \leq  p_i \leq \frac{1 + \kappa}{2}\right\}$, with $p_i$ probabilities of the empirical distribution, as previously.
 We then compute the residual errors between the z-scores of the transformed feature $\phi^{\lambda, x_0} (\mathbf{X})$ and the expected z-scores from a standard normal distribution: $r_i =\left| \left( \phi^{\lambda, x_0}(x_i) - \mu_M)\right) / \sigma_M - F^{-1}_{\mathcal{N}}(p_i) \right|$, with $\mu_M$ and $\sigma_M$ are robust Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0} (\mathbf{X})$ [@Huber1981-su].
 The set of residual errors for the central portion of the data is then $\mathbf{R}_{\text{central}} = \left\{ r_i \in \left\{ r_1, r_2, \ldots, r_n\right\} \, | \,  \frac{1-\kappa}{2} \leq  p_i \leq \frac{1 + \kappa}{2}\right\}$.
+
+The test statistic $\tau_{\text{gof}}$ is then defined as:
+```{=latex}
+\begin{equation}
+\tau_{\text{gof}} = \frac{\sum_{i=1}^{N} r_i \left[r_i \in \mathbf{R}_{\text{central}}\right]}{\sum_{i=1}^N \left[r_i \in \mathbf{R}_{\text{central}}\right]} 
+\end{equation}
+```
+Here $[\quad]$ denotes an Iverson bracket. The test statistic is equal to the mean of the residual errors of the central portion of the data. 
 
 To be continued.
 
@@ -437,14 +445,16 @@ cap <- paste0(
 
 ## Empirical goodness of fit test
 
-To answer:
-1. What is the residual threshold and the volume required to avoid rejecting transformations? Optimise: 1. window; 2. threshold; 3. threshold fraction. ? Create a figure that summarises residual error thresholds (50%, 80%, 90%, 95%, 99%, 100%), below which x% of the data falls.
-2. How does this correspond to distance between bimodal normal distributions?
+To develop an empirical goodness of fit test we need to consider two parameters: the central portion $\kappa$ as a fixed parameter, and test statistic $\tau_{\text{gof}}$. We will first define the central portion $\kappa$.
 
-```{r goodness-of-fit, warning=FALSE, message=FALSE, fig.cap=cap}
+First we draw $m_d=100000$ random asymmetric generalised normal distributions, parametrised as above. As before, for each distribution, up to $10 \%$ of instances are replaced by outlier values, and this is repeated $10$ times. We then compute residuals after optimising robust shift-sensitive transformations with the empirical tapered cosine weighting method.
+
+Figure *Insert reference* shows the residual errors of the transformed distribution as function of the empirical probability. As expected, the largest deviations from normality appear on the extremities of this range. For Box-Cox, the effect of outliers on the lower end of the distribution leads to noticeable asymmetry. Between very low and very high empirical probabilities, residual errors are constrained and relatively flat. This is the candidate range for the central portion of the data.
+
+```{r goodness-of-fit-1, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
   "Residual error as a function of empirical probability. ",
-  "Percentiles of the error are shown for robust, shift-sensitive transformations of 1000 randomly drawn asymmetric ",
+  "Percentiles of the error are shown for robust, shift-sensitive transformations of 100000 randomly drawn asymmetric ",
   "generalised normal distributions, with 10 randomly drawn outliers distributions, ",
   "(up to 10% of samples) each. Larger errors occur for more extreme values at the edges of each distribution. ",
   "For comparison, the 99th percentile of residual errors for transformations of outlier-free distributions are shown (grey dashed line).")
@@ -454,14 +464,20 @@ cap <- paste0(
   manuscript_dir = manuscript_dir)
 
 ```
+We then consider the empirical probability of type I errors: the probability of incorrectly classifying a centrally normal distribution as being non-normal based on the test statistic. Under the assumption that the asymmetric generalised normal distributions are centrally normal after robust transformation, this produces the relationship shown in Figure *Insert*. Since for $\kappa \leq 0.80$ error curves are similar, we fix the value of the central portion $\kappa$ to 0.80. This leads to test statistic values listed in Table *insert*.
 
-
-```{r goodness-of-fit, warning=FALSE, message=FALSE, fig.cap=cap}
+```{r goodness-of-fit-2, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
-  "Check")
-.plot_
+  "Rejected transformed asymmetric generalised normal distributions as function of ",
+  "the mean absolute residual error of the central portion $\\kappa$ of the distribution.")
+
+.plot_mean_absolute_residual_error(
+  plot_theme = plot_theme,
+  manuscript_dir = manuscript_dir)
 
 ```
+
+The second error, 
 
 # Experimental Results
 

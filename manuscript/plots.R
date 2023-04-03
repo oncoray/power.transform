@@ -795,13 +795,13 @@ get_annotation_settings <- function(ggtheme = NULL) {
     x <- x[p >= p_lower & p <= p_upper]
 
     # Compute mean absolute residual error per feature.
-    x <- x[, list("mare"=mean(residual)), by=c("distribution_id", "method")]
+    x <- x[, list("mare"=mean(residual)), by=c("distribution_id", "outlier_id", "method")]
     x <- x[, list("n"=.N), by=c("mare", "method")][order(mare, method)]
     x[, "rejected" := 1.0 - cumsum(n) / sum(n), by = "method"]
     x <- rbind(
       data.table::data.table(
         "mare"=c(0.0, 0.0),
-        "method"=c("box_cox", "yeo_johnson"),
+        "method"=c("Box-Cox", "Yeo-Johnson"),
         "n"=0L,
         "rejected"=1.0),
       x)
@@ -811,21 +811,58 @@ get_annotation_settings <- function(ggtheme = NULL) {
     mare_data[[ii]] <- x
   }
 
-  mare_data <- data.table::rbindlist(mare_data)
+  data <- data.table::rbindlist(mare_data)
 
-  p <- ggplot2::ggplot(
-    data = mare_data,
+  data$kappa <- factor(
+    x = data$kappa,
+    levels = central_width,
+    labels = c("60 %", "70 %", "80 %", "90 %", "95 %", "100 %"))
+
+  p_bc <- ggplot2::ggplot(
+    data = data[method == "Box-Cox"],
     mapping = ggplot2::aes(
       x = mare,
       y = rejected,
-      colour = method))
-  p <- p + plot_theme
-  p <- p + ggplot2::geom_step()
-  p <- p + ggplot2::xlab("mean absolute residual error")
-  p <- p + paletteer::scale_color_paletteer_d(
-    palette="ggthemes::Tableau_10",
-    drop=FALSE)
-  p <- p + ggplot2::coord_cartesian(xlim = c(0, 0.25))
-  p <- p + ggplot2::facet_wrap("kappa", ncol = 3)
+      colour = kappa))
+  p_bc <- p_bc + plot_theme
+  p_bc <- p_bc + ggplot2::geom_step()
+  p_bc <- p_bc + ggplot2::scale_colour_discrete(
+    name = "central portion κ\n(Box-Cox)",
+    type=c(
+      "60 %" = "#bacbde",
+      "70 %" = "#98b2cd",
+      "80 %" = "#7598bd",
+      "90 %" = "#537dac",
+      "95 %" = "#42648a",
+      "100 %" = "#324b67"))
+  p_bc <- p_bc + ggplot2::xlab("test statistic")
+  p_bc <- p_bc + ggplot2::ylab("type I error")
+  p_bc <- p_bc + ggplot2::coord_cartesian(xlim = c(0, 0.25))
 
+  p_yj <- ggplot2::ggplot(
+    data = data[method == "Yeo-Johnson"],
+    mapping = ggplot2::aes(
+      x = mare,
+      y = rejected,
+      colour = kappa))
+  p_yj <- p_yj + plot_theme
+  p_yj <- p_yj + ggplot2::geom_step()
+  p_yj <- p_yj + ggplot2::scale_colour_discrete(
+    name = "central portion κ\n(Yeo-Johnson)",
+    type=c(
+      "60 %" = "#f9c59f",
+      "70 %" = "#f6a76f",
+      "80 %" = "#f38a3f",
+      "90 %" = "#f06d0f",
+      "95 %" = "#c0570c",
+      "100 %" = "#904109"))
+  p_yj <- p_yj + ggplot2::xlab("test statistic")
+  p_yj <- p_yj + ggplot2::coord_cartesian(xlim = c(0, 0.25))
+  p_yj <- p_yj + ggplot2::theme(
+    axis.title.y = ggplot2::element_blank(),
+    axis.text.y = ggplot2::element_blank())
+
+  p <- p_bc + p_yj +  patchwork::plot_layout(ncol = 2, guides = "collect")
+
+  return(p)
 }
