@@ -1105,11 +1105,9 @@
     residual_bc <- data.table::data.table(
       "distribution_id" = x$parameter$ii,
       "outlier_id" = x$parameters$jj,
-      "p" = p_sample,
-      "k" = x$parameter$k,
+      "p" = seq_along(p_sample),
       "residual" = residual,
-      "method" = "box_cox",
-      "has_outliers" = x$parameters$k > 0)
+      "method" = "box_cox")
 
     # Determine residuals for Yeo-Johnson transformations.
     transformer_yj <- suppressWarnings(power.transform::find_transformation_parameters(
@@ -1134,13 +1132,18 @@
     residual_yj <- data.table::data.table(
       "distribution_id" = x$parameter$ii,
       "outlier_id" = x$parameters$jj,
-      "p" = p_sample,
-      "k" = x$parameter$k,
+      "p" = seq_along(p_sample),
       "residual" = residual,
-      "method" = "yeo_johnson",
-      "has_outliers" = x$parameters$k > 0)
+      "method" = "yeo_johnson")
 
-    return(data.table::rbindlist(list(residual_bc, residual_yj)))
+    data <- data.table::rbindlist(list(residual_bc, residual_yj))
+
+    data$method <- factor(
+      x = data$method,
+      levels = c("box_cox", "yeo_johnson"),
+      labels = c("Box-Cox", "Yeo-Johnson"))
+
+    return(data)
   }
 
 
@@ -1209,10 +1212,57 @@
     data <- readRDS(file.path(manuscript_dir, "residual_plot.RDS"))
   }
 
-  data$method <- factor(
-    x = data$method,
-    levels = c("box_cox", "yeo_johnson"),
-    labels = c("Box-Cox", "Yeo-Johnson"))
+  # Convert p to empirical probabilities.
+  data[, "p" := (p - 1/3) / (200 + 1/3)]
+  data[, "has_outliers" := outlier_id > 1L]
 
   return(data)
+}
+
+
+
+.get_test_statistics_data <- function(manuscript_dir){
+  # Compute test statistic values.
+  data <- .get_goodness_of_fit_data(manuscript_dir = manuscript_dir)
+
+  central_width <- 0.80
+
+  significance_values <- c(0.50, 0.20, 0.10, 0.05, 0.02, 0.01, 0.001)
+
+  p_lower <- 0.50 - central_width / 2
+  p_upper <- 0.50 + central_width / 2
+
+  # Clip empirical probabilities to the center.
+  data <- data[p >= p_lower & p <= p_upper]
+
+  # Compute mean absolute residual error per feature.
+  data <- data[, list("mare"=mean(residual)), by=c("distribution_id", "outlier_id", "method")]
+  data <- data[, list("n"=.N), by=c("mare", "method")][order(mare, method)]
+  data[, "rejected" := 1.0 - cumsum(n) / sum(n), by = "method"]
+  data <- rbind(
+    data.table::data.table(
+      "mare"=c(0.0, 0.0),
+      "method"=c("Box-Cox", "Yeo-Johnson"),
+      "n"=0L,
+      "rejected"=1.0),
+    data)
+
+  # Find thresholds.
+  data <- data[, list(
+    "test_values" = stats::spline(
+      x = rejected,
+      y = mare,
+      method = "hyman",
+      xmin = 0.0,
+      xmax = 1.0,
+      xout = significance_values
+    )$y,
+    "significance_level" = significance_values
+  ),
+  by = "method"]
+
+  # Limit to three decimals.
+
+  return(data)
+
 }

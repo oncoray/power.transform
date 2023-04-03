@@ -447,14 +447,14 @@ cap <- paste0(
 
 To develop an empirical goodness of fit test we need to consider two parameters: the central portion $\kappa$ as a fixed parameter, and test statistic $\tau_{\text{gof}}$. We will first define the central portion $\kappa$.
 
-First we draw $m_d=100000$ random asymmetric generalised normal distributions, parametrised as above. As before, for each distribution, up to $10 \%$ of instances are replaced by outlier values, and this is repeated $10$ times. We then compute residuals after optimising robust shift-sensitive transformations with the empirical tapered cosine weighting method.
+First we draw $m_d=10000$ random asymmetric generalised normal distributions, parametrised as above. As before, for each distribution, up to $10 \%$ of instances are replaced by outlier values, and this is repeated $10$ times. We then compute residuals after optimising robust shift-sensitive transformations with the empirical tapered cosine weighting method.
 
 Figure *Insert reference* shows the residual errors of the transformed distribution as function of the empirical probability. As expected, the largest deviations from normality appear on the extremities of this range. For Box-Cox, the effect of outliers on the lower end of the distribution leads to noticeable asymmetry. Between very low and very high empirical probabilities, residual errors are constrained and relatively flat. This is the candidate range for the central portion of the data.
 
 ```{r goodness-of-fit-1, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
   "Residual error as a function of empirical probability. ",
-  "Percentiles of the error are shown for robust, shift-sensitive transformations of 100000 randomly drawn asymmetric ",
+  "Percentiles of the error are shown for robust, shift-sensitive transformations of 10000 randomly drawn asymmetric ",
   "generalised normal distributions, with 10 randomly drawn outliers distributions, ",
   "(up to 10% of samples) each. Larger errors occur for more extreme values at the edges of each distribution. ",
   "For comparison, the 99th percentile of residual errors for transformations of outlier-free distributions are shown (grey dashed line).")
@@ -476,8 +476,12 @@ cap <- paste0(
   manuscript_dir = manuscript_dir)
 
 ```
+```{r include = FALSE, eval = FALSE}
+data <- .get_test_statistic_data(manuscript_dir = manuscript_dir)
 
-The second error, 
+
+```
+
 
 # Experimental Results
 
