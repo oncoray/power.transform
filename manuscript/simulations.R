@@ -1017,11 +1017,11 @@
       "ii" = ii)
 
     # Add outliers.
-    x <- lapply(
-      outlier_fraction,
-      function(k, x, parameters, side){
+    x <- mapply(
+      function(k, jj, x, parameters, side){
         # Set parameters.
         parameters$k <- k
+        parameters$jj <- jj
 
         # Compute interquartile range.
         interquartile_range <- stats::IQR(x)
@@ -1065,9 +1065,14 @@
           "x" = x_outlier,
           "parameters" = parameters))
       },
-      x = x,
-      parameters = parameters,
-      side = side)
+      k = outlier_fraction,
+      jj = seq_along(outlier_fraction),
+      MoreArgs = list(
+        "x" = x,
+        "parameters" = parameters,
+        "side" = side),
+      SIMPLIFY = FALSE,
+      USE.NAMES = FALSE)
 
     return(x)
   }
@@ -1099,6 +1104,7 @@
 
     residual_bc <- data.table::data.table(
       "distribution_id" = x$parameter$ii,
+      "outlier_id" = x$parameters$jj,
       "p" = p_sample,
       "k" = x$parameter$k,
       "residual" = residual,
@@ -1127,6 +1133,7 @@
 
     residual_yj <- data.table::data.table(
       "distribution_id" = x$parameter$ii,
+      "outlier_id" = x$parameters$jj,
       "p" = p_sample,
       "k" = x$parameter$k,
       "residual" = residual,
@@ -1181,7 +1188,7 @@
     x <- unlist(x, recursive = FALSE)
 
     # Start cluster
-    cl <- parallel::makeCluster(18L)
+    cl <- parallel::makeCluster(12L)
 
     # Compute all data in parallel.
     data <- parallel::parLapply(
