@@ -471,7 +471,7 @@ cap <- paste0(
   "Rejected transformed asymmetric generalised normal distributions as function of ",
   "the mean absolute residual error of the central portion $\\kappa$ of the distribution.")
 
-.plot_mean_absolute_residual_error(
+.plot_type_1_error_rate(
   plot_theme = plot_theme,
   manuscript_dir = manuscript_dir)
 

@@ -691,32 +691,42 @@ get_annotation_settings <- function(ggtheme = NULL) {
   # Prevent warnings due to non-standard evaluation.
   has_outliers <- residual <- threshold <- residual_error <- method <- p <- NULL
 
-  # Get data
-  data <- .get_goodness_of_fit_data(manuscript_dir = manuscript_dir)
+  if (!file.exists(file.path(manuscript_dir, "residual_error_plot_main_manuscript.RDS"))) {
 
-  outlier_free_data <- data[
-    has_outliers == FALSE,
-    list("residual_error"=stats::quantile(residual, probs=0.99)),
-    by=c("p", "method")]
+    # Get data
+    data <- .get_goodness_of_fit_data(manuscript_dir = manuscript_dir)
 
-  data <- data[, list(
-    "residual_50"=stats::quantile(residual, probs=0.50),
-    "residual_90"=stats::quantile(residual, probs=0.90),
-    "residual_95"=stats::quantile(residual, probs=0.95),
-    "residual_99"=stats::quantile(residual, probs=0.99),
-    "residual_max"=max(residual)),
-    by=c("p", "method")]
+    outlier_free_data <- data[
+      has_outliers == FALSE,
+      list("residual_error"=stats::quantile(residual, probs=0.99)),
+      by=c("p", "method")]
 
-  data <- data.table::melt(
-    data = data,
-    id.vars = c("p", "method"),
-    variable.name = "threshold",
-    value.name = "residual_error")
+    data <- data[, list(
+      "residual_50"=stats::quantile(residual, probs=0.50),
+      "residual_90"=stats::quantile(residual, probs=0.90),
+      "residual_95"=stats::quantile(residual, probs=0.95),
+      "residual_99"=stats::quantile(residual, probs=0.99),
+      "residual_max"=max(residual)),
+      by=c("p", "method")]
 
-  data$threshold <- factor(
-    x = data$threshold,
-    levels = c("residual_50", "residual_90", "residual_95", "residual_99", "residual_max"),
-    labels = c("50 %", "90 %", "95 %", "99 %", "100 %"))
+    data <- data.table::melt(
+      data = data,
+      id.vars = c("p", "method"),
+      variable.name = "threshold",
+      value.name = "residual_error")
+
+    data$threshold <- factor(
+      x = data$threshold,
+      levels = c("residual_50", "residual_90", "residual_95", "residual_99", "residual_max"),
+      labels = c("50 %", "90 %", "95 %", "99 %", "100 %"))
+
+    saveRDS(
+      data,
+      file.path(manuscript_dir, "residual_error_plot_main_manuscript.RDS"))
+
+  } else {
+    data <- readRDS(file.path(manuscript_dir, "residual_error_plot_main_manuscript.RDS"))
+  }
 
   p_bc <- ggplot2::ggplot(
     data = data[method == "Box-Cox"],
@@ -776,50 +786,59 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 
 
-.plot_mean_absolute_residual_error <- function(plot_theme, manuscript_dir){
+.plot_type_1_error_rate <- function(plot_theme, manuscript_dir){
 
   # Prevent warnings due to non-standard evaluation.
-  residual <- p <- n <- mare <- method <- NULL
+  residual <- rejected <- p <- n <- mare <- method <- NULL
 
-  # Get data
-  data <- .get_goodness_of_fit_data(manuscript_dir = manuscript_dir)
+  if (!file.exists(file.path(manuscript_dir, "type_1_error_rate_plot_main_manuscript.RDS"))) {
+    # Get data
+    data <- .get_goodness_of_fit_data(manuscript_dir = manuscript_dir)
 
-  central_width <- c(0.60, 0.70, 0.80, 0.90, 0.95, 1.00)
+    central_width <- c(0.60, 0.70, 0.80, 0.90, 0.95, 1.00)
 
-  mare_data <- list()
+    mare_data <- list()
 
-  for (ii in seq_along(central_width)) {
-    p_lower <- 0.50 - central_width[ii] / 2
-    p_upper <- 0.50 + central_width[ii] / 2
+    for (ii in seq_along(central_width)) {
+      p_lower <- 0.50 - central_width[ii] / 2
+      p_upper <- 0.50 + central_width[ii] / 2
 
-    x <- data.table::copy(data)
+      x <- data.table::copy(data)
 
-    # Clip empirical probabilities to centre.
-    x <- x[p >= p_lower & p <= p_upper]
+      # Clip empirical probabilities to centre.
+      x <- x[p >= p_lower & p <= p_upper]
 
-    # Compute mean absolute residual error per feature.
-    x <- x[, list("mare"=mean(residual)), by=c("distribution_id", "outlier_id", "method")]
-    x <- x[, list("n"=.N), by=c("mare", "method")][order(mare, method)]
-    x[, "rejected" := 1.0 - cumsum(n) / sum(n), by = "method"]
-    x <- rbind(
-      data.table::data.table(
-        "mare"=c(0.0, 0.0),
-        "method"=c("Box-Cox", "Yeo-Johnson"),
-        "n"=0L,
-        "rejected"=1.0),
-      x)
+      # Compute mean absolute residual error per feature.
+      x <- x[, list("mare"=mean(residual)), by=c("distribution_id", "outlier_id", "method")]
+      x <- x[, list("n"=.N), by=c("mare", "method")][order(mare, method)]
+      x[, "rejected" := 1.0 - cumsum(n) / sum(n), by = "method"]
+      x <- rbind(
+        data.table::data.table(
+          "mare"=c(0.0, 0.0),
+          "method"=c("Box-Cox", "Yeo-Johnson"),
+          "n"=0L,
+          "rejected"=1.0),
+        x)
 
-    x[, "kappa" := central_width[ii]]
+      x[, "kappa" := central_width[ii]]
 
-    mare_data[[ii]] <- x
+      mare_data[[ii]] <- x
+    }
+
+    data <- data.table::rbindlist(mare_data)
+
+    data$kappa <- factor(
+      x = data$kappa,
+      levels = central_width,
+      labels = c("60 %", "70 %", "80 %", "90 %", "95 %", "100 %"))
+
+    saveRDS(
+      data,
+      file.path(manuscript_dir, "type_1_error_rate_plot_main_manuscript.RDS")
+    )
+  } else {
+    data <- readRDS(file.path(manuscript_dir, "type_1_error_rate_plot_main_manuscript.RDS"))
   }
-
-  data <- data.table::rbindlist(mare_data)
-
-  data$kappa <- factor(
-    x = data$kappa,
-    levels = central_width,
-    labels = c("60 %", "70 %", "80 %", "90 %", "95 %", "100 %"))
 
   p_bc <- ggplot2::ggplot(
     data = data[method == "Box-Cox"],
@@ -839,7 +858,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
       "95 %" = "#42648a",
       "100 %" = "#324b67"))
   p_bc <- p_bc + ggplot2::xlab("test statistic")
-  p_bc <- p_bc + ggplot2::ylab("type I error")
+  p_bc <- p_bc + ggplot2::ylab("type I error rate")
   p_bc <- p_bc + ggplot2::coord_cartesian(xlim = c(0, 0.25))
 
   p_yj <- ggplot2::ggplot(
