@@ -778,6 +778,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 .plot_mean_absolute_residual_error <- function(plot_theme, manuscript_dir){
 
+  # Prevent warnings due to non-standard evaluation.
+  residual <- p <- n <- mare <- method <- NULL
+
   # Get data
   data <- .get_goodness_of_fit_data(manuscript_dir = manuscript_dir)
 

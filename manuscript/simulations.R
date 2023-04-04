@@ -997,7 +997,16 @@
 
 
 
-.get_goodness_of_fit_data <- function(manuscript_dir) {
+.get_goodness_of_fit_data <- function(
+    manuscript_dir,
+    residual_fun = NULL,
+    n_distributions = 10000L,
+    parallel = TRUE) {
+  # Non-standard evaluation in data.table.
+  p <- outlier_id <- NULL
+
+  external_fun <- FALSE
+  if(!is.null(residual_fun)) external_fun <- TRUE
 
   # Helper function for population distributions with outliers.
   .populate_outliers <- function(
@@ -1147,13 +1156,15 @@
   }
 
 
-  if(!file.exists(file.path(manuscript_dir, "residual_plot.RDS"))){
+  if(!file.exists(file.path(manuscript_dir, "residual_plot.RDS")) ||
+     external_fun){
+
+    if(!external_fun) {
+      residual_fun <- .compute_residuals
+    }
 
     # computations -------------------------------------------------------------
     set.seed(95)
-
-    # Generate table of asymmetric generalised normal distribution parameters.
-    n_distributions <- 10000L
 
     # Generate alpha, beta and n.
     n <- stats::runif(n=n_distributions, min=2, max=4)
@@ -1190,23 +1201,32 @@
 
     x <- unlist(x, recursive = FALSE)
 
-    # Start cluster
-    cl <- parallel::makeCluster(12L)
+    if (parallel) {
+      # Start cluster
+      cl <- parallel::makeCluster(18L)
 
-    # Compute all data in parallel.
-    data <- parallel::parLapply(
-      cl=cl,
-      X=x,
-      fun=.compute_residuals)
+      # Compute all data in parallel.
+      data <- parallel::parLapply(
+        cl=cl,
+        X=x,
+        fun=residual_fun)
 
-    # Stop cluster.
-    parallel::stopCluster(cl)
+      # Stop cluster.
+      parallel::stopCluster(cl)
+
+    } else {
+      data <- lapply(
+        X = x,
+        FUN = residual_fun)
+    }
 
     data <- data.table::rbindlist(data)
 
-    saveRDS(
-      object = data,
-      file = file.path(manuscript_dir, "residual_plot.RDS"))
+    if(!external_fun){
+      saveRDS(
+        object = data,
+        file = file.path(manuscript_dir, "residual_plot.RDS"))
+    }
 
   } else {
     data <- readRDS(file.path(manuscript_dir, "residual_plot.RDS"))
@@ -1222,6 +1242,10 @@
 
 
 .get_test_statistics_data <- function(manuscript_dir){
+
+  # Non-standard evaluation in data.table.
+  residual <- p <- n <- mare <- method <- rejected <- NULL
+
   # Compute test statistic values.
   data <- .get_goodness_of_fit_data(manuscript_dir = manuscript_dir)
 
@@ -1265,4 +1289,209 @@
 
   return(data)
 
+}
+
+
+.get_test_statistics_data_appendix <- function(manuscript_dir){
+
+  # Prevent warnings due to non-standard evaluation.
+  residual <- p <- n <- mare <- method <- method_tag <- NULL
+
+  .compute_residuals <- function(x) {
+
+    ..compute_residuals <- function(
+      x,
+      method,
+      shift,
+      robust,
+      estimation_method,
+      weighting_function,
+      method_tag,
+      n_sample = 200L) {
+
+      # Set interpolation points.
+      p_sample <- (seq_len(n_sample) - 1/3) / (n_sample + 1/3)
+
+      transformer <- suppressWarnings(power.transform::find_transformation_parameters(
+        x = x$x,
+        method = method,
+        shift = shift,
+        robust = robust,
+        estimation_method = estimation_method,
+        weighting_function = weighting_function))
+
+      residual_data <- power.transform::get_residuals(
+        x = x$x,
+        transformer = transformer)
+
+      residual <- stats::approx(
+        x = residual_data$p,
+        y = abs(residual_data$residual),
+        xout = p_sample,
+        rule = 2,
+        ties = max)$y
+
+      return(data.table::data.table(
+        "distribution_id" = x$parameter$ii,
+        "outlier_id" = x$parameters$jj,
+        "p" = seq_along(p_sample),
+        "residual" = residual,
+        "method" = method,
+        "method_tag" = method_tag))
+    }
+
+    # Determine residuals for robust, shift-sensitive transformations.
+    residual_bc_robust_shift_mle <- ..compute_residuals(
+      x = x,
+      method = "box_cox",
+      shift = TRUE,
+      robust = TRUE,
+      estimation_method = "mle",
+      weighting_function = "empirical_probability_cosine",
+      method_tag = "robust_shift_mle")
+
+    residual_yj_robust_shift_mle <- ..compute_residuals(
+      x = x,
+      method = "yeo_johnson",
+      shift = TRUE,
+      robust = TRUE,
+      estimation_method = "mle",
+      weighting_function = "empirical_probability_cosine",
+      method_tag = "robust_shift_mle")
+
+    # Determine residuals for normal transformations.
+    if (x$parameters$jj == 1L) {
+      residual_bc_mle <- ..compute_residuals(
+        x = x,
+        method = "box_cox",
+        shift = FALSE,
+        robust = FALSE,
+        estimation_method = "mle",
+        weighting_function = "none",
+        method_tag = "conventional_mle")
+
+      residual_yj_mle <- ..compute_residuals(
+        x = x,
+        method = "yeo_johnson",
+        shift = FALSE,
+        robust = FALSE,
+        estimation_method = "mle",
+        weighting_function = "none",
+        method_tag = "conventional_mle")
+
+    } else {
+      residual_bc_mle <- residual_yj_mle <- NULL
+    }
+
+    # Determine residuals for shift-sensitive robust cramér-von Mises
+    # transformations.
+    residual_bc_robust_shift_cm <- ..compute_residuals(
+      x = x,
+      method = "box_cox",
+      shift = TRUE,
+      robust = TRUE,
+      estimation_method = "cramer_von_mises",
+      weighting_function = "empirical_probability_cosine",
+      method_tag = "robust_shift_cm")
+
+    residual_yj_robust_shift_cm <- ..compute_residuals(
+      x = x,
+      method = "yeo_johnson",
+      shift = TRUE,
+      robust = TRUE,
+      estimation_method = "cramer_von_mises",
+      weighting_function = "empirical_probability_cosine",
+      method_tag = "robust_shift_cm")
+
+    # Determine residuals for normal transformations.
+    if (x$parameters$jj == 1L) {
+      residual_bc_cm <- ..compute_residuals(
+        x = x,
+        method = "box_cox",
+        shift = FALSE,
+        robust = FALSE,
+        estimation_method = "cramer_von_mises",
+        weighting_function = "none",
+        method_tag = "conventional_cm")
+
+      residual_yj_cm <- ..compute_residuals(
+        x = x,
+        method = "yeo_johnson",
+        shift = FALSE,
+        robust = FALSE,
+        estimation_method = "cramer_von_mises",
+        weighting_function = "none",
+        method_tag = "conventional_cm")
+
+    } else {
+      residual_bc_cm <- residual_yj_cm <- NULL
+    }
+
+    data <- data.table::rbindlist(list(
+      residual_bc_robust_shift_mle,
+      residual_yj_robust_shift_mle,
+      residual_bc_mle,
+      residual_yj_mle,
+      residual_bc_robust_shift_cm,
+      residual_yj_robust_shift_cm,
+      residual_bc_cm,
+      residual_yj_cm))
+
+    data$method <- factor(
+      x = data$method,
+      levels = c("box_cox", "yeo_johnson"),
+      labels = c("Box-Cox", "Yeo-Johnson"))
+
+    data$method_tag <- factor(
+      x = data$method_tag,
+      levels = c("robust_shift_mle", "conventional_mle", "robust_shift_cm", "conventional_cm"),
+      labels = c("robust, shift sens. (MLE)", "conventional (MLE)", "robust, shift sens. (C-vM)", "conventional (C-vM)")
+    )
+
+    return(data)
+  }
+
+  # computations ---------------------------------------------------------------
+
+  if(!file.exists(file.path(manuscript_dir, "residual_plot_appendix.RDS"))){
+    data <- .get_goodness_of_fit_data(
+      manuscript_dir = manuscript_dir,
+      residual_fun = .compute_residuals,
+      n_distributions = 10000L,
+      parallel = TRUE)
+
+    central_width <- c(0.60, 0.70, 0.80, 0.90, 0.95, 1.00)
+
+    mare_data <- list()
+
+    for (ii in seq_along(central_width)) {
+      p_lower <- 0.50 - central_width[ii] / 2
+      p_upper <- 0.50 + central_width[ii] / 2
+
+      x <- data.table::copy(data)
+
+      # Clip empirical probabilities to centre.
+      x <- x[p >= p_lower & p <= p_upper]
+
+      # Compute mean absolute residual error per feature.
+      x <- x[, list("mare"=mean(residual)), by=c("distribution_id", "outlier_id", "method", "method_tag")]
+      x <- x[, list("n"=.N), by=c("mare", "method", "method_tag")][order(mare, method, method_tag)]
+      x[, "rejected" := 1.0 - cumsum(n) / sum(n), by = c("method", "method_tag")]
+
+      x[, "kappa" := central_width[ii]]
+
+      mare_data[[ii]] <- x
+    }
+
+    data <- data.table::rbindlist(mare_data)
+
+    saveRDS(
+      object = data,
+      file = file.path(manuscript_dir, "residual_plot_appendix.RDS"))
+
+  } else {
+    data <- readRDS(file.path(manuscript_dir, "residual_plot_appendix.RDS"))
+  }
+
+  return(data)
 }
