@@ -6,8 +6,11 @@ NULL
 #'
 #' Not all data allows for a reasonable transformation to normality using power
 #' transformation. For example, uniformly distributed data or multi-modal data
-#' cannot be transformed to normality. This function computes a score expressing
-#' deviation from normal distributions.
+#' cannot be transformed to normality. This function computes a p-value for an
+#' empirical goodness of fit test for central normality. A distribution is
+#' centrally normal if the central 80% of the data are approximately normally
+#' distributed. The null-hypothesis is that the transformed distribution is
+#' centrally normal.
 #'
 #' @param transformer A transformer object created using
 #'   `find_transformation_parameters`.
