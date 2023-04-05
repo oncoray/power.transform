@@ -11,7 +11,6 @@ get_annotation_settings <- function(ggtheme = NULL) {
     if (inherits(ggtheme$axis.text$size, "rel")) {
       # Find the relative text size of axis text.
       fontsize_rel <- as.numeric(ggtheme$axis.text$size)
-
     } else {
       # Set absolute text size.
       fontsize <- ggtheme$axis.text$size
@@ -25,7 +24,6 @@ get_annotation_settings <- function(ggtheme = NULL) {
     if (inherits(ggtheme$axis.text.y$size, "rel")) {
       # Set relative text size of axis text
       fontsize_rel <- as.numeric(ggtheme$axis.text.y$size)
-
     } else {
       # Set absolute text size.
       fontsize <- as.numeric(ggtheme$axis.text.y$size)
@@ -66,7 +64,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     "colour" = colour,
     "family" = fontfamily,
     "face" = fontface,
-    "lineheight" = lineheight))
+    "lineheight" = lineheight
+  ))
 }
 
 
@@ -80,12 +79,11 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   # Lambda plot,
   .create_lambda_shift_plot <- function(
-    data,
-    plot_theme,
-    limits,
-    guide = FALSE,
-    strip_y_axis = TRUE) {
-
+      data,
+      plot_theme,
+      limits,
+      guide = FALSE,
+      strip_y_axis = TRUE) {
     # Prevent warnings due to non-standard evaluation.
     d <- lambda <- method <- version <- NULL
 
@@ -96,13 +94,16 @@ get_annotation_settings <- function(ggtheme = NULL) {
       mapping = ggplot2::aes(
         x = d,
         y = lambda,
-        colour = method))
+        colour = method
+      )
+    )
     p <- p + plot_theme
     p <- p + ggplot2::geom_point()
     p <- p + ggplot2::geom_hline(
       yintercept = 1.0,
-      linetype="longdash",
-      colour="grey40")
+      linetype = "longdash",
+      colour = "grey40"
+    )
     p <- p + ggplot2::annotate(
       geom = "text",
       x = 6,
@@ -113,32 +114,37 @@ get_annotation_settings <- function(ggtheme = NULL) {
       fontface = annotation_settings$face,
       size = annotation_settings$geom_text_size,
       vjust = -1.0,
-      hjust = 1.0)
+      hjust = 1.0
+    )
     p <- p + ggplot2::scale_x_continuous(
       name = latex2exp::TeX("$\\mu$"),
-      labels = scales::math_format())
+      labels = scales::math_format()
+    )
     p <- p + ggplot2::scale_y_continuous(
       name = latex2exp::TeX("$\\lambda$"),
-      limits = limits)
+      limits = limits
+    )
 
     if (guide) {
       p <- p + paletteer::scale_color_paletteer_d(
         palette = "ggthemes::Tableau_10",
-        drop = FALSE)
+        drop = FALSE
+      )
       p <- p + guides(colour = ggplot2::guide_legend(title = "method"))
-
     } else {
       p <- p + paletteer::scale_color_paletteer_d(
         palette = "ggthemes::Tableau_10",
         drop = FALSE,
-        guide = "none")
+        guide = "none"
+      )
     }
 
     if (strip_y_axis) {
       p <- p + ggplot2::theme(
         axis.text.y = ggplot2::element_blank(),
         axis.title.y = ggplot2::element_blank(),
-        axis.ticks.y = ggplot2::element_blank())
+        axis.ticks.y = ggplot2::element_blank()
+      )
     }
 
     return(p)
@@ -158,19 +164,22 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[method == "Box-Cox"],
     plot_theme = plot_theme,
     limits = c(-5.0, 35.0),
-    strip_y_axis = FALSE)
+    strip_y_axis = FALSE
+  )
 
   # Yeo-Johnson
   p_yj_normal <- .create_lambda_shift_plot(
     data = data[method == "Yeo-Johnson"],
     plot_theme = plot_theme,
     limits = c(-5.0, 35.0),
-    guide = TRUE)
+    guide = TRUE
+  )
 
   # Patch all the plots together.
   p <- p_bc_normal + p_yj_normal + patchwork::plot_layout(
     ncol = 2,
-    guides = "collect")
+    guides = "collect"
+  )
 
   return(p)
 }
@@ -184,13 +193,13 @@ get_annotation_settings <- function(ggtheme = NULL) {
   require(ggplot2)
 
   .create_density_plot <- function(
-    x,
-    plot_theme,
-    limits) {
-
+      x,
+      plot_theme,
+      limits) {
     p <- ggplot2::ggplot(
       data = data.table::data.table("x" = x),
-      mapping = ggplot2::aes(x = x))
+      mapping = ggplot2::aes(x = x)
+    )
     p <- p + plot_theme
     p <- p + ggplot2::geom_density()
     p <- p + ggplot2::theme(
@@ -199,7 +208,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
       axis.ticks = ggplot2::element_blank(),
       axis.text = ggplot2::element_blank(),
       panel.grid = ggplot2::element_blank(),
-      panel.border = ggplot2::element_blank())
+      panel.border = ggplot2::element_blank()
+    )
     p <- p + ggplot2::xlim(limits)
 
     return(p)
@@ -207,13 +217,12 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   # Lambda plot,
   .create_lambda_shift_plot <- function(
-    data,
-    plot_theme,
-    limits,
-    guide = FALSE,
-    strip_x_axis = TRUE,
-    strip_y_label = TRUE) {
-
+      data,
+      plot_theme,
+      limits,
+      guide = FALSE,
+      strip_x_axis = TRUE,
+      strip_y_label = TRUE) {
     # Prevent warnings due to non-standard evaluation.
     d <- lambda <- method <- version <- NULL
 
@@ -223,27 +232,32 @@ get_annotation_settings <- function(ggtheme = NULL) {
         x = d,
         y = lambda,
         colour = method,
-        shape = version))
+        shape = version
+      )
+    )
     p <- p + plot_theme
     p <- p + ggplot2::geom_point()
     p <- p + ggplot2::scale_x_continuous(
       name = latex2exp::TeX("$d$"),
-      labels = scales::math_format())
+      labels = scales::math_format()
+    )
     p <- p + ggplot2::scale_y_continuous(
       name = latex2exp::TeX("$\\lambda$"),
-      limits = limits)
+      limits = limits
+    )
 
     if (guide) {
       p <- p + paletteer::scale_color_paletteer_d(
         palette = "ggthemes::Tableau_10",
-        drop = FALSE)
+        drop = FALSE
+      )
       p <- p + guides(colour = ggplot2::guide_legend(title = "method"))
-
     } else {
       p <- p + paletteer::scale_color_paletteer_d(
         palette = "ggthemes::Tableau_10",
         drop = FALSE,
-        guide = "none")
+        guide = "none"
+      )
       p <- p + ggplot2::scale_shape_discrete(guide = "none")
     }
 
@@ -251,12 +265,14 @@ get_annotation_settings <- function(ggtheme = NULL) {
       p <- p + ggplot2::theme(
         axis.text.x = ggplot2::element_blank(),
         axis.title.x = ggplot2::element_blank(),
-        axis.ticks.x = ggplot2::element_blank())
+        axis.ticks.x = ggplot2::element_blank()
+      )
     }
 
     if (strip_y_label) {
       p <- p + ggplot2::theme(
-        axis.title.y = ggplot2::element_blank())
+        axis.title.y = ggplot2::element_blank()
+      )
     }
 
     return(p)
@@ -274,7 +290,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     location = 0,
     scale = 1 / sqrt(2),
     alpha = 0.5,
-    beta = 2)
+    beta = 2
+  )
 
   # Right skewed data
   x_right_skewed <- power.transform::ragn(
@@ -282,7 +299,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     location = 0,
     scale = 1 / sqrt(2),
     alpha = 0.2,
-    beta = 2)
+    beta = 2
+  )
 
   # Left skewed data
   x_left_skewed <- power.transform::ragn(
@@ -290,7 +308,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     location = 0,
     scale = 1 / sqrt(2),
     alpha = 0.8,
-    beta = 2)
+    beta = 2
+  )
 
   # Process / read data.
   data <- .get_shifted_distribution_data(manuscript_dir = manuscript_dir)
@@ -302,23 +321,26 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p_dens_normal <- .create_density_plot(
     x = x_normal,
     plot_theme = plot_theme,
-    limits = c(-6.0, 6.0))
-  p_dens_normal <- p_dens_normal + ggplot2::facet_grid(cols=vars("normal distribution"))
+    limits = c(-6.0, 6.0)
+  )
+  p_dens_normal <- p_dens_normal + ggplot2::facet_grid(cols = vars("normal distribution"))
 
   # Box-Cox
   p_bc_normal <- .create_lambda_shift_plot(
     data = data[distribution == "normal" & method == "Box-Cox"],
     plot_theme = plot_theme,
     limits = c(-5.0, 35.0),
-    strip_y_label = FALSE)
+    strip_y_label = FALSE
+  )
 
   # Yeo-Johnson
   p_yj_normal <- .create_lambda_shift_plot(
-    data=data[distribution == "normal" & method == "Yeo-Johnson"],
+    data = data[distribution == "normal" & method == "Yeo-Johnson"],
     plot_theme = plot_theme,
     limits = c(-5.0, 35.0),
     strip_y_label = FALSE,
-    strip_x_axis = FALSE)
+    strip_x_axis = FALSE
+  )
 
   # Right skewed distribution --------------------------------------------------
 
@@ -326,21 +348,24 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p_dens_right <- .create_density_plot(
     x = x_right_skewed,
     plot_theme = plot_theme,
-    limits = c(-3.0, 10.0))
-  p_dens_right <- p_dens_right + ggplot2::facet_grid(cols=vars("right-skewed distribution"))
+    limits = c(-3.0, 10.0)
+  )
+  p_dens_right <- p_dens_right + ggplot2::facet_grid(cols = vars("right-skewed distribution"))
 
   # Box-Cox-original
   p_bc_right <- .create_lambda_shift_plot(
     data = data[distribution == "right-skewed" & method == "Box-Cox"],
     plot_theme = plot_theme,
-    limits = c(-5.0, 1.0))
+    limits = c(-5.0, 1.0)
+  )
 
   # Yeo-Johnson
   p_yj_right <- .create_lambda_shift_plot(
     data = data[distribution == "right-skewed" & method == "Yeo-Johnson"],
     plot_theme = plot_theme,
     limits = c(-5.0, 1.0),
-    strip_x_axis = FALSE)
+    strip_x_axis = FALSE
+  )
 
   # Left skewed distribution ---------------------------------------------------
 
@@ -348,22 +373,25 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p_dens_left <- .create_density_plot(
     x = x_left_skewed,
     plot_theme = plot_theme,
-    limits = c(-10.0, 3.0))
-  p_dens_left <- p_dens_left + ggplot2::facet_grid(cols=vars("left-skewed distribution"))
+    limits = c(-10.0, 3.0)
+  )
+  p_dens_left <- p_dens_left + ggplot2::facet_grid(cols = vars("left-skewed distribution"))
 
   # Box-Cox
   p_bc_left <- .create_lambda_shift_plot(
     data = data[distribution == "left-skewed" & method == "Box-Cox"],
     plot_theme = plot_theme,
     limits = c(0.0, 65.0),
-    guide = TRUE)
+    guide = TRUE
+  )
 
   # Yeo-Johnson
   p_yj_left <- .create_lambda_shift_plot(
     data = data[distribution == "left-skewed" & method == "Yeo-Johnson"],
     plot_theme = plot_theme,
     limits = c(0.0, 65.0),
-    strip_x_axis = FALSE)
+    strip_x_axis = FALSE
+  )
 
   # Patch all the plots together.
   p <- p_dens_normal + p_dens_right + p_dens_left +
@@ -372,7 +400,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     patchwork::plot_layout(
       ncol = 3,
       heights = c(0.5, 1.0, 1.0),
-      guides = "collect")
+      guides = "collect"
+    )
 
   return(p)
 }
@@ -388,13 +417,12 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   # Lambda plot,
   .create_lambda_shift_plot <- function(
-    data,
-    plot_theme,
-    limits,
-    guide = FALSE,
-    strip_x_axis = TRUE,
-    strip_y_label = TRUE) {
-
+      data,
+      plot_theme,
+      limits,
+      guide = FALSE,
+      strip_x_axis = TRUE,
+      strip_y_label = TRUE) {
     # Prevent warnings due to non-standard evaluation.
     d <- lambda <- estimation_method <- NULL
 
@@ -403,39 +431,46 @@ get_annotation_settings <- function(ggtheme = NULL) {
       mapping = ggplot2::aes(
         x = d,
         y = lambda,
-        colour = estimation_method))
+        colour = estimation_method
+      )
+    )
     p <- p + plot_theme
     p <- p + ggplot2::geom_point()
     p <- p + ggplot2::scale_x_continuous(
       name = latex2exp::TeX("$d$"),
-      labels = scales::math_format())
+      labels = scales::math_format()
+    )
     p <- p + ggplot2::scale_y_continuous(
       name = latex2exp::TeX("$\\lambda$"),
-      limits = limits)
+      limits = limits
+    )
 
     if (guide) {
       p <- p + paletteer::scale_color_paletteer_d(
         palette = "ggthemes::Tableau_10",
-        drop = FALSE)
+        drop = FALSE
+      )
       p <- p + guides(colour = ggplot2::guide_legend(title = "optimisation criterion"))
-
     } else {
       p <- p + paletteer::scale_color_paletteer_d(
         palette = "ggthemes::Tableau_10",
         drop = FALSE,
-        guide = "none")
+        guide = "none"
+      )
     }
 
     if (strip_x_axis) {
       p <- p + ggplot2::theme(
         axis.text.x = ggplot2::element_blank(),
         axis.title.x = ggplot2::element_blank(),
-        axis.ticks.x = ggplot2::element_blank())
+        axis.ticks.x = ggplot2::element_blank()
+      )
     }
 
     if (strip_y_label) {
       p <- p + ggplot2::theme(
-        axis.title.y = ggplot2::element_blank())
+        axis.title.y = ggplot2::element_blank()
+      )
     }
 
     return(p)
@@ -454,8 +489,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[distribution == "normal" & method == "Box-Cox" & version == "original"],
     plot_theme = plot_theme,
     limits = c(-5.0, 35.0),
-    strip_y_label = FALSE)
-  p_bc_normal_orig <- p_bc_normal_orig + ggplot2::facet_grid(cols=vars("normal distribution"))
+    strip_y_label = FALSE
+  )
+  p_bc_normal_orig <- p_bc_normal_orig + ggplot2::facet_grid(cols = vars("normal distribution"))
 
 
   # Box-Cox-shift-sensitive
@@ -463,22 +499,25 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[distribution == "normal" & method == "Box-Cox" & version == "shift-sensitive"],
     plot_theme = plot_theme,
     limits = c(0.5, 1.5),
-    strip_y_label = FALSE)
+    strip_y_label = FALSE
+  )
 
   # Yeo-Johnson-original
   p_yj_normal_orig <- .create_lambda_shift_plot(
-    data=data[distribution == "normal" & method == "Yeo-Johnson" & version == "original"],
+    data = data[distribution == "normal" & method == "Yeo-Johnson" & version == "original"],
     plot_theme = plot_theme,
     limits = c(-5.0, 35.0),
-    strip_y_label = FALSE)
+    strip_y_label = FALSE
+  )
 
   # Yeo-Johnson-shift-sensitive
   p_yj_normal_ss <- .create_lambda_shift_plot(
-    data=data[distribution == "normal" & method == "Yeo-Johnson" & version == "shift-sensitive"],
+    data = data[distribution == "normal" & method == "Yeo-Johnson" & version == "shift-sensitive"],
     plot_theme = plot_theme,
     limits = c(0.5, 1.5),
     strip_x_axis = FALSE,
-    strip_y_label = FALSE)
+    strip_y_label = FALSE
+  )
 
   # Right skewed distribution --------------------------------------------------
 
@@ -486,27 +525,31 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p_bc_right_orig <- .create_lambda_shift_plot(
     data = data[distribution == "right-skewed" & method == "Box-Cox" & version == "original"],
     plot_theme = plot_theme,
-    limits = c(-10.0, 1.0))
-  p_bc_right_orig <- p_bc_right_orig + ggplot2::facet_grid(cols=vars("right-skewed distribution"))
+    limits = c(-10.0, 1.0)
+  )
+  p_bc_right_orig <- p_bc_right_orig + ggplot2::facet_grid(cols = vars("right-skewed distribution"))
 
   # Box-Cox-shift-sensitive
   p_bc_right_ss <- .create_lambda_shift_plot(
     data = data[distribution == "right-skewed" & method == "Box-Cox" & version == "shift-sensitive"],
     plot_theme = plot_theme,
-    limits = c(-0.5, 0.5))
+    limits = c(-0.5, 0.5)
+  )
 
   # Yeo-Johnson-original
   p_yj_right_orig <- .create_lambda_shift_plot(
     data = data[distribution == "right-skewed" & method == "Yeo-Johnson" & version == "original"],
     plot_theme = plot_theme,
-    limits = c(-10.0, 1.0))
+    limits = c(-10.0, 1.0)
+  )
 
   # Yeo-Johnson-shift-sensitive
   p_yj_right_ss <- .create_lambda_shift_plot(
-    data=data[distribution == "right-skewed" & method == "Yeo-Johnson" & version == "shift-sensitive"],
+    data = data[distribution == "right-skewed" & method == "Yeo-Johnson" & version == "shift-sensitive"],
     plot_theme = plot_theme,
     limits = c(0.0, 1.0),
-    strip_x_axis = FALSE)
+    strip_x_axis = FALSE
+  )
 
   # Left skewed distribution ---------------------------------------------------
 
@@ -515,44 +558,48 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[distribution == "left-skewed" & method == "Box-Cox" & version == "original"],
     plot_theme = plot_theme,
     limits = c(0.0, 65.0),
-    guide = TRUE)
-  p_bc_left_orig <- p_bc_left_orig + ggplot2::facet_grid(cols=vars("left-skewed distribution"), rows=vars("Box-Cox"))
+    guide = TRUE
+  )
+  p_bc_left_orig <- p_bc_left_orig + ggplot2::facet_grid(cols = vars("left-skewed distribution"), rows = vars("Box-Cox"))
 
   # Box-Cox-shift-sensitive
   p_bc_left_ss <- .create_lambda_shift_plot(
     data = data[distribution == "left-skewed" & method == "Box-Cox" & version == "shift-sensitive"],
     plot_theme = plot_theme,
-    limits = c(3.5, 4.5))
-  p_bc_left_ss <- p_bc_left_ss + ggplot2::facet_grid(rows=vars("shift-sens. Box-Cox"))
+    limits = c(3.5, 4.5)
+  )
+  p_bc_left_ss <- p_bc_left_ss + ggplot2::facet_grid(rows = vars("shift-sens. Box-Cox"))
 
   # Yeo-Johnson-original
   p_yj_left_orig <- .create_lambda_shift_plot(
     data = data[distribution == "left-skewed" & method == "Yeo-Johnson" & version == "original"],
     plot_theme = plot_theme,
-    limits = c(0.0, 65.0))
-  p_yj_left_orig <- p_yj_left_orig + ggplot2::facet_grid(rows=vars("Yeo-Johnson"))
+    limits = c(0.0, 65.0)
+  )
+  p_yj_left_orig <- p_yj_left_orig + ggplot2::facet_grid(rows = vars("Yeo-Johnson"))
 
   # Yeo-Johnson-shift-sensitive
   p_yj_left_ss <- .create_lambda_shift_plot(
     data = data[distribution == "left-skewed" & method == "Yeo-Johnson" & version == "shift-sensitive"],
     plot_theme = plot_theme,
     limits = c(1.0, 2.0),
-    strip_x_axis = FALSE)
-  p_yj_left_ss <- p_yj_left_ss + ggplot2::facet_grid(rows=vars("shift-sens. Yeo-Johnson"))
+    strip_x_axis = FALSE
+  )
+  p_yj_left_ss <- p_yj_left_ss + ggplot2::facet_grid(rows = vars("shift-sens. Yeo-Johnson"))
 
   # Patch all the plots together.
   p <- p_bc_normal_orig + p_bc_right_orig + p_bc_left_orig +
     p_bc_normal_ss + p_bc_right_ss + p_bc_left_ss +
     p_yj_normal_orig + p_yj_right_orig + p_yj_left_orig +
     p_yj_normal_ss + p_yj_right_ss + p_yj_left_ss +
-    patchwork::plot_layout(ncol=3, guides="collect")
+    patchwork::plot_layout(ncol = 3, guides = "collect")
 
   return(p)
 }
 
 
 
-.plot_weighting_functions <- function(plot_theme){
+.plot_weighting_functions <- function(plot_theme) {
   # Non-standard evaluation
   weight <- NULL
 
@@ -564,7 +611,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data_step,
     mapping = ggplot2::aes(
       x = x,
-      y = weight))
+      y = weight
+    )
+  )
   p_step <- p_step + plot_theme
   p_step <- p_step + ggplot2::geom_line()
   p_step <- p_step + ggplot2::facet_grid(cols = vars("step"))
@@ -577,14 +626,17 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data_triangle,
     mapping = ggplot2::aes(
       x = x,
-      y = weight))
+      y = weight
+    )
+  )
   p_triangle <- p_triangle + plot_theme
   p_triangle <- p_triangle + ggplot2::geom_line()
   p_triangle <- p_triangle + ggplot2::facet_grid(cols = vars("triangle"))
   p_triangle <- p_triangle + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank(),
-    axis.title.y = ggplot2::element_blank())
+    axis.title.y = ggplot2::element_blank()
+  )
 
   # Cosine function ------------------------------------------------------------
   data_cosine <- data.table::data.table(x = seq(from = -1.0, to = 1.0, by = 0.001))
@@ -594,16 +646,19 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data_cosine,
     mapping = ggplot2::aes(
       x = x,
-      y = weight))
+      y = weight
+    )
+  )
   p_cosine <- p_cosine + plot_theme
   p_cosine <- p_cosine + ggplot2::geom_line()
   p_cosine <- p_cosine + ggplot2::facet_grid(cols = vars("tapered cosine"))
-   p_cosine <- p_cosine + ggplot2::theme(
+  p_cosine <- p_cosine + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank(),
-    axis.title.y = ggplot2::element_blank())
+    axis.title.y = ggplot2::element_blank()
+  )
 
-  p <- p_step + p_triangle + p_cosine +  patchwork::plot_layout(ncol = 3)
+  p <- p_step + p_triangle + p_cosine + patchwork::plot_layout(ncol = 3)
 
   return(p)
 }
@@ -611,7 +666,6 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 
 .plot_optimised_weighting_function_parameters <- function(plot_theme, manuscript_dir) {
-
   # Prevent warnings due to non-standard evaluation.
   estimation_method <- weight_method <- method <- k <- n <- NULL
   lambda <- target_lambda <- lambda_error <- i.lambda_error <- non_robust_lambda_error <- NULL
@@ -622,7 +676,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
   # processing.
   two_sided_function_parameters <- .get_optimised_weighting_function_parameters(
     manuscript_dir = manuscript_dir,
-    side = "both")
+    side = "both"
+  )
 
   # This finds lambda values at the optimised weighting parameter settings.
   data <- .get_transformation_parameters(manuscript_dir = manuscript_dir)
@@ -638,17 +693,20 @@ get_annotation_settings <- function(ggtheme = NULL) {
   data[
     non_robust_data,
     on = c("method", "estimation_method", "k", "ii"),
-    "non_robust_lambda_error" := i.lambda_error]
+    "non_robust_lambda_error" := i.lambda_error
+  ]
 
   data[, "better_than_non_robust" := lambda_error <= non_robust_lambda_error]
   data[k == 0.0, "better_than_non_robust" := NA_integer_]
   data[weight_method == "non-robust", "better_than_non_robust" := NA_integer_]
 
   pass_rate_data <- data[, list(
-    "pass_rate" = sum(better_than_non_robust, na.rm=TRUE),
+    "pass_rate" = sum(better_than_non_robust, na.rm = TRUE),
     "n" = sum(!is.na(better_than_non_robust)),
-    "median_error" = stats::median(lambda_error)),
-    by=c("method", "estimation_method", "weight_method")]
+    "median_error" = stats::median(lambda_error)
+  ),
+  by = c("method", "estimation_method", "weight_method")
+  ]
   pass_rate_data[, "pass_rate" := round(pass_rate / n * 100.0, 1)]
   pass_rate_data[, "median_error_round" := format(pass_rate_data$median_error, digits = 1)]
 
@@ -659,24 +717,29 @@ get_annotation_settings <- function(ggtheme = NULL) {
     mapping = ggplot2::aes(
       x = weight_method,
       y = lambda_error,
-      fill = method))
+      fill = method
+    )
+  )
   p <- p + plot_theme
   p <- p + ggplot2::geom_violin(draw_quantiles = 0.5)
-  p <- p + ggplot2::facet_wrap("method", nrow=2)
+  p <- p + ggplot2::facet_wrap("method", nrow = 2)
   p <- p + paletteer::scale_fill_paletteer_d(
     palette = "ggthemes::Tableau_10",
-    drop = FALSE)
+    drop = FALSE
+  )
   p <- p + geom_text(
     data = pass_rate_data,
     mapping = ggplot2::aes(
       x = weight_method,
       label = median_error_round,
-      y = 10.0),
+      y = 10.0
+    ),
     colour = annotation_settings$colour,
     family = annotation_settings$family,
     fontface = annotation_settings$face,
     size = annotation_settings$geom_text_size,
-    vjust = 0.5)
+    vjust = 0.5
+  )
   p <- p + ggplot2::scale_y_sqrt(name = latex2exp::TeX("$| \\hat{\\lambda}^r - \\hat{\\lambda}_{0}|$"))
   p <- p + ggplot2::scale_x_discrete(guide = ggplot2::guide_axis(n.dodge = 2))
   p <- p + ggplot2::xlab("weighting method")
@@ -686,44 +749,47 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 
 
-.plot_residuals <- function(plot_theme, manuscript_dir){
-
+.plot_residuals <- function(plot_theme, manuscript_dir) {
   # Prevent warnings due to non-standard evaluation.
   has_outliers <- residual <- threshold <- residual_error <- method <- p <- NULL
 
   if (!file.exists(file.path(manuscript_dir, "residual_error_plot_main_manuscript.RDS"))) {
-
     # Get data
     data <- .get_goodness_of_fit_data(manuscript_dir = manuscript_dir)
 
     outlier_free_data <- data[
       has_outliers == FALSE,
-      list("residual_error"=stats::quantile(residual, probs=0.99)),
-      by=c("p", "method")]
+      list("residual_error" = stats::quantile(residual, probs = 0.99)),
+      by = c("p", "method")
+    ]
 
     data <- data[, list(
-      "residual_50"=stats::quantile(residual, probs=0.50),
-      "residual_90"=stats::quantile(residual, probs=0.90),
-      "residual_95"=stats::quantile(residual, probs=0.95),
-      "residual_99"=stats::quantile(residual, probs=0.99),
-      "residual_max"=max(residual)),
-      by=c("p", "method")]
+      "residual_50" = stats::quantile(residual, probs = 0.50),
+      "residual_90" = stats::quantile(residual, probs = 0.90),
+      "residual_95" = stats::quantile(residual, probs = 0.95),
+      "residual_99" = stats::quantile(residual, probs = 0.99),
+      "residual_max" = max(residual)
+    ),
+    by = c("p", "method")
+    ]
 
     data <- data.table::melt(
       data = data,
       id.vars = c("p", "method"),
       variable.name = "threshold",
-      value.name = "residual_error")
+      value.name = "residual_error"
+    )
 
     data$threshold <- factor(
       x = data$threshold,
       levels = c("residual_50", "residual_90", "residual_95", "residual_99", "residual_max"),
-      labels = c("50 %", "90 %", "95 %", "99 %", "100 %"))
+      labels = c("50 %", "90 %", "95 %", "99 %", "100 %")
+    )
 
     saveRDS(
       data,
-      file.path(manuscript_dir, "residual_error_plot_main_manuscript.RDS"))
-
+      file.path(manuscript_dir, "residual_error_plot_main_manuscript.RDS")
+    )
   } else {
     data <- readRDS(file.path(manuscript_dir, "residual_error_plot_main_manuscript.RDS"))
   }
@@ -733,61 +799,73 @@ get_annotation_settings <- function(ggtheme = NULL) {
     mapping = ggplot2::aes(
       x = p,
       y = residual_error,
-      colour = threshold))
+      colour = threshold
+    )
+  )
   p_bc <- p_bc + plot_theme
   p_bc <- p_bc + ggplot2::geom_line()
   p_bc <- p_bc + ggplot2::geom_line(
     data = outlier_free_data[method == "Box-Cox"],
     mapping = ggplot2::aes(
       x = p,
-      y = residual_error),
+      y = residual_error
+    ),
     colour = "gray40",
-    linetype = "dashed")
+    linetype = "dashed"
+  )
   p_bc <- p_bc + ggplot2::scale_colour_discrete(
     name = "percentile (Box-Cox)",
-    type=c("50 %" = "#ABC6E2", "90 %" = "#779EC6", "95 %" = "#4E79A7", "99 %" = "#346394", "100 %" = "#1D4D7E"))
+    type = c("50 %" = "#ABC6E2", "90 %" = "#779EC6", "95 %" = "#4E79A7", "99 %" = "#346394", "100 %" = "#1D4D7E")
+  )
   p_bc <- p_bc + ggplot2::xlab("empirical probability")
   p_bc <- p_bc + ggplot2::ylab("absolute residual error")
   p_bc <- p_bc + ggplot2::coord_cartesian(
     xlim = c(0, 1),
-    ylim = c(0, 1))
+    ylim = c(0, 1)
+  )
 
   p_yj <- ggplot2::ggplot(
     data = data[method == "Yeo-Johnson"],
     mapping = ggplot2::aes(
       x = p,
       y = residual_error,
-      colour = threshold))
+      colour = threshold
+    )
+  )
   p_yj <- p_yj + plot_theme
   p_yj <- p_yj + ggplot2::geom_line()
   p_yj <- p_yj + ggplot2::geom_line(
     data = outlier_free_data[method == "Yeo-Johnson"],
     mapping = ggplot2::aes(
       x = p,
-      y = residual_error),
+      y = residual_error
+    ),
     colour = "gray40",
-    linetype = "dashed")
+    linetype = "dashed"
+  )
   p_yj <- p_yj + ggplot2::scale_colour_discrete(
     name = "percentile (Yeo-Johnson)",
-    type=c("50 %" = "#FFBD7D", "90 %" = "#FFA954", "95 %" = "#F28E2B", "99 %" = "#CD6B0B", "100 %" = "#A25000"))
+    type = c("50 %" = "#FFBD7D", "90 %" = "#FFA954", "95 %" = "#F28E2B", "99 %" = "#CD6B0B", "100 %" = "#A25000")
+  )
   p_yj <- p_yj + ggplot2::xlab("empirical probability")
   p_yj <- p_yj + ggplot2::ylab("absolute residual error")
   p_yj <- p_yj + ggplot2::coord_cartesian(
     xlim = c(0, 1),
-    ylim = c(0, 1))
+    ylim = c(0, 1)
+  )
   p_yj <- p_yj + ggplot2::theme(
     axis.title.y = ggplot2::element_blank(),
-    axis.text.y = ggplot2::element_blank())
+    axis.text.y = ggplot2::element_blank()
+  )
 
-  p <- p_bc + p_yj +  patchwork::plot_layout(ncol = 2, guides = "collect")
+  p <- p_bc + p_yj + patchwork::plot_layout(ncol = 2, guides = "collect")
 
   return(p)
 }
 
 
 
-.plot_type_1_error_rate <- function(plot_theme, manuscript_dir){
-
+.plot_type_1_error_rate <- function(plot_theme, manuscript_dir) {
   # Prevent warnings due to non-standard evaluation.
   residual <- rejected <- p <- n <- mare <- method <- NULL
 
@@ -809,16 +887,18 @@ get_annotation_settings <- function(ggtheme = NULL) {
       x <- x[p >= p_lower & p <= p_upper]
 
       # Compute mean absolute residual error per feature.
-      x <- x[, list("mare"=mean(residual)), by=c("distribution_id", "outlier_id", "method")]
-      x <- x[, list("n"=.N), by=c("mare", "method")][order(mare, method)]
+      x <- x[, list("mare" = mean(residual)), by = c("distribution_id", "outlier_id", "method")]
+      x <- x[, list("n" = .N), by = c("mare", "method")][order(mare, method)]
       x[, "rejected" := 1.0 - cumsum(n) / sum(n), by = "method"]
       x <- rbind(
         data.table::data.table(
-          "mare"=c(0.0, 0.0),
-          "method"=c("Box-Cox", "Yeo-Johnson"),
-          "n"=0L,
-          "rejected"=1.0),
-        x)
+          "mare" = c(0.0, 0.0),
+          "method" = c("Box-Cox", "Yeo-Johnson"),
+          "n" = 0L,
+          "rejected" = 1.0
+        ),
+        x
+      )
 
       x[, "kappa" := central_width[ii]]
 
@@ -830,7 +910,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data$kappa <- factor(
       x = data$kappa,
       levels = central_width,
-      labels = c("60 %", "70 %", "80 %", "90 %", "95 %", "100 %"))
+      labels = c("60 %", "70 %", "80 %", "90 %", "95 %", "100 %")
+    )
 
     saveRDS(
       data,
@@ -845,18 +926,22 @@ get_annotation_settings <- function(ggtheme = NULL) {
     mapping = ggplot2::aes(
       x = mare,
       y = rejected,
-      colour = kappa))
+      colour = kappa
+    )
+  )
   p_bc <- p_bc + plot_theme
   p_bc <- p_bc + ggplot2::geom_step()
   p_bc <- p_bc + ggplot2::scale_colour_discrete(
     name = "central portion κ\n(Box-Cox)",
-    type=c(
+    type = c(
       "60 %" = "#bacbde",
       "70 %" = "#98b2cd",
       "80 %" = "#7598bd",
       "90 %" = "#537dac",
       "95 %" = "#42648a",
-      "100 %" = "#324b67"))
+      "100 %" = "#324b67"
+    )
+  )
   p_bc <- p_bc + ggplot2::xlab("test statistic")
   p_bc <- p_bc + ggplot2::ylab("type I error rate")
   p_bc <- p_bc + ggplot2::coord_cartesian(xlim = c(0, 0.25))
@@ -866,33 +951,37 @@ get_annotation_settings <- function(ggtheme = NULL) {
     mapping = ggplot2::aes(
       x = mare,
       y = rejected,
-      colour = kappa))
+      colour = kappa
+    )
+  )
   p_yj <- p_yj + plot_theme
   p_yj <- p_yj + ggplot2::geom_step()
   p_yj <- p_yj + ggplot2::scale_colour_discrete(
     name = "central portion κ\n(Yeo-Johnson)",
-    type=c(
+    type = c(
       "60 %" = "#f9c59f",
       "70 %" = "#f6a76f",
       "80 %" = "#f38a3f",
       "90 %" = "#f06d0f",
       "95 %" = "#c0570c",
-      "100 %" = "#904109"))
+      "100 %" = "#904109"
+    )
+  )
   p_yj <- p_yj + ggplot2::xlab("test statistic")
   p_yj <- p_yj + ggplot2::coord_cartesian(xlim = c(0, 0.25))
   p_yj <- p_yj + ggplot2::theme(
     axis.title.y = ggplot2::element_blank(),
-    axis.text.y = ggplot2::element_blank())
+    axis.text.y = ggplot2::element_blank()
+  )
 
-  p <- p_bc + p_yj +  patchwork::plot_layout(ncol = 2, guides = "collect")
+  p <- p_bc + p_yj + patchwork::plot_layout(ncol = 2, guides = "collect")
 
   return(p)
 }
 
 
 
-.plot_type_1_error_rate_appendix <- function(plot_theme, manuscript_dir){
-
+.plot_type_1_error_rate_appendix <- function(plot_theme, manuscript_dir) {
   # Prevent warnings due to non-standard evaluation.
   residual <- rejected <- p <- n <- mare <- method <- NULL
 
@@ -904,7 +993,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
   data$kappa <- factor(
     x = data$kappa,
     levels = central_width,
-    labels = c("60 %", "70 %", "80 %", "90 %", "95 %", "100 %"))
+    labels = c("60 %", "70 %", "80 %", "90 %", "95 %", "100 %")
+  )
 
   data <- data[kappa == "80 %"]
 
@@ -919,7 +1009,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
           method_tag = method_tag,
           n = 0L,
           rejected = 1.0,
-          kappa = kappa)
+          kappa = kappa
+        )
 
         ii <- ii + 1L
       }
@@ -933,16 +1024,20 @@ get_annotation_settings <- function(ggtheme = NULL) {
     mapping = ggplot2::aes(
       x = mare,
       y = rejected,
-      colour = method_tag))
+      colour = method_tag
+    )
+  )
   p_bc <- p_bc + plot_theme
   p_bc <- p_bc + ggplot2::geom_step()
   p_bc <- p_bc + ggplot2::scale_colour_discrete(
     name = "power transform variant\n(Box-Cox)",
-    type=c(
+    type = c(
       "robust, shift sens. (MLE)" = "#bacbde",
       "conventional (MLE)" = "#98b2cd",
       "robust, shift sens. (C-vM)" = "#42648a",
-      "conventional (C-vM)" = "#324b67"))
+      "conventional (C-vM)" = "#324b67"
+    )
+  )
   p_bc <- p_bc + ggplot2::xlab("test statistic")
   p_bc <- p_bc + ggplot2::ylab("type I error rate")
   p_bc <- p_bc + ggplot2::coord_cartesian(xlim = c(0, 0.15))
@@ -952,23 +1047,28 @@ get_annotation_settings <- function(ggtheme = NULL) {
     mapping = ggplot2::aes(
       x = mare,
       y = rejected,
-      colour = method_tag))
+      colour = method_tag
+    )
+  )
   p_yj <- p_yj + plot_theme
   p_yj <- p_yj + ggplot2::geom_step()
   p_yj <- p_yj + ggplot2::scale_colour_discrete(
     name = "power transform variant\n(Yeo-Johnson)",
-    type=c(
+    type = c(
       "robust, shift sens. (MLE)" = "#f9c59f",
       "conventional (MLE)" = "#f6a76f",
       "robust, shift sens. (C-vM)" = "#c0570c",
-      "conventional (C-vM)" = "#904109"))
+      "conventional (C-vM)" = "#904109"
+    )
+  )
   p_yj <- p_yj + ggplot2::xlab("test statistic")
   p_yj <- p_yj + ggplot2::coord_cartesian(xlim = c(0, 0.15))
   p_yj <- p_yj + ggplot2::theme(
     axis.title.y = ggplot2::element_blank(),
-    axis.text.y = ggplot2::element_blank())
+    axis.text.y = ggplot2::element_blank()
+  )
 
-  p <- p_bc + p_yj +  patchwork::plot_layout(ncol = 2, guides = "collect")
+  p <- p_bc + p_yj + patchwork::plot_layout(ncol = 2, guides = "collect")
 
   return(p)
 }
