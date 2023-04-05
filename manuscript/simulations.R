@@ -1241,10 +1241,43 @@
 
 
 
-.get_test_statistics_data <- function(manuscript_dir){
+.get_test_statistics_data <- function(manuscript_dir, as_table = TRUE, reduce = FALSE){
 
   # Non-standard evaluation in data.table.
-  residual <- p <- n <- mare <- method <- rejected <- NULL
+  residual <- p <- n <- test_statistic <- method <- alpha <- NULL
+
+  ..down_sample_data <- function(x, alpha, upper, lower, n){
+    # Find the x-values.
+    alpha_out <- mapply(
+      function(upper, lower, n){
+        # Linear placement of interpolation points. The starting point (upper)
+        # is not included.
+        x <- rev(seq(from = lower, to = upper, length.out = n + 1L))
+        return(tail(x, n = n))
+      },
+      upper = upper,
+      lower = lower,
+      n = n,
+      SIMPLIFY = FALSE,
+      USE.NAMES = FALSE
+    )
+
+    alpha_out <- unlist(alpha_out, use.names = FALSE)
+
+    # Find the corresponding
+    x_out <- stats::spline(
+      x = alpha,
+      y = x,
+      method = "hyman",
+      xout = alpha_out
+    )$y
+
+    # Add start and end points.
+    x_out <- c(min(x), x_out, max(x))
+    alpha_out <- c(1.0, alpha_out, 0.0)
+
+    return(list("alpha" = alpha_out, "test_statistic" = x_out))
+  }
 
   # Compute test statistic values.
   data <- .get_goodness_of_fit_data(manuscript_dir = manuscript_dir)
@@ -1260,35 +1293,62 @@
   data <- data[p >= p_lower & p <= p_upper]
 
   # Compute mean absolute residual error per feature.
-  data <- data[, list("mare"=mean(residual)), by=c("distribution_id", "outlier_id", "method")]
-  data <- data[, list("n"=.N), by=c("mare", "method")][order(mare, method)]
-  data[, "rejected" := 1.0 - cumsum(n) / sum(n), by = "method"]
-  data <- rbind(
-    data.table::data.table(
-      "mare"=c(0.0, 0.0),
-      "method"=c("Box-Cox", "Yeo-Johnson"),
-      "n"=0L,
-      "rejected"=1.0),
-    data)
+  data <- data[, list("test_statistic" = mean(residual)), by=c("distribution_id", "outlier_id", "method")]
+  data <- data[, list("n"=.N), by=c("test_statistic", "method")][order(test_statistic, method)]
+  data[, "alpha" := 1.0 - cumsum(n) / sum(n), by = "method"]
 
-  # Find thresholds.
-  data <- data[, list(
-    "test_values" = stats::spline(
-      x = rejected,
-      y = mare,
-      method = "hyman",
-      xmin = 0.0,
-      xmax = 1.0,
-      xout = significance_values
-    )$y,
-    "significance_level" = significance_values
-  ),
-  by = "method"]
+  if (reduce) {
+    # Reduce complexity of the data to save storage size.
 
-  # Limit to three decimals.
+    # 5 points between 1.00 and 0.95
+    # 10 points between 0.95 and 0.75
+    # 10 points between 0.75 and 0.25
+    # 10 points between 0.25 and 0.10
+    # 10 points between 0.10 and 0.05
+    # 10 points between 0.05 and 0.01
+    # 10 points between 0.01 and 0.005
+    # 10 points between 0.005 and 0.001
+    # 10 points between 0.001 and 0.0001
+    upper <- c(1.00, 0.95, 0.75, 0.25, 0.10, 0.05, 0.010, 0.005, 0.0010)
+    lower <- c(0.95, 0.75, 0.25, 0.10, 0.05, 0.01, 0.005, 0.001, 0.0001)
+    n_int <- c(   5,   10,   10,   10,   10,   10,    10,    10,     10)
+
+    data <- data[, ..down_sample_data(
+      x = test_statistic,
+      alpha = alpha,
+      upper = upper,
+      lower = lower,
+      n = n_int),
+      by = "method"]
+
+  } else {
+    data <- rbind(
+      data.table::data.table(
+        "test_statistic" = c(0.0, 0.0),
+        "method" = c("Box-Cox", "Yeo-Johnson"),
+        "n" = 0L,
+        "alpha" = 1.0),
+      data)
+  }
+
+  # Use Yeo-Johnson for test statistics.
+  data <- data[method == "Yeo-Johnson"]
+
+  if (as_table){
+    # Find thresholds.
+    data <- data[, list(
+      "test_statistic" = stats::spline(
+        x = alpha,
+        y = test_statistic,
+        method = "hyman",
+        xout = significance_values
+      )$y,
+      "alpha" = significance_values
+    ),
+    by = "method"]
+  }
 
   return(data)
-
 }
 
 

@@ -888,3 +888,87 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   return(p)
 }
+
+
+
+.plot_type_1_error_rate_appendix <- function(plot_theme, manuscript_dir){
+
+  # Prevent warnings due to non-standard evaluation.
+  residual <- rejected <- p <- n <- mare <- method <- NULL
+
+  # Get data
+  data <- .get_test_statistics_data_appendix(manuscript_dir = manuscript_dir)
+
+  central_width <- c(0.60, 0.70, 0.80, 0.90, 0.95, 1.00)
+
+  data$kappa <- factor(
+    x = data$kappa,
+    levels = central_width,
+    labels = c("60 %", "70 %", "80 %", "90 %", "95 %", "100 %"))
+
+  data <- data[kappa == "80 %"]
+
+  plot_start_list <- list()
+  ii <- 1L
+  for (method in levels(data$method)) {
+    for (method_tag in levels(data$method_tag)) {
+      for (kappa in levels(data$kappa)) {
+        plot_start_list[[ii]] <- data.table::data.table(
+          mare = 0.0,
+          method = method,
+          method_tag = method_tag,
+          n = 0L,
+          rejected = 1.0,
+          kappa = kappa)
+
+        ii <- ii + 1L
+      }
+    }
+  }
+
+  data <- data.table::rbindlist(c(list(data), plot_start_list))
+
+  p_bc <- ggplot2::ggplot(
+    data = data[method == "Box-Cox"],
+    mapping = ggplot2::aes(
+      x = mare,
+      y = rejected,
+      colour = method_tag))
+  p_bc <- p_bc + plot_theme
+  p_bc <- p_bc + ggplot2::geom_step()
+  p_bc <- p_bc + ggplot2::scale_colour_discrete(
+    name = "power transform variant\n(Box-Cox)",
+    type=c(
+      "robust, shift sens. (MLE)" = "#bacbde",
+      "conventional (MLE)" = "#98b2cd",
+      "robust, shift sens. (C-vM)" = "#42648a",
+      "conventional (C-vM)" = "#324b67"))
+  p_bc <- p_bc + ggplot2::xlab("test statistic")
+  p_bc <- p_bc + ggplot2::ylab("type I error rate")
+  p_bc <- p_bc + ggplot2::coord_cartesian(xlim = c(0, 0.15))
+
+  p_yj <- ggplot2::ggplot(
+    data = data[method == "Yeo-Johnson"],
+    mapping = ggplot2::aes(
+      x = mare,
+      y = rejected,
+      colour = method_tag))
+  p_yj <- p_yj + plot_theme
+  p_yj <- p_yj + ggplot2::geom_step()
+  p_yj <- p_yj + ggplot2::scale_colour_discrete(
+    name = "power transform variant\n(Yeo-Johnson)",
+    type=c(
+      "robust, shift sens. (MLE)" = "#f9c59f",
+      "conventional (MLE)" = "#f6a76f",
+      "robust, shift sens. (C-vM)" = "#c0570c",
+      "conventional (C-vM)" = "#904109"))
+  p_yj <- p_yj + ggplot2::xlab("test statistic")
+  p_yj <- p_yj + ggplot2::coord_cartesian(xlim = c(0, 0.15))
+  p_yj <- p_yj + ggplot2::theme(
+    axis.title.y = ggplot2::element_blank(),
+    axis.text.y = ggplot2::element_blank())
+
+  p <- p_bc + p_yj +  patchwork::plot_layout(ncol = 2, guides = "collect")
+
+  return(p)
+}

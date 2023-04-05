@@ -3,6 +3,8 @@
 #' Create a figure that plots the residuals of the data. These residuals are the
 #' difference between expected normal quantiles and observed quantiles.
 #'
+#' @param centre_width A numeric value between 0.0 and 1.0 that describes the
+#'   width of the centre of the data. Can be NULL.
 #' @param show_original Show residuals for original, untransformed, data in
 #'   addition to transformed data.
 #' @param use_alpha Use transparency for points in case the data contains many

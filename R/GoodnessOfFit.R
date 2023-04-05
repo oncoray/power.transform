@@ -11,17 +11,11 @@ NULL
 #'
 #' @param transformer A transformer object created using
 #'   `find_transformation_parameters`.
-#' @param threshold A numeric value corresponding to the upper limit of the
-#'   difference between the z-score of one instance of the transformed vector
-#'   `x` and its expected z-score according to the normal distribution.
-#' @param centre_width A numeric value between 0.0 and 1.0 that describes the
-#'   width of the centre of the data. Only instances within this centre are
-#'   compared against the threshold. Can be `NULL` to use all instances.
 #' @param ... Unused arguments.
 #'
 #' @inheritParams power_transform
 #'
-#' @return Fraction of instances whose residual exceeds the threshold.
+#' @return p-value for empirical goodness of fit test.
 #' @export
 #'
 #' @examples
@@ -36,33 +30,35 @@ NULL
 assess_transformation <- function(
     x,
     transformer,
-    threshold = 0.15,
-    centre_width = 0.80,
     ...) {
 
   # Prevent CRAN NOTE due to non-standard use of variables by data.table.
-  z_expected <- NULL
+  p_observed <- NULL
 
   # Compute fit data.
   residual_data <- get_residuals(
     x = x,
     transformer = transformer)
 
-  # Assign full weight to central elements. We do this to ensure that poor fits
-  # don't get down-weighted in the centre, and in that way produce
-  # log-likelihood values that are too optimistic.
-  if (!is.null(centre_width)) {
-    if (centre_width < 0.0 || centre_width > 1.0) {
-      stop(paste0("centre_width should be NULL or between 0.0 and 1.0. Found: ", centre_width))
-    }
+  # The test uses a central portion kappa = 0.80.
+  residual_data <- residual_data[p_observed >= 0.10 & p_observed <= 0.90]
 
-    residual_data <- residual_data[abs(z_expected) <= stats::qnorm(0.50 + centre_width / 2), ]
-    if (nrow(residual_data) == 0) {
-      stop(paste0("centre_width may be too small: no residuals were selected."))
-    }
+  test_statistic_value <- mean(abs(residual_data$residual))
+
+  if(test_statistic_value < min(gof_lookup_table$test_statistic)) return(1.0)
+  if(test_statistic_value > gof_lookup_table[alpha == 0.0001]$test_statistic){
+    message("p-value is smaller than 10^-4")
+    return(0.0)
   }
 
-  return(sum(abs(residual_data$residual) >= threshold) / nrow(residual_data))
+  p_value <- stats::spline(
+    x = gof_lookup_table$test_statistic,
+    y = gof_lookup_table$alpha,
+    method = "hyman",
+    xout = test_statistic_value
+  )$y
+
+  return(p_value)
 }
 
 
