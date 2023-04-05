@@ -151,7 +151,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   }
 
   # Prevent warnings due to non-standard evaluation.
-  distribution <- method <- version <- NULL
+  estimation_method <- distribution <- method <- version <- NULL
 
   # Process / read data.
   data <- .get_shifted_distribution_data(manuscript_dir = manuscript_dir)
@@ -1071,4 +1071,117 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p <- p_bc + p_yj + patchwork::plot_layout(ncol = 2, guides = "collect")
 
   return(p)
+}
+
+
+.plot_bimodal_distribution_test <- function(plot_theme, manuscript_dir) {
+
+  # Lambda plot,
+  .create_density_plot <- function(
+    location_shift = 0.0,
+    plot_theme,
+    limits = c(-6.0, 16.0)) {
+    # Prevent warnings due to non-standard evaluation.
+    distribution <- NULL
+
+    set.seed(9L)
+
+    # Normal distribution.
+    x_1 <- power.transform::ragn(
+      10000L,
+      location = 0,
+      scale = 1 / sqrt(2),
+      alpha = 0.5,
+      beta = 2
+    )
+
+    # Set data.
+    x_2 <- x_1 + location_shift
+    data <- data.table::rbindlist(list(
+      data.table::data.table(x = x_1, distribution = 1L),
+      data.table::data.table(x = x_2, distribution = 2L)
+    ))
+
+    data$distribution <- factor(data$distribution, levels = c("1", "2"))
+
+    # Compute p-value without changing the distribution.
+    transformer <- suppressWarnings(power.transform::find_transformation_parameters(
+      x = data$x,
+      method = "none"
+    ))
+
+    p_value <- suppressMessages(power.transform::assess_transformation(
+      x = data$x,
+      transformer = transformer
+    ))
+
+    if(p_value < 1E-3){
+      p_value <- paste0("p < 0.001")
+    } else {
+      p_value <- paste0("p = ", sprintf(p_value, fmt = "%#.3f"))
+    }
+
+    annotation_settings <- get_annotation_settings(plot_theme)
+
+    p <- ggplot2::ggplot(
+      data = data,
+      mapping = ggplot2::aes(
+        x = x,
+        fill = distribution,
+        colour = distribution)
+    )
+    p <- p + plot_theme
+    p <- p + ggplot2::geom_density(alpha = 0.2)
+
+    p <- p + ggplot2::geom_segment(
+      x = 0.0,
+      xend = location_shift,
+      y = 0.10,
+      yend = 0.10,
+      colour = "grey40")
+    p <- p + ggplot2::annotate(
+      geom = "text",
+      x = location_shift / 2.0,
+      y = 0.1,
+      label = p_value,
+      colour = "grey40",
+      family = annotation_settings$family,
+      fontface = annotation_settings$face,
+      size = annotation_settings$geom_text_size,
+      vjust = -1.0,
+      hjust = 1.0
+    )
+
+    p <- p + ggplot2::coord_cartesian(xlim = limits)
+
+    p <- p + ggplot2::facet_grid(cols = vars(paste0("d = ", location_shift)))
+
+    p <- p + ggplot2::theme(
+      axis.text.x = ggplot2::element_blank(),
+      axis.title.x = ggplot2::element_blank(),
+      axis.text.y = ggplot2::element_blank(),
+      axis.title.y = ggplot2::element_blank()
+    )
+
+    p <- p + paletteer::scale_color_paletteer_d(
+      palette = "ggthemes::Tableau_10",
+      drop = FALSE,
+      guide = "none"
+    )
+
+    p <- p + paletteer::scale_fill_paletteer_d(
+      palette = "ggthemes::Tableau_10",
+      drop = FALSE,
+      guide = "none"
+    )
+
+    return(p)
+  }
+
+  p_1 <- .create_density_plot(location_shift = 1.0, plot_theme = plot_theme)
+  p_3 <- .create_density_plot(location_shift = 3.0, plot_theme = plot_theme)
+  p_5 <- .create_density_plot(location_shift = 5.0, plot_theme = plot_theme)
+  p_10 <- .create_density_plot(location_shift = 10.0, plot_theme = plot_theme)
+
+  p <- p_1 + p_3 + p_5 + p_10 + patchwork::plot_layout(ncol = 4)
 }

@@ -100,7 +100,7 @@ Here we make the following contributions:
 
 -   We devise shift-sensitive versions of the Box-Cox and Yeo-Johnson transformation, including versions robust to outliers.
 
--   We define an empirical measure of the goodness of fit for detecting cases when power transformations fail to yield a normally distributed transformed feature.
+-   We define an empirical goodness of fit test for detecting cases where power transformations fail to yield a normally distributed transformed feature.
 
 -   We assess the effect of power transformations on the performance of machine learning models.
 
@@ -464,12 +464,12 @@ cap <- paste0(
   manuscript_dir = manuscript_dir)
 
 ```
-We then consider the empirical probability of type I errors: the probability of incorrectly classifying a centrally normal distribution as being non-normal based on the test statistic. Under the assumption that the asymmetric generalised normal distributions are centrally normal after robust transformation, this produces the relationship shown in Figure *Insert*. Since for $\kappa \leq 0.80$ error curves are similar, we fix the value of the central portion $\kappa$ to 0.80. This leads to test statistic values listed in Table *insert*, which derive from the type I error rates of the Box-Cox transformation.
+We then consider the empirical probability of type I errors: the probability of incorrectly classifying a centrally normal distribution as being non-normal based on the test statistic. Under the assumption that the asymmetric generalised normal distributions are centrally normal after robust transformation, this produces the relationship shown in Figure *Insert*. Since for $\kappa \leq 0.80$ error curves are similar, we fix the value of the central portion $\kappa$ to 0.80. This leads to test statistic values listed in Table *insert*, which derive from the type I error rates of the Yeo-Johnson transformation.
 
 ```{r goodness-of-fit-2, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
-  "Rejected transformed asymmetric generalised normal distributions as function of ",
-  "the mean absolute residual error of the central portion $\\kappa$ of the distribution.")
+  "Type 1 error rate of transformed asymmetric generalised normal distributions as function of ",
+  "the test statistic for the central portion $\\kappa$ of the distribution.")
 
 .plot_type_1_error_rate(
   plot_theme = plot_theme,
@@ -478,13 +478,14 @@ cap <- paste0(
 ```
 
 ```{r include = FALSE, eval = FALSE}
-table_data <- .get_test_statistics_data(manuscript_dir = manuscript_dir)
-```
-
-```{r include = FALSE, eval = FALSE}
+# This writes the lookup table for the goodness of fit test to the
+# power.transform package.
 load(file = "./R/sysdata.rda")
 
-gof_lookup_table <- .get_test_statistics_data(manuscript_dir = manuscript_dir, reduce = TRUE, as_table = FALSE)
+gof_lookup_table <- .get_test_statistics_data(
+  manuscript_dir = manuscript_dir,
+  reduce = TRUE,
+  as_table = FALSE)
 gof_lookup_table[, "method" := NULL]
 
 usethis::use_data(
@@ -493,6 +494,11 @@ usethis::use_data(
   internal = TRUE, 
   overwrite = TRUE)
 ```
+```{r include = FALSE, eval = FALSE}
+# This generates the data for the table below.
+table_data <- .get_test_statistics_data(manuscript_dir = manuscript_dir)
+```
+
 
 ```{=latex}
 \begin{table}
@@ -509,6 +515,17 @@ usethis::use_data(
 \end{tabular}
 \end{center}
 \end{table}
+```
+
+Figure *insert* shows bi-modal distributions, and their respective p-values using the empirical goodness of fit test.
+
+```{r goodness-of-fit-3, warning=FALSE, message=FALSE, fig.cap=cap}
+cap <- paste0("Bi-modal distributions and empirical goodness of fit test results.")
+
+.plot_bimodal_distribution_test(
+  plot_theme = plot_theme,
+  manuscript_dir = manuscript_dir)
+
 ```
 
 # Experimental Results
