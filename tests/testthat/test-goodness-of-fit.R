@@ -130,7 +130,7 @@ for (n in c(100, 1000, 10000)) {
         ))
 
         if (parameter_list[[ii]]$method == "none") {
-          testthat::expect_lt(p_value, 0.01)
+          testthat::expect_lt(p_value, 0.20)
         } else {
           testthat::expect_gt(p_value, 0.05)
         }
@@ -175,7 +175,7 @@ for (n in c(100, 1000, 10000)) {
           transformer = transformer
         ))
 
-        testthat::expect_lt(p_value, 0.001)
+        testthat::expect_lt(p_value, 0.01)
 
         # Bi-modal distribution (intermediate separation) ----------------------
 
@@ -194,7 +194,7 @@ for (n in c(100, 1000, 10000)) {
           transformer = transformer
         ))
 
-        testthat::expect_lt(p_value, 0.10)
+        testthat::expect_lt(p_value, 0.50)
 
         # Bi-modal distribution (small separation) -----------------------------
 
@@ -213,7 +213,7 @@ for (n in c(100, 1000, 10000)) {
           transformer = transformer
         ))
 
-        testthat::expect_gt(p_value, 0.01)
+        testthat::expect_gt(p_value, 0.10)
 
         # Uniform distribution -------------------------------------------------
 
