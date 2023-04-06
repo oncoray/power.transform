@@ -539,6 +539,33 @@ cap <- paste0(
 
 # Experimental Results
 
+## Datasets with outliers
+
+### Car data
+
+Top gear dataset, weight
+
+### Housing data
+
+Ames housing data set, year built
+
+### Other data ???
+
+## Integration into end-to-end machine learning
+
+- Assess whether shift-invariant robust transformation improves machine learning results.
+
+  - No transformation.
+  - Conventional Yeo-Johnson transformation.
+  - Shift sensitive Yeo-Johnson transformation.
+  - Shift sensitive, robust Yeo-Johnson transformation.
+  - Shift sensitive, robust Yeo-Johnson with central normality test.
+  
+  TODO: 
+  - Add set_lambda, get_lambda, set_shift, get_shift methods.
+  - Add option to set p-value for central normality test. Default NULL (no filtering)
+  - implement into familiar
+
 # Discussion
 
 In their work, Box and Cox already mention a transformation with a shift parameter, but preferred the now well-known version in Eq. **INSERT REFERENCE** for the theoretical analysis in their paper [@Box1964-mz].
