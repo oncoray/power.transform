@@ -1204,8 +1204,10 @@
     # computations -------------------------------------------------------------
     set.seed(95)
 
-    # Generate alpha, beta and n.
-    n <- stats::runif(n = n_distributions, min = 2, max = 4)
+    # Generate alpha, beta and n. Unlike for determining weighing function
+    # parameters, we assess smaller datasets, notably between 30 and 1000
+    # samples.
+    n <- stats::runif(n = n_distributions, min = 1.47, max = 3)
     n <- ceiling(10^n)
 
     alpha <- stats::runif(n = n_distributions, min = 0.01, max = 0.99)

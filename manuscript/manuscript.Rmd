@@ -494,6 +494,7 @@ usethis::use_data(
   internal = TRUE, 
   overwrite = TRUE)
 ```
+
 ```{r include = FALSE, eval = FALSE}
 # This generates the data for the table below.
 table_data <- .get_test_statistics_data(manuscript_dir = manuscript_dir)
@@ -510,7 +511,7 @@ table_data <- .get_test_statistics_data(manuscript_dir = manuscript_dir)
 0.50 & 0.20 & 0.10 & 0.05 & 0.02 & 0.01 & 0.001 \\
 
 \midrule
-0.029 & 0.039 & 0.047 & 0.054 & 0.062 & 0.069 & 0.090 \\
+0.042 & 0.063 & 0.077 & 0.090 & 0.106 & 0.118 & 0.159 \\
 \bottomrule
 \end{tabular}
 \end{center}
