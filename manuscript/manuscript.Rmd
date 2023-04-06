@@ -518,10 +518,18 @@ table_data <- .get_test_statistics_data(manuscript_dir = manuscript_dir)
 \end{table}
 ```
 
-Figure *insert* shows bi-modal distributions, and their respective p-values using the empirical goodness of fit test.
+In figure *insert* we apply the empirical goodness of fit test to assess central normality of features that are composed of a mixture of samples drawn from two normal distributions. With increased separation of the underlying normal distributions, the probability of the feature being centrally normal decreases, as expected.
 
 ```{r goodness-of-fit-3, warning=FALSE, message=FALSE, fig.cap=cap}
-cap <- paste0("Bi-modal distributions and empirical goodness of fit test results.")
+cap <- paste0(
+  "Bi-modal distributions and empirical goodness of fit test results. ",
+  "The feature (black) is a mixture of two identical sample sets (blue and orange) ",
+  "drawn from normal distributions that are offset by a distance $d$. ",
+  "We use the empirical goodness of fit test to compute p-values for the hypothesis that ",
+  "the distribution is centrally normal. As may be observed, with increasing offset $d$ ",
+  "the probability that the feature is centrally normal decreases. ",
+  "Quantile-quantile plots are drawn below each distribution."
+)
 
 .plot_bimodal_distribution_test(
   plot_theme = plot_theme,

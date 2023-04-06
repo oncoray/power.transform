@@ -1077,10 +1077,11 @@ get_annotation_settings <- function(ggtheme = NULL) {
 .plot_bimodal_distribution_test <- function(plot_theme, manuscript_dir) {
 
   # Lambda plot,
-  .create_density_plot <- function(
+  .create_density_and_qq_plot <- function(
     location_shift = 0.0,
     plot_theme,
-    limits = c(-6.0, 16.0)) {
+    limits = c(-7.0, 7.0),
+    drop_qq_y_axis = TRUE) {
     # Prevent warnings due to non-standard evaluation.
     distribution <- NULL
 
@@ -1089,7 +1090,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     # Normal distribution.
     x_1 <- power.transform::ragn(
       10000L,
-      location = 0,
+      location = -location_shift / 2,
       scale = 1 / sqrt(2),
       alpha = 0.5,
       beta = 2
@@ -1124,32 +1125,38 @@ get_annotation_settings <- function(ggtheme = NULL) {
     annotation_settings <- get_annotation_settings(plot_theme)
 
     p <- ggplot2::ggplot(
-      data = data,
+      data = data)
+    p <- p + plot_theme
+    p <- p + ggplot2::geom_density(
       mapping = ggplot2::aes(
         x = x,
+        y = ggplot2::after_stat(scaled),
         fill = distribution,
-        colour = distribution)
-    )
-    p <- p + plot_theme
-    p <- p + ggplot2::geom_density(alpha = 0.2)
+        colour = distribution),
+      alpha = 0.2)
+    p <- p + ggplot2::geom_density(
+      mapping = ggplot2::aes(
+        x = x,
+        y = ggplot2::after_stat(scaled)),
+      colour = "grey10")
 
     p <- p + ggplot2::geom_segment(
-      x = 0.0,
-      xend = location_shift,
+      x = -location_shift / 2.0,
+      xend = location_shift / 2.0,
       y = 0.10,
       yend = 0.10,
       colour = "grey40")
     p <- p + ggplot2::annotate(
       geom = "text",
-      x = location_shift / 2.0,
+      x = 0.0,
       y = 0.1,
       label = p_value,
       colour = "grey40",
       family = annotation_settings$family,
       fontface = annotation_settings$face,
       size = annotation_settings$geom_text_size,
-      vjust = -1.0,
-      hjust = 1.0
+      vjust = 2.0,
+      hjust = 0.5
     )
 
     p <- p + ggplot2::coord_cartesian(xlim = limits)
@@ -1175,13 +1182,41 @@ get_annotation_settings <- function(ggtheme = NULL) {
       guide = "none"
     )
 
-    return(p)
+    p_qq <- power.transform::plot_qq_plot(
+      x = data$x,
+      transformer = transformer,
+      show_original = FALSE,
+      ggtheme = plot_theme)
+
+    p_qq <- p_qq + ggplot2::xlab("Expected quantile")
+    p_qq <- p_qq + ggplot2::ylab("Observed quantile")
+
+    p_qq <- p_qq + ggplot2::coord_cartesian(
+      xlim = c(-4.0, 4.0),
+      ylim = c(-4.0, 4.0)
+    )
+
+    if (drop_qq_y_axis) {
+      p_qq <- p_qq + ggplot2::theme(
+        axis.title.y = ggplot2::element_blank(),
+        axis.text.y = ggplot2::element_blank()
+      )
+    }
+
+    return(list(
+      "density" = p,
+      "qq" = p_qq))
   }
 
-  p_1 <- .create_density_plot(location_shift = 1.0, plot_theme = plot_theme)
-  p_3 <- .create_density_plot(location_shift = 3.0, plot_theme = plot_theme)
-  p_5 <- .create_density_plot(location_shift = 5.0, plot_theme = plot_theme)
-  p_10 <- .create_density_plot(location_shift = 10.0, plot_theme = plot_theme)
+  p_1 <- .create_density_and_qq_plot(location_shift = 1.0, plot_theme = plot_theme, drop_qq_y_axis = FALSE)
+  p_2 <- .create_density_and_qq_plot(location_shift = 2.0, plot_theme = plot_theme)
+  p_3 <- .create_density_and_qq_plot(location_shift = 3.0, plot_theme = plot_theme)
+  p_4 <- .create_density_and_qq_plot(location_shift = 4.0, plot_theme = plot_theme)
+  p_5 <- .create_density_and_qq_plot(location_shift = 5.0, plot_theme = plot_theme)
 
-  p <- p_1 + p_3 + p_5 + p_10 + patchwork::plot_layout(ncol = 4)
+  p <- p_1$density + p_2$density + p_3$density + p_4$density + p_5$density +
+    p_1$qq + p_2$qq + p_3$qq + p_4$qq + p_5$qq +
+    patchwork::plot_layout(ncol = 5, heights = c(1, 0.5))
+
+  return(p)
 }
