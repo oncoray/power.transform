@@ -88,6 +88,34 @@
   return(invisible(TRUE))
 }
 
+
+
+.check_gof_test_p_value <- function(x, descriptor) {
+  # NULL is a valid value.
+  if (is.null(x)) return(invisible(TRUE))
+
+  if (length(x) != 1) {
+    stop(paste0(
+      "The ", descriptor, " should consist of a single, numeric value. ",
+      length(x), " values were provided."))
+  }
+
+  if(!is.numeric(x)) {
+    stop(paste0(
+      "The ", descriptor, " should consist of a single, numeric value. ",
+      "The provided value is not numeric: ", paste_s(class(x))))
+  }
+
+  if(x > 1.0 || x < 0.0) {
+    stop(paste0(
+      "The ", descriptor, " should be a value between 0.0 and 1.0. Found: ", x))
+  }
+
+  return(invisible(TRUE))
+}
+
+
+
 .check_weighting_function_parameters <- function(x, default_parameters) {
 
   # Skip if there is nothing to check.

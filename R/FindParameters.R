@@ -34,6 +34,11 @@
 #' @param lambda Single lambda value, or range of lambda values that should be
 #'   considered. Default: c(4.0, 6.0). Can be `NULL` to force optimisation
 #'   without a constraint in lambda values.
+#' @param empirical_gof_normality_p_value Significance value for the empirical
+#'   goodness-of-fit test for central normality. The p-value is computed through
+#'   the `assess_transformation` function. By setting this parameter to a
+#'   numeric value other than `NULL`, the transformation will be rejected when
+#'   the p-value of the test is below the significance value.
 #' @param ... Unused parameters.
 #'
 #' @return A transformer object that can be used to transform values.
@@ -59,6 +64,7 @@ find_transformation_parameters <- function(
     robust = TRUE,
     shift = TRUE,
     lambda = c(-4.0, 6.0),
+    empirical_gof_normality_p_value = NULL,
     ...) {
 
   # Check transformation methods.
@@ -132,6 +138,32 @@ find_transformation_parameters <- function(
     x = x,
     lambda = lambda,
     ...)
+
+  # Reject transformations in case the goodness-of-fit test p-value is below the
+  # required significance value.
+  if (!is(object, "transformationNone") && !is.null(empirical_gof_normality_p_value)) {
+    .check_gof_test_p_value(
+      x = empirical_gof_normality_p_value,
+      descriptor = "empirical goodness-of-fit test significance level (empirical_gof_normality_p_value)")
+
+    gof_test_p <- assess_transformation(x = x, transformer = object)
+    if (gof_test_p < empirical_gof_normality_p_value) {
+      rlang::warn(
+        message = paste0(
+          "The p-value of the transformed data (", gof_test_p, ") is below the required ",
+          "significance level (", empirical_gof_normality_p_value, ").
+          The transformation is rejected, and data are kept as is."),
+        class = "power_transform_gof_test_failed")
+
+      object <- methods::new("transformationNone")
+
+      object <- .set_transformation_parameters(
+        object = object,
+        x = x,
+        lambda = lambda,
+        ...)
+    }
+  }
 
   return(object)
 }
