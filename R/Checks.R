@@ -73,6 +73,21 @@
 
 
 
+.check_oob_action <- function(x) {
+  if (length(x) != 1) {
+    stop(paste0(
+      "One of the following should be provided as the oob_action argument: \"na\", or \"valid\".",
+      "Found: ", length(x), " arguments."))
+  }
+
+  if (!any(x %in% c("na", "valid"))) {
+    stop(paste0("One of the following should be provided as the oob_action argument: \"na\", or \"valid\".",
+    "Found: ", x))
+  }
+
+  return(invisible(TRUE))
+}
+
 .check_weighting_function_parameters <- function(x, default_parameters) {
 
   # Skip if there is nothing to check.

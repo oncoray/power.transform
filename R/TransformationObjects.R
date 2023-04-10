@@ -173,6 +173,25 @@ setMethod(
 
 
 
+# ..get_value_bounds (generic) -------------------------------------------------
+setGeneric(
+  "..get_value_bounds",
+  function(object, ...) standardGeneric("..get_value_bounds"))
+
+
+
+# ..get_value_bounds (general) -------------------------------------------------
+setMethod(
+  "..get_value_bounds",
+  signature(object = "transformationPowerTransform"),
+  function(object, ...) {
+    # By default, there is no minimum shift.
+    return(c(-Inf, Inf))
+  }
+)
+
+
+
 # ..set_lambda (generic) -------------------------------------------------------
 setGeneric(
   "..set_lambda",

@@ -138,28 +138,38 @@ setMethod(
 setMethod(
   ".transform",
   signature(object = "transformationBoxCox"),
-  function(object, x, ...) {
+  function(object, x, oob_action = "na", ...) {
 
     # Set up vector to copy new values to.
     y <- numeric(length(x))
 
+    # Check oob_action
+    .check_oob_action(oob_action)
+
     # Find non-positive and non-finite instances.
     na_entries <- which(x <= object@shift | !is.finite(x))
-    if (length(na_entries) > 0) {
+
+    if (length(na_entries) > 0 && oob_action == "na") {
       warning(paste0(
         "Box-cox power transforms are only defined for strictly positive values. ",
         "One or more zero, negative, NA or infinite values were found."))
 
       y[na_entries] <- NA_real_
+
+    } else if (length(na_entries) > 0 && oob_action == "valid") {
+      lower_bound <- ..get_value_bounds(object = object)[1]
+      y[is.finite(x) & x < lower_bound] <- lower_bound
     }
 
     # Find remaining valid instances.
     valid_entries <- setdiff(seq_along(x), na_entries)
 
     # Perform transformation.
-    if (length(valid_entries) > 0) y[valid_entries] <- ..transform(
-      object = object,
-      x = x[valid_entries])
+    if (length(valid_entries) > 0) {
+      y[valid_entries] <- ..transform(
+        object = object,
+        x = x[valid_entries])
+    }
 
     return(y)
   }
@@ -299,6 +309,23 @@ setMethod(
     object@shift <- max(x_range)
 
     return(object)
+  }
+)
+
+
+
+# ..get_value_bounds (Box-Cox) -------------------------------------------------
+setMethod(
+  "..get_value_bounds",
+  signature(object = "transformationPowerTransform"),
+  function(object, ...) {
+    # By default, the minimum valid value is indicated by shift attribute. All
+    # values that are equal to or smaller than the shift attribute, are invalid.
+    minimum_shift <- object@shift
+
+    # Increase the minimum shift by a small amount to create the valid lower
+    # bound.
+    return(c(minimum_shift + 1E-8, Inf))
   }
 )
 

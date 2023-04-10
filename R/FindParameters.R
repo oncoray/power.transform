@@ -147,6 +147,17 @@ find_transformation_parameters <- function(
 #' @param transformer A transformer object created using
 #'   `find_transformation_parameters`. If `NULL`, a transformer is generated
 #'   internally.
+#' @param oob_action Action that should be taken when out-of-bounds values are
+#'   encountered in `x`. This can for example be 0 or negative values for
+#'   Box-Cox transformations.
+#'
+#'   * `na` (default): replaces out-of-bounds values by NA values.
+#'
+#'   * `valid`: replaces out-of-bounds values by the closest valid boundary
+#'   values.
+#'
+#'   This argument has no effect for Yeo-Johnson transformations.
+#'
 #' @param ... Parameters passed on to `find_transformation_parameters`.
 #'
 #' @inheritDotParams find_transformation_parameters
@@ -163,6 +174,7 @@ find_transformation_parameters <- function(
 power_transform <- function(
     x,
     transformer = NULL,
+    oob_action = "na",
     ...) {
 
   # Create a transformer.
@@ -183,7 +195,8 @@ power_transform <- function(
   # Transform data using the transformer.
   y <- .transform(
     object = transformer,
-    x = x)
+    x = x,
+    oob_action = oob_action)
 
   return(y)
 }
