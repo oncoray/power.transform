@@ -78,7 +78,12 @@ setMethod(
     # Find non-finite instances.
     na_entries <- which(!is.finite(x))
     if (length(na_entries) > 0) {
-      warning("One or more NA or infinite values were found.")
+      rlang::warn(
+        message = paste0(
+          "Power transformations are only defined for finite values. ",
+          length(na_entries), " NA or infinite values were found."),
+        class = "power_transform_transform_invalid_values"
+      )
 
       y[na_entries] <- NA_real_
     }

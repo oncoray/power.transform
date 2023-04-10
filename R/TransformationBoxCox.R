@@ -150,15 +150,29 @@ setMethod(
     na_entries <- which(x <= object@shift | !is.finite(x))
 
     if (length(na_entries) > 0 && oob_action == "na") {
-      warning(paste0(
-        "Box-cox power transforms are only defined for strictly positive values. ",
-        "One or more zero, negative, NA or infinite values were found."))
+      rlang::warn(
+        message = paste0(
+          "Box-cox power transforms are only defined for strictly positive values. ",
+          length(na_entries), " zero, negative, NA or infinite values were found."),
+        class = "power_transform_transform_invalid_values"
+      )
 
       y[na_entries] <- NA_real_
 
     } else if (length(na_entries) > 0 && oob_action == "valid") {
       lower_bound <- ..get_value_bounds(object = object)[1]
-      y[is.finite(x) & x < lower_bound] <- lower_bound
+      invalid_values <- is.finite(x) & x < lower_bound
+
+      if (any(invalid_values)) {
+        rlang::warn(
+          message = paste0(
+            "Box-cox power transforms are only defined for strictly positive values. ",
+            length(na_entries), " zero or negative values were found."),
+          class = "power_transform_transform_invalid_values"
+        )
+
+        y[invalid_values] <- lower_bound
+      }
     }
 
     # Find remaining valid instances.
@@ -292,12 +306,16 @@ setMethod(
     # Shift is necessary to avoid transformation with negative or zero values.
     if (all(x > 0.0)) return(object)
 
-    # Warn to notify that zero or negative values are present. Avoid warning if shifts are optimised.
+    # Warn to notify that zero or negative values are present. Avoid warning if
+    # shifts are optimised.
     if (!is(object, "transformationBoxCoxShift")) {
-      warning(paste0(
-        "Box-cox power transforms are only defined for strictly positive values. ",
-        "One or more zero or negative values are present in \"x\". ",
-        "The values are shifted to induce strictly positive values."))
+      rlang::warn(
+        message = paste0(
+          "Box-cox power transforms are only defined for strictly positive values. ",
+          "One or more zero or negative values were found in \"x\". ",
+          "The values are shifted to induce strictly positive values."),
+        class = "power_transform_transform_invalid_values"
+      )
     }
 
     # Find shift range.

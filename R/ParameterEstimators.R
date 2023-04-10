@@ -114,9 +114,14 @@ setMethod(
 
     # Check fall-back option.
     if (!is_package_installed("nloptr") && optimiser %in% c("direct", "direct-l", "mlsl", "subplex", "nelder-mead")) {
-      warning(paste0(
-        "The nloptr package is required to optimise power transformation parameters using the ",
-        optimiser, " algoritm. stats::optim is used as a fallback option."))
+      rlang::warn(
+        message = paste0(
+          "The nloptr package is required to optimise power transformation parameters using the ",
+          optimiser, " algoritm. stats::optim is used as a fallback option."),
+        class = "power_transform_package_missing",
+        .frequency = "once",
+        .frequency_id = "power_transform_package_missing_nloptr"
+      )
 
       optimiser <- "optim-nelder-mead"
     }
