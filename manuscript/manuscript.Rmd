@@ -563,8 +563,10 @@ Ames housing data set, year built
   
   TODO: 
   - Add set_lambda, get_lambda, set_shift, get_shift methods.
-  - Add option to set p-value for central normality test. Default NULL (no filtering)
   - implement into familiar
+  - update familiar.experiment to allow for setting external configurations (or maybe make that the default -- its definitely easier and more transparent.)
+  
+  - Add tests for out-of-bound actions (power_transform) and GOF test rejection (find_parameters).
 
 # Discussion
 
@@ -574,7 +576,7 @@ In their work, Box and Cox already mention a transformation with a shift paramet
 
 # Code availability
 
-Shift-sensitive power transformations are implemented in the `power.transform` package.
+Shift-sensitive power transformations are implemented in the `power.transform` package. This manuscript was created using R Markdown, and is available from [https://github.com/alexzwanenburg/power.transform].
 
 
 
