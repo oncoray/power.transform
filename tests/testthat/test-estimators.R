@@ -186,7 +186,7 @@ for(ii in seq_along(parameter_list)){
           power.transform::find_transformation_parameters,
           args=c(list("x"=x_few_unique),
                  parameter_list[[ii]])),
-        "x contains ten or fewer unique values")
+        class = "power_transform_few_unique_values")
 
       # Check lambda values.
       if(parameter_list[[ii]]$method == "box_cox"){

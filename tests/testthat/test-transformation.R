@@ -537,7 +537,7 @@ for(ii in seq_along(parameter_list)){
             power.transform::find_transformation_parameters,
             args=c(list("x"=x_single_value),
                    parameter_list[[ii]])),
-          "x contains three or fewer unique values")
+          class = "power_transform_no_transform")
       }
 
       testthat::expect_s4_class(transformer, "transformationNone")
@@ -564,13 +564,14 @@ for(ii in seq_along(parameter_list)){
             power.transform::find_transformation_parameters,
             args=c(list("x"=x_three_unique),
                    parameter_list[[ii]])))
+
       } else {
         testthat::expect_warning(
           transformer <- do.call(
             power.transform::find_transformation_parameters,
             args=c(list("x"=x_three_unique),
                    parameter_list[[ii]])),
-          "x contains three or fewer unique values")
+          class = "power_transform_no_transform")
       }
 
       testthat::expect_s4_class(transformer, "transformationNone")
@@ -596,7 +597,7 @@ for(ii in seq_along(parameter_list)){
           power.transform::find_transformation_parameters,
           args=c(list("x"=x_few_unique),
                  parameter_list[[ii]])),
-        "x contains ten or fewer unique values")
+        class = "power_transform_few_unique_values")
 
       # Check lambda values.
       if(parameter_list[[ii]]$method == "box_cox"){

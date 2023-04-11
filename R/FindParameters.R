@@ -163,8 +163,8 @@ find_transformation_parameters <- function(
       rlang::warn(
         message = paste0(
           "The p-value of the transformed data (", gof_test_p, ") is below the required ",
-          "significance level (", empirical_gof_normality_p_value, ").
-          The transformation is rejected, and data are kept as is."),
+          "significance level (", empirical_gof_normality_p_value, "). ",
+          "The transformation is rejected, and data are kept as is."),
         class = "power_transform_no_transform")
 
       object <- methods::new("transformationNone")

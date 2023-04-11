@@ -562,7 +562,6 @@ Ames housing data set, year built
   - Shift sensitive, robust Yeo-Johnson with central normality test.
   
   TODO: 
-  - Add set_lambda, get_lambda, set_shift, get_shift methods.
   - implement into familiar
   - update familiar.experiment to allow for setting external configurations (or maybe make that the default -- its definitely easier and more transparent.)
   
