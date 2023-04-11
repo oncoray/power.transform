@@ -6,7 +6,8 @@ for (method in c("box_cox", "yeo_johnson", "none")) {
       parameter_list[[ii]] <- list(
         "method" = method,
         "robust" = robust,
-        "shift" = shift
+        "shift" = shift,
+        "estimation_method" = "mle"
       )
 
       ii <- ii + 1
@@ -241,3 +242,38 @@ for (n in c(100, 1000, 10000)) {
     )
   }
 }
+
+
+# Assess empirical goodness of fit test for rejecting non-normal distributions.
+testthat::test_that(
+  "Non-normal transformations are correctly rejected.", {
+
+    # Generate data.
+    x_bimodal_large <- c(
+      stats::rnorm(500L, mean = 0.0),
+      stats::rnorm(500L, mean = 6.0)
+    )
+
+    # Create the transformer. Note that the data are not normally distributed.
+    transformer_default <- power.transform::find_transformation_parameters(
+      x = x_bimodal_large,
+      method = "yeo_johnson",
+      estimation_method = "mle"
+    )
+
+    testthat::expect_s4_class(transformer_default, "transformationYeoJohnsonShift")
+
+    testthat::expect_warning(
+      transformer_rejected <- power.transform::find_transformation_parameters(
+        x = x_bimodal_large,
+        method = "yeo_johnson",
+        estimation_method = "mle",
+        empirical_gof_normality_p_value = 0.05),
+      class = "power_transform_no_transform"
+    )
+
+    testthat::expect_s4_class(transformer_rejected, "transformationNone")
+  }
+)
+
+
