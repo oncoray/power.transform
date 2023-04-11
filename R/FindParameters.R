@@ -119,7 +119,7 @@ find_transformation_parameters <- function(
     }
 
     # Check lambda.
-    .check_lambda(lambda)
+    .check_lambda_range(lambda)
 
   } else if (method == "yeo_johnson") {
     object <- methods::new(
@@ -133,7 +133,7 @@ find_transformation_parameters <- function(
     }
 
     # Check lambda.
-    .check_lambda(lambda)
+    .check_lambda_range(lambda)
 
   } else {
     stop(

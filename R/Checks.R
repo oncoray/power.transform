@@ -40,7 +40,8 @@
 
 
 
-.check_lambda <- function(x) {
+.check_lambda_range <- function(x) {
+  # This checks the lambda argument for find_parameters.
 
   # NULL is a valid value.
   if (is.null(x)) return(invisible(TRUE))
@@ -66,6 +67,48 @@
     if (is.unsorted(x)) {
       stop("If lambda consists of 2 numeric values, the values should be ordered by increasing value.")
     }
+  }
+
+  return(invisible(TRUE))
+}
+
+
+
+.check_lambda_value <- function(x) {
+  # This checks the lambda argument for the mutator.
+  if (!length(x) == 1) {
+    stop(paste0("lambda should be a single, finite, numeric value. ", length(x), " values were found."))
+  }
+
+  if (!is.numeric(x)) {
+    stop("lambda should be a single, finite, numeric value. Found: ", paste_s(class(x)))
+  }
+
+  if (!is.finite(x)){
+    stop(paste0(
+      "lambda should be a single, finite, numeric value. ",
+      "Found: a numeric value that is not finite (", x, ")"))
+  }
+
+  return(invisible(TRUE))
+}
+
+
+
+.check_shift_value <- function(x) {
+  # This checks the lambda argument for the mutator.
+  if (!length(x) == 1) {
+    stop(paste0("shift should be a single, finite, numeric value. ", length(x), " values were found."))
+  }
+
+  if (!is.numeric(x)) {
+    stop("shift should be a single, finite, numeric value. Found: ", paste_s(class(x)))
+  }
+
+  if (!is.finite(x)){
+    stop(paste0(
+      "shift should be a single, finite, numeric value. ",
+      "Found: a numeric value that is not finite (", x, ")"))
   }
 
   return(invisible(TRUE))
