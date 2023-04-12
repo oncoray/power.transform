@@ -14,6 +14,7 @@ NULL
 #'
 #' @param transformer A transformer object created using
 #'   `find_transformation_parameters`.
+#' @param verbose Sets verbosity of the fubction.
 #' @param ... Unused arguments.
 #'
 #' @inheritParams power_transform
@@ -33,10 +34,11 @@ NULL
 assess_transformation <- function(
     x,
     transformer,
+    verbose = TRUE,
     ...) {
 
   # Prevent CRAN NOTE due to non-standard use of variables by data.table.
-  p_observed <- NULL
+  p_observed <- alpha <- NULL
 
   # Compute fit data.
   residual_data <- get_residuals(
@@ -48,9 +50,11 @@ assess_transformation <- function(
 
   test_statistic_value <- mean(abs(residual_data$residual))
 
-  if(test_statistic_value < min(gof_lookup_table$test_statistic)) return(1.0)
-  if(test_statistic_value > gof_lookup_table[alpha == 0.0001]$test_statistic){
-    message("p-value is smaller than 10^-4")
+  if (test_statistic_value < min(gof_lookup_table$test_statistic)) return(1.0)
+  if (test_statistic_value > gof_lookup_table[alpha == 0.0001]$test_statistic) {
+
+    if (verbose) message("p-value is smaller than 10^-4")
+
     return(0.0)
   }
 

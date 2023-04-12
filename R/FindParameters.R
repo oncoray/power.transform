@@ -158,7 +158,11 @@ find_transformation_parameters <- function(
       x = empirical_gof_normality_p_value,
       descriptor = "empirical goodness-of-fit test significance level (empirical_gof_normality_p_value)")
 
-    gof_test_p <- assess_transformation(x = x, transformer = object)
+    gof_test_p <- assess_transformation(
+      x = x,
+      transformer = object,
+      verbose = FALSE)
+
     if (gof_test_p < empirical_gof_normality_p_value) {
       rlang::warn(
         message = paste0(
