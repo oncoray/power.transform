@@ -10,7 +10,7 @@
 #'
 #' @param object Transformer object
 #' @param lambda Lambda value
-#' @param ...
+#' @param ... Unused arguments
 #'
 #' @return Transformer object with updated lambda value.
 #' @export
@@ -78,7 +78,7 @@ setMethod(
 #' @description Get the lambda value of a transformer object.
 #'
 #' @param object Transformer object
-#' @param ...
+#' @param ... Unused arguments
 #'
 #' @return Lambda value of the transformer.
 #' @export

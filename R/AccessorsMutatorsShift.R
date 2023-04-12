@@ -10,7 +10,7 @@
 #'
 #' @param object Transformer object
 #' @param shift Shift value
-#' @param ...
+#' @param ... Unused arguments
 #'
 #' @return Transformer object with updated shift value.
 #' @export
@@ -74,7 +74,7 @@ setMethod(
 #' @description Get the shift value of a transformer object.
 #'
 #' @param object Transformer object
-#' @param ...
+#' @param ... Unused arguments
 #'
 #' @return shift value of the transformer.
 #' @export
