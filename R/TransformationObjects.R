@@ -6,6 +6,8 @@
 #'
 #' @slot method Main transformation method.
 #' @slot complete Indicates whether transformation parameters were set.
+#' @slot version Version of the power.transform package that was used to create
+#'   the transformation objecst.
 #'
 #' @export
 
@@ -13,10 +15,13 @@ setClass(
   "transformationPowerTransform",
   slots = list(
     "method" = "character",
-    "complete" = "logical"),
+    "complete" = "logical",
+    "version" = "ANY"),
   prototype = list(
     "method" = "none",
-    "complete" = FALSE))
+    "complete" = FALSE,
+    "version" = NULL))
+
 
 # transformationNone definition ------------------------------------------------
 
@@ -49,6 +54,9 @@ setMethod(
   signature(object = "transformationPowerTransform"),
   function(object, x, ...) {
     # Default method.
+
+    # Add package version.
+    object <- .set_version(object = object)
 
     # Mark as complete.
     object@complete <- TRUE
@@ -292,3 +300,25 @@ setMethod(
 setGeneric(
   "..get_available_estimators",
   function(object, ...) standardGeneric("..get_available_estimators"))
+
+
+
+# .set_version (generic) -------------------------------------------------------
+setGeneric(
+  ".set_version",
+  function(object, ...) standardGeneric(".set_version")
+)
+
+
+
+# .set_version (general) -------------------------------------------------------
+setMethod(
+  ".set_version",
+  signature(object = "transformationPowerTransform"),
+  function(object, ...) {
+    # Set package version.
+    object@version <- utils::packageVersion("power.transform")
+
+    return(object)
+  }
+)

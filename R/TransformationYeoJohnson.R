@@ -79,6 +79,9 @@ setMethod(
 
     # Skip optimisation if there is nothing to optimise.
     if (is.null(optimisation_parameters)) {
+      # Add package version.
+      object <- .set_version(object = object)
+
       object@complete <- TRUE
 
       return(object)
@@ -118,6 +121,9 @@ setMethod(
         object@lambda <- optimised_parameters$lambda
       }
     }
+
+    # Add package version.
+    object <- .set_version(object = object)
 
     object@complete <- TRUE
 
