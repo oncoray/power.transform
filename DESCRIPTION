@@ -35,6 +35,7 @@ Collate:
     'PlotQQPlot.R'
     'PlotResidualPlot.R'
     'PlotUtilities.R'
+    'TransformationSkeleton.R'
     'Utilities.R'
     'WeightingFunctions.R'
     'WeightingFunctionParameters.R'
