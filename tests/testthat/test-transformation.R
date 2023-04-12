@@ -1,10 +1,10 @@
 parameter_list <- list()
 ii <- 1
-for(method in c("box_cox", "yeo_johnson", "none")){
-  for(robust in c(FALSE, TRUE)){
-    for(shift in c(FALSE, TRUE)){
+for (method in c("box_cox", "yeo_johnson", "none")) {
+  for (robust in c(FALSE, TRUE)) {
+    for (shift in c(FALSE, TRUE)) {
       estimation_method <- power.transform:::..estimators_mle()
-      if(robust && !shift){
+      if (robust && !shift) {
         estimation_method <- power.transform:::..estimators_raymaekers_robust()
       }
 

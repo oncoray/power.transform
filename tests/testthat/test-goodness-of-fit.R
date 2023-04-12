@@ -20,7 +20,7 @@ for (n in c(100, 1000, 10000)) {
   # Set seed.
   set.seed(19L)
 
-  # Draw 10000 samples according to a normal distribution.
+  # Draw samples according to a normal distribution.
   x_normal <- stats::rnorm(n)
 
   # Make exponentially distributed.
