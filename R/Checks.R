@@ -84,7 +84,7 @@
     stop("lambda should be a single, finite, numeric value. Found: ", paste_s(class(x)))
   }
 
-  if (!is.finite(x)){
+  if (!is.finite(x)) {
     stop(paste0(
       "lambda should be a single, finite, numeric value. ",
       "Found: a numeric value that is not finite (", x, ")"))
@@ -105,7 +105,7 @@
     stop("shift should be a single, finite, numeric value. Found: ", paste_s(class(x)))
   }
 
-  if (!is.finite(x)){
+  if (!is.finite(x)) {
     stop(paste0(
       "shift should be a single, finite, numeric value. ",
       "Found: a numeric value that is not finite (", x, ")"))
@@ -143,13 +143,13 @@
       length(x), " values were provided."))
   }
 
-  if(!is.numeric(x)) {
+  if (!is.numeric(x)) {
     stop(paste0(
       "The ", descriptor, " should consist of a single, numeric value. ",
       "The provided value is not numeric: ", paste_s(class(x))))
   }
 
-  if(x > 1.0 || x < 0.0) {
+  if (x > 1.0 || x < 0.0) {
     stop(paste0(
       "The ", descriptor, " should be a value between 0.0 and 1.0. Found: ", x))
   }
