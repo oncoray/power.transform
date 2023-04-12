@@ -1,3 +1,17 @@
+
+#' @title Huber M-estimate
+#'
+#' @description Iteratively computes M-estimates for location and scale. These
+#'   are robust estimates of the mean and standard deviation of the data.
+#'
+#' @param x Vector of numeric values for which the location and scale should be
+#'   estimated.
+#' @param k Numeric value > 0 that the determines the value beyond which the
+#'   signal is winsorized.
+#' @param tol Tolerance for the iterative procedure.
+#'
+#' @return list with location estimate `"mu"` and scale estimate `"sigma"`.
+#' @export
 huber_estimate <- function(x, k = 1.28, tol = 1E-4) {
   # k=1.28 is based on Wilcox RR. Introduction to Robust Estimation and
   # Hypothesis Testing. Academic Press; 2011.
@@ -66,32 +80,6 @@ compute_expected_z <- function(x) {
   return(z)
 }
 
-
-
-select_neighbourhood <- function(x, x_range) {
-  neighbourhood_range <- c(0.0, 0.0)
-
-  # Find coordinates.
-  ii <- which(x_range == x)
-
-  # Lower bound.
-  if (ii == 1) {
-    neighbourhood_range[1] <- x
-
-  } else {
-    neighbourhood_range[1] <- x_range[ii - 1L]
-  }
-
-  # Upper bound.
-  if (ii == length(x_range)) {
-    neighbourhood_range[2] <- x
-
-  } else {
-    neighbourhood_range[2] <- x_range[ii + 1L]
-  }
-
-  return(neighbourhood_range)
-}
 
 
 
