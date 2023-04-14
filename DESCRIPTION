@@ -24,6 +24,7 @@ Collate:
     'TransformationBoxCox.R'
     'AccessorsMutatorsLambda.R'
     'AccessorsMutatorsShift.R'
+    'AccessorsTransformationMethod.R'
     'Checks.R'
     'FindParameters.R'
     'GoodnessOfFit.R'
