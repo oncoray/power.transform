@@ -96,12 +96,19 @@ for(ii in seq_along(parameter_list)){
         x_reverted_single)
 
       ## Single instance NA ----------------------------------------------------
-      testthat::expect_warning(
+      if (parameter_list[[ii]]$method == "none") {
         x_transformed_single <- power.transform::power_transform(
           x = NA_real_,
-          transformer = transformer),
-        "NA or infinite values were found"
-      )
+          transformer = transformer)
+
+      } else {
+        testthat::expect_warning(
+          x_transformed_single <- power.transform::power_transform(
+            x = NA_real_,
+            transformer = transformer),
+          "NA or infinite values were found"
+        )
+      }
 
       # Revert transformation.
       x_reverted_single <- power.transform::revert_power_transform(
@@ -115,11 +122,20 @@ for(ii in seq_along(parameter_list)){
         x_reverted_single)
 
       ## Single instance non-numeric -------------------------------------------
-      testthat::expect_error(
-        power.transform::power_transform(
-          x = "a",
-          transformer = transformer),
-        "x does not contain numeric values.")
+      if (parameter_list[[ii]]$method == "none") {
+        testthat::expect_equal(
+          power.transform::power_transform(
+            x = "a",
+            transformer = transformer),
+          "a")
+
+      } else {
+        testthat::expect_error(
+          power.transform::power_transform(
+            x = "a",
+            transformer = transformer),
+          "x does not contain numeric values.")
+      }
 
       ## Single instance negative ----------------------------------------------
 
@@ -335,13 +351,20 @@ for(ii in seq_along(parameter_list)){
         }
       }
 
-      # Transform values.
-      testthat::expect_warning(
+      if (parameter_list[[ii]]$method == "none") {
         x_transformed <- power.transform::power_transform(
           x = x_some_na,
-          transformer = transformer),
-        "NA or infinite values were found"
-      )
+          transformer = transformer)
+
+      } else {
+        # Transform values.
+        testthat::expect_warning(
+          x_transformed <- power.transform::power_transform(
+            x = x_some_na,
+            transformer = transformer),
+          "NA or infinite values were found"
+        )
+      }
 
       # Revert transformation.
       x_reverted <- power.transform::revert_power_transform(
@@ -395,12 +418,21 @@ for(ii in seq_along(parameter_list)){
       }
 
       # Transform values.
-      testthat::expect_warning(
-        x_transformed <- power.transform::power_transform(
-          x = x_some_inf,
-          transformer = transformer),
-        "NA or infinite values were found"
-      )
+      if (parameter_list[[ii]]$method == "none") {
+        testthat::expect_no_warning(
+          x_transformed <- power.transform::power_transform(
+            x = x_some_inf,
+            transformer = transformer)
+        )
+
+      } else {
+        testthat::expect_warning(
+          x_transformed <- power.transform::power_transform(
+            x = x_some_inf,
+            transformer = transformer),
+          "NA or infinite values were found"
+        )
+      }
 
       # Revert transformation.
       x_reverted <- power.transform::revert_power_transform(
@@ -408,8 +440,11 @@ for(ii in seq_along(parameter_list)){
         transformer = transformer)
 
       # The first two values should now be NA instead of Inf, because the
-      # transformation routines replace this by NA.
-      x_some_inf[c(1,2)] <- NA_real_
+      # transformation routines replace this by NA, unless the "none" method is
+      # used.
+      if (parameter_list[[ii]]$method != "none") {
+        x_some_inf[c(1,2)] <- NA_real_
+      }
 
       # Test that reverting the transform produces the expected values.
       testthat::expect_equal(
@@ -432,12 +467,25 @@ for(ii in seq_along(parameter_list)){
       "; shift: ", parameter_list[[ii]]$shift, ")"),
     {
       # Creating the transformer should throw an error.
-      testthat::expect_error(
-        do.call(
-          power.transform::find_transformation_parameters,
-          args=c(list("x"=x_all_na),
-                 parameter_list[[ii]])),
-        "x only contains NA or inf values.")
+      if (parameter_list[[ii]]$method == "none") {
+        testthat::expect_s4_class(
+          do.call(
+            power.transform::find_transformation_parameters,
+            args=c(list("x"=x_all_na),
+                   parameter_list[[ii]])),
+          "transformationNone"
+        )
+
+      } else {
+        testthat::expect_error(
+          do.call(
+            power.transform::find_transformation_parameters,
+            args=c(list("x"=x_all_na),
+                   parameter_list[[ii]])),
+          "x only contains NA or inf values."
+        )
+      }
+
     }
   )
 
@@ -453,13 +501,23 @@ for(ii in seq_along(parameter_list)){
       "; robust: ", parameter_list[[ii]]$robust,
       "; shift: ", parameter_list[[ii]]$shift, ")"),
     {
-      # Creating the transformer should throw an error.
+      if (parameter_list[[ii]]$method == "none") {
+        testthat::expect_s4_class(
+          do.call(
+            power.transform::find_transformation_parameters,
+            args=c(list("x"=x_all_inf),
+                   parameter_list[[ii]])),
+          "transformationNone"
+        )
+
+      } else {
       testthat::expect_error(
         do.call(
           power.transform::find_transformation_parameters,
           args=c(list("x"=x_all_inf),
                  parameter_list[[ii]])),
         "x only contains NA or inf values.")
+      }
     }
   )
 
@@ -475,13 +533,24 @@ for(ii in seq_along(parameter_list)){
       "; robust: ", parameter_list[[ii]]$robust,
       "; shift: ", parameter_list[[ii]]$shift, ")"),
     {
-      # Creating the transformer should throw an error.
-      testthat::expect_error(
-        do.call(
-          power.transform::find_transformation_parameters,
-          args=c(list("x"=x_all_char),
-                 parameter_list[[ii]])),
-        "x does not contain numeric values.")
+      if (parameter_list[[ii]]$method == "none") {
+        testthat::expect_s4_class(
+          do.call(
+            power.transform::find_transformation_parameters,
+            args=c(list("x"=x_all_char),
+                   parameter_list[[ii]])),
+          "transformationNone"
+        )
+
+      } else {
+        # Creating the transformer should throw an error.
+        testthat::expect_error(
+          do.call(
+            power.transform::find_transformation_parameters,
+            args=c(list("x"=x_all_char),
+                   parameter_list[[ii]])),
+          "x does not contain numeric values.")
+      }
     }
   )
 
@@ -500,13 +569,24 @@ for(ii in seq_along(parameter_list)){
       "; robust: ", parameter_list[[ii]]$robust,
       "; shift: ", parameter_list[[ii]]$shift, ")"),
     {
-      # Creating the transformer should throw an error.
-      testthat::expect_error(
-        do.call(
-          power.transform::find_transformation_parameters,
-          args=c(list("x"=x_categorical),
-                 parameter_list[[ii]])),
-        "x is categorical, and power transformations are not applicable.")
+      if (parameter_list[[ii]]$method == "none") {
+        testthat::expect_s4_class(
+          do.call(
+            power.transform::find_transformation_parameters,
+            args=c(list("x"=x_categorical),
+                   parameter_list[[ii]])),
+          "transformationNone"
+        )
+
+      } else {
+        # Creating the transformer should throw an error.
+        testthat::expect_error(
+          do.call(
+            power.transform::find_transformation_parameters,
+            args=c(list("x"=x_categorical),
+                   parameter_list[[ii]])),
+          "x is categorical, and power transformations are not applicable.")
+      }
     }
   )
 
@@ -592,12 +672,22 @@ for(ii in seq_along(parameter_list)){
     {
       # Creating the transformer should throw a warning, but otherwise function
       # normally.
-      testthat::expect_warning(
-        transformer <- do.call(
-          power.transform::find_transformation_parameters,
-          args=c(list("x"=x_few_unique),
-                 parameter_list[[ii]])),
-        class = "power_transform_few_unique_values")
+      if(parameter_list[[ii]]$method == "none"){
+        testthat::expect_no_warning(
+          transformer <- do.call(
+            power.transform::find_transformation_parameters,
+            args=c(list("x"=x_few_unique),
+                   parameter_list[[ii]])),
+          class = "power_transform_few_unique_values")
+
+      } else {
+        testthat::expect_warning(
+          transformer <- do.call(
+            power.transform::find_transformation_parameters,
+            args=c(list("x"=x_few_unique),
+                   parameter_list[[ii]])),
+          class = "power_transform_few_unique_values")
+      }
 
       # Check lambda values.
       if(parameter_list[[ii]]$method == "box_cox"){

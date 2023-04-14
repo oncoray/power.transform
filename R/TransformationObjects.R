@@ -111,6 +111,18 @@ setMethod(
 
 
 
+# .transform (none) ------------------------------------------------------------
+setMethod(
+  ".transform",
+  signature(object = "transformationNone"),
+  function(object, x, ...) {
+    # In case no transformation takes place, we can just return x.
+    return(x)
+  }
+)
+
+
+
 # ..transform (generic) --------------------------------------------------------
 setGeneric(
   "..transform",

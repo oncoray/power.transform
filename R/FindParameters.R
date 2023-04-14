@@ -74,33 +74,38 @@ find_transformation_parameters <- function(
       "Found: ", method))
   }
 
-  # Perform checks on x.
-  .check_data(x)
+  if (method != "none") {
+    # Perform checks on x.
+    .check_data(x)
 
-  # Remove NA or inf values.
-  x <- x[is.finite(x)]
+    # Remove NA or inf values.
+    x <- x[is.finite(x)]
 
-  # Check number of unique values.
-  n_unique_values <- length(unique(x))
-  if (n_unique_values <= 3 && method != "none") {
-    rlang::warn(
-      message = paste0(
-        "x contains ", n_unique_values, " unique values, and ",
-        "power transformation is not performed. power.transform requires ",
-        "four or more unique values."),
-      class = "power_transform_no_transform"
-    )
+    # Check number of unique values.
+    n_unique_values <- length(unique(x))
+    if (n_unique_values <= 3 && method != "none") {
+      rlang::warn(
+        message = paste0(
+          "x contains ", n_unique_values, " unique values, and ",
+          "power transformation is not performed. power.transform requires ",
+          "four or more unique values."),
+        class = "power_transform_no_transform"
+      )
 
-    method <- "none"
-  }
+      method <- "none"
+    }
 
-  if (n_unique_values > 3 && n_unique_values <= 10) {
-    rlang::warn(
-      message = paste0(
-        "x contains ", n_unique_values, " unique values. Is the feature a categorical feature? ",
-        "power.transform will treat the feature as numeric since it has at least four unique values."),
-      class = "power_transform_few_unique_values"
-    )
+    if (n_unique_values > 3 && n_unique_values <= 10) {
+      rlang::warn(
+        message = paste0(
+          "x contains ", n_unique_values, " unique values. Is the feature a categorical feature? ",
+          "power.transform will treat the feature as numeric since it has at least four unique values."),
+        class = "power_transform_few_unique_values"
+      )
+    }
+
+    # Sort x.
+    x <- sort(x)
   }
 
   # Create transformation objects.
@@ -140,9 +145,6 @@ find_transformation_parameters <- function(
       paste0("Encountered an unknown transformation method: ", method)
     )
   }
-
-  # Sort x.
-  x <- sort(x)
 
   # Set transformation parameters.
   object <- .set_transformation_parameters(
@@ -236,7 +238,7 @@ power_transform <- function(
   .check_transformer(transformer)
 
   # Check that x is numeric.
-  if (!is.numeric(x)) {
+  if (!is.numeric(x) && !is(transformer, "transformationNone")) {
     stop("x does not contain numeric values.")
   }
 
