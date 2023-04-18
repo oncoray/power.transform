@@ -103,6 +103,24 @@ setMethod(
       optimisation_parameters = optimisation_parameters,
       ...)
 
+    if (!is.finite(optimised_parameters$lambda) & estimation_method != "mle") {
+      # Fallback option in case a non-MLE method fails.
+      estimator <- .set_estimator(
+        transformer = object,
+        estimation_method = "mle",
+        weighting_function = weighting_function,
+        weighting_function_parameters = weighting_function_parameters)
+
+      # Optimise transformation parameters.
+      optimised_parameters <- .optimise_transformation_parameters(
+        object = estimator,
+        transformer = object,
+        x = x,
+        optimiser = optimiser,
+        optimisation_parameters = optimisation_parameters,
+        ...)
+    }
+
     # Update shift and lambda values with the optimised parameters.
     if (!is.null(optimised_parameters$shift)) {
       if (is.finite(optimised_parameters$shift)) {
@@ -110,6 +128,9 @@ setMethod(
 
       } else if (!backup_use_default) {
         object@shift <- optimised_parameters$shift
+
+      } else {
+        object@shift <- 0.0
       }
     }
 
@@ -119,6 +140,9 @@ setMethod(
 
       } else if (!backup_use_default) {
         object@lambda <- optimised_parameters$lambda
+
+      } else {
+        object@lambda <- 1.0
       }
     }
 
