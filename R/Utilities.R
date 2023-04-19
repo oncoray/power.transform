@@ -25,6 +25,9 @@ huber_estimate <- function(x, k = 1.28, tol = 1E-4) {
   mu_0 <- stats::median(x)
   sigma_0 <- stats::mad(x)
 
+  # Check that sigma_0 is not 0.
+  if (sigma_0 == 0.0) sigma_0 <- stats::sd(x)
+
   # Check that there is an initial estimate for scale.
   if (sigma_0 == 0.0) return(list("mu" = mu_0, "sigma" = 0.0))
 

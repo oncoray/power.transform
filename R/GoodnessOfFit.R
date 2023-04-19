@@ -115,7 +115,7 @@ setGeneric(
 #### .get_fit_data (general) ---------------------------------------------------
 setMethod(
   ".get_fit_data",
-  signature("transformationPowerTransform"),
+  signature(object = "transformationPowerTransform"),
   function(
     object,
     x,
@@ -134,6 +134,9 @@ setMethod(
 
     # Compute M-estimates for locality and scale
     robust_estimates <- huber_estimate(y, tol = 1E-3)
+
+    # Avoid division by 0.0.
+    if (robust_estimates$sigma == 0.0) robust_estimates$sigma <- 1.0
 
     # Compute the observed z-score.
     z_observed <- (y - robust_estimates$mu) / robust_estimates$sigma
