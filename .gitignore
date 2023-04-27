@@ -54,8 +54,11 @@ rsconnect/
 # Package documentation
 man/
 *.Rd
+
+# Manuscript
 manuscript/manuscript.pdf
 manuscript/manuscript.log
 manuscript/manuscript.html
 manuscript/residual_plot.RDS
+manuscript/ml_experiment/
 .Rprofile
