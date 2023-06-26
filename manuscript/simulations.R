@@ -1624,17 +1624,28 @@
     stop("Execute ml_exp.R to create the results and copy it to the manuscript folder.")
   }
 
+  # non-standard evaluation
+  experiment_parameters <- dataset_split <- value <- metric <- NULL
+
   results <- readRDS(file.path(manuscript_dir, "ml_exp_results.RDS"))
 
   results[, "experiment_parameters" := sub(pattern = "_glm", replacement = "", x = experiment_parameters)]
   results[, "experiment_parameters" := sub(pattern = "_rf", replacement = "", x = experiment_parameters)]
 
   results <- results[dataset_split == "test"]
+
+  # Set data difficulty.
   results[, "data_difficulty" := familiar.experiment::assess_difficulty(
     x = stats::median(value),
     metric = metric),
     by = c("dataset")
   ]
+
+  # Convert dataset to category.
+  results$dataset <- factor(
+    x = results$dataset,
+    levels = sort(unique(results$dataset))
+  )
 
   # Rename experiment_parameters and convert to category.
   results$experiment_parameters <- factor(
@@ -1643,19 +1654,34 @@
     labels = c("none", "conventional", "proposed")
   )
 
-  # Convert to ranks. Higher ranks are better results.
-  results[metric == "root_relative_squared_error_winsor", "value_rank" := data.table::frank(
-    -value,
-    ties.method = "average"),
+  # Convert to ranks. Higher ranks are better results. Values are mapped to [0, 1].
+  results[metric == "root_relative_squared_error_winsor", "value_rank" := (
+    data.table::frank(-value, ties.method = "average") - 1.0) / (.N - 1),
     by = c("dataset")
   ]
-  results[metric == "auc_roc", "value_rank" := data.table::frank(
-    value,
-    ties.method = "average"),
+  results[metric == "auc_roc", "value_rank" := (
+    data.table::frank(value, ties.method = "average") - 1.0) / (.N - 1),
     by = c("dataset")
   ]
 
-  results[, "value_rank" := ]
+  # Map to [-1.0, 1.0] so that values are centered on 0.0.
+  results[, "value_rank" := (value_rank - 0.5) * 2]
+
+  data <- list(
+    "n" = nrow(results),
+    "n_dataset" = nlevels(results$dataset),
+    "n_transformer" = nlevels(results$experiment_parameters),
+    "n_learner" = nlevels(results$learner),
+    "id_transformer" = as.numeric(results$experiment_parameters),
+    "id_dataset" = as.numeric(results$dataset),
+    "id_learner" = as.numeric(results$learner),
+    "y" = results$value_rank
+  )
+
+  model_data <- rstan::stan(
+    file = file.path(manuscript_dir, "model.stan"),
+    data = data
+  )
 
   # results <- data.table::dcast(
   #   data = results,
