@@ -1611,3 +1611,57 @@
 
   return(data)
 }
+
+
+
+.get_ml_experiment_data <- function(manuscript_dir) {
+  # Converts experiment results into something that can be interpreted.
+  if (file.exists(file.path(manuscript_dir, "parsed_ml_results.RDS"))) {
+    return(readRDS(file.path(manuscript_dir, "parsed_ml_results.RDS")))
+  }
+
+  if (!file.exists(file.path(manuscript_dir, "ml_exp_results.RDS"))) {
+    stop("Execute ml_exp.R to create the results and copy it to the manuscript folder.")
+  }
+
+  results <- readRDS(file.path(manuscript_dir, "ml_exp_results.RDS"))
+
+  results[, "experiment_parameters" := sub(pattern = "_glm", replacement = "", x = experiment_parameters)]
+  results[, "experiment_parameters" := sub(pattern = "_rf", replacement = "", x = experiment_parameters)]
+
+  results <- results[dataset_split == "test"]
+  results[, "data_difficulty" := familiar.experiment::assess_difficulty(
+    x = stats::median(value),
+    metric = metric),
+    by = c("dataset")
+  ]
+
+  # Rename experiment_parameters and convert to category.
+  results$experiment_parameters <- factor(
+    x = results$experiment_parameters,
+    levels = c("config_no_transformation", "config_old_test", "config_new_test"),
+    labels = c("none", "conventional", "proposed")
+  )
+
+  # Convert to ranks. Higher ranks are better results.
+  results[metric == "root_relative_squared_error_winsor", "value_rank" := data.table::frank(
+    -value,
+    ties.method = "average"),
+    by = c("dataset")
+  ]
+  results[metric == "auc_roc", "value_rank" := data.table::frank(
+    value,
+    ties.method = "average"),
+    by = c("dataset")
+  ]
+
+  results[, "value_rank" := ]
+
+  # results <- data.table::dcast(
+  #   data = results,
+  #   dataset + iteration_id + learner + dataset_split + metric + outcome_type ~ experiment_parameters,
+  #   value.var = "value")
+
+
+
+}
