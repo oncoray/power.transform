@@ -12,11 +12,9 @@ data {
 parameters {
 	// Level 0 - transformation (top level)
 	vector<lower=-1, upper=1>[n_transformer] beta_transformer;
-	vector<lower=-1, upper=1>[n_transformer] y_transformer;
 
 	// Level 1 - interaction of learners and dataset
 	matrix<lower=-1, upper=1>[n_dataset, n_learner] beta_learner;
-	matrix<lower=-1, upper=1>[n_dataset, n_learner] y_learner;
 }
 model {
   vector[n] y_measured;
@@ -25,18 +23,16 @@ model {
 	for (jj in 1:n_dataset) {
 	  for (ii in 1:n_learner) {
 		  beta_learner[jj, ii] ~ normal(0.0, 0.5);
-		  y_learner[jj, ii] ~ normal(beta_learner[jj, ii], 0.5);
 	  }
 	}
 
   // Level 0 - transformation
   for (ii in 1:n_transformer) {
     beta_transformer[ii] ~ normal(0.0, 0.5);
-    y_transformer[ii] ~ normal(beta_transformer[ii], 0.5);
   }
 
   for (ii in 1:n) {
-    y_measured[ii] = y_learner[id_dataset[ii], id_learner[ii]] + y_transformer[id_transformer[ii]];
+    y_measured[ii] = beta_learner[id_dataset[ii], id_learner[ii]] + beta_transformer[id_transformer[ii]];
   }
 	y ~ normal(y_measured, 0.5);
 }

@@ -1680,7 +1680,8 @@
 
   model_data <- rstan::stan(
     file = file.path(manuscript_dir, "model.stan"),
-    data = data
+    data = data,
+    open_progress = FALSE
   )
 
   # results <- data.table::dcast(
