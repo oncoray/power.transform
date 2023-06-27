@@ -1672,11 +1672,16 @@
     "n_dataset" = nlevels(results$dataset),
     "n_transformer" = nlevels(results$experiment_parameters),
     "n_learner" = nlevels(results$learner),
+    "n_iteration" = data.table::uniqueN(results$iteration_id),
     "id_transformer" = as.numeric(results$experiment_parameters),
     "id_dataset" = as.numeric(results$dataset),
     "id_learner" = as.numeric(results$learner),
+    "id_iteration" = results$iteration_id,
     "y" = results$value_rank
   )
+
+  # TODO: Loop over problem difficulty. It may well be that easier problems do
+  # not benefit as much from power transformations.
 
   model_data <- rstan::stan(
     file = file.path(manuscript_dir, "model.stan"),
