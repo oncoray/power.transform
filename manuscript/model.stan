@@ -4,7 +4,7 @@ data {
 	int n_dataset;
 	int n_transformer;
 	int n_learner;
-	int n_iteration
+	int n_iteration;
 	int id_transformer[n];
 	int id_dataset[n];
 	int id_learner[n];
@@ -32,7 +32,7 @@ model {
   // choice of metric and any direct dependence on the dataset.
 
   // Level 2 - iteration and dataset
-  for (jj in 1:dataset) {
+  for (jj in 1:n_dataset) {
     for (ii in 1:n_iteration) {
       beta_iteration[jj, ii] ~ normal(0.0, 0.5);
     }
