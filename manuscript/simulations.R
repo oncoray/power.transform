@@ -1693,7 +1693,11 @@
   #   data = results,
   #   dataset + iteration_id + learner + dataset_split + metric + outcome_type ~ experiment_parameters,
   #   value.var = "value")
-
+  results_test <- data.table::dcast(
+    data = results,
+    dataset + iteration_id + learner + data_difficulty ~ experiment_parameters,
+    value.var = "value_rank"
+  )
 
 
 }
