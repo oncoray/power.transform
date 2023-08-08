@@ -61,4 +61,5 @@ manuscript/manuscript.log
 manuscript/manuscript.html
 manuscript/residual_plot.RDS
 manuscript/ml_experiment/
+manuscript/ml_experiment_offset/
 .Rprofile
