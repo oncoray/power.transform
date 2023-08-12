@@ -1620,14 +1620,14 @@
     return(readRDS(file.path(manuscript_dir, "parsed_ml_results.RDS")))
   }
 
-  if (!file.exists(file.path(manuscript_dir, "ml_exp_results.RDS"))) {
+  if (!file.exists(file.path(manuscript_dir, "ml_exp_results_offset.RDS"))) {
     stop("Execute ml_exp.R to create the results and copy it to the manuscript folder.")
   }
 
   # non-standard evaluation
   experiment_parameters <- dataset_split <- value <- metric <- NULL
 
-  results <- readRDS(file.path(manuscript_dir, "ml_exp_results.RDS"))
+  results <- readRDS(file.path(manuscript_dir, "ml_exp_results_offset.RDS"))
 
   results[, "experiment_parameters" := sub(pattern = "_glm", replacement = "", x = experiment_parameters)]
   results[, "experiment_parameters" := sub(pattern = "_rf", replacement = "", x = experiment_parameters)]
@@ -1686,6 +1686,7 @@
   model_data <- rstan::stan(
     file = file.path(manuscript_dir, "model.stan"),
     data = data,
+    cores = 4,
     open_progress = FALSE
   )
 
