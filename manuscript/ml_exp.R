@@ -3,27 +3,59 @@ configurations <- list(
     "transformation_method" = "none",
     "learner" = "glm"
   ),
+  "config_no_transformation_glm_no_normalisation" = list(
+    "transformation_method" = "none",
+    "learner" = "glm",
+    "normalisation_method" = "none"
+  ),
   "config_new_test_glm" = list(
     "transformation_method" = "yeo_johnson_robust",
     "transformation_gof_test_p_value" = 0.01,
     "learner" = "glm"
   ),
+  "config_new_test_glm_no_normalisation" = list(
+    "transformation_method" = "yeo_johnson_robust",
+    "transformation_gof_test_p_value" = 0.01,
+    "learner" = "glm",
+    "normalisation_method" = "none"
+  ),
   "config_old_test_glm" = list(
     "transformation_method" = "yeo_johnson_non_shift",
     "learner" = "glm"
   ),
+  "config_old_test_glm_no_normalisation" = list(
+    "transformation_method" = "yeo_johnson_non_shift",
+    "learner" = "glm",
+    "normalisation_method" = "none"
+  ),
   "config_no_transformation_rf" = list(
     "transformation_method" = "none",
     "learner" = "random_forest_ranger"
+  ),
+  "config_no_transformation_rf_no_normalisation" = list(
+    "transformation_method" = "none",
+    "learner" = "random_forest_ranger",
+    "normalisation_method" = "none"
   ),
   "config_new_test_rf" = list(
     "transformation_method" = "yeo_johnson_robust",
     "transformation_gof_test_p_value" = 0.01,
     "learner" = "random_forest_ranger"
   ),
+  "config_new_test_rf_no_normalisation" = list(
+    "transformation_method" = "yeo_johnson_robust",
+    "transformation_gof_test_p_value" = 0.01,
+    "learner" = "random_forest_ranger",
+    "normalisation_method" = "none"
+  ),
   "config_old_test_rf" = list(
     "transformation_method" = "yeo_johnson_non_shift",
     "learner" = "random_forest_ranger"
+  ),
+  "config_old_test_rf_no_normalisation" = list(
+    "transformation_method" = "yeo_johnson_non_shift",
+    "learner" = "random_forest_ranger",
+    "normalisation_method" = "none"
   )
 )
 
