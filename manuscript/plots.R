@@ -1233,5 +1233,10 @@ get_annotation_settings <- function(ggtheme = NULL) {
   # Plot MPG. Show Q-Q plots for:
   # - conventional transformation
   # - Raymaekers
+  # - Shift-sensitive
   # - Shift-sensitive robust
+  #
+  # Compute empirical test p-value.
+
+
 }
