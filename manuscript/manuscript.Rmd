@@ -67,7 +67,7 @@ Numerical variables in datasets may strongly deviate from normal distributions, 
 \end{cases}
 \end{equation}
 ```
-One limitation of th Box-Cox transformation is that it is only defined for $x_i > 0$. In contrast, the Yeo-Johnson transformation under the transformation parameter $\lambda$ is defined for any $x_i \in \mathbb{R}$:
+One limitation of the Box-Cox transformation is that it is only defined for $x_i > 0$. In contrast, the Yeo-Johnson transformation under the transformation parameter $\lambda$ is defined for any $x_i \in \mathbb{R}$:
 
 ```{=latex}
 \begin{equation}
@@ -90,7 +90,7 @@ cap <- paste0(
   "Variable $x$ consists of $10000$ values are randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$. ",
   "For both Box-Cox and Yeo-Johnson transformations, we would expect $\\lambda = 1$, since $x$ is already normally distributed. ",
   "The figure shows that instead, $\\lambda$ is strongly dependent on the location $\\mu$, ",
-  "and even breaks down due to numerical issues for $\\mu > 5 10^4$.")
+  "and even breaks down due to numerical issues for $\\mu > 5 \cdot 10^4$.")
 
 .plot_reduced_normality(plot_theme = plot_theme, manuscript_dir = manuscript_dir)
 
@@ -158,7 +158,7 @@ In essence, obtaining robust transformation parameters that provide central norm
 
 ```{=latex}
 \begin{equation}
-\left\{ \hat{\lambda}^{\text{rBC}}, \hat{x}_0^{\text{rBC}} \right\} = \argmax_{\lambda, x_0} \frac{1}{\sum_{i=1}^n w_u} \sum_{i=1}^n w_i \left[ -\frac{1}{2}\log(\sigma^2_w) + (\lambda - 1) \log(x_i - x_0) \right]
+\left\{ \hat{\lambda}^{\text{rBC}}, \hat{x}_0^{\text{rBC}} \right\} = \argmax_{\lambda, x_0} \frac{1}{\sum_{i=1}^n w_i} \sum_{i=1}^n w_i \left[ -\frac{1}{2}\log(\sigma^2_w) + (\lambda - 1) \log(x_i - x_0) \right]
 \end{equation}
 ```
 where $\sigma^2_w$ is the weighted variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0} (\mathbf{X})$:
@@ -172,7 +172,7 @@ Analogously, the weighted maximum log-likelihood estimator for the shift-sensiti
 
 ```{=latex}
 \begin{equation}
-\left\{ \hat{\lambda}^{\text{rYJ}}, \hat{x}_0^{\text{rYJ}} \right\} = \argmax_{\lambda, x_0} \frac{1}{\sum_{i=1}^n w_u} \sum_{i=1}^n w_i \left[ -\frac{1}{2}\log(\sigma^2_w) + (\lambda - 1) \sgn(x_i - x_0) \log(1 + |x_i - x_0|) \right]
+\left\{ \hat{\lambda}^{\text{rYJ}}, \hat{x}_0^{\text{rYJ}} \right\} = \argmax_{\lambda, x_0} \frac{1}{\sum_{i=1}^n w_i} \sum_{i=1}^n w_i \left[ -\frac{1}{2}\log(\sigma^2_w) + (\lambda - 1) \sgn(x_i - x_0) \log(1 + |x_i - x_0|) \right]
 \end{equation}
 ```
 where $\sigma^2_w$ is the weighted variance of the Yeo-Johnson transformed feature $\phi_{\text{YJ}}^{\lambda, x_0} (\mathbf{X})$:
@@ -187,7 +187,7 @@ There are a few options based on which weights may be set. Here, we investigate 
 
 - Set weights based on probabilities of the empirical distribution of the original feature $\mathbf{X}$. Probabilities are determined as $p_i = \frac{i - 1/3}{n + 1/3}$, with $i = 1, 2, \ldots n$, with $n$ the number of instances of feature $\mathbf{X}$.
 
-- Set weights based on z-score of the transformed feature $\phi^{\lambda, x_0} (\mathbf{X})$. After @Raymaekers2021-kq, $z_i = \frac{\phi^{\lambda, x_0}(x_i) - \mu_M}{\sigma_M}$. Here, $\mu_M$ and $\sigma_M$ are robust Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0} (\mathbf{X})$ [@Huber1981-su].
+- Set weights based on the z-score of the transformed feature $\phi^{\lambda, x_0} (\mathbf{X})$. After @Raymaekers2021-kq, $z_i = \frac{\phi^{\lambda, x_0}(x_i) - \mu_M}{\sigma_M}$. Here, $\mu_M$ and $\sigma_M$ are robust Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0} (\mathbf{X})$ [@Huber1981-su].
 
 - Set weights based on the residual error between the z-score of the transformed feature $\phi^{\lambda, x_0} (\mathbf{X})$ and the theoretical z-score from a standard normal distribution: $r_i =\left| \left( \phi^{\lambda, x_0}(x_i) - \mu_M)\right) / \sigma_M - F^{-1}_{\mathcal{N}}(p_i) \right|$, with $\mu_M$, $\sigma_M$ and $p_i$ as defined above.
 
@@ -228,7 +228,7 @@ w_i =
 \end{equation}
 ```
 
-All weighting functions share the characteristic that for $\dot{x}_i < k_1$, instances are fully weighted, i.e. when $k_1 > 0$ the weighting functions are symmetric window functions with a flat top. The triangle and tapered cosine functions then gradually down-weight instances with $k_1 \leq \dot{x}_i \leq k_2$, and assign no weight to instances $x_i > k_2$.
+All weighting functions share the characteristic that for $\left| \dot{x}_i \right|< k_1$, instances are fully weighted, i.e. when $k_1 > 0$ the weighting functions are symmetric window functions with a flat top. The triangle and tapered cosine functions then gradually down-weight instances with $k_1 \leq \left| \dot{x}_i \right| \leq k_2$, and assign no weight to instances $\left| x_i \right| > k_2$.
 
 ```{r weight-functions, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
@@ -238,7 +238,7 @@ cap <- paste0(
 
 .plot_weighting_functions(plot_theme = plot_theme)
 ```
-Other criteria aside from MLE can be used for finding robust transformation parameters. We define robust criteria in Appendix A **insert**.
+Other criteria aside from MLE can be used for finding robust transformation parameters. We define robust criteria in Appendix A **INSERT**.
 
 ## Asymmetric generalised normal distributions
 
@@ -611,7 +611,7 @@ Here $\mu$ and $\sigma$ are location and scale parameters as described above, an
 The Cramér-von Mises criterion is also based on the empirical distribution function of $\mathbf{X}$. We define the Cramér-von Mises criterion as follows:
 ```{=latex}
 \begin{equation}
-U_{\text{CvM}} \left(\mathbf{X}, \lambda, x_0 \right) = \frac{1}{\sum_{i=1}^n w_i} \sum_{i=1}^n w_i \left( F_{\epsilon}\left(x_i \right) - F_{\mathcal{N}} \left(\psi^{\lambda, x_0} \left(x_i \right); \mu, \sigma \right) \right)^2}
+U_{\text{CvM}} \left(\mathbf{X}, \lambda, x_0 \right) = \frac{1}{\sum_{i=1}^n w_i} \sum_{i=1}^n w_i \left( F_{\epsilon}\left(x_i \right) - F_{\mathcal{N}} \left(\psi^{\lambda, x_0} \left(x_i \right); \mu, \sigma \right) \right)^2
 \end{equation}
 ```
 

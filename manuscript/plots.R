@@ -792,6 +792,12 @@ get_annotation_settings <- function(ggtheme = NULL) {
     )
   } else {
     data <- readRDS(file.path(manuscript_dir, "residual_error_plot_main_manuscript.RDS"))
+
+    outlier_free_data <- data[
+      has_outliers == FALSE,
+      list("residual_error" = stats::quantile(residual, probs = 0.99)),
+      by = c("p", "method")
+    ]
   }
 
   p_bc <- ggplot2::ggplot(
