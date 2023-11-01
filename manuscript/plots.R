@@ -1226,3 +1226,12 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   return(p)
 }
+
+
+.plot_top_gear <- function(plot_theme) {
+
+  # Plot MPG. Show Q-Q plots for:
+  # - conventional transformation
+  # - Raymaekers
+  # - Shift-sensitive robust
+}
