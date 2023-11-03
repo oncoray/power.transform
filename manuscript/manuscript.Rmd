@@ -82,10 +82,11 @@ One limitation of the Box-Cox transformation is that it is only defined for $x_i
 ```
 The $\lambda$-parameter is typically optimised using maximum likelihood estimation under the assumption that the transformed feature is normally distributed. As noted by Raymaekers and Rousseeuw, this approach is very sensitive to the presence of outliers, and robust versions of Box-Cox and Yeo-Johnson transformations were devised [@Raymaekers2021-kq].
 
-Power transformation does not guarantee that transformed variables are normally distributed. In fact, depending on location and scale of the variable, power transformation may reduce normality, as shown in Figure **INSERT**. This is problematic for automated power transformations, for three reasons. First, normality is often desired in machine learning applications. Second, a large negative or positive $\lambda$-parameter may lead to numeric issues. Third, we currently do not have a test to automatically reject poor transformations. Statistical tests for normality exist, such as the Shapiro-Wilk test [@Shapiro1965-zd]. However, given sufficiently large sample sizes, these tests can detect trivial deviations from normality and are therefore not well-suited for applications of automated power transformations in practice.
+Power transformation does not guarantee that transformed variables are normally distributed. In fact, depending on location and scale of the variable, power transformation may decrease normality, as shown in Figure \ref{fig:decreased-normality}. This is problematic for automated power transformations, for three reasons. First, normality is often desired in machine learning applications. Second, a large negative or positive $\lambda$-parameter may lead to numeric issues. Third, we currently do not have a test to automatically reject poor transformations. Statistical tests for normality exist, such as the Shapiro-Wilk test [@Shapiro1965-zd]. However, given sufficiently large sample sizes, these tests can detect trivial deviations from normality and are therefore not well-suited for applications of automated power transformations in practice.
 
-```{r reduced-normality, echo=FALSE, fig.cap=cap, warning=FALSE}
+```{r decreased-normality, echo=FALSE, fig.cap=cap, fig.height=2.0, warning=FALSE}
 cap <- paste0(
+  "\\label{fig:decreased-normality}",
   "Power transformations may reduce normality depending on location. ",
   "Variable $x$ consists of $10000$ values are randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$. ",
   "For both Box-Cox and Yeo-Johnson transformations, we would expect $\\lambda = 1$, since $x$ is already normally distributed. ",
@@ -228,10 +229,11 @@ w_i =
 \end{equation}
 ```
 
-All weighting functions share the characteristic that for $\left| \dot{x}_i \right|< k_1$, instances are fully weighted, i.e. when $k_1 > 0$ the weighting functions are symmetric window functions with a flat top. The triangle and tapered cosine functions then gradually down-weight instances with $k_1 \leq \left| \dot{x}_i \right| \leq k_2$, and assign no weight to instances $\left| x_i \right| > k_2$.
+All weighting functions share the characteristic that for $\left| \dot{x}_i \right|< k_1$, instances are fully weighted, i.e. when $k_1 > 0$ the weighting functions are symmetric window functions with a flat top. The triangle and tapered cosine functions then gradually down-weight instances with $k_1 \leq \left| \dot{x}_i \right| \leq k_2$, and assign no weight to instances $\left| x_i \right| > k_2$. Examples of the three types of weighting function are shown in Figure \ref{fig:weighting-functions}.
 
-```{r weight-functions, warning=FALSE, message=FALSE, fig.cap=cap}
+```{r weighting-functions, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
 cap <- paste0(
+  "\\label{fig:weighting-functions}",
   "Weighting functions investigated in this study to make power transformations more robust against outliers. ",
   "The step function was parameterised with $k_1 = 0.60$. ",
   "The triangle and tapered cosine functions were both parameterised with $k_1 = 0.30$ and $k_2 = 0.90$.")
@@ -314,6 +316,7 @@ We then compute transformation parameter $\hat{\lambda}$ using the original defi
 
 ```{r shifted-distributions, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
+  "\\label{fig:shifted-distributions}",
   "Shift-sensitive power transformation produces transformation parameters that are invariant to location. ",
   "Samples were drawn from normal, right-skewed and left-skewed distributions, respectively,  which then underwent a shift $d$. ",
   "Estimates of transformation parameter $\\lambda$ with the original power transformations (circle) show strong dependency on the overall location of the distribution, ",
@@ -322,7 +325,7 @@ cap <- paste0(
 .plot_shifted_distributions(manuscript_dir = manuscript_dir, plot_theme = plot_theme)
 ```
 
-The result is shown in Figure **INSERT**. For each distribution, transformation parameter $\hat{\lambda}$ varies with $d$ when estimated using the original definitions. In contrast, estimation of $\lambda$ using shift-sensitive power transformations was invariant to $d$.
+The result is shown in Figure \ref{fig:shifted-distributions}. For each distribution, transformation parameter $\hat{\lambda}$ varies with $d$ when estimated using the original definitions. In contrast, estimation of $\lambda$ using shift-sensitive power transformations was invariant to $d$.
 
 ## Empirical distribution yields consistent robust transformations
 
