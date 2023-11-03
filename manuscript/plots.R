@@ -1238,5 +1238,168 @@ get_annotation_settings <- function(ggtheme = NULL) {
   #
   # Compute empirical test p-value.
 
+  plot_limits <- c(-3.0, 3.0)
 
+  ..parse_data <- function(
+    x,
+    transformer,
+    name
+  ) {
+    residual_data <- power.transform::get_residuals(
+      x = x,
+      transformer = transformer
+    )
+
+    residual_data[, "transformation" := name]
+
+    central_normality_data <- data.table::data.table(
+      p_value = power.transform::assess_transformation(
+        x = x,
+        transformer = transformer,
+        verbose = FALSE
+      ),
+      transformation = name
+    )
+
+    return(list(
+      "residual_data" = residual_data,
+      "central_normality_data" = central_normality_data
+    ))
+  }
+
+  # Load TopGear data into the current environment
+  utils::data("TopGear", package = "robustHD", envir = environment())
+  data <- data.table::as.data.table(TopGear)
+
+  # Extract MPG data.
+  x <- data$MPG
+  x <- x[!is.na(x)]
+
+  # No transformer
+  no_transformer <- power.transform::find_transformation_parameters(
+    x = x,
+    method = "none"
+  )
+
+  # Conventional transformer
+  yj_transformer <- power.transform::find_transformation_parameters(
+    x = x,
+    method = "yeo_johnson",
+    robust = FALSE,
+    shift = FALSE
+  )
+
+  # Raymaekers robust transformer
+  yj_rr_transformer <- power.transform::find_transformation_parameters(
+    x = x,
+    method = "yeo_johnson",
+    robust = TRUE,
+    shift = FALSE,
+    estimation_method = "raymaekers_robust"
+  )
+
+  # Shift-sensitive transformer
+  yj_shift_transformer <- power.transform::find_transformation_parameters(
+    x = x,
+    method = "yeo_johnson",
+    robust = FALSE,
+    shift = TRUE
+  )
+
+  # Robust shift-sensitive transformer
+  yj_shift_robust_transformer <- power.transform::find_transformation_parameters(
+    x = x,
+    method = "yeo_johnson",
+    robust = TRUE,
+    shift = TRUE
+  )
+
+  transformer_labels <- c(
+    "none", "original", "Raymaekers-Rousseeuw", "shift-sensitive", "robust shift-sensitive"
+  )
+
+  data <- mapply(
+    FUN = ..parse_data,
+    transformer = list(
+      no_transformer,
+      yj_transformer,
+      yj_rr_transformer,
+      yj_shift_transformer,
+      yj_shift_robust_transformer
+    ),
+    name = transformer_labels,
+    MoreArgs = list("x" = x),
+    SIMPLIFY = FALSE
+  )
+
+  # Parse residual data
+  residual_data <- data.table::rbindlist(
+    lapply(data, function(x) (x$residual_data)),
+    use.names = TRUE
+  )
+  residual_data$transformation <- factor(
+    residual_data$transformation,
+    levels = transformer_labels
+  )
+  residual_data[, ":="("z_observed_truncated" = z_observed, "truncated" = FALSE)]
+  residual_data[z_observed < plot_limits[1], ":="("z_observed_truncated" = plot_limits[1], "truncated" = TRUE)]
+  residual_data[z_observed > plot_limits[2], ":="("z_observed_truncated" = plot_limits[2], "truncated" = TRUE)]
+
+  # Parse central normality data.
+  central_normality_data <- data.table::rbindlist(
+    lapply(data, function(x) (x$central_normality_data)),
+    use.names = TRUE
+  )
+
+
+  p <- ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = .data$z_expected,
+      y = .data$z_observed_truncated,
+      colour = .data$transformation,
+      shape = .data$truncated
+    ))
+  p <- p + plot_theme
+  p <- p + ggplot2::scale_colour_manual(
+    name = "transformation",
+    values = c("#111111", "#8cd17d", "#59a14f", "#ff9d9a", "#e15759"),
+    breaks = transformer_labels,
+    drop = FALSE
+  )
+  p <- p + ggplot2::scale_shape_manual(
+    values = c(1, 4),
+    labels = c(FALSE, TRUE),
+    guide = "none"
+  )
+  p <- p + ggplot2::coord_cartesian(
+    xlim = plot_limits,
+    ylim = plot_limits
+  )
+  p <- p + ggplot2::geom_abline(
+    intercept = 0.0,
+    slope = 1.0
+  )
+  p <- p + ggplot2::xlab("Expected quantile")
+  p <- p + ggplot2::ylab("Observed quantile")
+
+  # Without transformation -----------------------------------------------------
+  p0 <- p + ggplot2::geom_point(data = residual_data[transformation == "none"])
+
+  # Standard transformation ----------------------------------------------------
+  p1 <- p + ggplot2::geom_point(data  = residual_data[transformation %in% c("original", "Raymaekers-Rousseeuw")])
+  p1 <- p1 + ggplot2::theme(
+    axis.title.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank()
+  )
+
+  # Shift-sensitive transformation ---------------------------------------------
+  p2 <- p + ggplot2::geom_point(data  = residual_data[transformation %in% c("shift-sensitive", "robust shift-sensitive")])
+  p2 <- p2 + ggplot2::theme(
+    axis.title.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank()
+  )
+
+  p <- p0 + p1 + p2 + patchwork::plot_layout(ncol = 3, guides = "collect")
+
+  return(p)
 }

@@ -284,7 +284,7 @@ F_{\beta}^{-1}(p^{*}) = \sgn\left(p^{*} - 0.5 \right) F_{\Gamma}^{-1}\left(2 \le
 ```
 Here, $F_{\Gamma}^{-1}$ is the quantile function of the gamma distribution with shape $1 / \beta$, which can be numerically approximated. 
 
-## Goodness of fit
+## Empirical central normality test
 
 Power transformations aim to transform features to a normal distribution. However, this may not always be successful or possible. Deviations from normality can be detected by normality tests, such as the Shapiro-Wilk test [@Shapiro1965-zd]. In practice, normality tests may be too stringent to assess goodness of fit in presence of large sample sizes, outliers or a combination of the two. Here we develop an empirical test for central normality. The null hypothesis $H_0$ is that the distribution is centrally normal. The alternative hypothesis $H_1$ is that the distribution is not centrally normal.
 
@@ -443,9 +443,9 @@ cap <- paste0(
 ```
 
 
-## Empirical goodness of fit test
+## Empirical central normality test
 
-To develop an empirical goodness of fit test we need to consider two parameters: the central portion $\kappa$ as a fixed parameter, and test statistic $\tau_{\text{gof}}$. We will first define the central portion $\kappa$.
+To develop an empirical test for central normality we need to consider two parameters: the central portion $\kappa$ as a fixed parameter, and test statistic $\tau_{\text{gof}}$. We will first define the central portion $\kappa$.
 
 First we draw $m_d=10000$ random asymmetric generalised normal distributions. As before, each distribution is parametrised with a randomly chosen skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$. Location and scale parameters are set as $\mu = 0$ and $\sigma = 1$, respectively. $n = \lceil 10^\gamma \rceil$ values are then randomly drawn, with $\gamma \sim U\left(1.47, 3.00\right)$, which leads to between $30$ and $1000$ values being drawn to create $\mathbf{X}_i$. As before, for each distribution, up to $10 \%$ of instances are replaced by outlier values, and this is repeated $10$ times. We then compute residuals after optimising robust shift-sensitive transformations with the empirical tapered cosine weighting method.
 
@@ -500,6 +500,7 @@ usethis::use_data(
 table_data <- .get_test_statistics_data(manuscript_dir = manuscript_dir)
 ```
 
+**MISSING TABLE DATA FOR YEO-JOHNSON**
 
 ```{=latex}
 \begin{table}
@@ -539,15 +540,27 @@ cap <- paste0(
 
 # Experimental Results
 
+In this section, we assess shift sensitive power transformations using real datasets.
+
 ## Datasets with outliers
 
-### Car data
 
-The Top Gear dataset contains data on 297 cars that appeared on the BBC television show *Top Gear*. Fuel consumption contains outliers.
 
-```{r top-gear, warning=FALSE, message=FALSE, fig.cap=cap}
+### Top Gear dataset
+
+```{r top-gear, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2}
 cap <- paste0(
-  "Insert caption here"
+  "\\label{fig:top-gear}",
+  "Quantile-quantile plots for the fuel consumption data in the Top Gear dataset. ",
+  "This data contains three strong outliers for highly efficient vehicles. ",
+  "The left panel shows the quantile-quantile plot for the original data. ",
+  "The middle panel shows the quantile-quantile plots for data transformed using ",
+  "the original Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation [@Raymaekers2021-kq]. ",
+  "For these, the empirical central normality test yields $p=0.01$, and $p=0.58$, respectively. ",
+  "The right panels shows the quantile-quantile plots for data transformed using ",
+  "the non-robust and robust shift-sensitive transformations. ",
+  "For these, the empirical central normality test yields $p=0.01$, and $p=0.36$, respectively. ",
+  "Samples with observed quantiles below $-3.0$ or above $3.0$ are indicated by crosses."
 )
 
 .plot_top_gear(
@@ -556,10 +569,11 @@ cap <- paste0(
 
 ```
 
+The Top Gear dataset contains data on 297 cars that appeared on the BBC television show *Top Gear*. Fuel consumption contains outliers. Figure \ref{fig:top-gear} shows that the outliers cause non-robust transformations to fail to transform the data to a centrally normal distribution (empirical central normality test $p = 0.01$). Robust transformations produce distributions that are centrally normal (empirical central normality test $p > 0.05$).
 
-Top gear dataset, weight
+### Housing dataset
 
-### Housing data
+modeldata::Sacramento$price
 
 Ames housing data set, year built
 
