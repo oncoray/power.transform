@@ -90,7 +90,7 @@ Power transformation does not guarantee that transformed variables are normally 
 cap <- paste0(
   "\\label{fig:decreased-normality}",
   "Power transformations may reduce normality depending on location. ",
-  "Variable $x$ consists of $10000$ values are randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$. ",
+  "Variable $x$ consists of $10000$ values randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$. ",
   "For both Box-Cox and Yeo-Johnson transformations, we would expect $\\lambda = 1$, since $x$ is already normally distributed. ",
   "The figure shows that instead, $\\lambda$ is strongly dependent on the location $\\mu$, ",
   "and even breaks down due to numerical issues for $\\mu > 5 \\cdot 10^4$.")
@@ -159,7 +159,21 @@ where $\sigma^2$ is the variance of Yeo-Johnson transformed feature $\phi_{\text
 
 ## Robust shift-sensitive power transformations
 
-Real-world data may contain outliers, to which maximum likelihood estimation can be sensitive. Their presence may lead to poor transformations to normality, as shown in Figure **INSERT**. As indicated by @Raymaekers2021-kq, the general aim of power transformations should be to transform non-outlier data to normality, i.e. achieve *central normality*. To achieve this, they devised an iterative procedure to find a robust estimate of the transformation parameter $\lambda$. Because $\lambda$ is updated during their procedure, simultaneous estimation of $\lambda$ and $x_0$ for shift-sensitive power transformations is not possible.
+```{r sensitivity-to-outliers, echo=FALSE, fig.cap=cap, fig.height=2.0, warning=FALSE}
+cap <- paste0(
+  "\\label{fig:sensitivity-to-outliers}",
+  "Power transformations are affected by outliers. ",
+  "Variable $x$ consists of $1000$ values randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$, ",
+  "with a single outlier with value $d$. ",
+  "For both Box-Cox and Yeo-Johnson transformations, we would expect $\\lambda = 1$, since $x$ is already normally distributed. ",
+  "The figure shows that instead, $\\lambda$ is strongly affected by the presence of the outlier at $d$, ",
+  "and even breaks down due to numerical issues for $d > 5 \\cdot 10^4$.")
+
+.plot_sensitivity_to_outlier(plot_theme = plot_theme, manuscript_dir = manuscript_dir)
+
+```
+
+Real-world data may contain outliers, to which maximum likelihood estimation can be sensitive. Their presence may lead to poor transformations to normality, as shown in Figure \ref{fig:sensitivity-to-outliers}. As indicated by @Raymaekers2021-kq, the general aim of power transformations should be to transform non-outlier data to normality, i.e. achieve *central normality*. To achieve this, they devised an iterative procedure to find a robust estimate of the transformation parameter $\lambda$. Because $\lambda$ is updated during their procedure, simultaneous estimation of $\lambda$ and $x_0$ for shift-sensitive power transformations is not possible.
 
 In essence, obtaining robust transformation parameters that provide central normality requires identifying outliers in the data and weighting such instances during the optimisation process. @Raymaekers2021-kq do this (during the final steps of their iterative procedure) through a weighted maximum likelihood estimation. This weighted maximum log-likelihood estimator is based on equations \ref{eqn:box-cox-shift-log-likelihood} and \ref{eqn:yeo-johnson-shift-log-likelihood}. Here, the estimator is further normalised by the total weight and extended to include the shift parameter. The shift-sensitive Box-Cox power transformation is:
 

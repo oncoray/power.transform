@@ -165,6 +165,101 @@
 
 
 
+.get_shifted_outlier_plot_data <- function(manuscript_dir) {
+  # Set seed.
+  set.seed(19L)
+
+  if (!file.exists(file.path(manuscript_dir, "shifted_outlier_plot.RDS"))) {
+    # Normal distribution.
+    x <- power.transform::ragn(1000L, location = 0, scale = 1 / sqrt(2), alpha = 0.5, beta = 2)
+
+    # generator ----------------------------------------------------------------
+    generate_experiment_data <- coro::generator(
+      function(x) {
+        outlier_shift_range <- 10^seq(from = 0, to = 6, by = 0.1)
+
+        for (d in shift_range) {
+          for (method in c("box_cox", "yeo_johnson")) {
+            yield(list(
+              "x" = c(x, d),
+              "d" = d,
+              "method" = method,
+              "shift" = FALSE,
+              "robust" = FALSE
+            ))
+          }
+        }
+      }
+    )
+
+    .compute_lambda <- function(parameter_set) {
+      # Create transformer object.
+      transformer <- suppressWarnings(
+        power.transform::find_transformation_parameters(
+          x = parameter_set$x,
+          method = parameter_set$method,
+          robust = parameter_set$robust,
+          shift = parameter_set$shift,
+          lambda = NULL,
+          optimiser_control = list("xtol_rel" = 1e-5)
+        )
+      )
+
+      return(
+        data.table::data.table(
+          "method" = parameter_set$method,
+          "d" = log10(parameter_set$d),
+          "lambda" = transformer@lambda,
+          "x_0" = transformer@shift
+        )
+      )
+    }
+
+    # computations -------------------------------------------------------------
+
+    # Generate all experiments.
+    experiments <- coro::collect(generate_experiment_data(x=x))
+
+    data <- lapply(
+      X = experiments,
+      FUN = .compute_lambda
+    )
+
+    # # Start cluster
+    # cl <- parallel::makeCluster(16L)
+    #
+    # # Compute all data in parallel.
+    # data <- parallel::parLapply(
+    #   cl = cl,
+    #   X = experiments,
+    #   fun = .compute_lambda
+    # )
+    #
+    # # Stop cluster.
+    # parallel::stopCluster(cl)
+
+    # Combine data into a single table.
+    data <- data.table::rbindlist(data)
+
+    # Save to file.
+    saveRDS(data, file.path(manuscript_dir, "shifted_outlier_plot.RDS"))
+
+  } else {
+    data <- readRDS(file.path(manuscript_dir, "shifted_outlier_plot.RDS"))
+  }
+
+  # Update method to factor.
+  data$method <- factor(
+    x = data$method,
+    levels = c("box_cox", "yeo_johnson"),
+    labels = c("Box-Cox", "Yeo-Johnson")
+  )
+
+  return(data)
+}
+
+
+
 .get_optimised_weighting_function_parameters <- function(manuscript_dir, side = "both") {
   # generator ------------------------------------------------------------------
   experiment_args <- coro::generator(

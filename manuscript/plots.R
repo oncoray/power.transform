@@ -186,6 +186,121 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 
 
+.plot_sensitivity_to_outlier <- function(plot_theme, manuscript_dir) {
+  # Creates the plot that shows how transformation parameter lambda is affect
+  # by outliers in otherwise normally distributed data..
+
+  require(patchwork)
+  require(ggplot2)
+
+  # Lambda plot,
+  .create_lambda_shift_plot <- function(
+    data,
+    plot_theme,
+    limits,
+    guide = FALSE,
+    strip_y_axis = TRUE) {
+    # Prevent warnings due to non-standard evaluation.
+    d <- lambda <- method <- version <- NULL
+
+    annotation_settings <- get_annotation_settings(plot_theme)
+
+    p <- ggplot2::ggplot(
+      data = data,
+      mapping = ggplot2::aes(
+        x = d,
+        y = lambda,
+        colour = method
+      )
+    )
+    p <- p + plot_theme
+    p <- p + ggplot2::geom_point()
+    p <- p + ggplot2::geom_hline(
+      yintercept = 1.0,
+      linetype = "longdash",
+      colour = "grey40"
+    )
+    p <- p + ggplot2::annotate(
+      geom = "text",
+      x = 6,
+      y = 1,
+      label = "expected",
+      colour = annotation_settings$colour,
+      family = annotation_settings$family,
+      fontface = annotation_settings$face,
+      size = annotation_settings$geom_text_size,
+      vjust = -1.0,
+      hjust = 1.0
+    )
+    p <- p + ggplot2::scale_x_continuous(
+      name = latex2exp::TeX("$d$"),
+      labels = scales::math_format()
+    )
+    p <- p + ggplot2::scale_y_continuous(
+      name = latex2exp::TeX("$\\lambda$"),
+      limits = limits
+    )
+
+    if (guide) {
+      p <- p + paletteer::scale_color_paletteer_d(
+        palette = "ggthemes::Tableau_10",
+        drop = FALSE
+      )
+      p <- p + guides(colour = ggplot2::guide_legend(title = "method"))
+    } else {
+      p <- p + paletteer::scale_color_paletteer_d(
+        palette = "ggthemes::Tableau_10",
+        drop = FALSE,
+        guide = "none"
+      )
+    }
+
+    if (strip_y_axis) {
+      p <- p + ggplot2::theme(
+        axis.text.y = ggplot2::element_blank(),
+        axis.title.y = ggplot2::element_blank(),
+        axis.ticks.y = ggplot2::element_blank()
+      )
+    }
+
+    return(p)
+  }
+
+  # Prevent warnings due to non-standard evaluation.
+  estimation_method <- distribution <- method <- version <- NULL
+
+  # Process data.
+  data <- .get_shifted_outlier_plot_data(manuscript_dir = manuscript_dir)
+
+  # Normal distribution --------------------------------------------------------
+
+  # Box-Cox
+  p_bc_normal <- .create_lambda_shift_plot(
+    data = data[method == "Box-Cox"],
+    plot_theme = plot_theme,
+    limits = c(-5.0, 35.0),
+    strip_y_axis = FALSE
+  )
+
+  # Yeo-Johnson
+  p_yj_normal <- .create_lambda_shift_plot(
+    data = data[method == "Yeo-Johnson"],
+    plot_theme = plot_theme,
+    limits = c(-5.0, 35.0),
+    guide = TRUE
+  )
+
+  # Patch all the plots together.
+  p <- p_bc_normal + p_yj_normal + patchwork::plot_layout(
+    ncol = 2,
+    guides = "collect"
+  )
+
+  return(p)
+}
+
+
+
 .plot_shifted_distributions <- function(plot_theme, manuscript_dir) {
   # Creates the plot for lambda values under location shift for MLE
 
