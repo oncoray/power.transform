@@ -88,7 +88,6 @@ Power transformation does not guarantee that transformed variables are normally 
 
 ```{r decreased-normality, echo=FALSE, fig.cap=cap, fig.height=2.0, warning=FALSE}
 cap <- paste0(
-  "\\label{fig:decreased-normality}",
   "Power transformations may reduce normality depending on location. ",
   "Variable $x$ consists of $10000$ values randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$. ",
   "For both Box-Cox and Yeo-Johnson transformations, we would expect $\\lambda = 1$, since $x$ is already normally distributed. ",
@@ -161,7 +160,6 @@ where $\sigma^2$ is the variance of Yeo-Johnson transformed feature $\phi_{\text
 
 ```{r sensitivity-to-outliers, echo=FALSE, fig.cap=cap, fig.height=2.0, warning=FALSE}
 cap <- paste0(
-  "\\label{fig:sensitivity-to-outliers}",
   "Power transformations are affected by outliers. ",
   "Variable $x$ consists of $1000$ values randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$, ",
   "with a single outlier with value $d$. ",
@@ -254,7 +252,6 @@ All weighting functions share the characteristic that for $\left| \dot{x}_i \rig
 
 ```{r weighting-functions, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
 cap <- paste0(
-  "\\label{fig:weighting-functions}",
   "Weighting functions investigated in this study to make power transformations more robust against outliers. ",
   "The step function was parameterised with $k_1 = 0.60$. ",
   "The triangle and tapered cosine functions were both parameterised with $k_1 = 0.30$ and $k_2 = 0.90$.")
@@ -273,7 +270,7 @@ f_{\beta}(x) = \frac{\beta}{2\Gamma \left(1 / \beta \right)} e^{-\left| x \right
 ```
 Here, $\Gamma$ is the gamma function, and $\beta$ is a strictly positive shape parameter. For $\beta = 1$, the probability density function describes a Laplace distribution. A normal distribution is found for $\beta=2$, and for large $\beta$, the distribution approaches a uniform distribution. We will refrain from introducing scale and location parameters here directly.
 
-Realistic feature distributions may be skewed. Gijbels et al. describe a recipe for introducing skewness into the otherwise symmetric generalised norm distribution [@Gijbels2019-te], leading to the following probability density function:
+Realistic feature distributions may be skewed. Gijbels et al. describe a recipe for introducing skewness into the otherwise symmetric generalised normal distribution [@Gijbels2019-te], leading to the following probability density function:
 
 ```{=latex}
 \begin{equation}
@@ -332,11 +329,10 @@ To assess whether the modified power transformations lead to $\lambda$ values th
 We first randomly draw $10000$ values from a normal distribution: $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)$, or equivalently $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.5, 2\right)$.
 The second distribution is a right-skewed normal distribution $\mathbf{X}_{\text{right}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.2, 2\right)$.
 The third distribution is a left-skewed normal distribution $\mathbf{X}_{\text{left}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.8, 2\right)$.
-We then compute transformation parameter $\hat{\lambda}$ using the original definitions (equations \ref{box-cox-original} and \ref{yeo-johnson-original}) and the shift-sensitive definitions (equations \ref{box-cox-shift} and \ref{yeo-johnson-shift}) for each distribution, after adding a positive value $d$ to each distribution. Here, $d \in [1, 10^6]$.
+We then compute transformation parameter $\hat{\lambda}$ using the original definitions (equations \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}) and the shift-sensitive definitions (equations \ref{eqn:box-cox-shift} and \ref{eqn:yeo-johnson-shift}) for each distribution, after adding a positive value $d$ to each distribution. Here, $d \in [1, 10^6]$.
 
 ```{r shifted-distributions, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
-  "\\label{fig:shifted-distributions}",
   "Shift-sensitive power transformation produces transformation parameters that are invariant to location. ",
   "Samples were drawn from normal, right-skewed and left-skewed distributions, respectively,  which then underwent a shift $d$. ",
   "Estimates of transformation parameter $\\lambda$ with the original power transformations (circle) show strong dependency on the overall location of the distribution, ",
@@ -393,8 +389,8 @@ The optimal weighting function parameters for weighted MLE are shown in Tables \
 ```{=latex}
 \begin{table}
 \begin{center}
-\label{tab:optimal-weighting-parameters-box-cox}
 \caption{Optimal weighting parameters and corresponding loss for \textbf{shift-sensitive Box-Cox} power transformations. $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values, and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column. The {optimal} column shows the optimal parameter values. The \textit{loss} column shows the loss achieved by each method, under optimised parameters. Lower loss indicates better robustness against outliers.}
+\label{tab:optimal-weighting-parameters-box-cox}
 \begin{tabular}{l r r r r r r r}
 
 \toprule
@@ -422,8 +418,8 @@ $r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.20 & 1.00 & $(0, 10]$ & 1.48 & 1
 ```{=latex}
 \begin{table}
 \begin{center}
-\label{tab:optimal-weighting-parameters-yeo-johnson}
 \caption{Optimal weighting parameters and corresponding loss for \textbf{shift-sensitive Yeo-Johnson} power transformations. $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values, and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column. The {optimal} column shows the optimal parameter values. The \textit{loss} column shows the loss achieved by each method, under optimised parameters. Lower loss indicates better robustness against outliers.}
+\label{tab:optimal-weighting-parameters-yeo-johnson}
 \begin{tabular}{l r r r r r r r}
 
 \toprule
@@ -451,7 +447,6 @@ Figure \ref{fig:optimised-weighting-function-parameters} shows the distribution 
 
 ```{r optimised-weighting-function-parameters, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
-  "\\label{fig:optimised-weighting-function-parameters}",
   "Robustness of power transformations after optimising weighting function parameters. ",
   "The distribution of errors, i.e. the difference between robustly fitted $\\hat{\\lambda}^r$ ",
   "and expected $\\hat{\\lambda}_{0}$ found in the absence of outliers, is shown for 1000 randomly ",
@@ -475,11 +470,10 @@ To develop an empirical test for central normality we need to consider two param
 
 First we draw $m_d=10000$ random asymmetric generalised normal distributions. As before, each distribution is parametrised with a randomly chosen skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$. Location and scale parameters are set as $\mu = 0$ and $\sigma = 1$, respectively. $n = \lceil 10^\gamma \rceil$ values are then randomly drawn, with $\gamma \sim U\left(1.47, 3.00\right)$, which leads to between $30$ and $1000$ values being drawn to create $\mathbf{X}_i$. As before, for each distribution, up to $10 \%$ of instances are replaced by outlier values, and this is repeated $10$ times. We then compute residuals after optimising robust shift-sensitive transformations with the empirical tapered cosine weighting method.
 
-Figure \ref{tab:empirical-central-normality-residual-error} shows the residual errors of the transformed distribution as function of the empirical probability. As expected, the largest deviations from normality appear on the extremities of this range. For Box-Cox, the effect of outliers on the lower end of the distribution leads to noticeable asymmetry. Between very low and very high empirical probabilities, residual errors are constrained and relatively flat. This is the candidate range for the central portion of the data.
+Figure \ref{fig:empirical-central-normality-residual-error} shows the residual errors of the transformed distribution as function of the empirical probability. As expected, the largest deviations from normality appear on the extremities of this range. For Box-Cox, the effect of outliers on the lower end of the distribution leads to noticeable asymmetry. Between very low and very high empirical probabilities, residual errors are constrained and relatively flat. This is the candidate range for the central portion of the data.
 
 ```{r empirical-central-normality-residual-error, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
-  "\\label{tab:empirical-central-normality-residual-error}",
   "Residual error as a function of empirical probability. ",
   "Percentiles of the error are shown for robust, shift-sensitive transformations of 10000 randomly drawn asymmetric ",
   "generalised normal distributions, with 10 randomly drawn outliers distributions, ",
@@ -491,11 +485,10 @@ cap <- paste0(
   manuscript_dir = manuscript_dir)
 
 ```
-We then consider the empirical probability of type I errors: the probability of incorrectly classifying a centrally normal distribution as being non-normal based on the test statistic. Under the assumption that the asymmetric generalised normal distributions are centrally normal after robust transformation, this produces the relationship shown in Figure \ref{tab:empirical-central-normality-type-1-error-rate}. Since for $\kappa \leq 0.80$ error curves are similar, we fix the value of the central portion $\kappa$ to 0.80. This leads to test statistic values listed in Table \ref{tab:empirical-central-normality}, which derive from the type I error rates of the Yeo-Johnson transformation.
+We then consider the empirical probability of type I errors: the probability of incorrectly classifying a centrally normal distribution as being non-normal based on the test statistic. Under the assumption that the asymmetric generalised normal distributions are centrally normal after robust transformation, this produces the relationship shown in Figure \ref{fig:empirical-central-normality-type-1-error-rate}. Since for $\kappa \leq 0.80$ error curves are similar, we fix the value of the central portion $\kappa$ to 0.80. This leads to test statistic values listed in Table \ref{tab:empirical-central-normality}, which derive from the type I error rates of the Yeo-Johnson transformation.
 
 ```{r empirical-central-normality-type-1-error-rate, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
-  "\\label{tab:empirical-central-normality-type-1-error-rate}",
   "Type 1 error rate of transformed asymmetric generalised normal distributions as function of ",
   "the test statistic for the central portion $\\kappa$ of the distribution.")
 
@@ -528,20 +521,19 @@ usethis::use_data(
 table_data <- .get_test_statistics_data(manuscript_dir = manuscript_dir)
 ```
 
-**MISSING TABLE DATA FOR YEO-JOHNSON**
-
 ```{=latex}
 \begin{table}
 \begin{center}
+\caption{Test statistic for empirical central normality at $\kappa = 0.80$ as a function of Type I error rate.}
 \label{tab:empirical-central-normality}
-\caption{Probability of central normality, based on type I error rates for Box-Cox transformations.}
-\begin{tabular}{c c c c c c c}
+\begin{tabular}{l c c c c c c c}
 
 \toprule
-0.50 & 0.20 & 0.10 & 0.05 & 0.02 & 0.01 & 0.001 \\
+transformation & 0.50 & 0.20 & 0.10 & 0.05 & 0.02 & 0.01 & 0.001 \\
 
 \midrule
-0.042 & 0.063 & 0.077 & 0.090 & 0.106 & 0.118 & 0.159 \\
+rob. shift-sensitive Box-Cox     & 0.046 & 0.072 & 0.090 & 0.106 & 0.126 & 0.140 & 0.189 \\
+rob. shift-sensitive Yeo-Johnson & 0.042 & 0.063 & 0.077 & 0.090 & 0.106 & 0.118 & 0.159 \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -552,7 +544,6 @@ In Figure \ref{fig:empirical-central-normality-examples} we apply the empirical 
 
 ```{r empirical-central-normality-examples, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
-  "\\label{fig:empirical-central-normality-examples}",
   "Bi-modal distributions and empirical goodness of fit test results. ",
   "The feature (black) is a mixture of two identical sample sets (blue and orange) ",
   "drawn from normal distributions that are offset by a distance $d$. ",
@@ -580,7 +571,6 @@ In this section, we assess shift sensitive power transformations using real data
 
 ```{r top-gear, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2}
 cap <- paste0(
-  "\\label{fig:top-gear}",
   "Quantile-quantile plots for the fuel consumption data in the Top Gear dataset. ",
   "This data contains three strong outliers for highly efficient vehicles. ",
   "The left panel shows the quantile-quantile plot for the original data. ",
