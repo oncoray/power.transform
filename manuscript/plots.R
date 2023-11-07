@@ -267,7 +267,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   }
 
   # Prevent warnings due to non-standard evaluation.
-  estimation_method <- distribution <- method <- version <- NULL
+  method <- NULL
 
   # Process data.
   data <- .get_shifted_outlier_plot_data(manuscript_dir = manuscript_dir)
@@ -278,7 +278,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p_bc_normal <- .create_lambda_shift_plot(
     data = data[method == "Box-Cox"],
     plot_theme = plot_theme,
-    limits = c(-5.0, 35.0),
+    limits = c(-0.2, 1.2),
     strip_y_axis = FALSE
   )
 
@@ -286,7 +286,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p_yj_normal <- .create_lambda_shift_plot(
     data = data[method == "Yeo-Johnson"],
     plot_theme = plot_theme,
-    limits = c(-5.0, 35.0),
+    limits = c(-0.2, 1.2),
     guide = TRUE
   )
 

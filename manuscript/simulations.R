@@ -165,23 +165,23 @@
 
 
 
-.get_shifted_outlier_plot_data <- function(manuscript_dir) {
+.get_shifted_outlier_plot_data <- function(manuscript_dir, offset = 0.0) {
   # Set seed.
   set.seed(19L)
 
   if (!file.exists(file.path(manuscript_dir, "shifted_outlier_plot.RDS"))) {
     # Normal distribution.
-    x <- power.transform::ragn(1000L, location = 0, scale = 1 / sqrt(2), alpha = 0.5, beta = 2)
+    x <- power.transform::ragn(1000L, location = offset, scale = 1 / sqrt(2), alpha = 0.5, beta = 2)
 
     # generator ----------------------------------------------------------------
     generate_experiment_data <- coro::generator(
-      function(x) {
-        outlier_shift_range <- 10^seq(from = 0, to = 6, by = 0.1)
+      function(x, offset) {
+        outlier_shift_range <- 10^seq(from = -1, to = 6, by = 0.1)
 
-        for (d in shift_range) {
+        for (d in outlier_shift_range) {
           for (method in c("box_cox", "yeo_johnson")) {
             yield(list(
-              "x" = c(x, d),
+              "x" = c(x, offset + d),
               "d" = d,
               "method" = method,
               "shift" = FALSE,
@@ -200,7 +200,6 @@
           method = parameter_set$method,
           robust = parameter_set$robust,
           shift = parameter_set$shift,
-          lambda = NULL,
           optimiser_control = list("xtol_rel" = 1e-5)
         )
       )
@@ -218,7 +217,7 @@
     # computations -------------------------------------------------------------
 
     # Generate all experiments.
-    experiments <- coro::collect(generate_experiment_data(x=x))
+    experiments <- coro::collect(generate_experiment_data(x=x, offset = offset))
 
     data <- lapply(
       X = experiments,
