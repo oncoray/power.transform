@@ -161,20 +161,43 @@ setMethod(
 
 
 
-# ..requires_shift_optimisation (generic) --------------------------------------
+# ..requires_shift_scale_optimisation (generic) --------------------------------
 setGeneric(
-  "..requires_shift_optimisation",
-  function(object, ...) standardGeneric("..requires_shift_optimisation"))
+  "..requires_shift_scale_optimisation",
+  function(object, ...) standardGeneric("..requires_shift_scale_optimisation"))
 
 
 
 
-# ..requires_shift_optimisation (general) --------------------------------------
+# ..requires_shift_scale_optimisation (general) --------------------------------
 setMethod(
-  "..requires_shift_optimisation",
+  "..requires_shift_scale_optimisation",
   signature(object = "transformationPowerTransform"),
   function(object, ...) {
     return(FALSE)
+  }
+)
+
+
+
+# ..standardise_data (generic) -------------------------------------------------
+setGeneric(
+  "..standardise_data",
+  function(object, ...) standardGeneric("..standardise_data")
+)
+
+
+
+# ..standardise_data (general) -------------------------------------------------
+setMethod(
+  "..standardise_data",
+  signature(object = "transformationPowerTransform"),
+  function(object, x, ...) {
+    return(list(
+      "x" = x,
+      "shift" = 0.0,
+      "scale" = 1.0
+    ))
   }
 )
 
@@ -269,6 +292,13 @@ setGeneric(
   "..get_default_shift_range",
   function(object, ...) standardGeneric("..get_default_shift_range"))
 
+
+
+# ..get_default_scale_range (generic) ------------------------------------------
+setGeneric(
+  "..get_default_scale_range",
+  function(object, ...) standardGeneric("..get_default_scale_range")
+)
 
 
 

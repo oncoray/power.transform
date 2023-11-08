@@ -16,8 +16,12 @@ NULL
 #'   depends on the data used for setting transformation parameters. If all data
 #'   are strictly positive, `shift` has a value of `0.0`. When negative or zero
 #'   values are present, data are shifted to be strictly positive. If
-#'   `shift=TRUE` in the `find_transformation_parameters` function, `lambda` and
-#'   `shift` parameters are optimised simultaneously.
+#'   `invariant=TRUE` in the `find_transformation_parameters` function,
+#'   `lambda`, `shift` and `scale` parameters are optimised simultaneously.
+#' @slot scale Numeric scale parameter for the Box-Cox transformation. If
+#'   `invariant=TRUE` in the `find_transformation_parameters` function,
+#'   `lambda`, `shift` and `scale` parameters are optimised simultaneously.
+#'   Otherwise, the `scale` parameter has a value of `1.0`.
 #' @slot complete Indicates whether transformation parameters were set.
 #'
 #' @seealso [find_transformation_parameters]
@@ -31,21 +35,26 @@ setClass(
     "method" = "character",
     "robust" = "logical",
     "lambda" = "numeric",
-    "shift" = "numeric"),
+    "shift" = "numeric",
+    "scale" = "numeric"
+  ),
   prototype = list(
     "method" = "box_cox",
     "robust" = FALSE,
     "lambda" = 1.0,
-    "shift" = 0.0))
+    "shift" = 0.0,
+    "scale" = 1.0
+  )
+)
 
 
 
-# transformationBoxCoxShift definition -----------------------------------------
+# transformationBoxCoxInvariant definition -------------------------------------
 
 #' @rdname transformation_box_cox
 #' @export
 setClass(
-  "transformationBoxCoxShift",
+  "transformationBoxCoxInvariant",
   contains = "transformationBoxCox")
 
 
@@ -68,21 +77,36 @@ setMethod(
     # Set lambda range. If lambda is NULL, set a very wide range.
     if (is.null(lambda)) lambda <- ..get_default_lambda_range(object = object)
 
+    # Pre-scale and shift x. For conventional Box-Cox transformations, this does
+    # nothing. For scale and shift-invariant Box-Cox transformations, the data
+    # are standardised, and corresponding scale and shift parameters are
+    # exported.
+    init_transform_data <- ..standardise_data(
+      object = object,
+      x = x
+    )
+    x <- init_transform_data$x
+    init_shift <- init_transform_data$shift
+    init_scale <- init_transform_data$scale
+
     # Set minimum shift, in case any negative values are present.
     object <- ..set_minimum_shift(
       object = object,
-      x = x)
+      x = x
+    )
 
     # Set lambda, in case a fixed lambda is provided.
     object <- ..set_lambda(
       object = object,
-      lambda = lambda)
+      lambda = lambda
+    )
 
     # Get optimisation parameters to initialise and configure the optimiser.
     optimisation_parameters <- ..optimisation_parameters(
       object = object,
       x = x,
-      lambda = lambda)
+      lambda = lambda
+    )
 
     # Skip optimisation if there is nothing to optimise.
     if (is.null(optimisation_parameters)) {
@@ -110,7 +134,7 @@ setMethod(
       optimisation_parameters = optimisation_parameters,
       ...)
 
-    if (!is.finite(optimised_parameters$lambda) & estimation_method != "mle") {
+    if (!is.finite(optimised_parameters$lambda) && estimation_method != "mle") {
       # Fallback option in case a non-MLE method fails.
       estimator <- .set_estimator(
         transformer = object,
@@ -128,16 +152,28 @@ setMethod(
         ...)
     }
 
-    # Update shift and lambda values with the optimised parameters.
+    # Update shift, scale and lambda values with the optimised parameters.
     if (!is.null(optimised_parameters$shift)) {
       if (is.finite(optimised_parameters$shift)) {
-        object@shift <- optimised_parameters$shift
+        object@shift <- optimised_parameters$shift * init_scale + init_shift
 
       } else if (!backup_use_default) {
-        object@shift <- optimised_parameters$shift
+        object@shift <- optimised_parameters$shift * init_scale + init_shift
 
       } else {
         object@shift <- 0.0
+      }
+    }
+
+    if (!is.null(optimised_parameters$scale)) {
+      if (is.finite(optimised_parameters$scale)) {
+        object@scale <- optimised_parameters$scale * init_scale
+
+      } else if (!backup_use_default) {
+        object@scale <- optimised_parameters$scale * init_scale
+
+      } else {
+        object@scale <- 1.0
       }
     }
 
@@ -227,8 +263,8 @@ setMethod(
   signature(object = "transformationBoxCox"),
   function(object, x, ...) {
 
-    # Subtract shift.
-    x <- x - object@shift
+    # Subtract shift and divide by scale.
+    x <- (x - object@shift) / object@scale
 
     if (object@lambda == 0) {
       y <- log(x)
@@ -256,18 +292,18 @@ setMethod(
       y <- (x * object@lambda + 1)^(1 / object@lambda)
     }
 
-    # Apply shift.
-    y <- y + object@shift
+    # Apply scale and shift.
+    y <- y * object@scale + object@shift
 
     return(y)
   })
 
 
 
-# ..requires_shift_optimisation (Box-Cox (shift)) ------------------------------
+# ..requires_shift_scale_optimisation (Box-Cox (invariant)) --------------------
 setMethod(
-  "..requires_shift_optimisation",
-  signature(object = "transformationBoxCoxShift"),
+  "..requires_shift_scale_optimisation",
+  signature(object = "transformationBoxCoxInvariant"),
   function(object, ...) {
     return(TRUE)
   }
@@ -316,12 +352,59 @@ setMethod(
 
 
 
+# ..get_default_scale_range (Box-Cox) ------------------------------------------
+setMethod(
+  "..get_default_scale_range",
+  signature(object = "transformationBoxCox"),
+  function(object, x, ...) {
+
+    scale <- stats::IQR(x)
+    if (scale == 0.0) scale <- stats::sd(x)
+    if (!is.finite(scale)) scale <- 1.0
+    if (scale == 0.0) scale <- 1.0
+
+    # Limit scaling to half the scale up to twice the scale.
+    scale_range <- c(scale / 2.0, scale * 2.0)
+
+    return(scale_range)
+  }
+)
+
+
+
 # ..get_default_lambda_range (Box-Cox) -----------------------------------------
 setMethod(
   "..get_default_lambda_range",
   signature(object = "transformationBoxCox"),
   function(object, ...) {
     return(c(-100.0, 100.0))
+  }
+)
+
+
+
+# ..standardise_data (Box-Cox (invariant)) -------------------------------------
+setMethod(
+  "..standardise_data",
+  signature(object = "transformationBoxCoxInvariant"),
+  function(object, x, ...) {
+
+    shift <- stats::median(x)
+    if (!is.finite(shift)) shift <- 0.0
+
+    scale <- stats::IQR(x)
+    if (scale == 0.0) scale <- stats::sd(x)
+    if (!is.finite(scale)) scale <- 1.0
+    if (scale == 0.0) scale <- 1.0
+
+    # Shift and scale x.
+    x <- (x - shift) / scale
+
+    return(list(
+      "x" = x,
+      "shift" = shift,
+      "scale" = scale
+    ))
   }
 )
 
@@ -338,7 +421,7 @@ setMethod(
 
     # Warn to notify that zero or negative values are present. Avoid warning if
     # shifts are optimised.
-    if (!is(object, "transformationBoxCoxShift")) {
+    if (!is(object, "transformationBoxCoxInvariant")) {
       rlang::warn(
         message = paste0(
           "Box-cox power transforms are only defined for strictly positive values. ",
@@ -365,7 +448,7 @@ setMethod(
 # ..get_value_bounds (Box-Cox) -------------------------------------------------
 setMethod(
   "..get_value_bounds",
-  signature(object = "transformationPowerTransform"),
+  signature(object = "transformationBoxCox"),
   function(object, ...) {
     # By default, the minimum valid value is indicated by shift attribute. All
     # values that are equal to or smaller than the shift attribute, are invalid.
@@ -416,16 +499,23 @@ setMethod(
 
 
 
-# ..optimisation_parameters (Box-Cox (shift)) ----------------------------------
+# ..optimisation_parameters (Box-Cox (invariant)) ------------------------------
 setMethod(
   "..optimisation_parameters",
-  signature(object = "transformationBoxCoxShift"),
+  signature(object = "transformationBoxCoxInvariant"),
   function(object, x, lambda, ...) {
 
     # Set up x-range.
     x_range <- ..get_default_shift_range(
       object = object,
-      x = x)
+      x = x
+    )
+
+    # Set up scale.
+    s_range <- ..get_default_scale_range(
+      object = object,
+      x = x
+    )
 
     if (length(lambda) == 1) {
       return(
@@ -498,16 +588,16 @@ setMethod(
 )
 
 
-# ..get_available_estimators (Box-Cox (shift)) ---------------------------------
+# ..get_available_estimators (Box-Cox (invariant)) -----------------------------
 setMethod(
   "..get_available_estimators",
-  signature(object = "transformationBoxCoxShift"),
+  signature(object = "transformationBoxCoxInvariant"),
   function(object, ...) {
 
     available_estimators <- ..estimators_all()
 
     # Raymaekers and Rousseeuw's method for robust optimisation is not suited
-    # for simultaneous estimation of shift and lambda parameters.
+    # for simultaneous estimation of shift, scale and lambda parameters.
     available_estimators <- setdiff(available_estimators, ..estimators_raymaekers_robust())
 
     return(available_estimators)
@@ -525,6 +615,7 @@ setMethod(
     str <- paste0(
       "A ", ifelse(object@robust, "robust ", ""),
       ifelse(object@shift != 0.0, "shifted ", ""),
+      ifelse(object@scale != 1.0, "scaled ", ""),
       "Box-Cox transformation object"
     )
 
@@ -533,6 +624,7 @@ setMethod(
       cat("  lambda: ", object@lambda, "\n")
 
       if (object@shift != 0.0) cat(paste0("  shift: ", object@shift, "\n"))
+      if (object@scale != 1.0) cat(paste0("  scale: ", object@scale, "\n"))
 
     } else {
       cat(paste0(str, " with unset transformation parameters.\n"))

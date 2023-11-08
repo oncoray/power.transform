@@ -368,7 +368,7 @@ setMethod(
   signature(object = "estimatorGeneric"),
   function(object, transformer, ...) {
 
-    if (..requires_shift_optimisation(transformer)) {
+    if (..requires_shift_scale_optimisation(transformer)) {
       return("subplex")
 
     } else {

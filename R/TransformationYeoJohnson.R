@@ -12,10 +12,14 @@ NULL
 #'   transformation is used to set transformation parameters. The value depends
 #'   on the `robust` argument of the `find_transformation_parameters` function.
 #' @slot lambda Numeric lambda parameter for the Yeo-Johnson transformation.
-#' @slot shift Numeric shift parameter for the Yeo-Johnson transformation.If
-#'   `shift=TRUE` in the `find_transformation_parameters` function, `lambda` and
-#'   `shift` parameters are optimised simultaneously. Otherwise, the `shift`
-#'   parameter has a value of `0.0`.
+#' @slot shift Numeric shift parameter for the Yeo-Johnson transformation. If
+#'   `invariant=TRUE` in the `find_transformation_parameters` function,
+#'   `lambda`, `shift` and `scale` parameters are optimised simultaneously.
+#'   Otherwise, the `shift` parameter has a value of `0.0`.
+#' @slot scale Numeric scale parameter for the Yeo-Johnson transformation. If
+#'   `invariant=TRUE` in the `find_transformation_parameters` function,
+#'   `lambda`, `shift` and `scale` parameters are optimised simultaneously.
+#'   Otherwise, the `scale` parameter has a value of `1.0`.
 #' @slot complete Indicates whether transformation parameters were set.
 #'
 #' @seealso [find_transformation_parameters]
@@ -29,21 +33,27 @@ setClass(
     "method" = "character",
     "robust" = "logical",
     "lambda" = "numeric",
-    "shift" = "numeric"),
+    "shift" = "numeric",
+    "shift" = "numeric",
+    "scale" = "numeric"
+  ),
   prototype = list(
     "method" = "yeo_johnson",
     "robust" = FALSE,
-    "lambda" = NA_real_,
-    "shift" = 0.0))
+    "lambda" = 1.0,
+    "shift" = 0.0,
+    "scale" = 1.0
+  )
+)
 
 
 
-# transformationYeoJohnsonShift definition -------------------------------------
+# transformationYeoJohnsonInvariant definition ---------------------------------
 
 #' @rdname transformation_yeo_johnson
 #' @export
 setClass(
-  "transformationYeoJohnsonShift",
+  "transformationYeoJohnsonInvariant",
   contains = "transformationYeoJohnson")
 
 
@@ -65,6 +75,18 @@ setMethod(
 
     # Set lambda range. If lambda is NULL, set a very wide range.
     if (is.null(lambda)) lambda <- ..get_default_lambda_range(object = object)
+
+    # Pre-scale and shift x. For conventional Box-Cox transformations, this does
+    # nothing. For scale and shift-invariant Box-Cox transformations, the data
+    # are standardised, and corresponding scale and shift parameters are
+    # exported.
+    init_transform_data <- ..standardise_data(
+      object = object,
+      x = x
+    )
+    x <- init_transform_data$x
+    init_shift <- init_transform_data$shift
+    init_scale <- init_transform_data$scale
 
     # Set lambda, in case a fixed lambda is provided.
     object <- ..set_lambda(
@@ -121,16 +143,28 @@ setMethod(
         ...)
     }
 
-    # Update shift and lambda values with the optimised parameters.
+    # Update shift, scale and lambda values with the optimised parameters.
     if (!is.null(optimised_parameters$shift)) {
       if (is.finite(optimised_parameters$shift)) {
-        object@shift <- optimised_parameters$shift
+        object@shift <- optimised_parameters$shift * init_scale + init_shift
 
       } else if (!backup_use_default) {
-        object@shift <- optimised_parameters$shift
+        object@shift <- optimised_parameters$shift * init_scale + init_shift
 
       } else {
         object@shift <- 0.0
+      }
+    }
+
+    if (!is.null(optimised_parameters$scale)) {
+      if (is.finite(optimised_parameters$scale)) {
+        object@scale <- optimised_parameters$scale * init_scale
+
+      } else if (!backup_use_default) {
+        object@scale <- optimised_parameters$scale * init_scale
+
+      } else {
+        object@scale <- 1.0
       }
     }
 
@@ -199,8 +233,8 @@ setMethod(
   signature(object = "transformationYeoJohnson"),
   function(object, x, ...) {
 
-    # Subtract shift.
-    x <- x - object@shift
+    # Subtract shift and divide by scale.
+    x <- (x - object@shift) / object@scale
 
     # Determine positive and negative elements of the input vector
     pos_index <- x >= 0
@@ -264,18 +298,18 @@ setMethod(
       }
     }
 
-    # Apply shift.
-    y <- y + object@shift
+    # Apply scale and shift.
+    y <- y * object@scale + object@shift
 
     return(y)
   })
 
 
 
-# ..requires_shift_optimisation (Yeo-Johnson (shift)) --------------------------
+# ..requires_shift_scale_optimisation (Yeo-Johnson (invariant)) ----------------
 setMethod(
-  "..requires_shift_optimisation",
-  signature(object = "transformationYeoJohnsonShift"),
+  "..requires_shift_scale_optimisation",
+  signature(object = "transformationYeoJohnsonInvariant"),
   function(object, ...) {
     return(TRUE)
   }
@@ -297,6 +331,26 @@ setMethod(
 
 
 
+# ..get_default_scale_range (Yeo-Johnson) --------------------------------------
+setMethod(
+  "..get_default_scale_range",
+  signature(object = "transformationYeoJohnson"),
+  function(object, x, ...) {
+
+    scale <- stats::IQR(x)
+    if (scale == 0.0) scale <- stats::sd(x)
+    if (!is.finite(scale)) scale <- 1.0
+    if (scale == 0.0) scale <- 1.0
+
+    # Limit scaling to half the scale up to twice the scale.
+    scale_range <- c(scale / 2.0, scale * 2.0)
+
+    return(scale_range)
+  }
+)
+
+
+
 # ..get_default_lambda_range (Yeo-Johnson) -------------------------------------
 setMethod(
   "..get_default_lambda_range",
@@ -306,6 +360,31 @@ setMethod(
   }
 )
 
+
+# ..standardise_data (Yeo-Johnson (invariant)) ---------------------------------
+setMethod(
+  "..standardise_data",
+  signature(object = "transformationYeoJohnsonInvariant"),
+  function(object, x, ...) {
+
+    shift <- stats::median(x)
+    if (!is.finite(shift)) shift <- 0.0
+
+    scale <- stats::IQR(x)
+    if (scale == 0.0) scale <- stats::sd(x)
+    if (!is.finite(scale)) scale <- 1.0
+    if (scale == 0.0) scale <- 1.0
+
+    # Shift and scale x.
+    x <- (x - shift) / scale
+
+    return(list(
+      "x" = x,
+      "shift" = shift,
+      "scale" = scale
+    ))
+  }
+)
 
 
 # ..set_lambda (Yeo-Johnson) ---------------------------------------------------
@@ -345,10 +424,10 @@ setMethod(
 
 
 
-# ..optimisation_parameters (Yeo-Johnson (shift)) ------------------------------
+# ..optimisation_parameters (Yeo-Johnson (invariant)) --------------------------
 setMethod(
   "..optimisation_parameters",
-  signature(object = "transformationYeoJohnsonShift"),
+  signature(object = "transformationYeoJohnsonInvariant"),
   function(object, x, lambda, ...) {
 
     # Set up x-range.
@@ -445,10 +524,10 @@ setMethod(
 
 
 
-# ..get_available_estimators (Yeo-Johnson (shift)) -----------------------------
+# ..get_available_estimators (Yeo-Johnson (invariant)) -------------------------
 setMethod(
   "..get_available_estimators",
-  signature(object = "transformationYeoJohnsonShift"),
+  signature(object = "transformationYeoJohnsonInvariant"),
   function(object, ...) {
 
     available_estimators <- ..estimators_all()
@@ -489,15 +568,16 @@ setMethod(
 
 
 
-# show (Yeo-Johnson (shift)) ---------------------------------------------------
+# show (Yeo-Johnson (invariant)) -----------------------------------------------
 setMethod(
   "show",
-  signature(object = "transformationYeoJohnsonShift"),
+  signature(object = "transformationYeoJohnsonInvariant"),
   function(object) {
 
     str <- paste0(
       "A ", ifelse(object@robust, "robust ", ""),
       ifelse(object@shift != 0.0, "shifted ", ""),
+      ifelse(object@scale != 1.0, "scaled ", ""),
       "Yeo-Johnson transformation object"
     )
 
@@ -505,6 +585,7 @@ setMethod(
       cat(paste0(str, ".\n"))
       cat("  lambda: ", object@lambda, "\n")
       cat("  shift: ", object@shift, "\n")
+      cat("  scale: ", object@scale, "\n")
 
     } else {
       cat(paste0(str, " with unset transformation parameters.\n"))

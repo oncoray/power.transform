@@ -28,9 +28,9 @@
 #' @param robust Flag for using a robust version of Box-Cox or Yeo-Johnson
 #'   transformation, as defined by Raymaekers and Rousseeuw (2021). This version
 #'   is less sensitive in the presence outliers.
-#' @param shift Flag for using a version of Box-Cox or Yeo-Johnson
-#'   transformation that simultaneously optimises location in addition to the
-#'   lambda parameter.
+#' @param invariant Flag for using a version of Box-Cox or Yeo-Johnson
+#'   transformation that simultaneously optimises location and scale in addition
+#'   to the lambda parameter.
 #' @param lambda Single lambda value, or range of lambda values that should be
 #'   considered. Default: c(4.0, 6.0). Can be `NULL` to force optimisation
 #'   without a constraint in lambda values.
@@ -62,7 +62,7 @@ find_transformation_parameters <- function(
     x,
     method = "yeo_johnson",
     robust = TRUE,
-    shift = TRUE,
+    invariant = TRUE,
     lambda = c(-4.0, 6.0),
     empirical_gof_normality_p_value = NULL,
     ...) {
@@ -117,9 +117,9 @@ find_transformation_parameters <- function(
       "transformationBoxCox",
       robust = robust)
 
-    if (shift) {
+    if (invariant) {
       object <- methods::new(
-        "transformationBoxCoxShift",
+        "transformationBoxCoxInvariant",
         object)
     }
 
@@ -133,7 +133,7 @@ find_transformation_parameters <- function(
 
     if (shift) {
       object <- methods::new(
-        "transformationYeoJohnsonShift",
+        "transformationYeoJohnsonInvariant",
         object)
     }
 
@@ -151,7 +151,8 @@ find_transformation_parameters <- function(
     object = object,
     x = x,
     lambda = lambda,
-    ...)
+    ...
+  )
 
   # Reject transformations in case the goodness-of-fit test p-value is below the
   # required significance value.

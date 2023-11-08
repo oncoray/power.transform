@@ -25,7 +25,7 @@ setMethod(
     default_values <- list("k1" = 0.90)
 
     # Check for known values that where obtained for the manuscript.
-    if (..requires_shift_optimisation(transformer)) {
+    if (..requires_shift_scale_optimisation(transformer)) {
       optimal_values <- two_sided_function_parameters[
         name == "empirical_probability-step" & method == transformer@method & estimation_method == estimator@method
       ]
@@ -53,7 +53,7 @@ setMethod(
     default_values <- list("k1" = 0.85, "k2" = 0.95)
 
     # Check for known values that where obtained for the manuscript.
-    if (..requires_shift_optimisation(transformer)) {
+    if (..requires_shift_scale_optimisation(transformer)) {
       optimal_values <- two_sided_function_parameters[
         name == "empirical_probability-triangle" & method == transformer@method & estimation_method == estimator@method
       ]
@@ -82,7 +82,7 @@ setMethod(
     default_values <- list("k1" = 0.85, "k2" = 0.95)
 
     # Check for known values that where obtained for the manuscript.
-    if (..requires_shift_optimisation(transformer)) {
+    if (..requires_shift_scale_optimisation(transformer)) {
       optimal_values <- two_sided_function_parameters[
         name == "empirical_probability-cosine" & method == transformer@method & estimation_method == estimator@method
       ]
@@ -111,7 +111,7 @@ setMethod(
     default_values <- list("k1" = 1.96)
 
     # Check for known values that where obtained for the manuscript.
-    if (..requires_shift_optimisation(transformer)) {
+    if (..requires_shift_scale_optimisation(transformer)) {
       optimal_values <- two_sided_function_parameters[
         name == "transformed-step" & method == transformer@method & estimation_method == estimator@method
       ]
@@ -139,7 +139,7 @@ setMethod(
     default_values <- list("k1" = 0.50, "k2" = 8.00)
 
     # Check for known values that where obtained for the manuscript.
-    if (..requires_shift_optimisation(transformer)) {
+    if (..requires_shift_scale_optimisation(transformer)) {
       optimal_values <- two_sided_function_parameters[
         name == "transformed-triangle" & method == transformer@method & estimation_method == estimator@method
       ]
@@ -168,7 +168,7 @@ setMethod(
     default_values <- list("k1" = 0.50, "k2" = 8.00)
 
     # Check for known values that where obtained for the manuscript.
-    if (..requires_shift_optimisation(transformer)) {
+    if (..requires_shift_scale_optimisation(transformer)) {
       optimal_values <- two_sided_function_parameters[
         name == "transformed-cosine" & method == transformer@method & estimation_method == estimator@method
       ]
@@ -197,7 +197,7 @@ setMethod(
     default_values <- list("k1" = 2.00)
 
     # Check for known values that where obtained for the manuscript.
-    if (..requires_shift_optimisation(transformer)) {
+    if (..requires_shift_scale_optimisation(transformer)) {
       optimal_values <- two_sided_function_parameters[
         name == "residual-step" & method == transformer@method & estimation_method == estimator@method
       ]
@@ -225,7 +225,7 @@ setMethod(
     default_values <- list("k1" = 0.50, "k2" = 8.00)
 
     # Check for known values that where obtained for the manuscript.
-    if (..requires_shift_optimisation(transformer)) {
+    if (..requires_shift_scale_optimisation(transformer)) {
       optimal_values <- two_sided_function_parameters[
         name == "residual-triangle" & method == transformer@method & estimation_method == estimator@method
       ]
@@ -254,7 +254,7 @@ setMethod(
     default_values <- list("k1" = 0.50, "k2" = 8.00)
 
     # Check for known values that where obtained for the manuscript.
-    if (..requires_shift_optimisation(transformer)) {
+    if (..requires_shift_scale_optimisation(transformer)) {
       optimal_values <- two_sided_function_parameters[
         name == "residual-cosine" & method == transformer@method & estimation_method == estimator@method
       ]
