@@ -115,12 +115,14 @@ find_transformation_parameters <- function(
   } else if (method == "box_cox") {
     object <- methods::new(
       "transformationBoxCox",
-      robust = robust)
+      robust = robust
+    )
 
     if (invariant) {
       object <- methods::new(
         "transformationBoxCoxInvariant",
-        object)
+        object
+      )
     }
 
     # Check lambda.
@@ -129,12 +131,14 @@ find_transformation_parameters <- function(
   } else if (method == "yeo_johnson") {
     object <- methods::new(
       "transformationYeoJohnson",
-      robust = robust)
+      robust = robust
+    )
 
-    if (shift) {
+    if (invariant) {
       object <- methods::new(
         "transformationYeoJohnsonInvariant",
-        object)
+        object
+      )
     }
 
     # Check lambda.
