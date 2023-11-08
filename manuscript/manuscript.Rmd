@@ -319,8 +319,6 @@ The test statistic $\tau_{\text{ecn}}$ is then defined as:
 ```
 Here $[\quad]$ denotes an Iverson bracket. The test statistic is equal to the mean of the residual errors of the central portion of the data. 
 
-To be continued.
-
 # Simulation
 
 ## Shift-sensitive transformations are location-invariant
@@ -485,7 +483,7 @@ cap <- paste0(
   manuscript_dir = manuscript_dir)
 
 ```
-We then consider the empirical probability of type I errors: the probability of incorrectly classifying a centrally normal distribution as being non-normal based on the test statistic. Under the assumption that the asymmetric generalised normal distributions are centrally normal after robust transformation, this produces the relationship shown in Figure \ref{fig:empirical-central-normality-type-1-error-rate}. Since for $\kappa \leq 0.80$ error curves are similar, we fix the value of the central portion $\kappa$ to 0.80. This leads to test statistic values listed in Table \ref{tab:empirical-central-normality}, which derive from the type I error rates of the Yeo-Johnson transformation.
+We then consider the empirical probability of type I errors: the probability of incorrectly classifying a centrally normal distribution as being non-normal based on the test statistic. Under the assumption that the asymmetric generalised normal distributions are centrally normal after robust transformation, this produces the relationship shown in Figure \ref{fig:empirical-central-normality-type-1-error-rate}. Since for $\kappa \leq 0.80$ error curves for both transformation methods are similar, we fix the value of the central portion $\kappa$ to 0.80. In the remaining we will use the empirical central normality test statistic values defined using robust shift-sensitive Yeo-Johnson transformations, as it is slightly more strict. This leads to test statistic values listed in Table \ref{tab:empirical-central-normality}
 
 ```{r empirical-central-normality-type-1-error-rate, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
@@ -526,14 +524,13 @@ table_data <- .get_test_statistics_data(manuscript_dir = manuscript_dir)
 \begin{center}
 \caption{Test statistic for empirical central normality at $\kappa = 0.80$ as a function of Type I error rate.}
 \label{tab:empirical-central-normality}
-\begin{tabular}{l c c c c c c c}
+\begin{tabular}{c c c c c c c}
 
 \toprule
-transformation & 0.50 & 0.20 & 0.10 & 0.05 & 0.02 & 0.01 & 0.001 \\
+0.50 & 0.20 & 0.10 & 0.05 & 0.02 & 0.01 & 0.001 \\
 
 \midrule
-rob. shift-sensitive Box-Cox     & 0.046 & 0.072 & 0.090 & 0.106 & 0.126 & 0.140 & 0.189 \\
-rob. shift-sensitive Yeo-Johnson & 0.042 & 0.063 & 0.077 & 0.090 & 0.106 & 0.118 & 0.159 \\
+0.042 & 0.063 & 0.077 & 0.090 & 0.106 & 0.118 & 0.159 \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -561,7 +558,7 @@ cap <- paste0(
 
 # Experimental Results
 
-In this section, we assess shift sensitive power transformations using real datasets.
+In the previous section, we simulated data to assess shift-sensitive power transformations and their robustness against outliers. In this section, we assess these aspects using real datasets.
 
 ## Datasets with outliers
 
@@ -575,7 +572,7 @@ cap <- paste0(
   "This data contains three strong outliers for highly efficient vehicles. ",
   "The left panel shows the quantile-quantile plot for the original data. ",
   "The middle panel shows the quantile-quantile plots for data transformed using ",
-  "the original Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation [@Raymaekers2021-kq]. ",
+  "the original Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation \cite{Raymaekers2021-kq}. ",
   "For these, the empirical central normality test yields $p=0.01$, and $p=0.58$, respectively. ",
   "The right panels shows the quantile-quantile plots for data transformed using ",
   "the non-robust and robust shift-sensitive transformations. ",
@@ -586,12 +583,30 @@ cap <- paste0(
 .plot_top_gear(
   plot_theme = plot_theme
 )
-
 ```
 
 The Top Gear dataset contains data on 297 cars that appeared on the BBC television show *Top Gear*. Fuel consumption contains outliers. Figure \ref{fig:top-gear} shows that the outliers cause non-robust transformations to fail to transform the data to a centrally normal distribution (empirical central normality test $p = 0.01$). Robust transformations produce distributions that are centrally normal (empirical central normality test $p > 0.05$).
 
 ### Housing dataset
+
+```{r housing-data, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2}
+cap <- paste0(
+  "Quantile-quantile plots for the fuel consumption data in the Top Gear dataset. ",
+  "This data contains three strong outliers for highly efficient vehicles. ",
+  "The left panel shows the quantile-quantile plot for the original data. ",
+  "The middle panel shows the quantile-quantile plots for data transformed using ",
+  "the original Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation [@Raymaekers2021-kq]. ",
+  "For these, the empirical central normality test yields $p=0.01$, and $p=0.58$, respectively. ",
+  "The right panels shows the quantile-quantile plots for data transformed using ",
+  "the non-robust and robust shift-sensitive transformations. ",
+  "For these, the empirical central normality test yields $p=0.01$, and $p=0.36$, respectively. ",
+  "Samples with observed quantiles below $-3.0$ or above $3.0$ are indicated by crosses."
+)
+
+.plot_sacramento_house_prices(
+  plot_theme = plot_theme
+)
+```
 
 modeldata::Sacramento$price
 

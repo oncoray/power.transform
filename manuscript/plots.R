@@ -1344,14 +1344,54 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 
 .plot_top_gear <- function(plot_theme) {
+  require(robustHD)
 
-  # Plot MPG. Show Q-Q plots for:
+  # Load TopGear data into the current environment
+  utils::data("TopGear", package = "robustHD", envir = environment())
+  data <- data.table::as.data.table(TopGear)
+
+  # Extract MPG data.
+  x <- data$MPG
+  x <- x[!is.na(x)]
+
+  return(
+    ..plot_real_data(
+      plot_theme = plot_theme,
+      x = x
+    )
+  )
+}
+
+
+
+.plot_sacramento_house <- function(plot_theme) {
+  require(modeldata)
+
+  data <- data.table::as.data.table(modeldata::Sacramento)
+  x <- data$price
+
+  return(
+    ..plot_real_data(
+      plot_theme = plot_theme,
+      x = x
+    )
+  )
+}
+
+
+
+..plot_real_data <- function(plot_theme, x) {
+  # Show density and Q-Q plots for:
+  # - Original data
   # - conventional transformation
   # - Raymaekers
   # - Shift-sensitive
   # - Shift-sensitive robust
   #
   # Compute empirical test p-value.
+
+  # Prevent undue warnings.
+  transformation <- z_observed <- NULL
 
   plot_limits <- c(-3.0, 3.0)
 
@@ -1360,6 +1400,17 @@ get_annotation_settings <- function(ggtheme = NULL) {
     transformer,
     name
   ) {
+    transformed_data <- power.transform::power_transform(
+      x = x,
+      transformer = transformer
+    )
+
+    transformed_data <- data.table::data.table(
+      x = transformed_data,
+      x_standardised = (transformed_data - stats::median(transformed_data)) / stats::IQR(transformed_data),
+      transformation = name
+    )
+
     residual_data <- power.transform::get_residuals(
       x = x,
       transformer = transformer
@@ -1377,18 +1428,11 @@ get_annotation_settings <- function(ggtheme = NULL) {
     )
 
     return(list(
+      "transformed_data" = transformed_data,
       "residual_data" = residual_data,
       "central_normality_data" = central_normality_data
     ))
   }
-
-  # Load TopGear data into the current environment
-  utils::data("TopGear", package = "robustHD", envir = environment())
-  data <- data.table::as.data.table(TopGear)
-
-  # Extract MPG data.
-  x <- data$MPG
-  x <- x[!is.na(x)]
 
   # No transformer
   no_transformer <- power.transform::find_transformation_parameters(
@@ -1447,6 +1491,16 @@ get_annotation_settings <- function(ggtheme = NULL) {
     SIMPLIFY = FALSE
   )
 
+  # Parse transformed data
+  transformed_data <- data.table::rbindlist(
+    lapply(data, function(x) (x$transformed_data)),
+    use.names = TRUE
+  )
+  transformed_data$transformation <- factor(
+    transformed_data$transformation,
+    levels = transformer_labels
+  )
+
   # Parse residual data
   residual_data <- data.table::rbindlist(
     lapply(data, function(x) (x$residual_data)),
@@ -1466,55 +1520,98 @@ get_annotation_settings <- function(ggtheme = NULL) {
     use.names = TRUE
   )
 
-
-  p <- ggplot2::ggplot(
+  # Quantile-quantile plots.
+  p_qq <- ggplot2::ggplot(
     mapping = ggplot2::aes(
       x = .data$z_expected,
       y = .data$z_observed_truncated,
       colour = .data$transformation,
       shape = .data$truncated
     ))
-  p <- p + plot_theme
-  p <- p + ggplot2::scale_colour_manual(
+  p_qq <- p_qq + plot_theme
+  p_qq <- p_qq + ggplot2::scale_colour_manual(
     name = "transformation",
     values = c("#111111", "#8cd17d", "#59a14f", "#ff9d9a", "#e15759"),
     breaks = transformer_labels,
     drop = FALSE
   )
-  p <- p + ggplot2::scale_shape_manual(
+  p_qq <- p_qq + ggplot2::scale_shape_manual(
     values = c(1, 4),
     labels = c(FALSE, TRUE),
     guide = "none"
   )
-  p <- p + ggplot2::coord_cartesian(
+  p_qq <- p_qq + ggplot2::coord_cartesian(
     xlim = plot_limits,
     ylim = plot_limits
   )
-  p <- p + ggplot2::geom_abline(
+  p_qq <- p_qq + ggplot2::geom_abline(
     intercept = 0.0,
     slope = 1.0
   )
-  p <- p + ggplot2::xlab("Expected quantile")
-  p <- p + ggplot2::ylab("Observed quantile")
+  p_qq <- p_qq + ggplot2::xlab("Expected quantile")
+  p_qq <- p_qq + ggplot2::ylab("Observed quantile")
+
+  # Density plots.
+  p_d <- ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = .data$x_standardised,
+      y = ggplot2::after_stat(scaled),
+      colour = .data$transformation
+    ))
+  p_d <- p_d + plot_theme
+  p_d <- p_d + ggplot2::scale_colour_manual(
+    name = "transformation",
+    values = c("#111111", "#8cd17d", "#59a14f", "#ff9d9a", "#e15759"),
+    breaks = transformer_labels,
+    drop = FALSE
+  )
+  p_d <- p_d + ggplot2::coord_cartesian(xlim = c(-3, 3))
+  p_d <- p_d + ggplot2::theme(
+    axis.text.x = ggplot2::element_blank(),
+    axis.title.x = ggplot2::element_blank(),
+    axis.text.y = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_blank()
+  )
 
   # Without transformation -----------------------------------------------------
-  p0 <- p + ggplot2::geom_point(data = residual_data[transformation == "none"])
+  p0_qq <- p_qq + ggplot2::geom_point(
+    data = residual_data[transformation == "none"]
+  )
+  p0_d <- p_d + ggplot2::geom_density(
+    data = transformed_data[transformation == "none"]
+  )
 
   # Standard transformation ----------------------------------------------------
-  p1 <- p + ggplot2::geom_point(data  = residual_data[transformation %in% c("original", "Raymaekers-Rousseeuw")])
-  p1 <- p1 + ggplot2::theme(
+  p1_qq <- p_qq + ggplot2::geom_point(
+    data  = residual_data[transformation %in% c("original", "Raymaekers-Rousseeuw")]
+  )
+  p1_qq <- p1_qq + ggplot2::theme(
     axis.title.y = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank()
+  )
+  p1_d <- p_d + ggplot2::geom_density(
+    data = transformed_data[transformation %in% c("original", "Raymaekers-Rousseeuw")]
   )
 
   # Shift-sensitive transformation ---------------------------------------------
-  p2 <- p + ggplot2::geom_point(data  = residual_data[transformation %in% c("shift-sensitive", "robust shift-sensitive")])
-  p2 <- p2 + ggplot2::theme(
+  p2_qq <- p_qq + ggplot2::geom_point(
+    data  = residual_data[transformation %in% c("shift-sensitive", "robust shift-sensitive")]
+  )
+  p2_qq <- p2_qq + ggplot2::theme(
     axis.title.y = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank()
   )
+  p2_d <- p_d + ggplot2::geom_density(
+    data = transformed_data[transformation %in% c("shift-sensitive", "robust shift-sensitive")]
+  )
 
-  p <- p0 + p1 + p2 + patchwork::plot_layout(ncol = 3, guides = "collect")
+  p <- p0_d + p1_d + p2_d + p0_qq + p1_qq + p2_qq + patchwork::plot_layout(
+    ncol = 3,
+    guides = "collect",
+    heights = c(0.5, 1.0)
+  )
 
   return(p)
 }
+
+

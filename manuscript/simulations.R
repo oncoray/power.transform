@@ -1471,8 +1471,8 @@
     )
   }
 
-  # # Use Yeo-Johnson for test statistics.
-  # data <- data[method == "Yeo-Johnson"]
+  # Use Yeo-Johnson for test statistics.
+  data <- data[method == "Yeo-Johnson"]
 
   if (as_table) {
     # Find thresholds.
