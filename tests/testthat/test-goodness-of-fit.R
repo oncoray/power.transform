@@ -261,7 +261,7 @@ testthat::test_that(
       estimation_method = "mle"
     )
 
-    testthat::expect_s4_class(transformer_default, "transformationYeoJohnsonShift")
+    testthat::expect_s4_class(transformer_default, "transformationYeoJohnsonInvariant")
 
     testthat::expect_warning(
       transformer_rejected <- power.transform::find_transformation_parameters(

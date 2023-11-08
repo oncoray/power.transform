@@ -23,6 +23,7 @@ Collate:
     'TransformationYeoJohnson.R'
     'TransformationBoxCox.R'
     'AccessorsMutatorsLambda.R'
+    'AccessorsMutatorsScale.R'
     'AccessorsMutatorsShift.R'
     'AccessorsTransformationMethod.R'
     'Checks.R'

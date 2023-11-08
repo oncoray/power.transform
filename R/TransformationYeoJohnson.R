@@ -34,7 +34,6 @@ setClass(
     "robust" = "logical",
     "lambda" = "numeric",
     "shift" = "numeric",
-    "shift" = "numeric",
     "scale" = "numeric"
   ),
   prototype = list(
