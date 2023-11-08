@@ -322,8 +322,24 @@ setMethod(
   "..get_default_shift_range",
   signature(object = "transformationYeoJohnson"),
   function(object, x, ...) {
+    # Compute skewness. This prevent local optimisers from becoming stuck in a
+    # local optimum at the edge of the search grid.
+    mu <- sum(x) / length(x)
+    sigma_squared <- sum((x - mu)^2) / length(x)
+
+    # Compute (weighted) skewness and kurtosis.
+    skewness <- (1.0 / sigma_squared^(3 / 2)) * (sum((x - mu)^3)) / length(x)
+    if (is.na(skewness)) skewness <- 0.0
+
+    if (skewness < 0.0) {
+      x_initial <- stats::quantile(x, 0.95)
+
+    } else {
+      x_initial <- stats::quantile(x, 0.05)
+    }
+
     # Set shift range.
-    shift_range <- c(min(x), max(x))
+    shift_range <- c(min(x), x_initial, max(x))
 
     return(shift_range)
   }
@@ -343,7 +359,7 @@ setMethod(
     if (scale == 0.0) scale <- 1.0
 
     # Limit scaling to half the scale up to twice the scale.
-    scale_range <- c(scale / 2.0, scale * 2.0)
+    scale_range <- c(scale / 2.0, scale, scale * 2.0)
 
     return(scale_range)
   }
@@ -433,39 +449,32 @@ setMethod(
     # Set up x-range.
     x_range <- ..get_default_shift_range(
       object = object,
-      x = x)
+      x = x
+    )
 
-    # Compute skewness. This prevent local optimisers from becoming stuck in a
-    # local optimum at the edge of the search grid.
-    mu <- sum(x) / length(x)
-    sigma_squared <- sum((x - mu)^2) / length(x)
-
-    # Compute (weighted) skewness and kurtosis.
-    skewness <- (1.0 / sigma_squared^(3 / 2)) * (sum((x - mu)^3)) / length(x)
-    if (is.na(skewness)) skewness <- 0.0
-
-    if (skewness < 0.0) {
-      x_initial <- stats::quantile(x, 0.95)
-
-    } else {
-      x_initial <- stats::quantile(x, 0.05)
-    }
+    # Set up scale.
+    s_range <- ..get_default_scale_range(
+      object = object,
+      x = x
+    )
 
     if (length(lambda) == 1) {
       return(
         list(
-          "initial" = x_initial,
-          "lower" = x_range[1],
-          "upper" = x_range[2],
-          "parameter_type" = c("shift")))
+          "lower" = c(x_range[1], s_range[1]),
+          "initial" = c(x_range[2], s_range[2]),
+          "upper" = c(x_range[3], s_range[3]),
+          "parameter_type" = c("shift", "scale")
+        ))
 
     } else {
       return(
         list(
-          "initial" = c(x_initial, mean(lambda)),
-          "lower" = c(x_range[1], min(lambda)),
-          "upper" = c(x_range[2], max(lambda)),
-          "parameter_type" = c("shift", "lambda")))
+          "lower" = c(x_range[1], s_range[1], min(lambda)),
+          "initial" = c(x_range[2], s_range[2], mean(lambda)),
+          "upper" = c(x_range[3], s_range[3], max(lambda)),
+          "parameter_type" = c("shift", "scale", "lambda")
+        ))
     }
   }
 )

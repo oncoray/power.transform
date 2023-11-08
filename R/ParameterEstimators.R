@@ -8,18 +8,20 @@
     ...) {
 
   # Set lambda, shift, as provided by the optimisation algorithm.
-  if (setequal(parameter_type, c("lambda", "shift"))) {
+  if (setequal(parameter_type, c("lambda", "shift", "scale"))) {
     transformer@shift <- par[1]
-    transformer@lambda <- par[2]
+    transformer@scale <- par[2]
+    transformer@lambda <- par[3]
 
   } else if (parameter_type == "lambda" && length(par) == 1) {
     transformer@lambda <- par[1]
 
-  } else if (parameter_type == "shift" && length(par) == 1) {
+  } else if (setequal(parameter_type, c("shift", "scale")) && length(par) == 2) {
     transformer@shift <- par[1]
+    transformer@scale <- par[2]
 
   } else {
-    stop("DEV: Optimisation function was not specified correctly.")
+    rlang::abort("DEV: Optimisation function was not specified correctly.")
   }
 
   # Compute target value.
@@ -27,7 +29,8 @@
     object = estimator,
     transformer = transformer,
     x = x,
-    ...)
+    ...
+  )
 
   if (verbose) {
     cat(paste0(
@@ -73,7 +76,10 @@ setMethod(
 
     # Estimators should be specified for each estimator - an error is thrown to
     # ensure that this general method is never used.
-    stop(paste0("DEV: missing .compute_objective method for the ", paste_s(class(object)), " class."))
+    rlang::abort(paste0(
+      "DEV: missing .compute_objective method for the ",
+      paste_s(class(object)), " class."
+    ))
   }
 )
 
@@ -102,15 +108,23 @@ setMethod(
 
     # Check that we do not inadvertently pass problems that do not require
     # optimisation to the optimiser.
-    if (is.null(optimisation_parameters)) stop(
-      "DEV: optimisation_parameters cannot be empty.")
-    if (!is(transformer, "transformationPowerTransform")) stop(
-      "DEV: transformer should be a valid power transformation object.")
-    if (!is.numeric(x)) stop("DEV: x should be numeric.")
+    if (is.null(optimisation_parameters)) {
+      rlang::abort("DEV: optimisation_parameters cannot be empty.")
+    }
+    if (!is(transformer, "transformationPowerTransform")) {
+      rlang::abort("DEV: transformer should be a valid power transformation object.")
+    }
+    if (!is.numeric(x)) {
+      rlang::abort("DEV: x should be numeric.")
+    }
 
-    if (is.null(optimiser)) optimiser <- ..get_default_optimiser(
-      object = object,
-      transformer = transformer)
+    # Set default optimiser.
+    if (is.null(optimiser)) {
+      optimiser <- ..get_default_optimiser(
+        object = object,
+        transformer = transformer
+      )
+    }
 
     # Check fall-back option.
     if (!is_package_installed("nloptr") && optimiser %in% c("direct", "direct-l", "mlsl", "subplex", "nelder-mead")) {
@@ -150,8 +164,10 @@ setMethod(
           estimator = object,
           x = x,
           parameter_type = optimisation_parameters$parameter_type,
-          verbose = verbose),
-        error = identity)
+          verbose = verbose
+        ),
+        error = identity
+      )
 
     } else if (optimiser == "direct") {
       # DIRECT algorithm
@@ -169,8 +185,10 @@ setMethod(
           estimator = object,
           x = x,
           parameter_type = optimisation_parameters$parameter_type,
-          verbose = verbose),
-        error = identity)
+          verbose = verbose
+        ),
+        error = identity
+      )
 
     } else if (optimiser == "mlsl") {
       # Multi-Level Single-Linkage algorithm (MLSL)
@@ -192,8 +210,10 @@ setMethod(
           estimator = object,
           x = x,
           parameter_type = optimisation_parameters$parameter_type,
-          verbose = verbose),
-        error = identity)
+          verbose = verbose
+        ),
+        error = identity
+      )
 
     } else if (optimiser == "subplex") {
       # SUBPLEX algorithm
@@ -213,7 +233,8 @@ setMethod(
           x = x,
           parameter_type = optimisation_parameters$parameter_type,
           verbose = verbose),
-        error = identity)
+        error = identity
+      )
 
     } else if (optimiser == "nelder-mead") {
       # Nelder-Mead simplex algorithm
@@ -234,8 +255,10 @@ setMethod(
           estimator = object,
           x = x,
           parameter_type = optimisation_parameters$parameter_type,
-          verbose = verbose),
-        error = identity)
+          verbose = verbose
+        ),
+        error = identity
+      )
 
     } else if (optimiser == "optim-nelder-mead") {
       # Fall-back optimiser in case nloptr is not available. The Nelder-Mead
@@ -250,9 +273,8 @@ setMethod(
         x = x,
         parameter_type = optimisation_parameters$parameter_type,
         verbose = verbose,
-        control = list(
-          "abstol" = 1E-5,
-          "reltol" = 1E-5))
+        control = list("abstol" = 1E-5, "reltol" = 1E-5)
+      )
 
     } else {
       stop(paste0("Optimiser not recognised: ", optimiser))
@@ -269,7 +291,8 @@ setMethod(
     # Initialise a parameter list to return to the calling process.
     parameter_list <- lapply(
       optimisation_parameters$parameter_type,
-      function(x) (NA_real_))
+      function(x) (NA_real_)
+    )
     names(parameter_list) <- optimisation_parameters$parameter_type
 
     # Insert optimal parameter values into the parameter list, if any.

@@ -72,7 +72,8 @@ setMethod(
     weighting_function_parameters = NULL,
     optimiser = NULL,
     backup_use_default = TRUE,
-    ...) {
+    ...
+  ) {
 
     # Set lambda range. If lambda is NULL, set a very wide range.
     if (is.null(lambda)) lambda <- ..get_default_lambda_range(object = object)
@@ -132,7 +133,8 @@ setMethod(
       x = x,
       optimiser = optimiser,
       optimisation_parameters = optimisation_parameters,
-      ...)
+      ...
+    )
 
     if (!is.finite(optimised_parameters$lambda) && estimation_method != "mle") {
       # Fallback option in case a non-MLE method fails.
@@ -140,7 +142,8 @@ setMethod(
         transformer = object,
         estimation_method = "mle",
         weighting_function = weighting_function,
-        weighting_function_parameters = weighting_function_parameters)
+        weighting_function_parameters = weighting_function_parameters
+      )
 
       # Optimise transformation parameters.
       optimised_parameters <- .optimise_transformation_parameters(
@@ -149,7 +152,8 @@ setMethod(
         x = x,
         optimiser = optimiser,
         optimisation_parameters = optimisation_parameters,
-        ...)
+        ...
+      )
     }
 
     # Update shift, scale and lambda values with the optimised parameters.
@@ -344,7 +348,7 @@ setMethod(
     max_value <- max_value - max_value_offset
 
     # Set shift range. Occasionally, the values not be sorted.
-    shift_range <- sort(c(min_value, max_value))
+    shift_range <- sort(c(min_value, min_value, max_value))
 
     return(shift_range)
   }
@@ -364,7 +368,7 @@ setMethod(
     if (scale == 0.0) scale <- 1.0
 
     # Limit scaling to half the scale up to twice the scale.
-    scale_range <- c(scale / 2.0, scale * 2.0)
+    scale_range <- c(scale / 2.0, scale, scale * 2.0)
 
     return(scale_range)
   }
@@ -520,18 +524,22 @@ setMethod(
     if (length(lambda) == 1) {
       return(
         list(
-          "initial" = x_range[1],
-          "lower" = x_range[1],
-          "upper" = x_range[2],
-          "parameter_type" = c("shift")))
+          "lower" = c(x_range[1], s_range[1]),
+          "initial" = c(x_range[2], s_range[2]),
+          "upper" = c(x_range[3], s_range[3]),
+          "parameter_type" = c("shift", "scale")
+        )
+      )
 
     } else {
       return(
         list(
-          "initial" = c(x_range[1], mean(lambda)),
-          "lower" = c(x_range[1], min(lambda)),
-          "upper" = c(x_range[2], max(lambda)),
-          "parameter_type" = c("shift", "lambda")))
+          "lower" = c(x_range[1], s_range[1], min(lambda)),
+          "initial" = c(x_range[2], s_range[2], mean(lambda)),
+          "upper" = c(x_range[3], s_range[3], max(lambda)),
+          "parameter_type" = c("shift", "scale", "lambda")
+        )
+      )
     }
   }
 )
