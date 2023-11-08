@@ -491,8 +491,8 @@ setMethod(
     sigma_hat_squared,
     ...) {
 
-    # Ensure that data is shifted
-    x <- x - object@shift
+    # Ensure that data are standardised
+    x <- (x - object@shift) / object@scale
 
     # Compute the log likelihood under the assumption that the transformed
     # variable y follows the normal distribution.
