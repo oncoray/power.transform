@@ -7,21 +7,14 @@
     verbose = FALSE,
     ...) {
 
-  # Set lambda, shift, as provided by the optimisation algorithm.
-  if (setequal(parameter_type, c("lambda", "shift", "scale"))) {
-    transformer@shift <- par[1]
-    transformer@scale <- par[2]
-    transformer@lambda <- par[3]
-
-  } else if (parameter_type == "lambda" && length(par) == 1) {
-    transformer@lambda <- par[1]
-
-  } else if (setequal(parameter_type, c("shift", "scale")) && length(par) == 2) {
-    transformer@shift <- par[1]
-    transformer@scale <- par[2]
-
-  } else {
-    rlang::abort("DEV: Optimisation function was not specified correctly.")
+  if ("lambda" %in% parameter_type) {
+    transformer@lambda <- par[which(parameter_type == "lambda")]
+  }
+  if ("shift" %in% parameter_type) {
+    transformer@shift <- par[which(parameter_type == "shift")]
+  }
+  if ("scale" %in% parameter_type) {
+    transformer@scale <- par[which(parameter_type == "scale")]
   }
 
   # Compute target value.
@@ -127,7 +120,10 @@ setMethod(
     }
 
     # Check fall-back option.
-    if (!is_package_installed("nloptr") && optimiser %in% c("direct", "direct-l", "mlsl", "subplex", "nelder-mead")) {
+    if (
+      !is_package_installed("nloptr") &&
+      optimiser %in% c("direct", "direct-l", "mlsl", "bobyqa", "subplex", "nelder-mead")
+    ) {
       rlang::warn(
         message = paste0(
           "The nloptr package is required to optimise power transformation parameters using the ",
@@ -185,6 +181,7 @@ setMethod(
           estimator = object,
           x = x,
           parameter_type = optimisation_parameters$parameter_type,
+          nl.info = verbose,
           verbose = verbose
         ),
         error = identity
@@ -210,8 +207,32 @@ setMethod(
           estimator = object,
           x = x,
           parameter_type = optimisation_parameters$parameter_type,
+          nl.info = verbose,
           verbose = verbose
         ),
+        error = identity
+      )
+
+    } else if (optimiser == "bobyqa") {
+      # BOBYQA algorithm
+      #
+      # M. J. D. Powell, "The BOBYQA algorithm for bound constrained
+      # optimization without derivatives," Department of Applied Mathematics and
+      # Theoretical Physics, Cambridge England, technical report NA2009/06
+      # (2009)
+      results <- tryCatch(
+        nloptr::bobyqa(
+          x0 = optimisation_parameters$initial,
+          fn = ..estimator_wrapper,
+          lower = optimisation_parameters$lower,
+          upper = optimisation_parameters$upper,
+          control = optimiser_control,
+          transformer = transformer,
+          estimator = object,
+          x = x,
+          parameter_type = optimisation_parameters$parameter_type,
+          nl.info = verbose,
+          verbose = verbose),
         error = identity
       )
 
@@ -232,6 +253,7 @@ setMethod(
           estimator = object,
           x = x,
           parameter_type = optimisation_parameters$parameter_type,
+          nl.info = verbose,
           verbose = verbose),
         error = identity
       )
@@ -255,6 +277,7 @@ setMethod(
           estimator = object,
           x = x,
           parameter_type = optimisation_parameters$parameter_type,
+          nl.info = verbose,
           verbose = verbose
         ),
         error = identity
@@ -392,7 +415,7 @@ setMethod(
   function(object, transformer, ...) {
 
     if (..requires_shift_scale_optimisation(transformer)) {
-      return("subplex")
+      return("bobyqa")
 
     } else {
       return("subplex")

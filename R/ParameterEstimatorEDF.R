@@ -217,8 +217,11 @@ setMethod(
   signature(object = "estimatorAndersonDarling"),
   function(object, optimiser, ...) {
 
-    if (optimiser %in% c("direct", "direct-l")) {
+    if (optimiser %in% c("direct", "direct-l", "mlsl")) {
       parameters <- list("xtol_rel" = 1E-3, "maxeval" = 500)
+
+    } else if (optimiser %in% c("bobyqa")) {
+      parameters <- list("xtol_rel" = 1E-6)
 
     } else {
       parameters <- list("xtol_rel" = 1E-3, "ftol_abs" = 1E-3)
@@ -236,8 +239,11 @@ setMethod(
   signature(object = "estimatorCramervonMises"),
   function(object, optimiser, ...) {
 
-    if (optimiser %in% c("direct", "direct-l")) {
+    if (optimiser %in% c("direct", "direct-l", "mlsl")) {
       parameters <- list("xtol_rel" = 1E-3, "maxeval" = 500)
+
+    } else if (optimiser %in% c("bobyqa")) {
+      parameters <- list("xtol_rel" = 1E-6)
 
     } else {
       parameters <- list("xtol_rel" = 1E-3, "ftol_abs" = 1E-3)
@@ -255,8 +261,11 @@ setMethod(
   signature(object = "estimatorKolmogorovSmirnov"),
   function(object, optimiser, ...) {
 
-    if (optimiser %in% c("direct", "direct-l")) {
+    if (optimiser %in% c("direct", "direct-l", "mlsl")) {
       parameters <- list("xtol_rel" = 1E-3, "maxeval" = 500)
+
+    } else if (optimiser %in% c("bobyqa")) {
+      parameters <- list("xtol_rel" = 1E-6)
 
     } else {
       parameters <- list("xtol_rel" = 1E-3, "ftol_abs" = 1E-3)

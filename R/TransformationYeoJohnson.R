@@ -90,13 +90,16 @@ setMethod(
     # Set lambda, in case a fixed lambda is provided.
     object <- ..set_lambda(
       object = object,
-      lambda = lambda)
+      lambda = lambda
+    )
 
     # Get optimisation parameters to initialise and configure the optimiser.
     optimisation_parameters <- ..optimisation_parameters(
       object = object,
       x = x,
-      lambda = lambda)
+      lambda = lambda,
+      estimation_method = estimation_method
+    )
 
     # Skip optimisation if there is nothing to optimise.
     if (is.null(optimisation_parameters)) {
@@ -113,7 +116,8 @@ setMethod(
       transformer = object,
       estimation_method = estimation_method,
       weighting_function = weighting_function,
-      weighting_function_parameters = weighting_function_parameters)
+      weighting_function_parameters = weighting_function_parameters
+    )
 
     # Optimise transformation parameters.
     optimised_parameters <- .optimise_transformation_parameters(
@@ -122,7 +126,8 @@ setMethod(
       x = x,
       optimiser = optimiser,
       optimisation_parameters = optimisation_parameters,
-      ...)
+      ...
+    )
 
     if (!is.finite(optimised_parameters$lambda) & estimation_method != "mle") {
       # Fallback option in case a non-MLE method fails.
@@ -130,7 +135,8 @@ setMethod(
         transformer = object,
         estimation_method = "mle",
         weighting_function = weighting_function,
-        weighting_function_parameters = weighting_function_parameters)
+        weighting_function_parameters = weighting_function_parameters
+      )
 
       # Optimise transformation parameters.
       optimised_parameters <- .optimise_transformation_parameters(
@@ -139,7 +145,8 @@ setMethod(
         x = x,
         optimiser = optimiser,
         optimisation_parameters = optimisation_parameters,
-        ...)
+        ...
+      )
     }
 
     # Update shift, scale and lambda values with the optimised parameters.
@@ -321,6 +328,7 @@ setMethod(
   "..get_default_shift_range",
   signature(object = "transformationYeoJohnson"),
   function(object, x, ...) {
+
     # Compute skewness. This prevent local optimisers from becoming stuck in a
     # local optimum at the edge of the search grid.
     mu <- sum(x) / length(x)
@@ -331,14 +339,15 @@ setMethod(
     if (is.na(skewness)) skewness <- 0.0
 
     if (skewness < 0.0) {
-      x_initial <- stats::quantile(x, 0.95)
+      x_initial <- stats::quantile(x, 0.35)
 
     } else {
-      x_initial <- stats::quantile(x, 0.05)
+      x_initial <- stats::quantile(x, 0.65)
     }
 
-    # Set shift range.
-    shift_range <- c(min(x), x_initial, max(x))
+    # Set shift range. Allow for moving the values entirely negative or
+    # positive.
+    shift_range <- c(min(x) - 1.0, x_initial, max(x) + 1.0)
 
     return(shift_range)
   }
@@ -389,6 +398,12 @@ setMethod(
     if (scale == 0.0) scale <- stats::sd(x)
     if (!is.finite(scale)) scale <- 1.0
     if (scale == 0.0) scale <- 1.0
+
+    if (all(x > 0.0)) {
+      # Set shift so that the minimum value after scaling is 1, if all values
+      # are positive.
+      shift <- (min(x) / scale - 1.0) * scale
+    }
 
     # Shift and scale x.
     x <- (x - shift) / scale
@@ -443,7 +458,13 @@ setMethod(
 setMethod(
   "..optimisation_parameters",
   signature(object = "transformationYeoJohnsonInvariant"),
-  function(object, x, lambda, ...) {
+  function(
+    object,
+    x,
+    lambda,
+    estimation_method,
+    ...
+  ) {
 
     # Set up x-range.
     x_range <- ..get_default_shift_range(
@@ -457,23 +478,48 @@ setMethod(
       x = x
     )
 
-    if (length(lambda) == 1) {
-      return(
-        list(
-          "lower" = c(x_range[1], s_range[1]),
-          "initial" = c(x_range[2], s_range[2]),
-          "upper" = c(x_range[3], s_range[3]),
-          "parameter_type" = c("shift", "scale")
-        ))
+    if (estimation_method == "mle") {
+      if (length(lambda) == 1) {
+        return(
+          list(
+            "lower" = c(x_range[1]),
+            "initial" = c(x_range[2]),
+            "upper" = c(x_range[3]),
+            "parameter_type" = c("shift")
+          )
+        )
 
+      } else {
+        return(
+          list(
+            "lower" = c(x_range[1], min(lambda)),
+            "initial" = c(x_range[2], mean(lambda)),
+            "upper" = c(x_range[3], max(lambda)),
+            "parameter_type" = c("shift", "lambda")
+          )
+        )
+      }
     } else {
-      return(
-        list(
-          "lower" = c(x_range[1], s_range[1], min(lambda)),
-          "initial" = c(x_range[2], s_range[2], mean(lambda)),
-          "upper" = c(x_range[3], s_range[3], max(lambda)),
-          "parameter_type" = c("shift", "scale", "lambda")
-        ))
+      if (length(lambda) == 1) {
+        return(
+          list(
+            "lower" = c(x_range[1], s_range[1]),
+            "initial" = c(x_range[2], s_range[2]),
+            "upper" = c(x_range[3], s_range[3]),
+            "parameter_type" = c("shift", "scale")
+          )
+        )
+
+      } else {
+        return(
+          list(
+            "lower" = c(x_range[1], s_range[1], min(lambda)),
+            "initial" = c(x_range[2], s_range[2], mean(lambda)),
+            "upper" = c(x_range[3], s_range[3], max(lambda)),
+            "parameter_type" = c("shift", "scale", "lambda")
+          )
+        )
+      }
     }
   }
 )
@@ -487,16 +533,26 @@ setMethod(
   function(
     object,
     x,
+    y,
     w,
+    mu_hat,
     sigma_hat_squared,
-    ...) {
-
-    # Ensure that data are standardised
+    ...
+  ) {
+    # Ensure that data are standardised in the same manner as for
+    # transformation.
     x <- (x - object@shift) / object@scale
 
     # Compute the log likelihood under the assumption that the transformed
-    # variable y follows the normal distribution.
-    return((object@lambda - 1.0) * sum(w * sign(x) * log1p(abs(x))) - sum(w) / 2.0 * log(sigma_hat_squared))
+    # variable y follows the normal distribution. Note that the second term
+    # appears here and not in Raymaekers et al. because for scale-invariant
+    # transformations it is not a fixed value.
+    llf <- -sum(w) / 2.0 * log(sigma_hat_squared) +
+           -1.0 / (2.0 * sigma_hat_squared) * sum(w * (y - mu_hat)^2) +
+           (object@lambda - 1.0) * sum(w * sign(x) * log1p(abs(x)))
+
+
+    return(llf)
   }
 )
 

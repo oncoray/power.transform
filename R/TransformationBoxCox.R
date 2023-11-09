@@ -106,7 +106,8 @@ setMethod(
     optimisation_parameters <- ..optimisation_parameters(
       object = object,
       x = x,
-      lambda = lambda
+      lambda = lambda,
+      estimation_method = estimation_method
     )
 
     # Skip optimisation if there is nothing to optimise.
@@ -124,7 +125,8 @@ setMethod(
       transformer = object,
       estimation_method = estimation_method,
       weighting_function = weighting_function,
-      weighting_function_parameters = weighting_function_parameters)
+      weighting_function_parameters = weighting_function_parameters
+    )
 
     # Optimise transformation parameters.
     optimised_parameters <- .optimise_transformation_parameters(
@@ -401,6 +403,9 @@ setMethod(
     if (!is.finite(scale)) scale <- 1.0
     if (scale == 0.0) scale <- 1.0
 
+    # Set shift so that the minimum value after scaling is 1.
+    shift <- (min(x) / scale - 1.0) * scale
+
     # Shift and scale x.
     x <- (x - shift) / scale
 
@@ -507,7 +512,13 @@ setMethod(
 setMethod(
   "..optimisation_parameters",
   signature(object = "transformationBoxCoxInvariant"),
-  function(object, x, lambda, ...) {
+  function(
+    object,
+    x,
+    lambda,
+    estimation_method,
+    ...
+  ) {
 
     # Set up x-range.
     x_range <- ..get_default_shift_range(
@@ -521,25 +532,48 @@ setMethod(
       x = x
     )
 
-    if (length(lambda) == 1) {
-      return(
-        list(
-          "lower" = c(x_range[1], s_range[1]),
-          "initial" = c(x_range[2], s_range[2]),
-          "upper" = c(x_range[3], s_range[3]),
-          "parameter_type" = c("shift", "scale")
+    if (estimation_method == "mle") {
+      if (length(lambda) == 1) {
+        return(
+          list(
+            "lower" = c(x_range[1]),
+            "initial" = c(x_range[2]),
+            "upper" = c(x_range[3]),
+            "parameter_type" = c("shift")
+          )
         )
-      )
 
-    } else {
-      return(
-        list(
-          "lower" = c(x_range[1], s_range[1], min(lambda)),
-          "initial" = c(x_range[2], s_range[2], mean(lambda)),
-          "upper" = c(x_range[3], s_range[3], max(lambda)),
-          "parameter_type" = c("shift", "scale", "lambda")
+      } else {
+        return(
+          list(
+            "lower" = c(x_range[1], min(lambda)),
+            "initial" = c(x_range[2], mean(lambda)),
+            "upper" = c(x_range[3], max(lambda)),
+            "parameter_type" = c("shift", "lambda")
+          )
         )
-      )
+      }
+    } else {
+      if (length(lambda) == 1) {
+        return(
+          list(
+            "lower" = c(x_range[1], s_range[1]),
+            "initial" = c(x_range[2], s_range[2]),
+            "upper" = c(x_range[3], s_range[3]),
+            "parameter_type" = c("shift", "scale")
+          )
+        )
+
+      } else {
+        return(
+          list(
+            "lower" = c(x_range[1], s_range[1], min(lambda)),
+            "initial" = c(x_range[2], s_range[2], mean(lambda)),
+            "upper" = c(x_range[3], s_range[3], max(lambda)),
+            "parameter_type" = c("shift", "scale", "lambda")
+          )
+        )
+      }
     }
   }
 )
@@ -553,16 +587,25 @@ setMethod(
   function(
     object,
     x,
+    y,
     w,
+    mu_hat,
     sigma_hat_squared,
-    ...) {
-
-    # Ensure that data are standardised
+    ...
+  ) {
+    # Ensure that data are standardised in the same manner as for
+    # transformation.
     x <- (x - object@shift) / object@scale
 
     # Compute the log likelihood under the assumption that the transformed
-    # variable y follows the normal distribution.
-    return((object@lambda - 1.0) * sum(w * log(x)) - sum(w) / 2.0 * log(sigma_hat_squared))
+    # variable y follows the normal distribution. Note that the second term
+    # appears here and not in Raymaekers et al. because for scale-invariant
+    # transformations it is not a fixed value.
+    llf <- -sum(w) / 2.0 * log(sigma_hat_squared) +
+      -1.0 / (2.0 * sigma_hat_squared) * sum(w * (y - mu_hat)^2) +
+      (object@lambda - 1.0) * sum(w * log(x))
+
+    return(llf)
   }
 )
 

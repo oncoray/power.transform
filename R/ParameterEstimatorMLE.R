@@ -61,8 +61,11 @@ setMethod(
   signature(object = "estimatorMaximumLikelihoodEstimation"),
   function(object, optimiser, ...) {
 
-    if (optimiser %in% c("direct", "direct-l")) {
+    if (optimiser %in% c("direct", "direct-l", "mlsl")) {
       parameters <- list("xtol_rel" = 1E-3, "maxeval" = 300)
+
+    } else if (optimiser %in% c("bobyqa")) {
+      parameters <- list("xtol_rel" = 1E-6)
 
     } else {
       parameters <- list("xtol_rel" = 1E-3, "ftol_abs" = 1E-5)
@@ -94,8 +97,11 @@ setMethod(
   llf <- ..log_likelihood(
     object = transformer,
     x = x,
+    y = y,
     w = w,
-    sigma_hat_squared = sigma_hat_squared)
+    mu_hat = mu_hat,
+    sigma_hat_squared = sigma_hat_squared
+  )
 
   return(llf)
 }

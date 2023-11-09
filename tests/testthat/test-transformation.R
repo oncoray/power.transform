@@ -2,16 +2,16 @@ parameter_list <- list()
 ii <- 1
 for (method in c("box_cox", "yeo_johnson", "none")) {
   for (robust in c(FALSE, TRUE)) {
-    for (shift in c(FALSE, TRUE)) {
+    for (invariant in c(FALSE, TRUE)) {
       estimation_method <- power.transform:::..estimators_mle()
-      if (robust && !shift) {
+      if (robust && !invariant) {
         estimation_method <- power.transform:::..estimators_raymaekers_robust()
       }
 
       parameter_list[[ii]] <- list(
         "method"=method,
         "robust"=robust,
-        "shift" = shift,
+        "invariant" = invariant,
         "estimation_method" = estimation_method
       )
 
@@ -38,30 +38,23 @@ for(ii in seq_along(parameter_list)){
       "(", ii,
       "; method: ", parameter_list[[ii]]$method,
       "; robust: ", parameter_list[[ii]]$robust,
-      "; shift: ", parameter_list[[ii]]$shift, ")"),
+      "; invariant: ", parameter_list[[ii]]$invariant, ")"
+    ),
     {
       # Create the transformer.
       transformer <- do.call(
         power.transform::find_transformation_parameters,
-        args=c(list("x"=x_positive),
-               parameter_list[[ii]]))
+        args=c(
+          list("x"=x_positive),
+          parameter_list[[ii]]
+        )
+      )
 
       if(parameter_list[[ii]]$method == "box_cox"){
-        if(parameter_list[[ii]]$shift){
-          testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.1)
-          testthat::expect_equal(transformer@shift, 0.0, tolerance=0.1)
-
-        } else {
-          testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.2)
-        }
+        testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.1)
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
-        if(parameter_list[[ii]]$shift){
-          testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
-
-        } else {
-          testthat::expect_equal(transformer@lambda, -0.9, tolerance=0.2)
-        }
+        testthat::expect_equal(transformer@lambda, -0.9, tolerance=0.2)
       }
 
       # Transform values.
@@ -192,10 +185,10 @@ for(ii in seq_along(parameter_list)){
       "(", ii,
       "; method: ", parameter_list[[ii]]$method,
       "; robust: ", parameter_list[[ii]]$robust,
-      "; shift: ", parameter_list[[ii]]$shift, ")"),
+      "; invariant: ", parameter_list[[ii]]$invariant, ")"),
     {
       # Create the transformer.
-      if(parameter_list[[ii]]$method == "box_cox" && !parameter_list[[ii]]$shift){
+      if(parameter_list[[ii]]$method == "box_cox" && !parameter_list[[ii]]$invariant){
         testthat::expect_warning(
           transformer <- do.call(
             power.transform::find_transformation_parameters,
@@ -213,16 +206,17 @@ for(ii in seq_along(parameter_list)){
       # Check lambda values.
       if(parameter_list[[ii]]$method == "box_cox"){
 
-        if(parameter_list[[ii]]$shift){
+        if(parameter_list[[ii]]$invariant){
           testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.1)
           testthat::expect_equal(transformer@shift, -1.0, tolerance=0.1)
+          testthat::expect_equal(transformer@scale, 1.0, tolerance=0.1)
 
         } else {
           testthat::expect_equal(transformer@lambda, 0.1, tolerance=0.2)
         }
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
-        if(parameter_list[[ii]]$shift){
+        if(parameter_list[[ii]]$invariant){
           testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
 
         } else {
@@ -257,10 +251,10 @@ for(ii in seq_along(parameter_list)){
       "(", ii,
       "; method: ", parameter_list[[ii]]$method,
       "; robust: ", parameter_list[[ii]]$robust,
-      "; shift: ", parameter_list[[ii]]$shift, ")"),
+      "; invariant: ", parameter_list[[ii]]$invariant, ")"),
     {
       # Create the transformer.
-      if(parameter_list[[ii]]$method == "box_cox" && !parameter_list[[ii]]$shift){
+      if(parameter_list[[ii]]$method == "box_cox" && !parameter_list[[ii]]$invariant){
        testthat::expect_warning(
           transformer <- do.call(
             power.transform::find_transformation_parameters,
@@ -278,7 +272,7 @@ for(ii in seq_along(parameter_list)){
       # Check lambda values.
       if(parameter_list[[ii]]$method == "box_cox"){
 
-        if(parameter_list[[ii]]$shift){
+        if(parameter_list[[ii]]$invariant){
           testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.1)
           testthat::expect_equal(transformer@shift, -exp(max(x)) - 1E-8, tolerance=1.0)
 
@@ -287,7 +281,7 @@ for(ii in seq_along(parameter_list)){
         }
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
-        if(parameter_list[[ii]]$shift){
+        if(parameter_list[[ii]]$invariant){
           testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
 
         } else {
@@ -323,7 +317,7 @@ for(ii in seq_along(parameter_list)){
       "(", ii,
       "; method: ", parameter_list[[ii]]$method,
       "; robust: ", parameter_list[[ii]]$robust,
-      "; shift: ", parameter_list[[ii]]$shift, ")"),
+      "; invariant: ", parameter_list[[ii]]$invariant, ")"),
     {
       # Create the transformer.
       transformer <- do.call(
@@ -333,22 +327,10 @@ for(ii in seq_along(parameter_list)){
 
       # Check lambda values.
       if(parameter_list[[ii]]$method == "box_cox"){
-
-        if(parameter_list[[ii]]$shift){
-          testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.1)
-          testthat::expect_equal(transformer@shift, 0.0, tolerance=0.1)
-
-        } else {
-          testthat::expect_equal(transformer@lambda, 0.1, tolerance=0.2)
-        }
+        testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.1)
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
-        if(parameter_list[[ii]]$shift){
-          testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
-
-        } else {
-          testthat::expect_equal(transformer@lambda, -0.9, tolerance=0.2)
-        }
+        testthat::expect_equal(transformer@lambda, -0.9, tolerance=0.2)
       }
 
       if (parameter_list[[ii]]$method == "none") {
@@ -389,7 +371,7 @@ for(ii in seq_along(parameter_list)){
       "(", ii,
       "; method: ", parameter_list[[ii]]$method,
       "; robust: ", parameter_list[[ii]]$robust,
-      "; shift: ", parameter_list[[ii]]$shift, ")"),
+      "; invariant: ", parameter_list[[ii]]$invariant, ")"),
     {
       # Create the transformer.
       transformer <- do.call(
@@ -400,7 +382,7 @@ for(ii in seq_along(parameter_list)){
       # Check lambda values.
       if(parameter_list[[ii]]$method == "box_cox"){
 
-        if(parameter_list[[ii]]$shift){
+        if(parameter_list[[ii]]$invariant){
           testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.1)
           testthat::expect_equal(transformer@shift, 0.0, tolerance=0.1)
 
@@ -409,7 +391,7 @@ for(ii in seq_along(parameter_list)){
         }
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
-        if(parameter_list[[ii]]$shift){
+        if(parameter_list[[ii]]$invariant){
           testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
 
         } else {
@@ -464,7 +446,7 @@ for(ii in seq_along(parameter_list)){
       "(", ii,
       "; method: ", parameter_list[[ii]]$method,
       "; robust: ", parameter_list[[ii]]$robust,
-      "; shift: ", parameter_list[[ii]]$shift, ")"),
+      "; invariant: ", parameter_list[[ii]]$invariant, ")"),
     {
       # Creating the transformer should throw an error.
       if (parameter_list[[ii]]$method == "none") {
@@ -499,7 +481,7 @@ for(ii in seq_along(parameter_list)){
       "(", ii,
       "; method: ", parameter_list[[ii]]$method,
       "; robust: ", parameter_list[[ii]]$robust,
-      "; shift: ", parameter_list[[ii]]$shift, ")"),
+      "; invariant: ", parameter_list[[ii]]$invariant, ")"),
     {
       if (parameter_list[[ii]]$method == "none") {
         testthat::expect_s4_class(
@@ -531,7 +513,7 @@ for(ii in seq_along(parameter_list)){
       "(", ii,
       "; method: ", parameter_list[[ii]]$method,
       "; robust: ", parameter_list[[ii]]$robust,
-      "; shift: ", parameter_list[[ii]]$shift, ")"),
+      "; invariant: ", parameter_list[[ii]]$invariant, ")"),
     {
       if (parameter_list[[ii]]$method == "none") {
         testthat::expect_s4_class(
@@ -567,7 +549,7 @@ for(ii in seq_along(parameter_list)){
       "(", ii,
       "; method: ", parameter_list[[ii]]$method,
       "; robust: ", parameter_list[[ii]]$robust,
-      "; shift: ", parameter_list[[ii]]$shift, ")"),
+      "; invariant: ", parameter_list[[ii]]$invariant, ")"),
     {
       if (parameter_list[[ii]]$method == "none") {
         testthat::expect_s4_class(
@@ -600,7 +582,7 @@ for(ii in seq_along(parameter_list)){
       "(", ii,
       "; method: ", parameter_list[[ii]]$method,
       "; robust: ", parameter_list[[ii]]$robust,
-      "; shift: ", parameter_list[[ii]]$shift, ")"),
+      "; invariant: ", parameter_list[[ii]]$invariant, ")"),
     {
       # Creating the transformer should throw a warning, and produce a
       # transformationNone object instead.
@@ -634,7 +616,7 @@ for(ii in seq_along(parameter_list)){
       "(", ii,
       "; method: ", parameter_list[[ii]]$method,
       "; robust: ", parameter_list[[ii]]$robust,
-      "; shift: ", parameter_list[[ii]]$shift, ")"),
+      "; invariant: ", parameter_list[[ii]]$invariant, ")"),
     {
       # Creating the transformer should throw a warning, and produce a
       # transformationNone object instead.
@@ -668,7 +650,7 @@ for(ii in seq_along(parameter_list)){
       "(", ii,
       "; method: ", parameter_list[[ii]]$method,
       "; robust: ", parameter_list[[ii]]$robust,
-      "; shift: ", parameter_list[[ii]]$shift, ")"),
+      "; invariant: ", parameter_list[[ii]]$invariant, ")"),
     {
       # Creating the transformer should throw a warning, but otherwise function
       # normally.
@@ -693,7 +675,7 @@ for(ii in seq_along(parameter_list)){
       if(parameter_list[[ii]]$method == "box_cox"){
 
         if(parameter_list[[ii]]$robust){
-          if(parameter_list[[ii]]$shift){
+          if(parameter_list[[ii]]$invariant){
             # Very close to logarithmic transformation.
             testthat::expect_equal(transformer@lambda, 1.0, tolerance=0.2)
           } else {
@@ -707,7 +689,7 @@ for(ii in seq_along(parameter_list)){
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
 
         if(parameter_list[[ii]]$robust){
-          if(parameter_list[[ii]]$shift){
+          if(parameter_list[[ii]]$invariant){
             testthat::expect_equal(transformer@lambda, 1.0, tolerance=0.2)
           } else {
             testthat::expect_equal(transformer@lambda, 0.6, tolerance=0.2)
