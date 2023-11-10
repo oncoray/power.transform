@@ -1,7 +1,7 @@
 ---
-title: "Shift-sensitive Power Transformations for Transforming Data to Normality"
+title: "Location and Scale-Invariant Power Transformations for Transforming Data to Normality"
 author: "Alex Zwanenburg"
-date: "2023-01-06"
+date: "`r Sys.Date()`"
 output:
   pdf_document:
     latex_engine: lualatex

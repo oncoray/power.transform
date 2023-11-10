@@ -1,0 +1,116 @@
+---
+title: "Appendix A"
+author: "Alex Zwanenburg"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Location and scale-invariant Box-Cox and Yeo-Johnson transformations are parameterised using location $x_0$ and scale $s$ parameters, in addition to transformation parameter $\lambda$.
+This leads to the following transformations. The location and scale-invariant Box-Cox transformation is:
+
+```{=latex}
+\begin{equation}
+\phi_{\text{BC}}^{\lambda, x_0, s} (x_i) = 
+\begin{cases}
+\left( \left(\frac{x_i - x_0}{s} \right)^\lambda - 1 \right) / \lambda & \text{if } \lambda \neq 0\\
+\log(\frac{x_i - x_0}{s}) & \text{if } \lambda = 0
+\end{cases}
+\end{equation}
+```
+Where $x_i - x_0 > 0$.
+The location and scale-invariant Yeo-Johnson transformation is:
+
+```{=latex}
+\begin{equation}
+\phi_{\text{YJ}}^{\lambda, x_0, s} (x_i) = 
+\begin{cases}
+\left( \left( 1 + \frac{x_i - x_0}{s}\right)^\lambda - 1\right) / \lambda & \text{if } \lambda \neq 0 \text{ and } x_i - x_0 \geq 0\\
+\log(1 + \frac{x_i - x_0}{s}) & \text{if } \lambda = 0 \text{ and } x_i - x_0 \geq 0\\
+-\left( \left( 1 - \frac{x_i - x_0}{s}\right)^{2 - \lambda} - 1 \right) / \left(2 - \lambda \right) & \text{if } \lambda \neq 2 \text{ and } x_i - x_0 < 0\\
+-\log(1 - \frac{x_i - x_0}{s}) & \text{if } \lambda = 2 \text{ and } x_i - x_0 < 0
+\end{cases}
+\end{equation}
+```
+
+The parameters of these power transformations can be optimised based by maximising the log-likelihood function, under the assumption that the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$ follows a normal distribution.
+The log-likelihood functions for conventional Box-Cox and Yeo-Johnson transformations are well-known.
+However, the introduction of scaling parameter $s$ prevents their direct use.
+Here, we first derive the general form of the log-likelihood functions, and then derive their power-transformation specific definitions.
+
+Let $f(x_1, \ldots, x_n)$ be the probability density function of feature $\mathbf{X} = \{ x_1, \ldots, x_n\}$, 
+and $f^{\lambda, x_0, s} (\phi^{\lambda, x_0, s}(x_1), \ldots, \phi^{\lambda, x_0, s}(x_n))$ be the probability density function of 
+the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$, that is assumed to follow a normal distribution.
+
+The two probability density functions are related as follows:
+
+```{=latex}
+\begin{equation}
+f^{\lambda, x_0, s}(x_1, \ldots, x_n) = f^{\lambda, x_0, s} (\phi^{\lambda, x_0, s}(x_1), \ldots, \phi^{\lambda, x_0, s}(x_n)) \left|\mathbf{J}\right|
+\end{equation}
+```
+Where, $\left|\mathbf{J}\right|$ is the determinant of Jacobian $\mathbf{J}$.
+The Jacobian takes the following form, with off-diagonal elements $0$:
+```{=latex}
+\begin{equation}
+\mathbf{J} =
+\begin{bmatrix}
+    \frac{\partial}{\partial x_1} \phi^{\lambda, x_0, s}(x_1) & 0 & \dots & 0 \\
+    0 & \frac{\partial}{\partial x_2} \phi^{\lambda, x_0, s}(x_2) & \dots & 0 \\
+    \vdots & \vdots  & \ddots &  \vdots \\
+    0  & 0 & 0 & \frac{\partial}{\partial x_n} \phi^{\lambda, x_0, s}(x_n)
+\end{bmatrix}
+\end{equation}
+```
+
+Thus, $\left| \mathbf{J} \right| = \prod_{i=1}^n \frac{\partial}{\partial x_i} \phi^{\lambda, x_0, s}(x_i)$.
+
+Since in our situation $\{x_1, \ldots, x_n\}$ in $f^{\lambda, x_0, s}(x_1, \ldots, x_n)$ are considered fixed (i.e., known), $f^{\lambda, x_0, s}(x_1, \ldots, x_n)$ may be considered a likelihood function.
+The log-likelihood function $\mathcal{l}^{\lambda, x_0, s}$ is then:
+```{=latex}
+\begin{equation}
+\begin{split}
+\mathcal{l}^{\lambda, x_0, s} & = \log f^{\lambda, x_0, s}(x_1, \ldots, x_n) \\
+ & = \log f^{\lambda, x_0, s} (\phi^{\lambda, x_0, s}(x_1), \ldots, \phi^{\lambda, x_0, s}(x_n)) + \log \left|\mathbf{J}\right| \\
+ & = \log f^{\lambda, x_0, s} (\phi^{\lambda, x_0, s}(x_1), \ldots, \phi^{\lambda, x_0, s}(x_n)) + \log \prod_{i=1}^n \frac{\partial}{\partial x_i} \phi^{\lambda, x_0, s}(x_i) \\
+ & = -\frac{n}{2} \log{2 \pi \sigma^2} -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 + \sum_{i=1}^n \log \frac{\partial}{\partial x_i} \phi^{\lambda, x_0, s}(x_i)
+\end{split}
+\end{equation}
+```
+With $\mu$ the average of $\phi^{\lambda, x_0, s}(\mathbf{X})$ and $\sigma^2$ its variance.
+The first two terms derive directly from the log-likelihood function of a normal distribution, and are not specific to the type of power transformation used.
+However, the final term differs between Box-Cox and Yeo-Johnson transformations.
+
+For the Box-Cox transformation the partial derivative is:
+```{=latex}
+\begin{equation}
+\begin{split}
+\frac{\partial}{\partial x_i} \phi_{\text{BC}}^{\lambda, x_0, s}(x_i) & = \frac{1}{s} \left(\frac{x_i - x_0}{s} \right)^{\lambda-1} \\
+ & = \frac{1} {s^\lambda} \left(x_i - x_0 \right)^{\lambda - 1}
+\end{split}
+\end{equation}
+```
+
+Thus the final term is:
+```{=latex}
+\begin{equation}
+\begin{split}
+\sum_{i=1}^n \log \frac{\partial}{\partial x_i} \phi_{\text{BC}}^{\lambda, x_0, s}(x_i) & = 
+\end{split}
+\end{equation}
+```
+
+
+For the Yeo-Johnson transformation, the partial derivative is:
+```{=latex}
+\begin{equation}
+\frac{\partial}{\partial x_i} \phi_{\text{YJ}}^{\lambda, x_0, s}(x_i) =
+\begin{cases}
+\frac{1}{s} \left(1 + \frac{x_i - x_0}{s}\right)^{\lambda - 1} & \text{if } x_i - x_0 \geq 0\\
+\frac{1}{s} \left(1 - \frac{x_i - x_0}{s}\right)^{1 - \lambda} & \text{if } x_i - x_0 < 0
+\end{cases}
+\end{equation}
+```
