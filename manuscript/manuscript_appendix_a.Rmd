@@ -3,6 +3,12 @@ title: "Appendix A"
 author: "Alex Zwanenburg"
 date: "`r Sys.Date()`"
 output: html_document
+header-includes:
+- \usepackage{amsmath}
+- \usepackage{booktabs}
+- \DeclareMathOperator*{\argmax}{argmax}
+- \DeclareMathOperator*{\argmin}{argmin}
+- \DeclareMathOperator{\sgn}{sgn}
 ---
 
 ```{r setup, include=FALSE}
@@ -17,7 +23,7 @@ This leads to the following transformations. The location and scale-invariant Bo
 \phi_{\text{BC}}^{\lambda, x_0, s} (x_i) = 
 \begin{cases}
 \left( \left(\frac{x_i - x_0}{s} \right)^\lambda - 1 \right) / \lambda & \text{if } \lambda \neq 0\\
-\log(\frac{x_i - x_0}{s}) & \text{if } \lambda = 0
+\log\left[\frac{x_i - x_0}{s}\right] & \text{if } \lambda = 0
 \end{cases}
 \end{equation}
 ```
@@ -29,9 +35,9 @@ The location and scale-invariant Yeo-Johnson transformation is:
 \phi_{\text{YJ}}^{\lambda, x_0, s} (x_i) = 
 \begin{cases}
 \left( \left( 1 + \frac{x_i - x_0}{s}\right)^\lambda - 1\right) / \lambda & \text{if } \lambda \neq 0 \text{ and } x_i - x_0 \geq 0\\
-\log(1 + \frac{x_i - x_0}{s}) & \text{if } \lambda = 0 \text{ and } x_i - x_0 \geq 0\\
+\log\left[1 + \frac{x_i - x_0}{s}\right] & \text{if } \lambda = 0 \text{ and } x_i - x_0 \geq 0\\
 -\left( \left( 1 - \frac{x_i - x_0}{s}\right)^{2 - \lambda} - 1 \right) / \left(2 - \lambda \right) & \text{if } \lambda \neq 2 \text{ and } x_i - x_0 < 0\\
--\log(1 - \frac{x_i - x_0}{s}) & \text{if } \lambda = 2 \text{ and } x_i - x_0 < 0
+-\log\left[1 - \frac{x_i - x_0}{s}\right] & \text{if } \lambda = 2 \text{ and } x_i - x_0 < 0
 \end{cases}
 \end{equation}
 ```
@@ -74,9 +80,9 @@ The log-likelihood function $\mathcal{l}^{\lambda, x_0, s}$ is then:
 \begin{equation}
 \begin{split}
 \mathcal{l}^{\lambda, x_0, s} & = \log f^{\lambda, x_0, s}(x_1, \ldots, x_n) \\
- & = \log f^{\lambda, x_0, s} (\phi^{\lambda, x_0, s}(x_1), \ldots, \phi^{\lambda, x_0, s}(x_n)) + \log \left|\mathbf{J}\right| \\
- & = \log f^{\lambda, x_0, s} (\phi^{\lambda, x_0, s}(x_1), \ldots, \phi^{\lambda, x_0, s}(x_n)) + \log \prod_{i=1}^n \frac{\partial}{\partial x_i} \phi^{\lambda, x_0, s}(x_i) \\
- & = -\frac{n}{2} \log{2 \pi \sigma^2} -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 + \sum_{i=1}^n \log \frac{\partial}{\partial x_i} \phi^{\lambda, x_0, s}(x_i)
+ & = \log \left[ f^{\lambda, x_0, s} (\phi^{\lambda, x_0, s}(x_1), \ldots, \phi^{\lambda, x_0, s}(x_n)) \right] + \log \left|\mathbf{J}\right| \\
+ & = \log \left[ f^{\lambda, x_0, s} (\phi^{\lambda, x_0, s}(x_1), \ldots, \phi^{\lambda, x_0, s}(x_n)) \right] + \log \prod_{i=1}^n \frac{\partial}{\partial x_i} \phi^{\lambda, x_0, s}(x_i) \\
+ & = -\frac{n}{2} \log \left[2 \pi \sigma^2 \right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 + \sum_{i=1}^n \log \left[ \frac{\partial}{\partial x_i} \phi^{\lambda, x_0, s}(x_i)\right]
 \end{split}
 \end{equation}
 ```
@@ -94,15 +100,26 @@ For the Box-Cox transformation the partial derivative is:
 \end{equation}
 ```
 
-Thus the final term is:
+Thus the final term in $\mathcal{l}_{\text{BC}}^{\lambda, x_0, s}$ is:
 ```{=latex}
 \begin{equation}
 \begin{split}
-\sum_{i=1}^n \log \frac{\partial}{\partial x_i} \phi_{\text{BC}}^{\lambda, x_0, s}(x_i) & = 
+\sum_{i=1}^n \log \frac{\partial}{\partial x_i} \phi_{\text{BC}}^{\lambda, x_0, s}(x_i) & = \sum_{i=1}^n \log \left[ s^{-\lambda} (x_i - x_0)^{\lambda - 1} \right] \\
+& = \sum_{i=1}^n \log \left[s^{-\lambda} \right] + \log \left[ (x_i - x_0)^{\lambda - 1} \right]\\
+& = -n \lambda \log s + \left( \lambda - 1 \right) \sum_{i=1}^n \log \left[ x_i - x_0 \right]
 \end{split}
 \end{equation}
 ```
 
+This leads to the following log-likelihood for the Box-Cox transformation:
+```{=latex}
+\begin{equation}
+\begin{split}
+\mathcal{l}_{\text{BC}}^{\lambda, x_0, s} = & -\frac{n}{2} \log{2 \pi \sigma^2} -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
+& -n \lambda \log s + \left( \lambda - 1 \right) \sum_{i=1}^n \log \left[ x_i - x_0 \right]
+\end{split}
+\end{equation}
+```
 
 For the Yeo-Johnson transformation, the partial derivative is:
 ```{=latex}
@@ -112,5 +129,24 @@ For the Yeo-Johnson transformation, the partial derivative is:
 \frac{1}{s} \left(1 + \frac{x_i - x_0}{s}\right)^{\lambda - 1} & \text{if } x_i - x_0 \geq 0\\
 \frac{1}{s} \left(1 - \frac{x_i - x_0}{s}\right)^{1 - \lambda} & \text{if } x_i - x_0 < 0
 \end{cases}
+\end{equation}
+```
+
+Thus the final term in $\mathcal{l}_{\text{YJ}}^{\lambda, x_0, s}$ is:
+```{=latex}
+\begin{equation}
+\begin{split}
+\sum_{i=1}^n \log \frac{\partial}{\partial x_i} \phi_{\text{YJ}}^{\lambda, x_0, s}(x_i) & = - n \log s + (\lambda - 1) \sum_{i=1}^n \sgn(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
+\end{split}
+\end{equation}
+```
+
+This lead to the following log-likelihood for the Yeo-Johnson transformation:
+```{=latex}
+\begin{equation}
+\begin{split}
+\mathcal{l}_{\text{BC}}^{\lambda, x_0, s} = & -\frac{n}{2} \log{2 \pi \sigma^2} -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
+& - n \log s + (\lambda - 1) \sum_{i=1}^n \sgn(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
+\end{split}
 \end{equation}
 ```
