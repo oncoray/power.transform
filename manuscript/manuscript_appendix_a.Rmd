@@ -90,6 +90,8 @@ With $\mu$ the average of $\phi^{\lambda, x_0, s}(\mathbf{X})$ and $\sigma^2$ it
 The first two terms derive directly from the log-likelihood function of a normal distribution, and are not specific to the type of power transformation used.
 However, the final term differs between Box-Cox and Yeo-Johnson transformations.
 
+## Box-Cox transformation
+
 For the Box-Cox transformation the partial derivative is:
 ```{=latex}
 \begin{equation}
@@ -115,11 +117,30 @@ This leads to the following log-likelihood for the Box-Cox transformation:
 ```{=latex}
 \begin{equation}
 \begin{split}
-\mathcal{l}_{\text{BC}}^{\lambda, x_0, s} = & -\frac{n}{2} \log{2 \pi \sigma^2} -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
+\mathcal{l}_{\text{BC}}^{\lambda, x_0, s} = & -\frac{n}{2} \log \left[2 \pi \sigma^2 \right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
 & -n \lambda \log s + \left( \lambda - 1 \right) \sum_{i=1}^n \log \left[ x_i - x_0 \right]
 \end{split}
 \end{equation}
 ```
+
+We introduced per-sample weights $w_i$ to facilitate robust power transformations. The log likelihood of the robust Box-Cox transformation is:
+```{=latex}
+\begin{equation}
+\begin{split}
+\mathcal{l}_{\text{rBC}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
+& - \lambda \left( \sum_{i=1}^n w_i \right) \log s + \left( \lambda - 1 \right) \sum_{i=1}^n w_i \log \left[ x_i - x_0 \right]
+\end{split}
+\end{equation}
+```
+where $\sigma^2_w$ is the weighted variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0} (\mathbf{X})$:
+
+```{=latex}
+\begin{equation}
+\sigma_w^2 = \frac{\sum_{i=1}^n w_i \left(\phi_{\text{BC}}^{\lambda, x_0, s} (x_i) - \mu_w \right)^2}{\sum_{i=1}^n w_i} \quad \text{with } \mu_w = \frac{\sum_{i=1}^n \phi_{\text{BC}}^{\lambda, x_0, s} (x_i)} {\sum_{i=1}^n w_i}
+\end{equation}
+```
+
+## Yeo-Johnson transformation
 
 For the Yeo-Johnson transformation, the partial derivative is:
 ```{=latex}
@@ -148,5 +169,22 @@ This lead to the following log-likelihood for the Yeo-Johnson transformation:
 \mathcal{l}_{\text{BC}}^{\lambda, x_0, s} = & -\frac{n}{2} \log{2 \pi \sigma^2} -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
 & - n \log s + (\lambda - 1) \sum_{i=1}^n \sgn(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
 \end{split}
+\end{equation}
+```
+
+The log likelihood of the robust Box-Cox transformation is:
+```{=latex}
+\begin{equation}
+\begin{split}
+\mathcal{l}_{\text{rYJ}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
+& - \left( \sum_{i=1}^n w_i \right) \log s + (\lambda - 1) \sum_{i=1}^n w_i \sgn(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
+\end{split}
+\end{equation}
+```
+where $\sigma^2_w$ is the weighted variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0} (\mathbf{X})$:
+
+```{=latex}
+\begin{equation}
+\sigma_w^2 = \frac{\sum_{i=1}^n w_i \left(\phi_{\text{YJ}}^{\lambda, x_0, s} (x_i) - \mu_w \right)^2}{\sum_{i=1}^n w_i} \quad \text{with } \mu_w = \frac{\sum_{i=1}^n \phi_{\text{YJ}}^{\lambda, x_0, s} (x_i)} {\sum_{i=1}^n w_i}
 \end{equation}
 ```
