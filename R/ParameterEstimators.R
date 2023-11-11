@@ -418,7 +418,7 @@ setMethod(
       return("bobyqa")
 
     } else {
-      return("subplex")
+      return("bobyqa")
     }
   }
 )

@@ -1445,7 +1445,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     x = x,
     method = "yeo_johnson",
     robust = FALSE,
-    shift = FALSE
+    invariant = FALSE
   )
 
   # Raymaekers robust transformer
@@ -1453,7 +1453,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     x = x,
     method = "yeo_johnson",
     robust = TRUE,
-    shift = FALSE,
+    invariant = FALSE,
     estimation_method = "raymaekers_robust"
   )
 
@@ -1462,7 +1462,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     x = x,
     method = "yeo_johnson",
     robust = FALSE,
-    shift = TRUE
+    invariant = TRUE
   )
 
   # Robust shift-sensitive transformer
@@ -1470,7 +1470,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     x = x,
     method = "yeo_johnson",
     robust = TRUE,
-    shift = TRUE
+    invariant = TRUE
   )
 
   transformer_labels <- c(
