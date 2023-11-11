@@ -532,7 +532,7 @@ setMethod(
       x = x
     )
 
-    if (estimation_method == "mle") {
+    if (estimation_method %in% c("currently_no_method")) {
       if (length(lambda) == 1) {
         return(
           list(
@@ -598,12 +598,12 @@ setMethod(
     x <- (x - object@shift) / object@scale
 
     # Compute the log likelihood under the assumption that the transformed
-    # variable y follows the normal distribution. Note that the second term
-    # appears here and not in Raymaekers et al. because for scale-invariant
-    # transformations it is not a fixed value.
-    llf <- -sum(w) / 2.0 * log(sigma_hat_squared) +
-      -1.0 / (2.0 * sigma_hat_squared) * sum(w * (y - mu_hat)^2) +
-      (object@lambda - 1.0) * sum(w * log(x))
+    # variable y follows the normal distribution. See manuscript appendix for
+    # derivation.
+    llf <- -sum(w) / 2.0 * log(2 * pi * sigma_hat_squared) +
+           -1.0 / (2.0 * sigma_hat_squared) * sum(w * (y - mu_hat)^2) +
+           -sum(w) * log(object@scale) +
+           (object@lambda - 1.0) * sum(w * log(x))
 
     return(llf)
   }
