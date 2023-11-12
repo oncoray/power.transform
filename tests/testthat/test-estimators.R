@@ -9,7 +9,7 @@ for(method in c("box_cox", "yeo_johnson")){
     parameter_list[[ii]] <- list(
       "method" =method,
       "robust" = FALSE,
-      "shift" = TRUE,
+      "invariant" = TRUE,
       "estimation_method" = estimation_method
     )
 
@@ -36,20 +36,24 @@ for(ii in seq_along(parameter_list)){
       "Transforming all-positive values generates the correct results. ",
       "(", ii,
       "; method: ", parameter_list[[ii]]$method,
-      "; estimation_method: ", parameter_list[[ii]]$estimation_method, ")"),
+      "; estimation_method: ", parameter_list[[ii]]$estimation_method, ")"
+    ),
     {
       # Create the transformer.
       transformer <- do.call(
         power.transform::find_transformation_parameters,
-        args=c(list("x"=x_positive),
-               parameter_list[[ii]]))
+        args = c(
+          list("x" = x_positive),
+          parameter_list[[ii]]
+        )
+      )
 
       if(parameter_list[[ii]]$method == "box_cox"){
-        testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.2)
-        testthat::expect_equal(transformer@shift, 0.0, tolerance=0.1)
+        testthat::expect_true(abs(transformer@lambda) < 0.2)
+        testthat::expect_true(abs(transformer@shift) < 0.1)
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
-        testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
+        testthat::expect_true(abs(transformer@lambda + 0.5) < 0.2)
       }
     }
   )
@@ -62,22 +66,25 @@ for(ii in seq_along(parameter_list)){
       "Transforming partially negative values generates the correct results. ",
       "(", ii,
       "; method: ", parameter_list[[ii]]$method,
-      "; estimation_method: ", parameter_list[[ii]]$estimation_method, ")"),
+      "; estimation_method: ", parameter_list[[ii]]$estimation_method, ")"
+    ),
     {
       # Create the transformer
       transformer <- do.call(
         power.transform::find_transformation_parameters,
-        args=c(list("x"=x_part_negative),
-               parameter_list[[ii]]))
+        args = c(
+          list("x" = x_part_negative),
+          parameter_list[[ii]]
+        )
+      )
 
       # Check lambda values.
       if(parameter_list[[ii]]$method == "box_cox"){
-        testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.2)
-        testthat::expect_equal(transformer@shift, -1.0, tolerance=0.1)
+        testthat::expect_true(abs(transformer@lambda) < 0.2)
+        testthat::expect_true(abs(transformer@shift + 1.0) < 0.1)
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
-        testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
-
+        testthat::expect_true(abs(transformer@lambda + 0.5) < 0.2)
       }
     }
   )
@@ -91,20 +98,23 @@ for(ii in seq_along(parameter_list)){
       "Transforming completely negative values generates the correct results. ",
       "(", ii,
       "; method: ", parameter_list[[ii]]$method,
-      "; estimation_method: ", parameter_list[[ii]]$estimation_method, ")"),
+      "; estimation_method: ", parameter_list[[ii]]$estimation_method, ")"
+    ),
     {
       # Create the transformer
       transformer <- do.call(
         power.transform::find_transformation_parameters,
-        args=c(list("x"=x_negative),
-               parameter_list[[ii]]))
+        args = c(
+          list("x" = x_negative),
+          parameter_list[[ii]]
+        )
+      )
 
-      # Check lambda values.
       if(parameter_list[[ii]]$method == "box_cox"){
-        testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.2)
+        testthat::expect_true(abs(transformer@lambda) < 0.2)
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
-        testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
+        testthat::expect_true(abs(transformer@lambda + 0.5) < 0.2)
       }
     }
   )
@@ -119,22 +129,25 @@ for(ii in seq_along(parameter_list)){
       "Transforming all-positive values, with some NA values, generates the correct results. ",
       "(", ii,
       "; method: ", parameter_list[[ii]]$method,
-      "; estimation_method: ", parameter_list[[ii]]$estimation_method, ")"),
+      "; estimation_method: ", parameter_list[[ii]]$estimation_method, ")"
+    ),
     {
       # Create the transformer.
       transformer <- do.call(
         power.transform::find_transformation_parameters,
-        args=c(list("x"=x_some_na),
-               parameter_list[[ii]]))
+        args = c(
+          list("x" = x_some_na),
+          parameter_list[[ii]]
+        )
+      )
 
       # Check lambda values.
       if(parameter_list[[ii]]$method == "box_cox"){
-        testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.2)
-        testthat::expect_equal(transformer@shift, 0.0, tolerance=0.1)
+        testthat::expect_true(abs(transformer@lambda) < 0.2)
+        testthat::expect_true(abs(transformer@shift) < 0.1)
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
-        testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
-
+        testthat::expect_true(abs(transformer@lambda + 0.5) < 0.2)
       }
     }
   )
@@ -149,22 +162,25 @@ for(ii in seq_along(parameter_list)){
       "Transforming all-positive values, with some Inf values, generates the correct results. ",
       "(", ii,
       "; method: ", parameter_list[[ii]]$method,
-      "; estimation_method: ", parameter_list[[ii]]$estimation_method, ")"),
+      "; estimation_method: ", parameter_list[[ii]]$estimation_method, ")"
+    ),
     {
       # Create the transformer.
       transformer <- do.call(
         power.transform::find_transformation_parameters,
-        args=c(list("x"=x_some_inf),
-               parameter_list[[ii]]))
+        args = c(
+          list("x" = x_some_inf),
+          parameter_list[[ii]]
+        )
+      )
 
       # Check lambda values.
       if(parameter_list[[ii]]$method == "box_cox"){
-        testthat::expect_equal(transformer@lambda, 0.0, tolerance=0.2)
-        testthat::expect_equal(transformer@shift, 0.0, tolerance=0.1)
+        testthat::expect_true(abs(transformer@lambda) < 0.2)
+        testthat::expect_true(abs(transformer@shift) < 0.1)
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
-        testthat::expect_equal(transformer@lambda, -0.5, tolerance=0.2)
-
+        testthat::expect_true(abs(transformer@lambda + 0.5) < 0.2)
       }
     }
   )
@@ -177,23 +193,28 @@ for(ii in seq_along(parameter_list)){
       "Transforming vector with fewer than 10 unique values generates the correct results. ",
       "(", ii,
       "; method: ", parameter_list[[ii]]$method,
-      "; estimation_method: ", parameter_list[[ii]]$estimation_method, ")"),
+      "; estimation_method: ", parameter_list[[ii]]$estimation_method, ")"
+    ),
     {
       # Creating the transformer should throw a warning, but otherwise function
       # normally.
       testthat::expect_warning(
         transformer <- do.call(
           power.transform::find_transformation_parameters,
-          args=c(list("x"=x_few_unique),
-                 parameter_list[[ii]])),
-        class = "power_transform_few_unique_values")
+          args = c(
+            list("x" = x_few_unique),
+            parameter_list[[ii]]
+          )
+        ),
+        class = "power_transform_few_unique_values"
+      )
 
       # Check lambda values.
       if(parameter_list[[ii]]$method == "box_cox"){
-        testthat::expect_equal(transformer@lambda, 1.0, tolerance=0.2)
+        testthat::expect_true(abs(transformer@lambda - 1.0) < 0.2)
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
-        testthat::expect_equal(transformer@lambda, 1.0, tolerance=0.2)
+        testthat::expect_true(abs(transformer@lambda -1.0) < 0.2)
       }
     }
   )

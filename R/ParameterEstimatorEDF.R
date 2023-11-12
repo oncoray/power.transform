@@ -46,7 +46,8 @@ setMethod(
     # Transform feature values
     y <- ..transform(
       object = transformer,
-      x = x)
+      x = x
+    )
 
     if (any(!is.finite(y))) return(NA_real_)
 

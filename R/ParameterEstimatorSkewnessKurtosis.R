@@ -101,7 +101,7 @@ setMethod(
   signature(object = "estimatorDAgostino"),
   function(object, transformer, x, ...) {
     # Based on the D'Agostino's K-squared test statistic.
-
+browser()
     # Compute skewness and kurtosis first.
     moments <- callNextMethod()
 
