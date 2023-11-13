@@ -53,7 +53,7 @@ for(ii in seq_along(parameter_list)){
         testthat::expect_true(abs(transformer@shift) < 0.1)
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
-        testthat::expect_true(abs(transformer@lambda + 0.5) < 0.2)
+        testthat::expect_true(abs(transformer@lambda + 0.3) < 0.2)
       }
     }
   )
@@ -84,7 +84,7 @@ for(ii in seq_along(parameter_list)){
         testthat::expect_true(abs(transformer@shift + 1.0) < 0.1)
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
-        testthat::expect_true(abs(transformer@lambda + 0.5) < 0.2)
+        testthat::expect_true(abs(transformer@lambda + 0.3) < 0.2)
       }
     }
   )
@@ -114,7 +114,7 @@ for(ii in seq_along(parameter_list)){
         testthat::expect_true(abs(transformer@lambda) < 0.2)
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
-        testthat::expect_true(abs(transformer@lambda + 0.5) < 0.2)
+        testthat::expect_true(abs(transformer@lambda + 0.3) < 0.2)
       }
     }
   )
@@ -147,7 +147,7 @@ for(ii in seq_along(parameter_list)){
         testthat::expect_true(abs(transformer@shift) < 0.1)
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
-        testthat::expect_true(abs(transformer@lambda + 0.5) < 0.2)
+        testthat::expect_true(abs(transformer@lambda + 0.3) < 0.2)
       }
     }
   )
@@ -180,7 +180,7 @@ for(ii in seq_along(parameter_list)){
         testthat::expect_true(abs(transformer@shift) < 0.1)
 
       } else if(parameter_list[[ii]]$method == "yeo_johnson"){
-        testthat::expect_true(abs(transformer@lambda + 0.5) < 0.2)
+        testthat::expect_true(abs(transformer@lambda + 0.3) < 0.2)
       }
     }
   )
