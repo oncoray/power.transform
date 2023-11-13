@@ -160,6 +160,7 @@ setMethod(
           estimator = object,
           x = x,
           parameter_type = optimisation_parameters$parameter_type,
+          nl.info = verbose,
           verbose = verbose
         ),
         error = identity
