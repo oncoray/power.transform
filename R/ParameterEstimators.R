@@ -111,14 +111,6 @@ setMethod(
       rlang::abort("DEV: x should be numeric.")
     }
 
-    # Set default optimiser.
-    if (is.null(optimiser)) {
-      optimiser <- ..get_default_optimiser(
-        object = object,
-        transformer = transformer
-      )
-    }
-
     # Check fall-back option.
     if (
       !is_package_installed("nloptr") &&
@@ -308,7 +300,7 @@ setMethod(
     # error to the user.
     if (inherits(results, "error")) {
       if (!results$message %in% c("objective in x0 returns NA")) {
-        stop(results)
+        rlang::abort(results$message)
       }
     }
 
@@ -319,14 +311,17 @@ setMethod(
     )
     names(parameter_list) <- optimisation_parameters$parameter_type
 
-    # Insert optimal parameter values into the parameter list, if any.
     if (!inherits(results, "error")) {
+      # Insert optimal parameter values into the parameter list, if any.
       for (ii in seq_along(optimisation_parameters$parameter_type)) {
         parameter_value <- results$par[ii]
         if (is.finite(parameter_value)) {
           parameter_list[[optimisation_parameters$parameter_type[ii]]] <- parameter_value
         }
       }
+
+      # Add target value
+      parameter_list$value <- results$value
     }
 
     return(parameter_list)

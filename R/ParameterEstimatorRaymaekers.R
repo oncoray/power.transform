@@ -100,7 +100,7 @@ setMethod(
 
     if (!is.finite(lambda)) lambda <- NA_real_
 
-    return(list("lambda" = lambda))
+    return(list("lambda" = lambda, "value" = NA_real_))
   }
 )
 

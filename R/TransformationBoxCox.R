@@ -103,7 +103,7 @@ setMethod(
     )
 
     # Get optimisation parameters to initialise and configure the optimiser.
-    optimisation_parameters <- ..optimisation_parameters(
+    global_optimisation_parameters <- ..optimisation_parameters(
       object = object,
       x = x,
       lambda = lambda,
@@ -111,7 +111,7 @@ setMethod(
     )
 
     # Skip optimisation if there is nothing to optimise.
-    if (is.null(optimisation_parameters)) {
+    if (is.null(global_optimisation_parameters)) {
       # Add package version.
       object <- .set_version(object = object)
 
@@ -128,15 +128,52 @@ setMethod(
       weighting_function_parameters = weighting_function_parameters
     )
 
-    # Optimise transformation parameters.
+    # Set optimiser.
+    if (is.null(optimiser)) {
+      optimiser <- ..get_default_optimiser(
+        object = estimator,
+        transformer = object
+      )
+    }
+
+    # Optimise transformation parameters in a global search.
     optimised_parameters <- .optimise_transformation_parameters(
       object = estimator,
       transformer = object,
       x = x,
       optimiser = optimiser,
-      optimisation_parameters = optimisation_parameters,
+      optimisation_parameters = global_optimisation_parameters,
       ...
     )
+
+    # Update parameters for local search.
+    local_optimisation_parameters <- ..local_optimisation_parameters(
+      object = object,
+      global_parameters = global_optimisation_parameters,
+      selected_parameters = optimised_parameters
+    )
+
+    # Optimise transformation parameters in a local search.
+    local_optimised_parameters <- .optimise_transformation_parameters(
+      object = estimator,
+      transformer = object,
+      x = x,
+      optimiser = optimiser,
+      optimisation_parameters = local_optimisation_parameters,
+      ...
+    )
+
+    # Only update optimal parameters obtained during global search if those
+    # obtained during local search are better.
+    if (!is.null(local_optimised_parameters$value) && !is.null(optimised_parameters$value)) {
+      if (is.finite(local_optimised_parameters$value) && is.finite(optimised_parameters$value)) {
+        if (local_optimised_parameters$value < optimised_parameters$value) {
+          optimised_parameters <- local_optimised_parameters
+        }
+      }
+    } else if (!is.null(local_optimised_parameters$value)) {
+      optimised_parameters <- local_optimised_parameters
+    }
 
     if (!is.finite(optimised_parameters$lambda) && estimation_method != "mle") {
       # Fallback option in case a non-MLE method fails.
@@ -153,7 +190,7 @@ setMethod(
         transformer = object,
         x = x,
         optimiser = optimiser,
-        optimisation_parameters = optimisation_parameters,
+        optimisation_parameters = global_optimisation_parameters,
         ...
       )
     }

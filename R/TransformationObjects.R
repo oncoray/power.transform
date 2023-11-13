@@ -280,6 +280,150 @@ setMethod(
 
 
 
+# ..local_optimisation_parameters (generic) ------------------------------------
+setGeneric(
+  "..local_optimisation_parameters" ,
+  function(object, ...) standardGeneric("..local_optimisation_parameters")
+)
+
+
+
+# ..local_optimisation_parameters (general) ------------------------------------
+setMethod(
+  "..local_optimisation_parameters",
+  signature(object = "transformationPowerTransform"),
+  function(
+    object,
+    global_parameters,
+    selected_parameters
+  ) {
+    global_shift_range <- global_lambda_range <- global_scale_range <- NULL
+    local_shift_range <- local_lambda_range <- local_scale_range <- NULL
+
+    lower_values <- initial_values <- upper_values <- parameter_type <- NULL
+
+    if ("shift" %in% c(global_parameters$parameter_type)) {
+      global_shift_range <- c(
+        global_parameters$lower[which(global_parameters$parameter_type == "shift")],
+        global_parameters$initial[which(global_parameters$parameter_type == "shift")],
+        global_parameters$upper[which(global_parameters$parameter_type == "shift")]
+      )
+    }
+    if ("scale" %in% c(global_parameters$parameter_type)) {
+      global_scale_range <- c(
+        global_parameters$lower[which(global_parameters$parameter_type == "scale")],
+        global_parameters$initial[which(global_parameters$parameter_type == "scale")],
+        global_parameters$upper[which(global_parameters$parameter_type == "scale")]
+      )
+    }
+    if ("lambda" %in% c(global_parameters$parameter_type)) {
+      global_lambda_range <- c(
+        global_parameters$lower[which(global_parameters$parameter_type == "lambda")],
+        global_parameters$initial[which(global_parameters$parameter_type == "lambda")],
+        global_parameters$upper[which(global_parameters$parameter_type == "lambda")]
+      )
+    }
+
+    # Set local shift parameters.
+    if (!is.null(global_shift_range)) {
+      optimal_shift <- selected_parameters$shift
+
+      if (optimal_shift <= global_shift_range[2]) {
+        shift_offset <- 0.5 * (global_shift_range[2] - global_shift_range[1])
+      } else {
+        shift_offset <- 0.5 * (global_shift_range[3] - global_shift_range[2])
+      }
+
+      local_shift_range <- c(
+        selected_parameters$shift - shift_offset,
+        selected_parameters$shift,
+        selected_parameters$shift + shift_offset
+      )
+
+      # Update problematic values.
+      if (local_shift_range[1] < global_shift_range[1]) local_shift_range[1] <- global_shift_range[1]
+      if (local_shift_range[3] > global_shift_range[3]) local_shift_range[3] <- global_shift_range[3]
+      if ((local_shift_range[2] == local_shift_range[1]) || (local_shift_range[2] == local_shift_range[3])) {
+        local_shift_range[2] <- (local_shift_range[3] - local_shift_range[1]) / 2 + local_shift_range[1]
+      }
+    }
+
+    # Set local scale parameters.
+    if (!is.null(global_scale_range)) {
+      optimal_scale <- selected_parameters$scale
+
+      if (optimal_scale <= global_scale_range[2]) {
+        scale_offset <- 0.5 * (global_scale_range[2] - global_scale_range[1])
+      } else {
+        scale_offset <- 0.5 * (global_scale_range[3] - global_scale_range[2])
+      }
+
+      local_scale_range <- c(
+        selected_parameters$scale - scale_offset,
+        selected_parameters$scale,
+        selected_parameters$scale + scale_offset
+      )
+
+      # Update problematic values.
+      if (local_scale_range[1] < global_scale_range[1]) local_scale_range[1] <- global_scale_range[1]
+      if (local_scale_range[3] > global_scale_range[3]) local_scale_range[3] <- global_scale_range[3]
+      if ((local_scale_range[2] == local_scale_range[1]) || (local_scale_range[2] == local_scale_range[3])) {
+        local_scale_range[2] <- (local_scale_range[3] - local_scale_range[1]) / 2 + local_scale_range[1]
+      }
+    }
+
+    # Set local lambda parameters.
+    if (!is.null(global_lambda_range)) {
+      optimal_lambda <- selected_parameters$lambda
+
+      local_lambda_range <- c(
+        optimal_lambda - 1.0,
+        optimal_lambda,
+        optimal_lambda + 1.0
+      )
+
+      # Update problematic values.
+      if (local_lambda_range[1] < global_lambda_range[1]) local_lambda_range[1] <- global_lambda_range[1]
+      if (local_lambda_range[3] > global_lambda_range[3]) local_lambda_range[3] <- global_lambda_range[3]
+      if ((local_lambda_range[2] == local_lambda_range[1]) || (local_lambda_range[2] == local_lambda_range[3])) {
+        local_lambda_range[2] <- (local_lambda_range[3] - local_lambda_range[1]) / 2 + local_lambda_range[1]
+      }
+    }
+
+    if (!is.null(local_shift_range)) {
+      lower_values <- c(lower_values, local_shift_range[1])
+      initial_values <- c(initial_values, local_shift_range[2])
+      upper_values <- c(upper_values, local_shift_range[3])
+      parameter_type <- c(parameter_type, "shift")
+    }
+
+    if (!is.null(local_scale_range)) {
+      lower_values <- c(lower_values, local_scale_range[1])
+      initial_values <- c(initial_values, local_scale_range[2])
+      upper_values <- c(upper_values, local_scale_range[3])
+      parameter_type <- c(parameter_type, "scale")
+    }
+
+    if (!is.null(local_lambda_range)) {
+      lower_values <- c(lower_values, local_lambda_range[1])
+      initial_values <- c(initial_values, local_lambda_range[2])
+      upper_values <- c(upper_values, local_lambda_range[3])
+      parameter_type <- c(parameter_type, "lambda")
+    }
+
+    return(
+      list(
+        "lower" = lower_values,
+        "initial" = initial_values,
+        "upper" = upper_values,
+        "parameter_type" = parameter_type
+      )
+    )
+  }
+)
+
+
+
 # ..get_default_lambda_range (generic) -----------------------------------------
 setGeneric(
   "..get_default_lambda_range",
