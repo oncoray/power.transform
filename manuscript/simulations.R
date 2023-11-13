@@ -32,18 +32,18 @@
             }
 
             for (method in c("box_cox", "yeo_johnson")) {
-              for (shift in c(FALSE, TRUE)) {
+              for (invariant in c(FALSE, TRUE)) {
                 for (robust in c(FALSE)) {
                   for (estimation_method in setdiff(power.transform:::..estimators_all(), power.transform:::..estimators_raymaekers_robust())) {
-                    # Skip if robust, but not shifted.
-                    if (robust && !shift) next
+                    # Skip if robust, but not invariant.
+                    if (robust && !invariant) next
 
-                    if (!shift && !robust) {
+                    if (!invariant && !robust) {
                       version <- "original"
                     } else if (!robust) {
-                      version <- "shift-sensitive"
+                      version <- "invariant"
                     } else {
-                      version <- "robust shift-sensitive"
+                      version <- "robust invariant"
                     }
 
                     yield(list(
@@ -51,7 +51,7 @@
                       "d" = d,
                       "distribution" = distribution,
                       "method" = method,
-                      "shift" = shift,
+                      "invariant" = invariant,
                       "robust" = robust,
                       "version" = version,
                       "estimation_method" = estimation_method
@@ -67,16 +67,15 @@
 
     .compute_lambda <- function(parameter_set) {
       # Create transformer object.
-      if (parameter_set$version == "original") {
+      if (parameter_set$version == "conventional") {
         transformer <- suppressWarnings(
           power.transform::find_transformation_parameters(
             x = parameter_set$x,
             method = parameter_set$method,
             robust = parameter_set$robust,
-            shift = parameter_set$shift,
+            invariant = parameter_set$invariant,
             estimation_method = parameter_set$estimation_method,
-            lambda = NULL,
-            optimiser_control = list("xtol_rel" = 1e-5)
+            lambda = NULL
           )
         )
       } else {
@@ -85,7 +84,7 @@
             x = parameter_set$x,
             method = parameter_set$method,
             robust = parameter_set$robust,
-            shift = parameter_set$shift,
+            invariant = parameter_set$invariant,
             estimation_method = parameter_set$estimation_method
           )
         )
@@ -100,7 +99,8 @@
           "version" = parameter_set$version,
           "d" = log10(parameter_set$d),
           "lambda" = transformer@lambda,
-          "x_0" = transformer@shift
+          "x_0" = transformer@shift,
+          "s" = transformer@scale
         )
       )
     }
@@ -136,6 +136,7 @@
 
     # Save to file.
     saveRDS(data, file.path(manuscript_dir, "shifted_distributions_plot.RDS"))
+
   } else {
     data <- readRDS(file.path(manuscript_dir, "shifted_distributions_plot.RDS"))
   }
@@ -152,7 +153,7 @@
   )
   data$version <- factor(
     x = data$version,
-    levels = c("original", "shift-sensitive")
+    levels = c("conventional", "invariant")
   )
   data$estimation_method <- factor(
     x = data$estimation_method,
