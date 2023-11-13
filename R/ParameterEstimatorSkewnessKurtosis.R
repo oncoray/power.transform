@@ -147,17 +147,6 @@ setMethod(
 
 
 
-# ..get_default_optimiser (general) --------------------------------------------
-setMethod(
-  "..get_default_optimiser",
-  signature(object = "estimatorDAgostino"),
-  function(object, ...) {
-    return("direct-l")
-  }
-)
-
-
-
 # ..get_default_optimiser_control (Jarque-Bera) --------------------------------
 setMethod(
   "..get_default_optimiser_control",
