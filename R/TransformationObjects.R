@@ -343,7 +343,7 @@ setMethod(
       # Update problematic values.
       if (local_shift_range[1] < global_shift_range[1]) local_shift_range[1] <- global_shift_range[1]
       if (local_shift_range[3] > global_shift_range[3]) local_shift_range[3] <- global_shift_range[3]
-      if ((local_shift_range[2] == local_shift_range[1]) || (local_shift_range[2] == local_shift_range[3])) {
+      if (isTRUE(all.equal(local_shift_range[1], local_shift_range[2])) || isTRUE(all.equal(local_shift_range[2], local_shift_range[3]))) {
         local_shift_range[2] <- (local_shift_range[3] - local_shift_range[1]) / 2 + local_shift_range[1]
       }
     }
@@ -367,7 +367,7 @@ setMethod(
       # Update problematic values.
       if (local_scale_range[1] < global_scale_range[1]) local_scale_range[1] <- global_scale_range[1]
       if (local_scale_range[3] > global_scale_range[3]) local_scale_range[3] <- global_scale_range[3]
-      if ((local_scale_range[2] == local_scale_range[1]) || (local_scale_range[2] == local_scale_range[3])) {
+      if (isTRUE(all.equal(local_scale_range[1], local_scale_range[2])) || isTRUE(all.equal(local_scale_range[2], local_scale_range[3]))) {
         local_scale_range[2] <- (local_scale_range[3] - local_scale_range[1]) / 2 + local_scale_range[1]
       }
     }
