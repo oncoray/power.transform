@@ -101,7 +101,7 @@ setMethod(
   signature(object = "estimatorDAgostino"),
   function(object, transformer, x, ...) {
     # Based on the D'Agostino's K-squared test statistic.
-browser()
+
     # Compute skewness and kurtosis first.
     moments <- callNextMethod()
 
@@ -115,13 +115,14 @@ browser()
     # Skewness test statistic following D'Agostino and Pearson (1973).
     s <- moments$skewness
 
-    beta_1 <- s * sqrt(((n + 1.0) * n + 3.0) / 6.0 * (n - 2.0))
+    beta_1 <- s * sqrt(((n + 1.0) * (n + 3.0)) / (6.0 * (n - 2.0)))
     beta_2 <- 3.0 * (n^2 + 27.0 * n - 70.0) * (n + 1.0) * (n + 3.0) / ((n - 2.0) * (n + 5.0) * (n + 7.0) * (n + 9.0))
-    alpha <- sqrt(2.0 / (sqrt(2 * beta_2 - 1) - 2))
+    alpha <- sqrt(2.0 / (sqrt(2 * beta_2 - 2) - 2.0 ))
+    delta <- 1 / sqrt(log(sqrt(-1 + sqrt(2 * beta_2 - 2))))
 
-    z_s2 <- 2 * (log(beta_1 / alpha + sqrt(beta_1^2 / alpha^2 + 1)))^2 / log(sqrt(2 * beta_2 - 1) - 1)
+    z_s <- delta * log(beta_1 / alpha + sqrt(beta_1^2 / alpha^2 + 1))
 
-    if (!is.finite(z_s2)) return(NA_real_)
+    if (!is.finite(z_s)) return(NA_real_)
 
     # Kurtosis test statistic following Anscombe and Glynn (1983).
     k <- moments$kurtosis
@@ -132,14 +133,12 @@ browser()
     alpha_1 <- 6.0 + 8.0 / beta_3 * (2.0 / beta_3 + sqrt(1 + 4.0 / beta_3^2))
     alpha_2 <- (k - beta_1) / sqrt(beta_2)
 
-    z_k2 <- 9.0 * alpha_1 / 2.0 * (1.0 - 2.0 / (9.0 * alpha_1) - ((1.0 - 2.0 / alpha_1) / (1.0 + alpha_2 * sqrt(2.0 / (alpha_1 - 4.0))))^(1 / 3))^2
+    z_k <- sqrt(9.0 * alpha_1 / 2.0) * (1.0 - 2.0 / (9.0 * alpha_1) - ((1.0 - 2.0 / alpha_1) / (1.0 + alpha_2 * sqrt(2.0 / (alpha_1 - 4.0))))^(1 / 3))
 
-    if (!is.finite(z_k2)) return(NA_real_)
+    if (!is.finite(z_k)) return(NA_real_)
 
-    # Compute test statistic. Instead of the test statistic, we compute the
-    # square root of the test statistic to make it more palatable for the
-    # optimiser.
-    t <- z_s2 + z_k2
+    # Compute test statistic.
+    t <- z_s^2 + z_k^2
 
     # Statistic should be minimised for better fits.
     return(t)
