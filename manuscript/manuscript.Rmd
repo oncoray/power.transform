@@ -105,7 +105,7 @@ Here we make the following contributions:
 
 -   We devise shift and scale invariant versions of the Box-Cox and Yeo-Johnson transformation, including versions robust to outliers.
 
--   We define an empirical central normality test for detecting cases where power transformations fail to yield a roughly normally distributed transformed feature.
+-   We define an empirical central normality test for detecting cases where power transformations fail to yield an approximately normally distributed transformed feature.
 
 -   We assess the effect of power transformations on the performance of machine learning models.
 
@@ -125,8 +125,7 @@ Box-Cox and Yeo-Johnson transformations are modified by introducing shift parame
 \end{cases}
 \end{equation}
 ```
-
-Where $x_i - x_0 > 0$. Likewise, the shift and scale invariant Yeo-Johnson transformation of a feature value $x_i$ under transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$ is:
+where $x_i - x_0 > 0$. Likewise, the shift and scale invariant Yeo-Johnson transformation of a feature value $x_i$ under transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$ is:
 
 ```{=latex}
 \begin{equation}
@@ -151,16 +150,18 @@ For both invariant transformations, $\lambda$, $x_0$ and $s$ are obtained by max
 \end{split}
 \end{equation}
 ```
-where $\mu$ and $\sigma^2$ are the mean and variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0} (\mathbf{X})$, respectively. Similarly, for the invariant Yeo-Johnson log-likelihood function is:
-HEREHEHEHHRHEHHEHEHRER
+where $\mu$ and $\sigma^2$ are the mean and variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0, s} (\mathbf{X})$, respectively. Similarly, for the invariant Yeo-Johnson log-likelihood function is:
+
 ```{=latex}
 \begin{equation}
 \label{eqn:yeo-johnson-shift-log-likelihood}
-\left\{ \hat{\lambda}^{\text{YJ}}, \hat{x}_0^{\text{YJ}} \right\} = \argmax_{\lambda, x_0} \sum_{i=1}^n -\frac{1}{2}\log(\sigma^2) + (\lambda - 1) \sgn(x_i - x_0) \log(1 + |x_i - x_0|)
+\begin{split}
+\mathcal{l}_{\text{YJ}}^{\lambda, x_0, s} = & -\frac{n}{2} \log\left[2 \pi \sigma^2\right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
+& - n \log s + (\lambda - 1) \sum_{i=1}^n \sgn(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
+\end{split}
 \end{equation}
 ```
-where $\sigma^2$ is the variance of Yeo-Johnson transformed feature $\phi_{\text{YJ}}^{\lambda, x_0} (\mathbf{X})$.
-
+where $\mu$ and $\sigma^2$ are the mean and variance of the Box-Cox transformed feature $\phi_{\text{YJ}}^{\lambda, x_0, s} (\mathbf{X})$, respectively.
 
 
 ## Robust shift-sensitive power transformations
