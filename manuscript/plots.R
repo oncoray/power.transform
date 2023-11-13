@@ -87,7 +87,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     # Prevent warnings due to non-standard evaluation.
     d <- lambda <- method <- version <- NULL
 
-    annotation_settings <- get_annotation_settings(plot_theme)
+
 
     p <- ggplot2::ggplot(
       data = data,
@@ -155,28 +155,64 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   # Process / read data.
   data <- .get_shifted_distribution_data(manuscript_dir = manuscript_dir)
-  data <- data[estimation_method == "MLE" & version == "original" & distribution == "normal"]
+  data <- data[estimation_method == "MLE" & version == "conventional" & distribution == "normal"]
 
-  # Normal distribution --------------------------------------------------------
+  # Get annotation settings.
+  annotation_settings <- get_annotation_settings(plot_theme)
 
-  # Box-Cox
-  p_bc_normal <- .create_lambda_shift_plot(
-    data = data[method == "Box-Cox"],
-    plot_theme = plot_theme,
-    limits = c(-5.0, 35.0),
-    strip_y_axis = FALSE
+  p <- ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = .data$d,
+      y = .data$lambda,
+      colour = .data$method
+    )
+  )
+  p <- p + plot_theme
+  p <- p + ggplot2::geom_hline(
+    yintercept = 1.0,
+    linetype = "longdash",
+    colour = "grey40"
+  )
+  p <- p + ggplot2::annotate(
+    geom = "text",
+    x = 6,
+    y = 1,
+    label = "expected",
+    colour = annotation_settings$colour,
+    family = annotation_settings$family,
+    fontface = annotation_settings$face,
+    size = annotation_settings$geom_text_size,
+    vjust = -1.0,
+    hjust = 1.0
+  )
+  p <- p + paletteer::scale_color_paletteer_d(
+    palette = "ggthemes::Tableau_10",
+    name = "method",
+    drop = FALSE
+  )
+  p <- p + ggplot2::scale_x_continuous(
+    name = latex2exp::TeX("$\\mu$"),
+    labels = scales::math_format()
+  )
+  p <- p + ggplot2::scale_y_continuous(
+    name = latex2exp::TeX("$\\lambda$"),
+    limits = c(-5.0, 35.0)
   )
 
-  # Yeo-Johnson
-  p_yj_normal <- .create_lambda_shift_plot(
-    data = data[method == "Yeo-Johnson"],
-    plot_theme = plot_theme,
-    limits = c(-5.0, 35.0),
-    guide = TRUE
+
+  # Box-Cox transformation -----------------------------------------------------
+  p_bc <- p + ggplot2::geom_point(data[method == "Box-Cox"])
+
+  # Yeo-Johnson transformation -------------------------------------------------
+  p_yj <- p + ggplot2::geom_point(data[method == "Yeo-Johnson"])
+  p_yj <- p_yj + ggplot2::theme(
+    axis.text.y = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank()
   )
 
   # Patch all the plots together.
-  p <- p_bc_normal + p_yj_normal + patchwork::plot_layout(
+  p <- p_bc + p_yj + patchwork::plot_layout(
     ncol = 2,
     guides = "collect"
   )
