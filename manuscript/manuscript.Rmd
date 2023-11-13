@@ -103,52 +103,56 @@ cap <- paste0(
 
 Here we make the following contributions:
 
--   We devise shift-sensitive versions of the Box-Cox and Yeo-Johnson transformation, including versions robust to outliers.
+-   We devise shift and scale invariant versions of the Box-Cox and Yeo-Johnson transformation, including versions robust to outliers.
 
--   We define an empirical goodness of fit test for detecting cases where power transformations fail to yield a normally distributed transformed feature.
+-   We define an empirical central normality test for detecting cases where power transformations fail to yield a roughly normally distributed transformed feature.
 
 -   We assess the effect of power transformations on the performance of machine learning models.
 
 # Methods
 
-## Shift-sensitive power transformation
+## Shift and scale invariant power transformation
 
-Box-Cox and Yeo-Johnson transformations are modified by introducing a shift parameter $x_0$ into equations \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}. The shift-sensitive Box-Cox transformation of a feature value $x_i$ of feature $\mathbf{X}$ under transformation parameter $\lambda$ and shift parameter $x_0$ is then:
+Box-Cox and Yeo-Johnson transformations are modified by introducing shift parameter $x_0$ and scale parameter $s$ into equations \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}. The shift and scale invariant Box-Cox transformation of a feature value $x_i$ of feature $\mathbf{X}$ under transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$ is then:
 
 ```{=latex}
 \begin{equation}
 \label{eqn:box-cox-shift}
-\phi_{\text{BC}}^{\lambda, x_0} (x_i) = 
+\phi_{\text{BC}}^{\lambda, x_0, s} (x_i) = 
 \begin{cases}
-\left( \left(x_i - x_0 \right)^\lambda - 1 \right) / \lambda & \text{if } \lambda \neq 0\\
-\log(x_i - x_0) & \text{if } \lambda = 0
+\left( \left(\frac{x_i - x_0}{s} \right)^\lambda - 1 \right) / \lambda & \text{if } \lambda \neq 0\\
+\log\left[\frac{x_i - x_0}{s}\right] & \text{if } \lambda = 0
 \end{cases}
 \end{equation}
 ```
-Where $x_i - x_0 > 0$. Likewise, the shift-sensitive Yeo-Johnson transformation of a feature value $x_i$ under transformation parameter $\lambda$ and shift parameter $x_0$ is:
+
+Where $x_i - x_0 > 0$. Likewise, the shift and scale invariant Yeo-Johnson transformation of a feature value $x_i$ under transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$ is:
 
 ```{=latex}
 \begin{equation}
 \label{eqn:yeo-johnson-shift}
-\phi_{\text{YJ}}^{\lambda, x_0} (x_i) = 
+\phi_{\text{YJ}}^{\lambda, x_0, s} (x_i) = 
 \begin{cases}
-\left( \left( 1 + x_i - x_0\right)^\lambda - 1\right) / \lambda & \text{if } \lambda \neq 0 \text{ and } x_i - x_0 \geq 0\\
-\log(1 + x_i - x_0) & \text{if } \lambda = 0 \text{ and } x_i - x_0 \geq 0\\
--\left( \left( 1 - x_i - x_0\right)^{2 - \lambda} - 1 \right) / \left(2 - \lambda \right) & \text{if } \lambda \neq 2 \text{ and } x_i - x_0< 0\\
--\log(1 - x_i - x_0) & \text{if } \lambda = 2 \text{ and } x_i - x_0 < 0
+\left( \left( 1 + \frac{x_i - x_0}{s}\right)^\lambda - 1\right) / \lambda & \text{if } \lambda \neq 0 \text{ and } x_i - x_0 \geq 0\\
+\log\left[1 + \frac{x_i - x_0}{s}\right] & \text{if } \lambda = 0 \text{ and } x_i - x_0 \geq 0\\
+-\left( \left( 1 - \frac{x_i - x_0}{s}\right)^{2 - \lambda} - 1 \right) / \left(2 - \lambda \right) & \text{if } \lambda \neq 2 \text{ and } x_i - x_0 < 0\\
+-\log\left[1 - \frac{x_i - x_0}{s}\right] & \text{if } \lambda = 2 \text{ and } x_i - x_0 < 0
 \end{cases}
 \end{equation}
 ```
-For both shift-sensitive transformations, $\lambda$ and $x_0$ are obtained by maximising the normal log-likelihood function. For the shift-sensitive Box-Cox transformation, and ignoring constant terms, this can be written as:
+
+For both invariant transformations, $\lambda$, $x_0$ and $s$ are obtained by maximising the log-likelihood function. A full derivation is shown in Appendix A. The invariant Box-Cox log-likelihood function is:
 
 ```{=latex}
 \begin{equation}
-\label{eqn:box-cox-shift-log-likelihood}
-\left\{ \hat{\lambda}^{\text{BC}}, \hat{x}_0^{\text{BC}} \right\} = \argmax_{\lambda, x_0} \sum_{i=1}^n -\frac{1}{2}\log(\sigma^2) + (\lambda - 1) \log(x_i - x_0)
+\begin{split}
+\mathcal{l}_{\text{BC}}^{\lambda, x_0, s} = & -\frac{n}{2} \log \left[2 \pi \sigma^2 \right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
+& -n \lambda \log s + \left( \lambda - 1 \right) \sum_{i=1}^n \log \left[ x_i - x_0 \right]
+\end{split}
 \end{equation}
 ```
-where $\sigma^2$ is the variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0} (\mathbf{X})$. Similarly for the shift-sensitive Yeo-Johnson transformation:
-
+where $\mu$ and $\sigma^2$ are the mean and variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0} (\mathbf{X})$, respectively. Similarly, for the invariant Yeo-Johnson log-likelihood function is:
+HEREHEHEHHRHEHHEHEHRER
 ```{=latex}
 \begin{equation}
 \label{eqn:yeo-johnson-shift-log-likelihood}

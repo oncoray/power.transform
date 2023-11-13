@@ -172,7 +172,7 @@ This lead to the following log-likelihood for the Yeo-Johnson transformation:
 \end{equation}
 ```
 
-The log likelihood of the robust Box-Cox transformation is:
+The log likelihood of the robust Yeo-Johnson transformation is:
 ```{=latex}
 \begin{equation}
 \begin{split}
@@ -181,7 +181,7 @@ The log likelihood of the robust Box-Cox transformation is:
 \end{split}
 \end{equation}
 ```
-where $\sigma^2_w$ is the weighted variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0} (\mathbf{X})$:
+where $\sigma^2_w$ is the weighted variance of the Yeo-Johnson transformed feature $\phi_{\text{BC}}^{\lambda, x_0} (\mathbf{X})$:
 
 ```{=latex}
 \begin{equation}
