@@ -2,11 +2,11 @@ parameter_list <- list()
 ii <- 1
 for (method in c("box_cox", "yeo_johnson", "none")) {
   for (robust in c(FALSE, TRUE)) {
-    for (shift in c(FALSE, TRUE)) {
+    for (invariant in c(FALSE, TRUE)) {
       parameter_list[[ii]] <- list(
         "method" = method,
         "robust" = robust,
-        "shift" = shift,
+        "invariant" = invariant,
         "estimation_method" = "mle"
       )
 
@@ -62,7 +62,7 @@ for (n in c(100, 1000, 10000)) {
         "; n: ", n,
         "; method: ", parameter_list[[ii]]$method,
         "; robust: ", parameter_list[[ii]]$robust,
-        "; shift: ", parameter_list[[ii]]$shift, ")"
+        "; invariant: ", parameter_list[[ii]]$invariant, ")"
       ),
       {
         # Normally distributed data --------------------------------------------
