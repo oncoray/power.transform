@@ -234,7 +234,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   # Box-Cox transformation -----------------------------------------------------
   p_bc <- p + ggplot2::geom_point(data = data[method == "Box-Cox"])
 
-  # Yeo-Johnson
+  # Yeo-Johnson transformation -------------------------------------------------
   p_yj <- p + ggplot2::geom_point(data = data[method == "Yeo-Johnson"])
   p_yj <- p_yj + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),
