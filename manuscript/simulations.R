@@ -225,8 +225,7 @@
           x = parameter_set$x,
           method = parameter_set$method,
           robust = parameter_set$robust,
-          shift = parameter_set$shift,
-          optimiser_control = list("xtol_rel" = 1e-5)
+          invariant = parameter_set$invariant
         )
       )
 

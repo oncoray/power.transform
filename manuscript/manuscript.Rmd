@@ -98,7 +98,6 @@ cap <- paste0(
   "and even breaks down due to numerical issues for $\\mu > 5 \\cdot 10^4$.")
 
 .plot_reduced_normality(plot_theme = plot_theme, manuscript_dir = manuscript_dir)
-
 ```
 
 Here we make the following contributions:
@@ -170,7 +169,7 @@ where $\mu$ and $\sigma^2$ are the mean and variance of the Box-Cox transformed 
 ```{r sensitivity-to-outliers, echo=FALSE, fig.cap=cap, fig.height=2.0, warning=FALSE}
 cap <- paste0(
   "Power transformations are affected by outliers. ",
-  "Variable $x$ consists of $1000$ values randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$, ",
+  "Variable $x$ consists of $1000$ values randomly drawn from a normal distribution $\\mathcal{N}(0, 1)$, ",
   "with a single outlier with value $d$. ",
   "For both Box-Cox and Yeo-Johnson transformations, we would expect $\\lambda = 1$, since $x$ is already normally distributed. ",
   "The figure shows that instead, $\\lambda$ is strongly affected by the presence of the outlier at $d$.")
