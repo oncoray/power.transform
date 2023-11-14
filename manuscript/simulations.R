@@ -38,7 +38,7 @@
                   if (robust && !invariant) next
 
                   if (!invariant && !robust) {
-                    version <- "original"
+                    version <- "conventional"
                   } else if (!robust) {
                     version <- "invariant"
                   } else {
@@ -50,7 +50,7 @@
                     yield(list(
                       "x" = x + d,
                       "d" = d,
-                      "s" = 0.0,
+                      "s" = NA_real_,
                       "distribution" = distribution,
                       "method" = method,
                       "invariant" = invariant,
@@ -65,7 +65,7 @@
                   for (s in scale_range) {
                     yield(list(
                       "x" = x * s,
-                      "d" = 0.0,
+                      "d" = NA_real_,
                       "s" = s,
                       "distribution" = distribution,
                       "method" = method,
@@ -85,8 +85,10 @@
     )
 
     .compute_lambda <- function(parameter_set) {
-      # Create transformer object.
+
       if (parameter_set$version == "conventional") {
+        # Conventional transformer
+
         transformer <- suppressWarnings(
           power.transform::find_transformation_parameters(
             x = parameter_set$x,
@@ -94,7 +96,9 @@
             robust = parameter_set$robust,
             invariant = parameter_set$invariant,
             estimation_method = parameter_set$estimation_method,
-            lambda = NULL
+            lambda = NULL,
+            optimiser = "subplex",
+            optimiser_control = list("xtol_rel"=1e-6)
           )
         )
       } else {
@@ -104,7 +108,9 @@
             method = parameter_set$method,
             robust = parameter_set$robust,
             invariant = parameter_set$invariant,
-            estimation_method = parameter_set$estimation_method
+            estimation_method = parameter_set$estimation_method,
+            optimiser = "subplex",
+            optimiser_control = list("xtol_rel"=1e-6)
           )
         )
       }

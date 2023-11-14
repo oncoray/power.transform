@@ -118,7 +118,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
   p <- p + ggplot2::scale_y_continuous(
     name = latex2exp::TeX("$\\lambda$"),
-    limits = c(-5.0, 35.0)
+    limits = c(0.0, 3.0)
   )
 
   # Branch into shift and scale-specific plots
@@ -199,7 +199,6 @@ get_annotation_settings <- function(ggtheme = NULL) {
     )
   )
   p <- p + plot_theme
-  p <- p + ggplot2::geom_point()
   p <- p + ggplot2::geom_hline(
     yintercept = 1.0,
     linetype = "longdash",
@@ -296,7 +295,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     p <- ggplot2::ggplot(
       data = data,
       mapping = ggplot2::aes(
-        x = d,
+        x = shift,
         y = lambda,
         colour = method,
         shape = version
@@ -379,7 +378,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
 
   # Process / read data.
-  data <- .get_shifted_distribution_data(manuscript_dir = manuscript_dir)
+  data <- .get_shifted_scaled_distribution_data(manuscript_dir = manuscript_dir)
   data <- data[estimation_method == "MLE"]
 
   # Normal distribution --------------------------------------------------------

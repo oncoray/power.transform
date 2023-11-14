@@ -89,13 +89,17 @@ The $\lambda$-parameter is typically optimised using maximum likelihood estimati
 
 Power transformation does not guarantee that transformed variables are normally distributed. In fact, depending on location and scale of the variable, power transformation may decrease normality, as shown in Figure \ref{fig:decreased-normality}. This is problematic for automated power transformations, for three reasons. First, normality is often desired in machine learning applications. Second, a large negative or positive $\lambda$-parameter may lead to numeric issues. Third, we currently do not have a test to automatically reject poor transformations. Statistical tests for normality exist, such as the Shapiro-Wilk test [@Shapiro1965-zd]. However, given sufficiently large sample sizes, these tests can detect trivial deviations from normality and are therefore not well-suited for applications of automated power transformations in practice.
 
-```{r decreased-normality, echo=FALSE, fig.cap=cap, fig.height=2.0, warning=FALSE}
+```{r decreased-normality, echo=FALSE, fig.cap=cap, fig.height=4.0, warning=FALSE}
 cap <- paste0(
   "Power transformations may reduce normality depending on location. ",
-  "Variable $x$ consists of $10000$ values randomly drawn from a normal distribution $\\mathcal{N}(\\mu, 1)$. ",
+  "Variable $x$ consists of $10000$ values randomly drawn from a normal distribution. ",
+  "For the top row, that distribution is parameterised as $\\mathcal{N}(\\mu, 1)$, ",
+  "whereas for the bottom row, the distribution is $\\mathcal{N}(0, \\sigma)$.",
   "For both Box-Cox and Yeo-Johnson transformations, we would expect $\\lambda = 1$, since $x$ is already normally distributed. ",
   "The figure shows that instead, $\\lambda$ is strongly dependent on the location $\\mu$, ",
-  "and even breaks down due to numerical issues for $\\mu > 5 \\cdot 10^4$.")
+  "and breaks down due to numerical issues for $\\mu > 10^3$ (both Box-Cox and Yeo-Johnson) ",
+  "and $\\sigma > 10^3 (Yeo-Johnson) only."
+)
 
 .plot_reduced_normality(plot_theme = plot_theme, manuscript_dir = manuscript_dir)
 ```
@@ -919,7 +923,11 @@ For the skewness test statistic we first compute [@DAgostino1990-kp]:
 \end{equation}
 
 \begin{equation}
-\alpha = \sqrt{\frac{2} {\sqrt{2 \beta_2 - 1} - 2}}
+\alpha = \sqrt{\frac{2} {\sqrt{2 \beta_2 - 2} - 2}}
+\end{equation}
+
+\begin{equation}
+\delta = \frac{1}{\sqrt{\log \left[\sqrt{-1 + \sqrt{2 * \beta_2 - 2}} \right]}}
 \end{equation}
 ```
 
@@ -927,7 +935,7 @@ The skewness test statistic is then:
 
 ```{=latex}
 \begin{equation}
-Z_s^2 = \frac{2 \left[\log\left(\beta_1 / \alpha + \sqrt{\beta_1^2 / \alpha^2 + 1} \right) \right]^2}{\log\left(\sqrt{2 \beta_2 - 1} - 1 \right)}
+Z_s = \delta \log\left[\frac{\beta_1}{\alpha} + \sqrt{\frac{\beta_1^2}{\alpha^2} + 1} \right]
 \end{equation}
 ```
 
@@ -959,7 +967,7 @@ The kurtosis test statistic is then:
 
 ```{=latex}
 \begin{equation}
-Z_k^2 = \frac{9 \alpha_1}{2} \left[ 1 - \frac{2}{9 \alpha_1} - \left(\frac{1 - 2 / \alpha_1}{1 + \alpha_2 \sqrt{2 / \left(\alpha_1 - 4 \right)}} \right)^{1 / 3}  \right]^2
+Z_k = \sqrt{\frac{9 \alpha_1}{2}} \left[ 1 - \frac{2}{9 \alpha_1} - \left(\frac{1 - 2 / \alpha_1}{1 + \alpha_2 \sqrt{2 / \left(\alpha_1 - 4 \right)}} \right)^{1 / 3}  \right]
 \end{equation}
 ```
 
