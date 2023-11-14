@@ -1,8 +1,8 @@
-.get_shifted_distribution_data <- function(manuscript_dir) {
+.get_shifted_scaled_distribution_data <- function(manuscript_dir) {
   # Set seed.
   set.seed(19L)
 
-  if (!file.exists(file.path(manuscript_dir, "shifted_distributions_plot.RDS"))) {
+  if (!file.exists(file.path(manuscript_dir, "shifted_scaled_distributions_plot.RDS"))) {
     # Normal distribution.
     x_normal <- power.transform::ragn(10000L, location = 0, scale = 1 / sqrt(2), alpha = 0.5, beta = 2)
 
@@ -12,49 +12,68 @@
     # Left skewed data
     x_left_skewed <- power.transform::ragn(10000L, location = 0, scale = 1 / sqrt(2), alpha = 0.8, beta = 2)
 
-
     # generator ----------------------------------------------------------------
     generate_experiment_data <- coro::generator(
       function(
-          x_normal,
-          x_right_skewed,
-          x_left_skewed) {
+    x_normal,
+    x_right_skewed,
+    x_left_skewed) {
         shift_range <- 10^seq(from = 0, to = 6, by = 0.1)
+        scale_range <- 10^seq(from = 0, to = 6, by = 0.1)
 
-        for (d in shift_range) {
-          for (distribution in c("normal", "right-skewed", "left-skewed")) {
-            if (distribution == "normal") {
-              x <- x_normal
-            } else if (distribution == "right-skewed") {
-              x <- x_right_skewed
-            } else if (distribution == "left-skewed") {
-              x <- x_left_skewed
-            }
+        for (distribution in c("normal", "right-skewed", "left-skewed")) {
+          if (distribution == "normal") {
+            x <- x_normal
+          } else if (distribution == "right-skewed") {
+            x <- x_right_skewed
+          } else if (distribution == "left-skewed") {
+            x <- x_left_skewed
+          }
 
-            for (method in c("box_cox", "yeo_johnson")) {
-              for (invariant in c(FALSE, TRUE)) {
-                for (robust in c(FALSE)) {
-                  for (estimation_method in setdiff(power.transform:::..estimators_all(), power.transform:::..estimators_raymaekers_robust())) {
-                    # Skip if robust, but not invariant.
-                    if (robust && !invariant) next
+          for (method in c("box_cox", "yeo_johnson")) {
+            for (invariant in c(FALSE, TRUE)) {
+              for (robust in c(FALSE)) {
+                for (estimation_method in setdiff(power.transform:::..estimators_all(), power.transform:::..estimators_raymaekers_robust())) {
+                  # Skip if robust, but not invariant.
+                  if (robust && !invariant) next
 
-                    if (!invariant && !robust) {
-                      version <- "original"
-                    } else if (!robust) {
-                      version <- "invariant"
-                    } else {
-                      version <- "robust invariant"
-                    }
+                  if (!invariant && !robust) {
+                    version <- "original"
+                  } else if (!robust) {
+                    version <- "invariant"
+                  } else {
+                    version <- "robust invariant"
+                  }
 
+                  # Iterate over shift range.
+                  for (d in shift_range) {
                     yield(list(
                       "x" = x + d,
                       "d" = d,
+                      "s" = 0.0,
                       "distribution" = distribution,
                       "method" = method,
                       "invariant" = invariant,
                       "robust" = robust,
                       "version" = version,
-                      "estimation_method" = estimation_method
+                      "estimation_method" = estimation_method,
+                      "data_type" = "shifted"
+                    ))
+                  }
+
+                  # Iterate over scale range.
+                  for (s in scale_range) {
+                    yield(list(
+                      "x" = x * s,
+                      "d" = 0.0,
+                      "s" = s,
+                      "distribution" = distribution,
+                      "method" = method,
+                      "invariant" = invariant,
+                      "robust" = robust,
+                      "version" = version,
+                      "estimation_method" = estimation_method,
+                      "data_type" = "scaled"
                     ))
                   }
                 }
@@ -97,10 +116,12 @@
           "method" = parameter_set$method,
           "estimation_method" = parameter_set$estimation_method,
           "version" = parameter_set$version,
-          "d" = log10(parameter_set$d),
+          "shift" = log10(parameter_set$d),
+          "scale" = log10(parameter_set$s),
           "lambda" = transformer@lambda,
           "x_0" = transformer@shift,
-          "s" = transformer@scale
+          "s" = transformer@scale,
+          "data_type" = parameter_set$data_type
         )
       )
     }
@@ -135,10 +156,10 @@
     data <- data.table::rbindlist(data)
 
     # Save to file.
-    saveRDS(data, file.path(manuscript_dir, "shifted_distributions_plot.RDS"))
+    saveRDS(data, file.path(manuscript_dir, "shifted_scaled_distributions_plot.RDS"))
 
   } else {
-    data <- readRDS(file.path(manuscript_dir, "shifted_distributions_plot.RDS"))
+    data <- readRDS(file.path(manuscript_dir, "shifted_scaled_distributions_plot.RDS"))
   }
 
   # Update distribution, method and version to factors.
@@ -159,6 +180,10 @@
     x = data$estimation_method,
     levels = c("mle", "anderson_darling", "cramer_von_mises", "jarque_bera", "dagostino"),
     labels = c("MLE", "Anderson-Darling", "Cramér-von Mises", "Jarque-Bera", "D'Agostino")
+  )
+  data$data_type <- factor(
+    x = data$data_type,
+    levels = c("shifted", "scaled")
   )
 
   return(data)
@@ -185,7 +210,7 @@
               "x" = c(x, offset + d),
               "d" = d,
               "method" = method,
-              "shift" = FALSE,
+              "invariant" = FALSE,
               "robust" = FALSE
             ))
           }

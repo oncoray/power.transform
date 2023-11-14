@@ -132,7 +132,7 @@ We introduced per-sample weights $w_i$ to facilitate robust power transformation
 \end{split}
 \end{equation}
 ```
-where $\sigma^2_w$ is the weighted variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0} (\mathbf{X})$:
+where $\mu_w$ and $\sigma^2_w$ are the weighted mean and weighted variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0, s} (\mathbf{X})$, respectively:
 
 ```{=latex}
 \begin{equation}
@@ -181,7 +181,7 @@ The log likelihood of the robust Yeo-Johnson transformation is:
 \end{split}
 \end{equation}
 ```
-where $\sigma^2_w$ is the weighted variance of the Yeo-Johnson transformed feature $\phi_{\text{BC}}^{\lambda, x_0} (\mathbf{X})$:
+where $\mu_w$ and $\sigma^2_w$ are the weighted mean and weighted variance of the Yeo-Johnson transformed feature $\phi_{\text{YJ}}^{\lambda, x_0, s} (\mathbf{X})$:
 
 ```{=latex}
 \begin{equation}
