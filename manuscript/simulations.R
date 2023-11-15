@@ -33,7 +33,8 @@
           for (method in c("box_cox", "yeo_johnson")) {
             for (invariant in c(FALSE, TRUE)) {
               for (robust in c(FALSE)) {
-                for (estimation_method in setdiff(power.transform:::..estimators_all(), power.transform:::..estimators_raymaekers_robust())) {
+                for (estimation_method in "mle") {
+                # for (estimation_method in setdiff(power.transform:::..estimators_all(), power.transform:::..estimators_raymaekers_robust())) {
                   # Skip if robust, but not invariant.
                   if (robust && !invariant) next
 
@@ -95,10 +96,7 @@
             method = parameter_set$method,
             robust = parameter_set$robust,
             invariant = parameter_set$invariant,
-            estimation_method = parameter_set$estimation_method,
-            lambda = NULL,
-            optimiser = "subplex",
-            optimiser_control = list("xtol_rel"=1e-6)
+            estimation_method = parameter_set$estimation_method
           )
         )
       } else {
@@ -108,9 +106,7 @@
             method = parameter_set$method,
             robust = parameter_set$robust,
             invariant = parameter_set$invariant,
-            estimation_method = parameter_set$estimation_method,
-            optimiser = "subplex",
-            optimiser_control = list("xtol_rel"=1e-6)
+            estimation_method = parameter_set$estimation_method
           )
         )
       }

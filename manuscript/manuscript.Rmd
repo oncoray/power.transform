@@ -43,6 +43,7 @@ base_size <- 10
 
 # Set general theme.
 plot_theme <- ggplot2::theme_light(base_size=base_size)
+plot_theme$plot.title$size <- ggplot2::rel(1.0)
 plot_theme$strip.background <- ggplot2::element_blank()
 plot_theme$strip.text$colour <- NULL
 plot_theme$plot.margin <- grid::unit(c(2, 2, 2, 2), "points")
@@ -93,12 +94,12 @@ Power transformation does not guarantee that transformed variables are normally 
 cap <- paste0(
   "Power transformations may reduce normality depending on location. ",
   "Variable $x$ consists of $10000$ values randomly drawn from a normal distribution. ",
-  "For the top row, that distribution is parameterised as $\\mathcal{N}(\\mu, 1)$, ",
-  "whereas for the bottom row, the distribution is $\\mathcal{N}(0, \\sigma)$.",
+  "For the left-hand panels, that distribution is parameterised as $\\mathcal{N}(\\mu, 1)$, ",
+  "whereas for the right-hand row, the distribution is $\\mathcal{N}(0, \\sigma)$.",
   "For both Box-Cox and Yeo-Johnson transformations, we would expect $\\lambda = 1$, since $x$ is already normally distributed. ",
   "The figure shows that instead, $\\lambda$ is strongly dependent on the location $\\mu$, ",
-  "and breaks down due to numerical issues for $\\mu > 10^3$ (both Box-Cox and Yeo-Johnson) ",
-  "and $\\sigma > 10^3 (Yeo-Johnson) only."
+  "and breaks down due to numerical issues for $\\mu > 5 \\cdot 10^3$ (both Box-Cox and Yeo-Johnson).",
+  "Scale did not affect Box-Cox and Yeo-Johnson transformations of variables drawn from normal distributions."
 )
 
 .plot_reduced_normality(plot_theme = plot_theme, manuscript_dir = manuscript_dir)
@@ -114,9 +115,9 @@ Here we make the following contributions:
 
 # Methods
 
-## Shift and scale invariant power transformation
+## Location and scale invariant power transformation
 
-Box-Cox and Yeo-Johnson transformations are modified by introducing shift parameter $x_0$ and scale parameter $s$ into equations \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}. The shift and scale invariant Box-Cox transformation of a feature value $x_i$ of feature $\mathbf{X}$ under transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$ is then:
+Box-Cox and Yeo-Johnson transformations are modified by introducing shift parameter $x_0$ and scale parameter $s$ into equations \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}. The location and scale invariant Box-Cox transformation of a feature value $x_i$ of feature $\mathbf{X}$ under transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$ is then:
 
 ```{=latex}
 \begin{equation}
@@ -351,14 +352,15 @@ We then compute transformation parameter $\hat{\lambda}$ using the original defi
 ```{r shifted-distributions, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
   "Invariant power transformation produces transformation parameters that are invariant to location and shape. ",
-  "Samples were drawn from normal, right-skewed and left-skewed distributions, respectively,  which then underwent a shift $d_{\\text{shift}}$ or multiplication by $d_{\\text{scale}}$. ",
+  "Samples were drawn from normal, right-skewed and left-skewed distributions, respectively, which then underwent a shift $d_{\\text{shift}}$ or multiplication by $d_{\\text{scale}}$. ",
   "Estimates of transformation parameter $\\lambda$ with the conventional power transformations (circle) show strong dependency on the overall location and scale of the distribution, ",
   "whereas estimates with the invariant power transformations (triangle) are constant.")
 
 .plot_shifted_distributions(manuscript_dir = manuscript_dir, plot_theme = plot_theme)
 ```
 
-The result is shown in Figure \ref{fig:shifted-distributions}. For each distribution, transformation parameter $\hat{\lambda}$ varies with $d_{\text{shift}}$ and $d_{\text{scale}}$ when estimated using the original definitions. In contrast, estimation of $\lambda$ using invariant power transformations was invariant to $d_{\text{shift}}$ and $d_{\text{scale}}$.
+The result is shown in Figure \ref{fig:shifted-distributions}. For each distribution, transformation parameter $\hat{\lambda}$ varies with $d_{\text{shift}}$ and $d_{\text{scale}}$ when estimated using the original definitions. In contrast, estimation of $\lambda$ using invariant power transformations was invariant to $d_{\text{shift}}$ and $d_{\text{scale}}$. While the effect of location on the estimated value of $\lambda$ using conventional power transformations is noticeable, scale also affects $\lambda$ for features that are not normally distributed.
+The figure also shows that estimated $\lambda$ for Box-Cox power transformations in left-skewed distributions diverges from that found for invariant Box-Cox power transformations.
 
 ## Empirical distribution yields consistent robust transformations
 

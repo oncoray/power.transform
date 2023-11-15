@@ -376,10 +376,10 @@ setMethod(
     if (is.na(skewness)) skewness <- 0.0
 
     if (skewness < 0.0) {
-      x_initial <- stats::quantile(x, 0.35)
+      x_initial <- stats::quantile(x, 0.95)
 
     } else {
-      x_initial <- stats::quantile(x, 0.65)
+      x_initial <- stats::quantile(x, 0.05)
     }
 
     # Set shift range. Allow for moving the values entirely negative or
@@ -436,11 +436,11 @@ setMethod(
     if (!is.finite(scale)) scale <- 1.0
     if (scale == 0.0) scale <- 1.0
 
-    if (all(x > 0.0)) {
-      # Set shift so that the minimum value after scaling is 1, if all values
-      # are positive.
-      shift <- (min(x) / scale - 1.0) * scale
-    }
+    # if (all(x > 0.0)) {
+    #   # Set shift so that the minimum value after scaling is 1, if all values
+    #   # are positive.
+    #   shift <- (min(x) / scale - 1.0) * scale
+    # }
 
     # Shift and scale x.
     x <- (x - shift) / scale
