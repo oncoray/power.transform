@@ -12,7 +12,44 @@ header-includes:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(
+  echo = FALSE,
+  eval = TRUE,
+  fig.align= "center")
+
+# Allow for defining figure captions within a chunk.
+knitr::opts_knit$set(
+  eval.after = "fig.cap")
+
+require(power.transform)
+require(ggplot2)
+require(patchwork)
+require(data.table)
+require(latex2exp)
+require(coro)
+require(paletteer)
+require(robustHD)
+require(modeldata)
+
+manuscript_dir <- file.path("C:/Users/alexz/Documents/GitHub/power.transform/manuscript")
+source(file.path(manuscript_dir, "simulations.R"))
+source(file.path(manuscript_dir, "plots.R"))
+
+# Base font size.
+base_size <- 10
+
+# Set general theme.
+plot_theme <- ggplot2::theme_light(base_size=base_size)
+plot_theme$plot.title$size <- ggplot2::rel(1.0)
+plot_theme$strip.background <- ggplot2::element_blank()
+plot_theme$strip.text$colour <- NULL
+plot_theme$plot.margin <- grid::unit(c(2, 2, 2, 2), "points")
+
+parse_mean_sd_latex <- function(mu, sigma, digits=2L){
+  return(paste0(
+    "$", round(mu, digits=digits), " \\pm ", round(sigma, digits=digits), "$"
+  ))
+}
 ```
 
 # Appendix A: Log-likelihood functions for location and scale invariant power transformation

@@ -619,7 +619,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   distribution <- method <- version <- NULL
 
   # Process / read data.
-  data <- .get_shifted_distribution_data(
+  data <- .get_shifted_scaled_distribution_data(
     manuscript_dir = manuscript_dir,
     main_manuscript = FALSE
   )

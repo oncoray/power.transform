@@ -367,7 +367,7 @@ cap <- paste0(
 The result is shown in Figure \ref{fig:shifted-distributions}. For each distribution, transformation parameter $\hat{\lambda}$ varies with $d_{\text{shift}}$ and $d_{\text{scale}}$ when estimated using the original definitions.
 In contrast, estimation of $\lambda$ using invariant power transformations was invariant to $d_{\text{shift}}$ and $d_{\text{scale}}$. 
 While the effect of location on the estimated value of $\lambda$ using conventional power transformations is noticeable, scale also affects $\lambda$ for features that are not normally distributed.
-The figure also shows that estimated $\lambda$ for Box-Cox power transformations in left-skewed distributions diverges from that found for invariant Box-Cox power transformations.
+Figure \ref{fig:shifted-distributions} also shows that estimated $\lambda$ for Box-Cox power transformations in left-skewed distributions diverges from that found for invariant Box-Cox power transformations.
 
 ## Empirical distribution yields consistent robust transformations
 
@@ -378,7 +378,10 @@ A weight is then assigned to each instance using one of three weighting function
 The weighting functions have one (step) or two (triangle, tapered cosine) parameters.
 Here we investigate how these parameters should be set to find transformation parameter $\hat{\lambda}^r$ that are robust to outliers.
 
-Let us randomly draw $m_d=100$ asymmetric generalised normal distributions. Each distribution is parametrised with a randomly chosen skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$. Location and scale parameters are set as $\mu = 0$ and $\sigma = 1$, respectively. $n = \lceil 10^\gamma \rceil$ values are then randomly drawn, with $\gamma \sim U\left(2, 4\right)$. That is between $100$ and $10000$ values are drawn to create $\mathbf{X}_i$. 
+Let us randomly draw $m_d=100$ asymmetric generalised normal distributions.
+Each distribution is parametrised with a randomly chosen skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$.
+Location and scale parameters are set as $\mu = 0$ and $\sigma = 1$, respectively.
+$n = \lceil 10^\gamma \rceil$ values are then randomly drawn, with $\gamma \sim U\left(2, 4\right)$, i.e., between $100$ and $10000$ values are drawn to create $\mathbf{X}_i$. 
 
 Outlier values are then drawn to randomly replace a fraction of the values of $\mathbf{X}_i$.
 This is repeated $m_{out} = 10$ times, with outlier fractions regularly spaced in $[0.00, 0.10]$.
@@ -408,9 +411,26 @@ To find the optimal values for the weighting function parameters $k_1$ and $k_2$
 \end{equation}
 ```
 The double sum in right-hand side of the above equation can be considered as the loss that should be minimised.
-Minimisation is performed using the `sbplx` algorithm implemented in the `nloptr` package for R [@Rowan1990-sn; @Ypma2022-tc].
+As mentioned earlier, transformation parameters are estimated using the BOBYQA algorithm for derivative-free bound constraint optimisation [@Powell2009-zb] through maximum likelihood estimation.
 
 The optimal weighting function parameters for weighted MLE are shown in Tables \ref{tab:optimal-weighting-parameters-box-cox} and \ref{tab:optimal-weighting-parameters-yeo-johnson} for robust, shift-sensitive Box-Cox and Yeo-Johnson transformations, respectively.
+
+```{r include = FALSE, eval = FALSE}
+# This writes the lookup table for two-sided weighting parameters.
+# power.transform package.
+load(file = "./R/sysdata.rda")
+
+two_sided_function_parameters <- .get_optimised_weighting_function_parameters(
+  manuscript_dir = manuscript_dir,
+  side = "both"
+)
+
+usethis::use_data(
+  gof_lookup_table, 
+  two_sided_function_parameters, 
+  internal = TRUE, 
+  overwrite = TRUE)
+```
 
 ```{=latex}
 \begin{table}
@@ -477,8 +497,8 @@ cap <- paste0(
   "The distribution of errors, i.e. the difference between robustly fitted $\\hat{\\lambda}^r$ ",
   "and expected $\\hat{\\lambda}_{0}$ found in the absence of outliers, is shown for 1000 randomly ",
   "parametrised asymmetric generalised normal distributions with up to 10% outliers on either side ",
-  "of the distribution. The top and bottom panel show errors for the shift-sensitive Box-Cox transformation, ",
-  "and shift-sensitive Yeo-Johnson transformation, respectively. ",
+  "of the distribution. The top and bottom panel show errors for the invariant Box-Cox ",
+  "and invariant Yeo-Johnson transformations, respectively. ",
   "In each panel, the error distribution for the non-robust transformation is shown to the left ",
   "for comparison with different weighting methods. ",
   "Note that a square root transformation was used along the $y$-axis. Median errors are shown above each distribution."
@@ -486,7 +506,8 @@ cap <- paste0(
 
 .plot_optimised_weighting_function_parameters(
   plot_theme = plot_theme,
-  manuscript_dir = manuscript_dir)
+  manuscript_dir = manuscript_dir
+)
 ```
 
 

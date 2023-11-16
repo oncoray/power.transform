@@ -3,10 +3,10 @@
   set.seed(19L)
 
   if (main_manuscript) {
-    file_name <- file.path(manuscript_dir, "shifted_scaled_distributions_plot_main.RDS")
+    file_name <- file.path(manuscript_dir, "main_shifted_scaled_distributions_plot.RDS")
     estimation_methods <- "mle"
   } else {
-    file_name <- file.path(manuscript_dir, "shifted_scaled_distributions_plot_appendix.RDS")
+    file_name <- file.path(manuscript_dir, "appendix_shifted_scaled_distributions_plot.RDS")
     estimation_methods <- setdiff(
       power.transform:::..estimators_all(),
       power.transform:::..estimators_raymaekers_robust()
@@ -211,7 +211,7 @@
   # Set seed.
   set.seed(19L)
 
-  if (!file.exists(file.path(manuscript_dir, "shifted_outlier_plot.RDS"))) {
+  if (!file.exists(file.path(manuscript_dir, "main_shifted_outlier_plot.RDS"))) {
     # Normal distribution.
     x <- power.transform::ragn(1000L, location = offset, scale = 1 / sqrt(2), alpha = 0.5, beta = 2)
 
@@ -329,7 +329,7 @@
             "method" = transformation_method,
             "estimation_method" = estimation_method,
             "robust" = FALSE,
-            "shift" = TRUE
+            "invariant" = TRUE
           )
 
           opt_args <- list()
@@ -379,7 +379,7 @@
                 "method" = transformation_method,
                 "estimation_method" = estimation_method,
                 "robust" = TRUE,
-                "shift" = TRUE,
+                "invariant" = TRUE,
                 "weighting_function" = paste0(robustness_source, "_", robustness_weighting_function),
                 "backup_use_default" = FALSE
               )
@@ -449,7 +449,7 @@
             method = transformation_method,
             estimation_method = estimation_method,
             robust = FALSE,
-            shift = TRUE
+            invariant = TRUE
           )
         )
 
@@ -576,7 +576,8 @@
           "weight_method" = fun_args$weighting_function,
           "lambda" = transformer@lambda,
           "target_lambda" = target_lambda,
-          "shift" = transformer@shift
+          "shift" = transformer@shift,
+          "scale" = transformer@scale
         )
       )
 
