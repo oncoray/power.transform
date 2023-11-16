@@ -568,15 +568,15 @@ get_annotation_settings <- function(ggtheme = NULL) {
     p <- ggplot2::ggplot(
       data = data,
       mapping = ggplot2::aes(
-        x = d,
-        y = lambda,
+        x = .data$shift,
+        y = .data$lambda,
         colour = estimation_method
       )
     )
     p <- p + plot_theme
     p <- p + ggplot2::geom_point()
     p <- p + ggplot2::scale_x_continuous(
-      name = latex2exp::TeX("$d$"),
+      name = latex2exp::TeX("$\\mu$"),
       labels = scales::math_format()
     )
     p <- p + ggplot2::scale_y_continuous(
@@ -626,35 +626,35 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   # Normal distribution --------------------------------------------------------
 
-  # Box-Cox-original
+  # Box-Cox-conventional
   p_bc_normal_orig <- .create_lambda_shift_plot(
-    data = data[distribution == "normal" & method == "Box-Cox" & version == "original"],
+    data = data[distribution == "normal" & method == "Box-Cox" & version == "conventional"],
     plot_theme = plot_theme,
-    limits = c(-5.0, 35.0),
+    limits = c(-5.0, 7.0),
     strip_y_label = FALSE
   )
   p_bc_normal_orig <- p_bc_normal_orig + ggplot2::facet_grid(cols = vars("normal distribution"))
 
 
-  # Box-Cox-shift-sensitive
+  # Box-Cox-invariant
   p_bc_normal_ss <- .create_lambda_shift_plot(
-    data = data[distribution == "normal" & method == "Box-Cox" & version == "shift-sensitive"],
+    data = data[distribution == "normal" & method == "Box-Cox" & version == "invariant"],
     plot_theme = plot_theme,
     limits = c(0.5, 1.5),
     strip_y_label = FALSE
   )
 
-  # Yeo-Johnson-original
+  # Yeo-Johnson-conventional
   p_yj_normal_orig <- .create_lambda_shift_plot(
-    data = data[distribution == "normal" & method == "Yeo-Johnson" & version == "original"],
+    data = data[distribution == "normal" & method == "Yeo-Johnson" & version == "conventional"],
     plot_theme = plot_theme,
-    limits = c(-5.0, 35.0),
+    limits = c(-5.0, 7.0),
     strip_y_label = FALSE
   )
 
-  # Yeo-Johnson-shift-sensitive
+  # Yeo-Johnson-invariant
   p_yj_normal_ss <- .create_lambda_shift_plot(
-    data = data[distribution == "normal" & method == "Yeo-Johnson" & version == "shift-sensitive"],
+    data = data[distribution == "normal" & method == "Yeo-Johnson" & version == "invariant"],
     plot_theme = plot_theme,
     limits = c(0.5, 1.5),
     strip_x_axis = FALSE,
@@ -663,31 +663,31 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   # Right skewed distribution --------------------------------------------------
 
-  # Box-Cox-original
+  # Box-Cox-conventional
   p_bc_right_orig <- .create_lambda_shift_plot(
-    data = data[distribution == "right-skewed" & method == "Box-Cox" & version == "original"],
+    data = data[distribution == "right-skewed" & method == "Box-Cox" & version == "conventional"],
     plot_theme = plot_theme,
-    limits = c(-10.0, 1.0)
+    limits = c(-5.0, 1.0)
   )
   p_bc_right_orig <- p_bc_right_orig + ggplot2::facet_grid(cols = vars("right-skewed distribution"))
 
-  # Box-Cox-shift-sensitive
+  # Box-Cox-invariant
   p_bc_right_ss <- .create_lambda_shift_plot(
-    data = data[distribution == "right-skewed" & method == "Box-Cox" & version == "shift-sensitive"],
+    data = data[distribution == "right-skewed" & method == "Box-Cox" & version == "invariant"],
     plot_theme = plot_theme,
-    limits = c(-0.5, 0.5)
+    limits = c(0.0, 1.0)
   )
 
-  # Yeo-Johnson-original
+  # Yeo-Johnson-conventional
   p_yj_right_orig <- .create_lambda_shift_plot(
-    data = data[distribution == "right-skewed" & method == "Yeo-Johnson" & version == "original"],
+    data = data[distribution == "right-skewed" & method == "Yeo-Johnson" & version == "conventional"],
     plot_theme = plot_theme,
-    limits = c(-10.0, 1.0)
+    limits = c(-5.0, 1.0)
   )
 
-  # Yeo-Johnson-shift-sensitive
+  # Yeo-Johnson-invariant
   p_yj_right_ss <- .create_lambda_shift_plot(
-    data = data[distribution == "right-skewed" & method == "Yeo-Johnson" & version == "shift-sensitive"],
+    data = data[distribution == "right-skewed" & method == "Yeo-Johnson" & version == "invariant"],
     plot_theme = plot_theme,
     limits = c(0.0, 1.0),
     strip_x_axis = FALSE
@@ -695,39 +695,39 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   # Left skewed distribution ---------------------------------------------------
 
-  # Box-Cox-original
+  # Box-Cox-conventional
   p_bc_left_orig <- .create_lambda_shift_plot(
-    data = data[distribution == "left-skewed" & method == "Box-Cox" & version == "original"],
+    data = data[distribution == "left-skewed" & method == "Box-Cox" & version == "conventional"],
     plot_theme = plot_theme,
-    limits = c(0.0, 65.0),
+    limits = c(0.0, 7.0),
     guide = TRUE
   )
-  p_bc_left_orig <- p_bc_left_orig + ggplot2::facet_grid(cols = vars("left-skewed distribution"), rows = vars("Box-Cox"))
+  p_bc_left_orig <- p_bc_left_orig + ggplot2::facet_grid(cols = vars("left-skewed distribution"), rows = vars("conv. Box-Cox"))
 
-  # Box-Cox-shift-sensitive
+  # Box-Cox-invariant
   p_bc_left_ss <- .create_lambda_shift_plot(
-    data = data[distribution == "left-skewed" & method == "Box-Cox" & version == "shift-sensitive"],
+    data = data[distribution == "left-skewed" & method == "Box-Cox" & version == "invariant"],
     plot_theme = plot_theme,
     limits = c(3.5, 4.5)
   )
-  p_bc_left_ss <- p_bc_left_ss + ggplot2::facet_grid(rows = vars("shift-sens. Box-Cox"))
+  p_bc_left_ss <- p_bc_left_ss + ggplot2::facet_grid(rows = vars("invar. Box-Cox"))
 
-  # Yeo-Johnson-original
+  # Yeo-Johnson-conventional
   p_yj_left_orig <- .create_lambda_shift_plot(
-    data = data[distribution == "left-skewed" & method == "Yeo-Johnson" & version == "original"],
+    data = data[distribution == "left-skewed" & method == "Yeo-Johnson" & version == "conventional"],
     plot_theme = plot_theme,
-    limits = c(0.0, 65.0)
+    limits = c(0.0, 7.0)
   )
-  p_yj_left_orig <- p_yj_left_orig + ggplot2::facet_grid(rows = vars("Yeo-Johnson"))
+  p_yj_left_orig <- p_yj_left_orig + ggplot2::facet_grid(rows = vars("conv. Yeo-Johnson"))
 
-  # Yeo-Johnson-shift-sensitive
+  # Yeo-Johnson-invariant
   p_yj_left_ss <- .create_lambda_shift_plot(
-    data = data[distribution == "left-skewed" & method == "Yeo-Johnson" & version == "shift-sensitive"],
+    data = data[distribution == "left-skewed" & method == "Yeo-Johnson" & version == "invariant"],
     plot_theme = plot_theme,
     limits = c(1.0, 2.0),
     strip_x_axis = FALSE
   )
-  p_yj_left_ss <- p_yj_left_ss + ggplot2::facet_grid(rows = vars("shift-sens. Yeo-Johnson"))
+  p_yj_left_ss <- p_yj_left_ss + ggplot2::facet_grid(rows = vars("invar. Yeo-Johnson"))
 
   # Patch all the plots together.
   p <- p_bc_normal_orig + p_bc_right_orig + p_bc_left_orig +
