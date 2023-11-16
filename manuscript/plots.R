@@ -81,7 +81,10 @@ get_annotation_settings <- function(ggtheme = NULL) {
   estimation_method <- distribution <- method <- version <- NULL
 
   # Process / read data.
-  data <- .get_shifted_scaled_distribution_data(manuscript_dir = manuscript_dir)
+  data <- .get_shifted_scaled_distribution_data(
+    manuscript_dir = manuscript_dir,
+    main_manuscript = TRUE
+  )
   data <- data[estimation_method == "MLE" & version == "conventional" & distribution == "normal"]
 
   # Get annotation settings.
@@ -260,7 +263,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 
 .plot_shifted_distributions <- function(plot_theme, manuscript_dir) {
-  # Creates the plot for lambda values under location shift for MLE
+  # Creates the plot for lambda values under location and scale shifts for MLE
 
   require(patchwork)
   require(ggplot2)
@@ -544,7 +547,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 
 
-.plot_shifted_distributions_other_criteria <- function(plot_theme, manuscript_dir) {
+.plot_shifted_distributions_appendix <- function(plot_theme, manuscript_dir) {
   # Creates the plot for lambda values under location shift for all optimisation
   # criteria.
 
@@ -616,7 +619,10 @@ get_annotation_settings <- function(ggtheme = NULL) {
   distribution <- method <- version <- NULL
 
   # Process / read data.
-  data <- .get_shifted_distribution_data(manuscript_dir = manuscript_dir)
+  data <- .get_shifted_distribution_data(
+    manuscript_dir = manuscript_dir,
+    main_manuscript = FALSE
+  )
 
   # Normal distribution --------------------------------------------------------
 

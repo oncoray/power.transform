@@ -1,8 +1,19 @@
-.get_shifted_scaled_distribution_data <- function(manuscript_dir) {
+.get_shifted_scaled_distribution_data <- function(manuscript_dir, main_manuscript) {
   # Set seed.
   set.seed(19L)
 
-  if (!file.exists(file.path(manuscript_dir, "shifted_scaled_distributions_plot.RDS"))) {
+  if (main_manuscript) {
+    file_name <- file.path(manuscript_dir, "shifted_scaled_distributions_plot_main.RDS")
+    estimation_methods <- "mle"
+  } else {
+    file_name <- file.path(manuscript_dir, "shifted_scaled_distributions_plot_appendix.RDS")
+    estimation_methods <- setdiff(
+      power.transform:::..estimators_all(),
+      power.transform:::..estimators_raymaekers_robust()
+    )
+  }
+
+  if (!file.exists(file_name)) {
     # Normal distribution.
     x_normal <- power.transform::ragn(10000L, location = 0, scale = 1 / sqrt(2), alpha = 0.5, beta = 2)
 
@@ -17,7 +28,9 @@
       function(
     x_normal,
     x_right_skewed,
-    x_left_skewed) {
+    x_left_skewed,
+    estimation_methods
+      ) {
         shift_range <- 10^seq(from = 0, to = 6, by = 0.1)
         scale_range <- 10^seq(from = 0, to = 6, by = 0.1)
 
@@ -33,8 +46,8 @@
           for (method in c("box_cox", "yeo_johnson")) {
             for (invariant in c(FALSE, TRUE)) {
               for (robust in c(FALSE)) {
-                for (estimation_method in "mle") {
-                # for (estimation_method in setdiff(power.transform:::..estimators_all(), power.transform:::..estimators_raymaekers_robust())) {
+                for (estimation_method in estimation_methods) {
+
                   # Skip if robust, but not invariant.
                   if (robust && !invariant) next
 
@@ -134,7 +147,8 @@
     experiments <- coro::collect(generate_experiment_data(
       x_normal = x_normal,
       x_right_skewed = x_right_skewed,
-      x_left_skewed = x_left_skewed
+      x_left_skewed = x_left_skewed,
+      estimation_methods = estimation_methods
     ))
 
     # data <- lapply(
@@ -158,10 +172,10 @@
     data <- data.table::rbindlist(data)
 
     # Save to file.
-    saveRDS(data, file.path(manuscript_dir, "shifted_scaled_distributions_plot.RDS"))
+    saveRDS(data, file_name)
 
   } else {
-    data <- readRDS(file.path(manuscript_dir, "shifted_scaled_distributions_plot.RDS"))
+    data <- readRDS(file_name)
   }
 
   # Update distribution, method and version to factors.
