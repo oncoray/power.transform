@@ -302,6 +302,9 @@ setMethod(
 
     lower_values <- initial_values <- upper_values <- parameter_type <- NULL
 
+    # Check that there is an starting point to further optimise.
+    if (all(is.na(selected_parameters))) return(NULL)
+
     if ("shift" %in% c(global_parameters$parameter_type)) {
       global_shift_range <- c(
         global_parameters$lower[which(global_parameters$parameter_type == "shift")],
@@ -385,7 +388,7 @@ setMethod(
       # Update problematic values.
       if (local_lambda_range[1] < global_lambda_range[1]) local_lambda_range[1] <- global_lambda_range[1]
       if (local_lambda_range[3] > global_lambda_range[3]) local_lambda_range[3] <- global_lambda_range[3]
-      if ((local_lambda_range[2] == local_lambda_range[1]) || (local_lambda_range[2] == local_lambda_range[3])) {
+      if (isTRUE(all.equal(local_lambda_range[1], local_lambda_range[2])) || isTRUE(all.equal(local_lambda_range[2], local_lambda_range[3]))) {
         local_lambda_range[2] <- (local_lambda_range[3] - local_lambda_range[1]) / 2 + local_lambda_range[1]
       }
     }

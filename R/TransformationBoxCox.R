@@ -153,26 +153,28 @@ setMethod(
       selected_parameters = optimised_parameters
     )
 
-    # Optimise transformation parameters in a local search.
-    local_optimised_parameters <- .optimise_transformation_parameters(
-      object = estimator,
-      transformer = object,
-      x = x,
-      optimiser = optimiser,
-      optimisation_parameters = local_optimisation_parameters,
-      ...
-    )
+    if (!is.null(local_optimisation_parameters)) {
+      # Optimise transformation parameters in a local search.
+      local_optimised_parameters <- .optimise_transformation_parameters(
+        object = estimator,
+        transformer = object,
+        x = x,
+        optimiser = optimiser,
+        optimisation_parameters = local_optimisation_parameters,
+        ...
+      )
 
-    # Only update optimal parameters obtained during global search if those
-    # obtained during local search are better.
-    if (!is.null(local_optimised_parameters$value) && !is.null(optimised_parameters$value)) {
-      if (is.finite(local_optimised_parameters$value) && is.finite(optimised_parameters$value)) {
-        if (local_optimised_parameters$value < optimised_parameters$value) {
-          optimised_parameters <- local_optimised_parameters
+      # Only update optimal parameters obtained during global search if those
+      # obtained during local search are better.
+      if (!is.null(local_optimised_parameters$value) && !is.null(optimised_parameters$value)) {
+        if (is.finite(local_optimised_parameters$value) && is.finite(optimised_parameters$value)) {
+          if (local_optimised_parameters$value < optimised_parameters$value) {
+            optimised_parameters <- local_optimised_parameters
+          }
         }
+      } else if (!is.null(local_optimised_parameters$value)) {
+        optimised_parameters <- local_optimised_parameters
       }
-    } else if (!is.null(local_optimised_parameters$value)) {
-      optimised_parameters <- local_optimised_parameters
     }
 
     if (!is.finite(optimised_parameters$lambda) && estimation_method != "mle") {
