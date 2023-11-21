@@ -895,7 +895,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   # Prevent warnings due to non-standard evaluation.
   has_outliers <- residual <- threshold <- residual_error <- method <- p <- NULL
 
-  if (!file.exists(file.path(manuscript_dir, "residual_error_plot_main_manuscript.RDS"))) {
+  if (!file.exists(file.path(manuscript_dir, "manuscript_residual_error.RDS"))) {
     # Get data
     data <- .get_goodness_of_fit_data(manuscript_dir = manuscript_dir)
 
@@ -930,10 +930,10 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
     saveRDS(
       data,
-      file.path(manuscript_dir, "residual_error_plot_main_manuscript.RDS")
+      file.path(manuscript_dir, "manuscript_residual_error.RDS")
     )
   } else {
-    data <- readRDS(file.path(manuscript_dir, "residual_error_plot_main_manuscript.RDS"))
+    data <- readRDS(file.path(manuscript_dir, "manuscript_residual_error.RDS"))
 
     outlier_free_data <- data[
       has_outliers == FALSE,

@@ -579,7 +579,7 @@ table_data <- .get_test_statistics_data(manuscript_dir = manuscript_dir)
 0.50 & 0.20 & 0.10 & 0.05 & 0.02 & 0.01 & 0.001 \\
 
 \midrule
-0.042 & 0.063 & 0.077 & 0.090 & 0.106 & 0.118 & 0.159 \\
+0.041 & 0.062 & 0.075 & 0.088 & 0.103 & 0.115 & 0.154 \\
 \bottomrule
 \end{tabular}
 \end{center}

@@ -1266,7 +1266,7 @@
     transformer_bc <- suppressWarnings(power.transform::find_transformation_parameters(
       x = x$x,
       method = "box_cox",
-      shift = TRUE,
+      invariant = TRUE,
       robust = TRUE,
       estimation_method = "mle",
       weighting_function = "empirical_probability_cosine"
@@ -1297,7 +1297,7 @@
     transformer_yj <- suppressWarnings(power.transform::find_transformation_parameters(
       x = x$x,
       method = "yeo_johnson",
-      shift = TRUE,
+      invariant = TRUE,
       robust = TRUE,
       estimation_method = "mle",
       weighting_function = "empirical_probability_cosine"
