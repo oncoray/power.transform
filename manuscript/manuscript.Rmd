@@ -489,7 +489,7 @@ $r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.51 & 1.00 & $(0, 10]$ & 1.57 & 6
 \end{table}
 ```
 
-Figure \ref{fig:optimised-weighting-function-parameters} shows the distribution of errors $\left| \hat{\lambda}^r - \hat{\lambda}_0 \right|$ for non-robust transformations, as well as robust transformations using the optimal weighting function parameters. In the presence of outliers on either side of the distribution, the Yeo-Johnson transformation yields smaller errors than the Box-Cox transformation. For both transformations, weighting based on empirical probabilities yields the most consistent $\lambda$ parameter estimates in the presence of outliers. Weighting based on residual errors tended to perform least well, and were generally similar to (Yeo-Johnson) or worse than (Box-Cox) non-robust transformations.
+Figure \ref{fig:optimised-weighting-function-parameters} shows the distribution of errors $\left| \hat{\lambda}^r - \hat{\lambda}_0 \right|$ for non-robust transformations, as well as robust transformations using the optimal weighting function parameters. In the presence of outliers on either side of the distribution, the Yeo-Johnson transformation yields smaller errors than the Box-Cox transformation. For both transformations, weighting based on empirical probabilities yields the most consistent $\lambda$ parameter estimates in the presence of outliers. Other methods did not outperform the non-robust power transformation method.
 
 ```{r optimised-weighting-function-parameters, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(

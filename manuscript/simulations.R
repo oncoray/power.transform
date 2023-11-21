@@ -786,10 +786,11 @@
   if (!file.exists(file_name)) {
     # generator ----------------------------------------------------------------
     experiment_args <- coro::generator(
-      function(manuscript_dir,
-               side,
-               transformation_methods = NULL,
-               estimation_methods = NULL) {
+      function(
+    manuscript_dir,
+    side,
+    transformation_methods = NULL,
+    estimation_methods = NULL) {
         if (side == "both") {
           file_dir <- "robustness_comparison"
         } else if (side == "right") {
@@ -811,7 +812,7 @@
               "method" = transformation_method,
               "estimation_method" = estimation_method,
               "robust" = FALSE,
-              "shift" = TRUE
+              "invariant" = TRUE
             )
 
             file_name <- file.path(
@@ -824,7 +825,6 @@
               )
             )
 
-            # Only yield arguments if the file does not exist.
             yield(list(
               "name" = "non-robust",
               "method" = transformation_method,
@@ -861,7 +861,7 @@
                   "method" = transformation_method,
                   "estimation_method" = estimation_method,
                   "robust" = TRUE,
-                  "shift" = TRUE,
+                  "invariant" = TRUE,
                   "weighting_function" = paste0(robustness_source, "_", robustness_weighting_function),
                   "weighting_function_parameters" = weighting_function_parameters
                 )
@@ -882,11 +882,11 @@
     )
 
 
-
     # Helper function for computing the target lambda value.
-    .compute_target_lambda <- function(x,
-                                       transformation_methods = NULL,
-                                       estimation_methods = NULL) {
+    .compute_target_lambda <- function(
+    x,
+    transformation_methods = NULL,
+    estimation_methods = NULL) {
       if (is.null(transformation_methods)) {
         transformation_methods <- c("box_cox", "yeo_johnson")
       }
@@ -906,7 +906,7 @@
               method = transformation_method,
               estimation_method = estimation_method,
               robust = FALSE,
-              shift = TRUE
+              invariant = TRUE
             )
           )
 
@@ -925,14 +925,15 @@
 
 
     # Helper function for population distributions with outliers.
-    .populate_outliers <- function(x,
-                                   n,
-                                   alpha,
-                                   beta,
-                                   target_lambda,
-                                   ii,
-                                   outlier_fraction,
-                                   side) {
+    .populate_outliers <- function(
+    x,
+    n,
+    alpha,
+    beta,
+    target_lambda,
+    ii,
+    outlier_fraction,
+    side) {
       # Set parameters.
       parameters <- list(
         "n" = n,
@@ -1004,11 +1005,15 @@
 
     # Helper function for computing transformer parameters under optimisation
     # constraints.
-    .compute_robust_lambda <- function(experiment,
-                                       data) {
+    .compute_robust_lambda <- function(
+    experiment,
+    data
+    ) {
       # Custom parser.
-      ..outlier_parser <- function(x,
-                                   fun_args) {
+      ..outlier_parser <- function(
+    x,
+    fun_args
+      ) {
         # Create transformer.
         transformer <- suppressWarnings(do.call(
           power.transform::find_transformation_parameters,
