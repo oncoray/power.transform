@@ -1501,7 +1501,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
 
   transformer_labels <- c(
-    "none", "original", "Raymaekers-Rousseeuw", "shift-sensitive", "robust shift-sensitive"
+    "none", "original", "Raymaekers-Rousseeuw", "invariant", "robust invariant"
   )
 
   data <- mapply(

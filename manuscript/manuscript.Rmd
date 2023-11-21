@@ -615,13 +615,13 @@ In the previous section, we simulated data to assess shift-sensitive power trans
 
 ### Top Gear dataset
 
-```{r top-gear, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2}
+```{r top-gear, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
   "Quantile-quantile plots for the fuel consumption data in the Top Gear dataset. ",
   "This data contains three strong outliers for highly efficient vehicles. ",
   "The left panel shows the quantile-quantile plot for the original data. ",
   "The middle panel shows the quantile-quantile plots for data transformed using ",
-  "the original Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation \cite{Raymaekers2021-kq}. ",
+  "the original Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation \\cite{Raymaekers2021-kq}. ",
   "For these, the empirical central normality test yields $p=0.01$, and $p=0.58$, respectively. ",
   "The right panels shows the quantile-quantile plots for data transformed using ",
   "the non-robust and robust shift-sensitive transformations. ",
@@ -638,7 +638,7 @@ The Top Gear dataset contains data on 297 cars that appeared on the BBC televisi
 
 ### Housing dataset
 
-```{r housing-data, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2}
+```{r housing-data, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
   "Quantile-quantile plots for the fuel consumption data in the Top Gear dataset. ",
   "This data contains three strong outliers for highly efficient vehicles. ",
@@ -652,7 +652,7 @@ cap <- paste0(
   "Samples with observed quantiles below $-3.0$ or above $3.0$ are indicated by crosses."
 )
 
-.plot_sacramento_house_prices(
+.plot_sacramento_house(
   plot_theme = plot_theme
 )
 ```
