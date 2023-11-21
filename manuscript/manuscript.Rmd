@@ -444,16 +444,16 @@ method & \multicolumn{3}{c}{$k_1$} & \multicolumn{3}{c}{$k_2$} & loss \\
 & initial & limits & optimal & initial & limits & optimal & \\
 
 \midrule
-non-robust               & ---  & ---       & ---  & ---  & ---       & ---  & 773 \\
-$p^{*}$ (step)           & 0.80 & $(0, 1]$  & 0.84 & ---  & ---       & ---  & 598 \\
-$p^{*}$ (triangle)       & 0.80 & $(0, 1]$  & 0.79 & 0.95 & $(0, 1]$  & 0.98 & 594 \\
-$p^{*}$ (tapered cosine) & 0.80 & $(0, 1]$  & 0.77 & 0.95 & $(0, 1]$  & 1.00 & 580 \\
-$z$ (step)               & 1.28 & $(0, 10]$ & 1.21 & ---  & ---       & ---  & 1214 \\
-$z$ (triangle)           & 1.28 & $(0, 10]$ & 1.05 & 1.96 & $(0, 10]$ & 4.47 & 1052 \\
-$z$ (tapered cosine)     & 1.28 & $(0, 10]$ & 1.09 & 1.96 & $(0, 10]$ & 5.30 & 1086 \\
-$r$ (step)               & 0.50 & $(0, 10]$ & 1.36 & ---  & ---       & ---  & 1483 \\
-$r$ (triangle)           & 0.50 & $(0, 10]$ & 1.43 & 1.00 & $(0, 10]$ & 1.45 & 1498 \\
-$r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.20 & 1.00 & $(0, 10]$ & 1.48 & 1467 \\
+non-robust               & ---  & ---       & ---  & ---  & ---       & ---  & 771 \\
+$p^{*}$ (step)           & 0.80 & $(0, 1]$  & 0.86 & ---  & ---       & ---  & 561 \\
+$p^{*}$ (triangle)       & 0.80 & $(0, 1]$  & 0.83 & 0.95 & $(0, 1]$  & 0.92 & 564 \\
+$p^{*}$ (tapered cosine) & 0.80 & $(0, 1]$  & 0.76 & 0.95 & $(0, 1]$  & 0.95 & 560 \\
+$z$ (step)               & 1.28 & $(0, 10]$ & 1.12 & ---  & ---       & ---  & 1153 \\
+$z$ (triangle)           & 1.28 & $(0, 10]$ & 0.38 & 1.96 & $(0, 10]$ & 4.48 & 1178 \\
+$z$ (tapered cosine)     & 1.28 & $(0, 10]$ & 1.21 & 1.96 & $(0, 10]$ & 4.92 & 1135 \\
+$r$ (step)               & 0.50 & $(0, 10]$ & 2.18 & ---  & ---       & ---  & 1839 \\
+$r$ (triangle)           & 0.50 & $(0, 10]$ & 1.29 & 1.00 & $(0, 10]$ & 1.47 & 1764 \\
+$r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.38 & 1.00 & $(0, 10]$ & 1.41 & 1583 \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -464,7 +464,7 @@ $r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.20 & 1.00 & $(0, 10]$ & 1.48 & 1
 ```{=latex}
 \begin{table}
 \begin{center}
-\caption{Optimal weighting parameters and corresponding loss for \textbf{shift-sensitive Yeo-Johnson} power transformations. $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values, and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column. The {optimal} column shows the optimal parameter values. The \textit{loss} column shows the loss achieved by each method, under optimised parameters. Lower loss indicates better robustness against outliers.}
+\caption{Optimal weighting parameters and corresponding loss for \textbf{invariant Yeo-Johnson} power transformations. $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values, and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column. The {optimal} column shows the optimal parameter values. The \textit{loss} column shows the loss achieved by each method, under optimised parameters. Lower loss indicates better robustness against outliers.}
 \label{tab:optimal-weighting-parameters-yeo-johnson}
 \begin{tabular}{l r r r r r r r}
 
@@ -473,16 +473,16 @@ method & \multicolumn{3}{c}{$k_1$} & \multicolumn{3}{c}{$k_2$} & loss \\
 & initial & limits & optimal & initial & limits & optimal & \\
 
 \midrule
-non-robust               & ---  & ---       & ---  & ---  & ---       & ---  & 305 \\
-$p^{*}$ (step)           & 0.80 & $(0, 1]$  & 0.87 & ---  & ---       & ---  & 136 \\
-$p^{*}$ (triangle)       & 0.80 & $(0, 1]$  & 0.83 & 0.95 & $(0, 1]$  & 0.88 & 133 \\
-$p^{*}$ (tapered cosine) & 0.80 & $(0, 1]$  & 0.81 & 0.95 & $(0, 1]$  & 0.88 & 133 \\
-$z$ (step)               & 1.28 & $(0, 10]$ & 1.07 & ---  & ---       & ---  & 333 \\
-$z$ (triangle)           & 1.28 & $(0, 10]$ & 1.00 & 1.96 & $(0, 10]$ & 4.57 & 227 \\
-$z$ (tapered cosine)     & 1.28 & $(0, 10]$ & 0.55 & 1.96 & $(0, 10]$ & 5.16 & 236 \\
-$r$ (step)               & 0.50 & $(0, 10]$ & 1.57 & ---  & ---       & ---  & 631 \\
-$r$ (triangle)           & 0.50 & $(0, 10]$ & 1.28 & 1.00 & $(0, 10]$ & 1.81 & 562 \\
-$r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.32 & 1.00 & $(0, 10]$ & 1.75 & 567 \\
+non-robust               & ---  & ---       & ---  & ---  & ---       & ---  & 364 \\
+$p^{*}$ (step)           & 0.80 & $(0, 1]$  & 0.95 & ---  & ---       & ---  & 224 \\
+$p^{*}$ (triangle)       & 0.80 & $(0, 1]$  & 0.88 & 0.95 & $(0, 1]$  & 0.97 & 212 \\
+$p^{*}$ (tapered cosine) & 0.80 & $(0, 1]$  & 0.94 & 0.95 & $(0, 1]$  & 0.95 & 218 \\
+$z$ (step)               & 1.28 & $(0, 10]$ & 1.09 & ---  & ---       & ---  & 392 \\
+$z$ (triangle)           & 1.28 & $(0, 10]$ & 0.24 & 1.96 & $(0, 10]$ & 4.62 & 396 \\
+$z$ (tapered cosine)     & 1.28 & $(0, 10]$ & 0.15 & 1.96 & $(0, 10]$ & 6.05 & 413 \\
+$r$ (step)               & 0.50 & $(0, 10]$ & 1.63 & ---  & ---       & ---  & 746 \\
+$r$ (triangle)           & 0.50 & $(0, 10]$ & 1.50 & 1.00 & $(0, 10]$ & 1.79 & 731 \\
+$r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.51 & 1.00 & $(0, 10]$ & 1.57 & 612 \\
 \bottomrule
 \end{tabular}
 \end{center}
