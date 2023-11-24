@@ -8,23 +8,32 @@ configurations <- list(
     "learner" = "glm",
     "normalisation_method" = "none"
   ),
-  "config_new_test_glm" = list(
+  "config_invariant_robust_glm" = list(
+    "transformation_method" = "yeo_johnson_robust",
+    "learner" = "glm"
+  ),
+  "config_invariant_robust_glm_no_normalisation" = list(
+    "transformation_method" = "yeo_johnson_robust",
+    "learner" = "glm",
+    "normalisation_method" = "none"
+  ),
+  "config_invariant_robust_gof_glm" = list(
     "transformation_method" = "yeo_johnson_robust",
     "transformation_gof_test_p_value" = 0.01,
     "learner" = "glm"
   ),
-  "config_new_test_glm_no_normalisation" = list(
+  "config_invariant_robust_gof_glm_no_normalisation" = list(
     "transformation_method" = "yeo_johnson_robust",
     "transformation_gof_test_p_value" = 0.01,
     "learner" = "glm",
     "normalisation_method" = "none"
   ),
-  "config_old_test_glm" = list(
-    "transformation_method" = "yeo_johnson_non_shift",
+  "config_conventional_glm" = list(
+    "transformation_method" = "yeo_johnson_conventional",
     "learner" = "glm"
   ),
-  "config_old_test_glm_no_normalisation" = list(
-    "transformation_method" = "yeo_johnson_non_shift",
+  "config_conventional_glm_no_normalisation" = list(
+    "transformation_method" = "yeo_johnson_conventional",
     "learner" = "glm",
     "normalisation_method" = "none"
   ),
@@ -37,23 +46,32 @@ configurations <- list(
     "learner" = "random_forest_ranger",
     "normalisation_method" = "none"
   ),
-  "config_new_test_rf" = list(
+  "config_invariant_robust_rf" = list(
+    "transformation_method" = "yeo_johnson_robust",
+    "learner" = "random_forest_ranger"
+  ),
+  "config_invariant_robust_rf_no_normalisation" = list(
+    "transformation_method" = "yeo_johnson_robust",
+    "learner" = "random_forest_ranger",
+    "normalisation_method" = "none"
+  ),
+  "config_invariant_robust_gof_rf" = list(
     "transformation_method" = "yeo_johnson_robust",
     "transformation_gof_test_p_value" = 0.01,
     "learner" = "random_forest_ranger"
   ),
-  "config_new_test_rf_no_normalisation" = list(
+  "config_invariant_robust_gof_rf_no_normalisation" = list(
     "transformation_method" = "yeo_johnson_robust",
     "transformation_gof_test_p_value" = 0.01,
     "learner" = "random_forest_ranger",
     "normalisation_method" = "none"
   ),
-  "config_old_test_rf" = list(
-    "transformation_method" = "yeo_johnson_non_shift",
+  "config_conventional_rf" = list(
+    "transformation_method" = "yeo_johnson_conventional",
     "learner" = "random_forest_ranger"
   ),
-  "config_old_test_rf_no_normalisation" = list(
-    "transformation_method" = "yeo_johnson_non_shift",
+  "config_conventional_rf_no_normalisation" = list(
+    "transformation_method" = "yeo_johnson_conventional",
     "learner" = "random_forest_ranger",
     "normalisation_method" = "none"
   )
@@ -61,17 +79,17 @@ configurations <- list(
 
 # Experiment without offset ----------------------------------------------------
 
-# experiment_dir <- r"(C:\Users\alexz\Documents\GitHub\power.transform\manuscript\ml_experiment)"
-#
-# results <- familiar.experiment::run_experiment(
-#   experiment_dir = experiment_dir,
-#   experiment_configs = configurations,
-#   fixed_familiar_parameters = list(
-#     "fs_method" = "mim"
-#   ),
-#   n_repetitions = 5L,
-#   n_nodes = 18L
-# )
+experiment_dir <- r"(C:\Users\alexz\Documents\GitHub\power.transform\manuscript\ml_experiment)"
+
+results <- familiar.experiment::run_experiment(
+  experiment_dir = experiment_dir,
+  experiment_configs = configurations,
+  fixed_familiar_parameters = list(
+    "fs_method" = "mim"
+  ),
+  n_repetitions = 5L,
+  n_nodes = 18L
+)
 
 # Experiment with offset -------------------------------------------------------
 
