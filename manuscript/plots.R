@@ -1501,7 +1501,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
 
   transformer_labels <- c(
-    "none", "original", "Raymaekers-Rousseeuw", "invariant", "robust invariant"
+    "none", "conventional", "Raymaekers-Rousseeuw", "invariant", "robust invariant"
   )
 
   data <- mapply(
@@ -1610,26 +1610,26 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   # Standard transformation ----------------------------------------------------
   p1_qq <- p_qq + ggplot2::geom_point(
-    data  = residual_data[transformation %in% c("original", "Raymaekers-Rousseeuw")]
+    data  = residual_data[transformation %in% c("conventional", "Raymaekers-Rousseeuw")]
   )
   p1_qq <- p1_qq + ggplot2::theme(
     axis.title.y = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank()
   )
   p1_d <- p_d + ggplot2::geom_density(
-    data = transformed_data[transformation %in% c("original", "Raymaekers-Rousseeuw")]
+    data = transformed_data[transformation %in% c("conventional", "Raymaekers-Rousseeuw")]
   )
 
   # Shift-sensitive transformation ---------------------------------------------
   p2_qq <- p_qq + ggplot2::geom_point(
-    data  = residual_data[transformation %in% c("shift-sensitive", "robust shift-sensitive")]
+    data  = residual_data[transformation %in% c("shift-sensitive", "robust invariant")]
   )
   p2_qq <- p2_qq + ggplot2::theme(
     axis.title.y = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank()
   )
   p2_d <- p_d + ggplot2::geom_density(
-    data = transformed_data[transformation %in% c("shift-sensitive", "robust shift-sensitive")]
+    data = transformed_data[transformation %in% c("shift-sensitive", "robust invariant")]
   )
 
   p <- p0_d + p1_d + p2_d + p0_qq + p1_qq + p2_qq + patchwork::plot_layout(
