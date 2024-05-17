@@ -1766,21 +1766,77 @@
   }
 
   # non-standard evaluation
-  experiment_parameters <- dataset_split <- value <- metric <- NULL
+  experiment_parameters <- dataset_split <- value <- value_rank <- metric <- NULL
 
-  results <- readRDS(file.path(manuscript_dir, "ml_exp_results_offset.RDS"))
+  data <- readRDS(file.path(manuscript_dir, "ml_experiment", "results", "performance.RDS"))
 
-  results[, "experiment_parameters" := sub(pattern = "_glm", replacement = "", x = experiment_parameters)]
-  results[, "experiment_parameters" := sub(pattern = "_rf", replacement = "", x = experiment_parameters)]
+  # Strip details from experiment_parameters
+  data[, "experiment_parameters" := sub(pattern = "_glm", replacement = "", x = experiment_parameters)]
+  data[, "experiment_parameters" := sub(pattern = "_rf", replacement = "", x = experiment_parameters)]
+  data[, "experiment_parameters" := sub(pattern = "config_", replacement = "", x = experiment_parameters)]
 
-  results <- results[dataset_split == "test"]
+  # Detail transformation method.
+  data[, "transformation_method" := "invariant_robust"]
+  data[grepl("no_transformation", experiment_parameters, fixed = TRUE), "transformation_method" := "none"]
+  data[grepl("conventional", experiment_parameters, fixed = TRUE), "transformation_method" := "conventional"]
+  data[grepl("invariant_robust_gof", experiment_parameters, fixed = TRUE), "transformation_method" := "invariant_robust_gof"]
+  data$transformation_method <- factor(
+    data$transformation_method,
+    levels = c("none", "conventional", "invariant_robust", "invariant_robust_gof")
+  )
+
+  # Detail normalisation method.
+  data[, "normalisation_method" := "robust_standardisation"]
+  data[grepl("no_normalisation", experiment_parameters, fixed = TRUE), "normalisation_method" := "none"]
+  data$normalisation_method <- factor(
+    data$normalisation_method,
+    levels = c("none", "robust_standardisation")
+  )
+
+  # Select only test data.
+  data <- data[dataset_split == "test"]
 
   # Set data difficulty.
-  results[, "data_difficulty" := familiar.experiment::assess_difficulty(
+  data[, "task_difficulty" := familiar.experiment::assess_difficulty(
     x = stats::median(value),
     metric = metric),
     by = c("dataset")
   ]
+
+  # Convert to ranks. Higher ranks are better results. Values are mapped to [0,
+  # 1].
+  data[
+    metric == "root_relative_squared_error_winsor",
+    "value_rank" := (data.table::frank(-value, ties.method = "average") - 1.0) / (.N - 1.0),
+    by = c("dataset")
+  ]
+  data[
+    metric == "auc_roc",
+    "value_rank" := (data.table::frank(value, ties.method = "average") - 1.0) / (.N - 1.0),
+    by = c("dataset")
+  ]
+  data[, "value_rank" := (value_rank - 0.5) * 2.0]
+
+  model_data <- data[, mget(c("learner", "transformation_method", "normalisation_method", "task_difficulty", "value_rank"))]
+  model <- ranger::ranger(
+    value_rank ~ learner + transformation_method + normalisation_method + task_difficulty,
+    data = model_data,
+    num.trees = 2000
+  )
+
+  # Generate all combinations.
+  abstract_data <- data.table::data.table(
+    expand.grid(
+      list(
+        "learner" = levels(data$learner),
+        "transformation_method" = levels(data$transformation_method),
+        "normalisation_method" = levels(data$normalisation_method),
+        "task_difficulty" = levels(data$task_difficulty)
+      )
+    )
+  )
+
+  predict(model, data=abstract_data[normalisation_method == "none"])
 
   # Convert dataset to category.
   results$dataset <- factor(
