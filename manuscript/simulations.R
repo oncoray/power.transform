@@ -1755,19 +1755,9 @@
 
 
 
-.get_ml_experiment_data <- function(manuscript_dir, plot_theme) {
-  # Converts experiment results into something that can be interpreted.
-  if (file.exists(file.path(manuscript_dir, "parsed_ml_results.RDS"))) {
-    return(readRDS(file.path(manuscript_dir, "parsed_ml_results.RDS")))
-  }
-
-  if (!file.exists(file.path(manuscript_dir, "ml_exp_results_offset.RDS"))) {
-    stop("Execute ml_exp.R to create the results and copy it to the manuscript folder.")
-  }
-
+.get_ml_experiment_data <- function(manuscript_dir) {
   # non-standard evaluation
   experiment_parameters <- dataset_split <- value <- value_rank <- metric <- NULL
-  normalisation_method <- NULL
 
   data <- readRDS(file.path(manuscript_dir, "ml_experiment", "results", "performance.RDS"))
 
@@ -1808,16 +1798,20 @@
   # 1].
   data[
     metric == "root_relative_squared_error_winsor",
-    "value_rank" := (data.table::frank(-value, ties.method = "average") - 1.0) / (.N - 1.0),
+    "value_rank" := data.table::frank(-value, ties.method = "average"),
     by = c("dataset")
   ]
   data[
     metric == "auc_roc",
-    "value_rank" := (data.table::frank(value, ties.method = "average") - 1.0) / (.N - 1.0),
+    "value_rank" := data.table::frank(value, ties.method = "average"),
     by = c("dataset")
   ]
-  data[, "value_rank" := (value_rank - 0.5) * 2.0]
+  data[, "value_rank" := (value_rank - min(value_rank)) / (max(value_rank) - min(value_rank)), by = c("dataset") ]
 
+  return(data)
+}
+
+temp_plot_fun <-function() {
   model_data <- data[, mget(c("learner", "transformation_method", "normalisation_method", "task_difficulty", "value_rank"))]
   model <- ranger::ranger(
     value_rank ~ learner + transformation_method + normalisation_method + task_difficulty,

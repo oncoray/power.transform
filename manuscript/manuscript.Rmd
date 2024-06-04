@@ -665,16 +665,48 @@ Ames housing data set, year built
 
 ## Integration into end-to-end machine learning
 
-We used 285 datasets from the Penn Machine Learning Benchmarks collection [@].
-In this collection, 122 datasets correspond to regression tasks and 163 datasets to classification tasks.
-Using the familiar auto-machine learning library [@], each dataset was used to train a model for each of 16 process configurations.
-Each process configuration specifies the learner (generalised linear model or random forest), 
-transformation method (none, conventional Yeo-Johnson, robust invariant Yeo-Johnson, robust invariant Yeo-Johnson with empirical central normality test ($p = 0.01$)),
-and normalisation method (none, $z$-standardisation), yielding 16 distinct configurations.
+We used 285 datasets from the Penn Machine Learning Benchmarks collection [@Romano2022-gq].
+In this collection, 122 datasets correspond to regression tasks and 163 datasets
+to classification tasks. Using the familiar auto-machine learning library [@Zwanenburg2021-so] (version 1.5.0),
+each dataset was used to train a model for each of 16 process configurations.
+Each process configuration specifies the learner (generalised linear model or
+random forest), transformation method (none, conventional Yeo-Johnson, robust
+invariant Yeo-Johnson, robust invariant Yeo-Johnson with empirical central
+normality test ($p = 0.01$)), and normalisation method (none,
+$z$-standardisation), yielding 16 distinct configurations.
+Before each experiment, each dataset was randomly split into a training (70%)
+and holdout test (30%) set five times. Thus, a total of 22800 models were
+created. Each model was then evaluated using the holdout test set using one of
+two metrics, i.e. the root relative squared error (RRSE) for regression tasks and the
+area under the receiver operating characteristic curve (AUC) for classification tasks.
 
-Before each experiment, each dataset was randomly split into a training (70%) and holdout test (30%) set five times. Thus, a total of 22800 models were created.
-Each model was then evaluated using the holdout test set. 
+For the purpose of assessing the effect of the difficulty of the task, we computed the median performance score over all models for each dataset and assigned one the following categories:
 
+* very easy: $\text{AUC} \geq 0.90$ or $\text{RRSE} \leq 0.10$ (87 datasets)
+* easy: $0.90 > \text{AUC} \geq 0.80$ or $0.30 \geq \text{RRSE} > 0.10$ (46 datasets)
+* intermediate: $0.80 > \text{AUC} \geq 0.70$ or $0.60 \geq \text{RRSE} > 0.30$ (72 datasets)
+* difficult: $0.70 > \text{AUC} \geq 0.60$ or $0.80 \geq \text{RRSE} > 0.60$ (60 datasets)
+* very difficult: $0.60 > \text{AUC} \geq 0.50$ or $1.00 \geq \text{RRSE} > 0.80$ (12 datasets)
+* unsolvable: $\text{AUC} < 0.50$ or $\text{RRSE} > 1.00$ (8 datasets)
+
+To remove the effect of the dataset, and allow for comparing metrics, we ranked all performance scores for each dataset so that a higher rank corresponds to better performance.
+Experiments yielding the same score received the same, average, rank.
+Subsequently ranks were normalised to the $[0.0, 1.0]$ range.
+
+```{r include = FALSE, eval = TRUE}
+
+data <- .get_ml_experiment_data(manuscript_dir = manuscript_dir)
+
+# Convert to data matrix. First aggregate within each experiment because the
+# Friedman test is not for repeated measurements.
+data <- data.table::dcast(
+  data,
+  dataset ~ learner + transformation_method + normalisation_method, value.var="value_rank",
+  fun.aggregate = mean
+)
+
+friedman_test_result <- friedman.test(as.matrix(data[, "dataset" := NULL]))
+```
 
 - Plot differences vs. none transformation method.
 - Plot differences vs. none normalisation method and conventional transformation.
