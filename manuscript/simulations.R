@@ -1755,7 +1755,7 @@
 
 
 
-.get_ml_experiment_data <- function(manuscript_dir) {
+.get_ml_experiment_data <- function(manuscript_dir, plot_theme) {
   # Converts experiment results into something that can be interpreted.
   if (file.exists(file.path(manuscript_dir, "parsed_ml_results.RDS"))) {
     return(readRDS(file.path(manuscript_dir, "parsed_ml_results.RDS")))
@@ -1767,6 +1767,7 @@
 
   # non-standard evaluation
   experiment_parameters <- dataset_split <- value <- value_rank <- metric <- NULL
+  normalisation_method <- NULL
 
   data <- readRDS(file.path(manuscript_dir, "ml_experiment", "results", "performance.RDS"))
 
@@ -1821,7 +1822,9 @@
   model <- ranger::ranger(
     value_rank ~ learner + transformation_method + normalisation_method + task_difficulty,
     data = model_data,
-    num.trees = 2000
+    min.node.size = 2L,
+    num.trees = 2000L,
+    seed = 19L
   )
 
   # Generate all combinations.
@@ -1835,67 +1838,96 @@
       )
     )
   )
-
-  predict(model, data=abstract_data[normalisation_method == "none"])
-
-  # Convert dataset to category.
-  results$dataset <- factor(
-    x = results$dataset,
-    levels = sort(unique(results$dataset))
+  abstract_data$task_difficulty <- factor(
+    abstract_data$task_difficulty,
+    levels=levels(abstract_data$task_difficulty),
+    ordered=TRUE
   )
 
-  # Rename experiment_parameters and convert to category.
-  results$experiment_parameters <- factor(
-    x = results$experiment_parameters,
-    levels = c("config_no_transformation", "config_old_test", "config_new_test"),
-    labels = c("none", "conventional", "proposed")
+  ..to_data_table <- function(x) {
+    r <- methods::new("rstream.runif", seed=9L)
+    x <- as.vector(x)
+    n <- min(c(100L, length(x)))
+
+    y <- sapply(
+      seq_len(1000L),
+      function(ii, x, r, n) {
+        random_values <- rstream::rstream.sample(r, n)
+        x_indices <- ceiling(random_values * length(x))
+        x_indices[x_indices == 0.0] <- 1.0
+
+        return(mean(x[x_indices]))
+      }, x = x, r = r, n = n
+    )
+
+    return(data.table::data.table("value" = y))
+  }
+
+  # Effect of learner
+  x <- predict(model, data = abstract_data[learner == "random_forest_ranger"], predict.all = TRUE)$predictions -
+    predict(model, data = abstract_data[learner == "glm"], predict.all = TRUE)$predictions
+  data_1 <- ..to_data_table(x)
+
+  # Effect of transformation method vs. none, by learner, task difficulty and
+  # normalisation method.
+  result_list <- list()
+
+  for (method in levels(abstract_data$transformation_method)) {
+    if (method == "none") next
+
+    for (lrnr in levels(abstract_data$learner)) {
+      for (norm_method in levels(abstract_data$normalisation_method)){
+
+        x <- predict(model, data = abstract_data[learner == lrnr & transformation_method == method & normalisation_method == norm_method], predict.all = TRUE)$predictions -
+          predict(model, data = abstract_data[learner == lrnr & transformation_method == "none" & normalisation_method == norm_method], predict.all = TRUE)$predictions
+        x <- ..to_data_table(x)
+        x[, ":="("transformation_method" = method, "normalisation_method" = norm_method, "learner" = lrnr, "task_difficulty" = "all")]
+        result_list <- c(result_list, list(x))
+
+        for (difficulty in levels(abstract_data$task_difficulty)) {
+          x <- predict(model, data = abstract_data[learner == lrnr & task_difficulty == difficulty & transformation_method == method & normalisation_method == norm_method], predict.all = TRUE)$predictions -
+            predict(model, data = abstract_data[learner == lrnr & task_difficulty == difficulty & transformation_method == "none" & normalisation_method == norm_method], predict.all = TRUE)$predictions
+          x <- ..to_data_table(x)
+          x[, ":="("transformation_method" = method, "normalisation_method" = norm_method, "learner" = lrnr, "task_difficulty" = difficulty)]
+          result_list <- c(result_list, list(x))
+        }
+      }
+    }
+  }
+  data_2 <- data.table::rbindlist(result_list)
+  data_2$learner <- factor(
+    data_2$learner,
+    levels = c("glm", "random_forest_ranger"),
+    labels = c("GLM", "random forest")
+  )
+  data_2$transformation_method <- factor(
+    data_2$transformation_method,
+    levels = c("conventional", "invariant_robust", "invariant_robust_gof"),
+    labels = c("conventional", "robust invariant", "robust invariant w. ECNT")
+  )
+  data_2$normalisation_method <- factor(
+    data_2$normalisation_method,
+    levels = c("none", "robust_standardisation"),
+    labels = c("no normalisation", "z-standardisation")
+  )
+  data_2$task_difficulty <- factor(
+    data_2$task_difficulty,
+    levels = c("all", "very_easy", "easy", "intermediate", "difficult", "very_difficult", "unsolvable"),
+    labels = c("overall", "very easy", "easy", "intermediate", "difficult", "very difficult", "unsolvable")
   )
 
-  # Convert to ranks. Higher ranks are better results. Values are mapped to [0, 1].
-  results[metric == "root_relative_squared_error_winsor", "value_rank" := (
-    data.table::frank(-value, ties.method = "average") - 1.0) / (.N - 1),
-    by = c("dataset")
-  ]
-  results[metric == "auc_roc", "value_rank" := (
-    data.table::frank(value, ties.method = "average") - 1.0) / (.N - 1),
-    by = c("dataset")
-  ]
-
-  # Map to [-1.0, 1.0] so that values are centered on 0.0.
-  results[, "value_rank" := (value_rank - 0.5) * 2]
-
-  data <- list(
-    "n" = nrow(results),
-    "n_dataset" = nlevels(results$dataset),
-    "n_transformer" = nlevels(results$experiment_parameters),
-    "n_learner" = nlevels(results$learner),
-    "n_iteration" = data.table::uniqueN(results$iteration_id),
-    "id_transformer" = as.numeric(results$experiment_parameters),
-    "id_dataset" = as.numeric(results$dataset),
-    "id_learner" = as.numeric(results$learner),
-    "id_iteration" = results$iteration_id,
-    "y" = results$value_rank
+  p <- ggplot2::ggplot(
+    data = data_2,
+    mapping = ggplot2::aes(x = value, y = task_difficulty, fill = task_difficulty)
   )
-
-  # TODO: Loop over problem difficulty. It may well be that easier problems do
-  # not benefit as much from power transformations.
-
-  model_data <- rstan::stan(
-    file = file.path(manuscript_dir, "model.stan"),
-    data = data,
-    cores = 4,
-    open_progress = FALSE
+  p <- p + plot_theme
+  p <- p + ggplot2::geom_vline(
+    xintercept = 0.0,
+    linetype = "longdash",
+    colour = "grey40"
   )
-
-  # results <- data.table::dcast(
-  #   data = results,
-  #   dataset + iteration_id + learner + dataset_split + metric + outcome_type ~ experiment_parameters,
-  #   value.var = "value")
-  results_test <- data.table::dcast(
-    data = results,
-    dataset + iteration_id + learner + data_difficulty ~ experiment_parameters,
-    value.var = "value_rank"
-  )
-
+  p <- p + ggplot2::geom_violin(show.legend = FALSE)
+  p <- p + ggplot2::facet_grid(learner + normalisation_method ~ transformation_method)
+  p <- p + ggplot2::xlim(c(-0.2, 0.2))
 
 }

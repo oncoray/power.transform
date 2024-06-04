@@ -665,6 +665,20 @@ Ames housing data set, year built
 
 ## Integration into end-to-end machine learning
 
+We used 285 datasets from the Penn Machine Learning Benchmarks collection [@].
+In this collection, 122 datasets correspond to regression tasks and 163 datasets to classification tasks.
+Using the familiar auto-machine learning library [@], each dataset was used to train a model for each of 16 process configurations.
+Each process configuration specifies the learner (generalised linear model or random forest), 
+transformation method (none, conventional Yeo-Johnson, robust invariant Yeo-Johnson, robust invariant Yeo-Johnson with empirical central normality test ($p = 0.01$)),
+and normalisation method (none, $z$-standardisation), yielding 16 distinct configurations.
+
+Before each experiment, each dataset was randomly split into a training (70%) and holdout test (30%) set five times. Thus, a total of 22800 models were created.
+Each model was then evaluated using the holdout test set. 
+
+
+- Plot differences vs. none transformation method.
+- Plot differences vs. none normalisation method and conventional transformation.
+
 - Assess whether shift-invariant robust transformation improves machine learning results.
 
   - No transformation.
