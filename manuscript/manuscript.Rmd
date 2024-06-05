@@ -708,6 +708,28 @@ data <- data.table::dcast(
 friedman_test_result <- friedman.test(as.matrix(data[, "dataset" := NULL]))
 ```
 
+Significant differences exist between process configurations (Friedman test: $p < 10^{-5})$.
+
+```{r include = FALSE, eval = TRUE}
+
+data <- .get_ml_experiment_data(manuscript_dir = manuscript_dir)
+
+# Convert to data matrix. First aggregate within each experiment because the
+# Wilcoxon signed rank test is not for repeated measurements.
+data <- data.table::dcast(
+  data,
+  dataset ~ learner + transformation_method + normalisation_method, value.var="value_rank",
+  fun.aggregate = mean
+)
+
+data[, "dataset" := NULL]
+configurations <- colnames(data)
+```
+
+Something about direct comparisons.
+
+To assess the marginal effects of process parameters, including transformation method, we first fit a regression random forest (ranger package [@Wright2017-rf] (version 0.16.0); 2000 trees, minimum node size 2, other hyperparameters default) with process parameters and task difficulty as predictors and normalised rank as response variable.
+
 - Plot differences vs. none transformation method.
 - Plot differences vs. none normalisation method and conventional transformation.
 
