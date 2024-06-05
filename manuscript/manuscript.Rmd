@@ -705,10 +705,10 @@ data <- data.table::dcast(
   fun.aggregate = mean
 )
 
-friedman_test_result <- friedman.test(as.matrix(data[, "dataset" := NULL]))
+h_overall <- friedman.test(as.matrix(data[, "dataset" := NULL]))
 ```
 
-Significant differences exist between process configurations (Friedman test: $p < 10^{-5})$.
+Significant differences exist between process configurations (Friedman test: $p < 10^{-8})$.
 
 ```{r include = FALSE, eval = TRUE}
 
@@ -718,15 +718,54 @@ data <- .get_ml_experiment_data(manuscript_dir = manuscript_dir)
 # Wilcoxon signed rank test is not for repeated measurements.
 data <- data.table::dcast(
   data,
-  dataset ~ learner + transformation_method + normalisation_method, value.var="value_rank",
+  dataset ~ learner, value.var="value_rank",
   fun.aggregate = mean
 )
 
-data[, "dataset" := NULL]
-configurations <- colnames(data)
+h_learner <- stats::wilcox.test(
+    x = data[["random_forest_ranger"]],
+    y = data[["glm"]],
+    paired = TRUE,
+    alternative = "two.sided"
+)
 ```
 
-Something about direct comparisons.
+```{r include = FALSE, eval = TRUE}
+
+data <- .get_ml_experiment_data(manuscript_dir = manuscript_dir)
+
+# Convert to data matrix. First aggregate within each experiment because the
+# Wilcoxon signed rank test is not for repeated measurements.
+data <- data.table::dcast(
+  data,
+  dataset ~ normalisation_method, value.var="value_rank",
+  fun.aggregate = mean
+)
+
+h_normalisation <- stats::wilcox.test(
+    x = data[["none"]],
+    y = data[["robust_standardisation"]],
+    paired = TRUE,
+    alternative = "two.sided"
+)
+```
+
+```{r include = FALSE, eval = TRUE}
+
+data <- .get_ml_experiment_data(manuscript_dir = manuscript_dir)
+
+# Convert to data matrix. First aggregate within each experiment because the
+# Friedman test is not for repeated measurements.
+data <- data.table::dcast(
+  data,
+  dataset ~ transformation_method, value.var="value_rank",
+  fun.aggregate = mean
+)
+
+h_transformation <- friedman.test(as.matrix(data[, "dataset" := NULL]))
+```
+
+Considering single process parameters, the choice of learner (Wilcoxon signed rank test: $p < 10^{-8})$) and normalisation method (Wilcoxon signed rank test: $p = 0.03$) had a significant impact (at significance level $p = 0.05$), but transformation method (Friedman test: $p=0.11$) did not.
 
 To assess the marginal effects of process parameters, including transformation method, we first fit a regression random forest (ranger package [@Wright2017-rf] (version 0.16.0); 2000 trees, minimum node size 2, other hyperparameters default) with process parameters and task difficulty as predictors and normalised rank as response variable.
 
@@ -1212,6 +1251,47 @@ cap <- paste0(
   plot_theme = plot_theme,
   manuscript_dir = manuscript_dir)
 
+```
+
+```{r include = FALSE, eval = FALSE}
+# CANDIDATE FOR REMOVAL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+data <- .get_ml_experiment_data(manuscript_dir = manuscript_dir)
+
+# Convert to data matrix. First aggregate within each experiment because the
+# Wilcoxon signed rank test is not for repeated measurements.
+data <- data.table::dcast(
+  data,
+  dataset ~ learner + transformation_method + normalisation_method, value.var="value_rank",
+  fun.aggregate = mean
+)
+data[, "dataset" := NULL]
+
+# Compute p-values through pair-wise comparison.
+config_pairs <- utils::combn(colnames(data), m = 2L)
+test_data <- apply(
+  config_pairs,
+  MARGIN = 2,
+  function(config_pair, data) {
+    h <- stats::wilcox.test(
+      x = data[[config_pair[1L]]],
+      y = data[[config_pair[2L]]],
+      paired = TRUE,
+      alternative = "two.sided"
+    )
+    
+    return(data.table::data.table(
+      "config_1" = config_pair[1L],
+      "config_2" = config_pair[2L],
+      "raw_p_value" = h$p.value
+    ))
+  },
+  data = data
+)
+test_data <- data.table::rbindlist(test_data)
+
+# Perform multiple testing correction.
+test_data[, "p_value_corrected" := stats::p.adjust(raw_p_value)]
 ```
 
 

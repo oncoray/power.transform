@@ -1642,3 +1642,159 @@ get_annotation_settings <- function(ggtheme = NULL) {
 }
 
 
+
+.plot_marginal_effects <- function(manuscript_dir, plot_theme) {
+
+  learner <- transformation_method <- normalisation_method <- task_difficulty <- NULL
+
+  # Get ML experiment data.
+  data <- .get_ml_experiment_data(manuscript_dir = manuscript_dir)
+
+  # Build a random forest to create latent representations of the data.
+  model_data <- data[, mget(c("learner", "transformation_method", "normalisation_method", "task_difficulty", "value_rank"))]
+  model <- ranger::ranger(
+    value_rank ~ learner + transformation_method + normalisation_method + task_difficulty,
+    data = model_data,
+    min.node.size = 2L,
+    num.trees = 2000L,
+    seed = 19L
+  )
+
+  # Generate all combinations of process parameters and task difficulty.
+  abstract_data <- data.table::data.table(
+    expand.grid(
+      list(
+        "learner" = levels(data$learner),
+        "transformation_method" = levels(data$transformation_method),
+        "normalisation_method" = levels(data$normalisation_method),
+        "task_difficulty" = levels(data$task_difficulty)
+      )
+    )
+  )
+  abstract_data$task_difficulty <- factor(
+    abstract_data$task_difficulty,
+    levels=levels(abstract_data$task_difficulty),
+    ordered=TRUE
+  )
+
+  # Helper for random
+  ..to_data_table <- function(x) {
+    r <- methods::new("rstream.runif", seed=9L)
+    x <- as.vector(x)
+    n <- min(c(100L, length(x)))
+
+    y <- sapply(
+      seq_len(1000L),
+      function(ii, x, r, n) {
+        random_values <- rstream::rstream.sample(r, n)
+        x_indices <- ceiling(random_values * length(x))
+        x_indices[x_indices == 0.0] <- 1.0
+
+        return(mean(x[x_indices]))
+      }, x = x, r = r, n = n
+    )
+
+    return(data.table::data.table("value" = y))
+  }
+
+  # Effect of learner
+  x <- predict(model, data = abstract_data[learner == "random_forest_ranger"], predict.all = TRUE)$predictions -
+    predict(model, data = abstract_data[learner == "glm"], predict.all = TRUE)$predictions
+  data_1 <- ..to_data_table(x)
+
+  # Effect of normalisation method
+  x <- predict(model, data = abstract_data[normalisation_method == "robust_standardisation"], predict.all = TRUE)$predictions -
+    predict(model, data = abstract_data[normalisation_method == "none"], predict.all = TRUE)$predictions
+  data_2 <- ..to_data_table(x)
+  data_2[, "id" := 1L]
+
+  # Effect of transformation method vs. none, by learner, task difficulty and
+  # normalisation method.
+  result_list <- list()
+
+
+  for (lrnr in levels(abstract_data$learner)) {
+    for (norm_method in levels(abstract_data$normalisation_method)){
+      for (method in c("conventional", "invariant_robust", "invariant_robust_gof")) {
+        x <- predict(model, data = abstract_data[learner == lrnr & transformation_method == method & normalisation_method == norm_method], predict.all = TRUE)$predictions -
+          predict(model, data = abstract_data[learner == lrnr & transformation_method == "none" & normalisation_method == norm_method], predict.all = TRUE)$predictions
+        x <- ..to_data_table(x)
+        x[, ":="("transformation_method" = paste0(method, "_none"), "normalisation_method" = norm_method, "learner" = lrnr, "task_difficulty" = "all")]
+        result_list <- c(result_list, list(x))
+
+        for (difficulty in levels(abstract_data$task_difficulty)) {
+          x <- predict(model, data = abstract_data[learner == lrnr & task_difficulty == difficulty & transformation_method == method & normalisation_method == norm_method], predict.all = TRUE)$predictions -
+            predict(model, data = abstract_data[learner == lrnr & task_difficulty == difficulty & transformation_method == "none" & normalisation_method == norm_method], predict.all = TRUE)$predictions
+          x <- ..to_data_table(x)
+          x[, ":="("transformation_method" = paste0(method, "_none"), "normalisation_method" = norm_method, "learner" = lrnr, "task_difficulty" = difficulty)]
+          result_list <- c(result_list, list(x))
+        }
+      }
+
+      for (method in c("invariant_robust", "invariant_robust_gof")) {
+        x <- predict(model, data = abstract_data[learner == lrnr & transformation_method == method & normalisation_method == norm_method], predict.all = TRUE)$predictions -
+          predict(model, data = abstract_data[learner == lrnr & transformation_method == "conventional" & normalisation_method == norm_method], predict.all = TRUE)$predictions
+        x <- ..to_data_table(x)
+        x[, ":="("transformation_method" = paste0(method, "_conventional"), "normalisation_method" = norm_method, "learner" = lrnr, "task_difficulty" = "all")]
+        result_list <- c(result_list, list(x))
+
+        for (difficulty in levels(abstract_data$task_difficulty)) {
+          x <- predict(model, data = abstract_data[learner == lrnr & task_difficulty == difficulty & transformation_method == method & normalisation_method == norm_method], predict.all = TRUE)$predictions -
+            predict(model, data = abstract_data[learner == lrnr & task_difficulty == difficulty & transformation_method == "conventional" & normalisation_method == norm_method], predict.all = TRUE)$predictions
+          x <- ..to_data_table(x)
+          x[, ":="("transformation_method" = paste0(method, "_conventional"), "normalisation_method" = norm_method, "learner" = lrnr, "task_difficulty" = difficulty)]
+          result_list <- c(result_list, list(x))
+        }
+      }
+    }
+  }
+  data_3 <- data.table::rbindlist(result_list)
+  data_3$learner <- factor(
+    data_3$learner,
+    levels = c("glm", "random_forest_ranger"),
+    labels = c("GLM", "random forest")
+  )
+  data_3$transformation_method <- factor(
+    data_3$transformation_method,
+    levels = c("conventional_none", "invariant_robust_none", "invariant_robust_gof_none", "invariant_robust_conventional", "invariant_robust_gof_conventional"),
+    labels = c("conventional \nvs. none", "robust invariant \nvs. none", "robust invariant \nw. ECNT vs. none", "robust invariant \nvs. conventional", "robust invariant \nw. ECNT vs. conventional")
+  )
+  data_3$normalisation_method <- factor(
+    data_3$normalisation_method,
+    levels = c("none", "robust_standardisation"),
+    labels = c("no normalisation", "z-standardisation")
+  )
+  data_3$task_difficulty <- factor(
+    data_3$task_difficulty,
+    levels = c("all", "very_easy", "easy", "intermediate", "difficult", "very_difficult", "unsolvable"),
+    labels = c("overall", "very easy", "easy", "intermediate", "difficult", "very difficult", "unsolvable")
+  )
+
+  p3 <- ggplot2::ggplot(
+    data = data_3,
+    mapping = ggplot2::aes(x = value, y = task_difficulty, fill = task_difficulty)
+  )
+  p3 <- p3 + plot_theme
+  p3 <- p3 + ggplot2::geom_vline(
+    xintercept = 0.0,
+    linetype = "longdash",
+    colour = "grey40"
+  )
+  p3 <- p3 + ggplot2::geom_violin(show.legend = FALSE)
+  p3 <- p3 + ggplot2::facet_grid(learner + normalisation_method ~ transformation_method)
+  p3 <- p3 + ggplot2::xlim(c(-0.1, 0.1))
+
+
+  p2 <- ggplot2::ggplot(
+    data = data_2,
+    mapping = ggplot2::aes(x = value, y = id)
+  )
+  p2 <- p2 + plot_theme
+  p2 <- p2 + ggplot2::geom_vline(
+    xintercept = 0.0,
+    linetype = "longdash",
+    colour = "grey40"
+  )
+  p2 <- p2 + ggplot2::geom_violin(show.legend = FALSE)
+}
+
