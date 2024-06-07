@@ -1643,7 +1643,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 
 
-.plot_marginal_effects <- function(manuscript_dir, plot_theme) {
+.plot_marginal_effects <- function(plot_theme, manuscript_dir) {
 
   learner <- transformation_method <- normalisation_method <- task_difficulty <- NULL
 
@@ -1805,11 +1805,12 @@ get_annotation_settings <- function(ggtheme = NULL) {
     labels = difficulty_labels
   )
 
+  data_3_x_range = c(-0.07, 0.07)
   data_3_labels <- data.table::data.table(
-    learner = factor("GLM", levels = levels(data_3$learner)),
-    normalisation_method = factor("no normalisation", levels = levels(data_3$normalisation_method)),
+    learner = factor("random forest", levels = levels(data_3$learner)),
+    normalisation_method = factor("z-standardisation", levels = levels(data_3$normalisation_method)),
     transformation_method = factor(transformation_method_labels),
-    task_difficulty  = factor("unsolvable", levels = difficulty_labels),
+    task_difficulty  = factor("overall", levels = difficulty_labels),
     label_1 = c("none better", "none better", "none better", "conv. better", "conv. better"),
     label_2 = c("conv. better", "invar. better", "invar. better", "invar. better", "invar. better")
   )
@@ -1829,7 +1830,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p3 <- p3 + ggplot2::geom_col(show.legend = FALSE)
   p3 <- p3 + ggplot2::facet_grid(learner + normalisation_method ~ transformation_method)
   p3 <- p3 + ggplot2::geom_text(
-    x = -0.10,
+    x = data_3_x_range[1L],
     ggplot2::aes(label=label_1),
     hjust = "inward",
     vjust = "outward",
@@ -1840,7 +1841,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     size = annotation_settings$geom_text_size * 0.8
   )
   p3 <- p3 + ggplot2::geom_text(
-    x = 0.10,
+    x = data_3_x_range[2L],
     ggplot2::aes(label=label_2),
     hjust = "inward",
     vjust = "outward",
@@ -1850,14 +1851,27 @@ get_annotation_settings <- function(ggtheme = NULL) {
     fontface = annotation_settings$face,
     size = annotation_settings$geom_text_size * 0.8
   )
-  p3 <- p3 + ggplot2::xlim(c(-0.10, 0.10))
+  p3 <- p3 + ggplot2::scale_fill_discrete(
+    name = NULL,
+    guide = "none",
+    type = c(
+      "unsolvable" = "#1c3319",
+      "very difficult" = "#325d2d",
+      "difficult" = "#498641",
+      "intermediate" = "#60ae56",
+      "easy" = "#87c280",
+      "very easy" = "#add6a9",
+      "overall" = "#e15759"
+    )
+  )
+  p3 <- p3 + ggplot2::xlim(data_3_x_range)
   p3 <- p3 + ggplot2::ylab("task difficulty")
   p3 <- p3 + ggplot2::xlab("normalised rank difference")
 
-
+  data_2_x_range = c(-0.003, 0.0085)
   data_2_labels <- data.table::data.table(
-    x = c(-0.01, 0.01),
-    task_difficulty  = factor(c("unsolvable", "unsolvable"), levels = difficulty_labels),
+    x = data_2_x_range,
+    task_difficulty  = factor(c("overall", "overall"), levels = difficulty_labels),
     label = c("none better", "z-stand. better")
   )
 
@@ -1882,9 +1896,74 @@ get_annotation_settings <- function(ggtheme = NULL) {
     fontface = annotation_settings$face,
     size = annotation_settings$geom_text_size * 0.8
   )
-  p2 <- p2 + ggplot2::xlim(c(-0.01, 0.01))
+  p2 <- p2 + ggplot2::scale_fill_discrete(
+    name = NULL,
+    guide = "none",
+    type = c(
+      "unsolvable" = "#482105",
+      "very difficult" = "#813b08",
+      "difficult" = "#bb550c",
+      "intermediate" = "#f07014",
+      "easy" = "#f4934e",
+      "very easy" = "#f7b687",
+      "overall" = "#e15759"
+    )
+  )
+  p2 <- p2 + ggplot2::xlim(data_2_x_range)
   p2 <- p2 + ggplot2::ylab("task difficulty")
   p2 <- p2 + ggplot2::xlab("normalised rank difference")
   p2 <- p2 + ggplot2::ggtitle("z-standardisation vs. none")
+
+  data_1_x_range = c(-0.05, 0.30)
+  data_1_labels <- data.table::data.table(
+    x = data_1_x_range,
+    task_difficulty  = factor(c("overall", "overall"), levels = difficulty_labels),
+    label = c("GLM better", "random forest better")
+  )
+
+  p1 <- ggplot2::ggplot(
+    data = data_1,
+    mapping = ggplot2::aes(x = value, y = task_difficulty, fill = task_difficulty)
+  )
+  p1 <- p1 + plot_theme
+  p1 <- p1 + ggplot2::geom_vline(
+    xintercept = 0.0,
+    linetype = "longdash",
+    colour = "grey40"
+  )
+  p1 <- p1 + ggplot2::geom_col(show.legend = FALSE)
+  p1 <- p1 + ggplot2::geom_text(
+    data = data_1_labels,
+    mapping = ggplot2::aes(x = x, label = label),
+    hjust = "inward",
+    vjust = "outward",
+    colour = annotation_settings$colour,
+    family = annotation_settings$family,
+    fontface = annotation_settings$face,
+    size = annotation_settings$geom_text_size * 0.8
+  )
+  p1 <- p1 + ggplot2::scale_fill_discrete(
+    name = NULL,
+    guide = "none",
+    type = c(
+      "unsolvable" = "#192534",
+      "very difficult" = "#2d435d",
+      "difficult" = "#416186",
+      "intermediate" = "#567fae",
+      "easy" = "#809ec2",
+      "very easy" = "#a9bed6",
+      "overall" = "#e15759"
+    )
+  )
+  p1 <- p1 + ggplot2::xlim(data_1_x_range)
+  p1 <- p1 + ggplot2::ylab("task difficulty")
+  p1 <- p1 + ggplot2::xlab("normalised rank difference")
+  p1 <- p1 + ggplot2::ggtitle("random forest vs. generalised linear model")
+
+  p <- (p1 + p2 + patchwork::plot_layout(ncol = 2, axes = "collect_y", axis_titles = "collect_y")) / p3 + patchwork::plot_layout(
+    heights = c(0.3, 1.0)
+  )
+
+  return(p)
 }
 
