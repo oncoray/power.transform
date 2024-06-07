@@ -766,16 +766,19 @@ data <- data.table::dcast(
 h_transformation <- friedman.test(as.matrix(data[, "dataset" := NULL]))
 ```
 
-Considering single process parameters, the choice of learner (Wilcoxon signed rank test: $p < 10^{-8})$) and normalisation method (Wilcoxon signed rank test: $p = 0.03$) had a significant impact (at significance level $p = 0.05$), but transformation method (Friedman test: $p=0.11$) did not.
+Here we focus on the subset of 232 datasets that contain numeric features. 
+Considering single process parameters, the choice of learner (Wilcoxon signed rank test: $p < 10^{-8})$) and normalisation method (Wilcoxon signed rank test: $p = 0.007$) had a significant impact (at significance level $p = 0.050$), but transformation method (Friedman test: $p = 0.054$) did not.
 
 To estimate the marginal effects of process parameters, including transformation method, we first fit a regression random forest (ranger package [@Wright2017-rf] (version 0.16.0); 2000 trees, minimum node size 2, other hyperparameters default) with process parameters and task difficulty as predictors and normalised rank as response variable.
 The estimated marginal effects are shown in Figure \ref{fig:marginal-effect-plot}.
-On the scale of normalised ranks ($[0.0, 1.0]$), the overall estimated marginal effect of using a random forest instead of generalised linear model was $0.226$.
-The overall marginal effect of using z-standardisation to normalise features was $0.003$.
+On the scale of normalised ranks ($[0.0, 1.0]$), the overall estimated marginal effect of using a random forest instead of generalised linear model was $0.272$.
+The overall marginal effect of using z-standardisation to normalise features was $0.008$.
 Transformation methods had the following marginal effects:
-$0.002$ for using conventional Yeo-Johnson transformation instead of no transformation;
-$-0.006$ for using robust invariant Yeo-Johnson transformation (with or without empirical central normality test) instead of no transformation; 
-and $-0.008$ for using robust invariant Yeo-Johnson transformation (with or without empirical central normality test) instead of conventional Yeo-Johnson transformation.
+$0.003$ for using conventional Yeo-Johnson transformation instead of no transformation;
+$-0.007$ for using robust invariant Yeo-Johnson transformation instead of no transformation; 
+$-0.009$ for using robust invariant Yeo-Johnson transformation with empirical central normality test instead of no transformation; 
+$-0.010$ for using robust invariant Yeo-Johnson transformation instead of conventional Yeo-Johnson transformation;
+and $-0.012$ for using using robust invariant Yeo-Johnson transformation with empirical central normality test instead of conventional Yeo-Johnson transformation.
 
 ```{r marginal-effect-plot, echo=FALSE, fig.cap=cap, fig.height=12.0, warning=FALSE}
 cap <- paste0(
@@ -797,7 +800,7 @@ cap <- paste0(
 
 In their work, Box and Cox already mention a transformation with a shift parameter, but preferred the now well-known version in Eq. **INSERT REFERENCE** for the theoretical analysis in their paper [@Box1964-mz].
 
-We investigated the use of robust invariant power transformation for machine learning, and did not find a major positive or negative effect. 
+We investigated the use of robust invariant power transformation as part of the machine learning process, and did not find a major positive or negative effect. A possible explanation is that numeric features with large location shifts ($|\mu| > 1000.0$ were uncommon. Of the 4886 numeric features in the 232 datasets with numeric features, 266 (5%) features in 34 datasets had large location shifts, of which 200 appeared in just 2 datasets.
 
 # Conclusion
 

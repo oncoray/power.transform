@@ -1755,7 +1755,7 @@
 
 
 
-.get_ml_experiment_data <- function(manuscript_dir) {
+.get_ml_experiment_data <- function(manuscript_dir, subset = "numeric") {
   # non-standard evaluation
   experiment_parameters <- dataset_split <- value <- value_rank <- metric <- NULL
 
@@ -1808,6 +1808,68 @@
   ]
   data[, "value_rank" := (value_rank - min(value_rank)) / (max(value_rank) - min(value_rank)), by = c("dataset") ]
 
+  # Select subset of data.
+  if (subset == "numeric") {
+    feature_data <- .get_ml_experiment_feature_statistics(manuscript_dir = manuscript_dir)
+    feature_data[, "dataset_real" := gsub(pattern = "_data.RDS", replacement = "", x = dataset, fixed = TRUE)]
+    data <- data[dataset %in% feature_data$dataset_real]
+
+  } else if (subset == "numeric_high_shift") {
+    feature_data <- .get_ml_experiment_feature_statistics(manuscript_dir = manuscript_dir)
+    feature_data <- feature_data[abs(mu) > 500.0]
+    feature_data[, "dataset_real" := gsub(pattern = "_data.RDS", replacement = "", x = dataset, fixed = TRUE)]
+    data <- data[dataset %in% feature_data$dataset_real]
+  }
+
   return(data)
 }
 
+
+
+.get_ml_experiment_feature_statistics <- function(manuscript_dir) {
+
+  file_name <- file.path(manuscript_dir, "ml_experiment_feature_statistics.RDS")
+
+  if (!file.exists(file_name)) {
+    data_dir <- file.path(manuscript_dir, "ml_experiment", "data_cache")
+    data_files <- list.files(path = data_dir, full.names = FALSE, pattern = ".RDS")
+
+    feature_data <- lapply(
+      data_files,
+      function(data_file, data_dir) {
+        # Read datasets, which are familiar DataObject objects.
+        dataset <- readRDS(file.path(data_dir, data_file))
+        feature_data <- lapply(
+          familiar:::get_feature_columns(dataset),
+          function(feature, dataset) {
+            if (is.numeric(dataset@data[[feature]])) {
+              x <- power.transform::huber_estimate(dataset@data[[feature]])
+              return(data.table::data.table("feature" = feature, "mu" = x$mu, "sigma" = x$sigma))
+
+            } else {
+              return(NULL)
+            }
+          },
+          dataset = dataset
+        )
+        feature_data <- data.table::rbindlist(feature_data)
+        if (nrow(feature_data) > 0) {
+          feature_data[, "dataset" := data_file]
+        }
+        return(feature_data)
+      },
+      data_dir = data_dir
+    )
+
+    feature_data <- data.table::rbindlist(feature_data)
+
+    saveRDS(
+      object = feature_data,
+      file = file_name
+    )
+  } else {
+    feature_data <- readRDS(file_name)
+  }
+
+  return(feature_data)
+}

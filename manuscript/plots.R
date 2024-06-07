@@ -1643,12 +1643,12 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 
 
-.plot_marginal_effects <- function(plot_theme, manuscript_dir) {
+.plot_marginal_effects <- function(plot_theme, manuscript_dir, subset = "numeric") {
 
   learner <- transformation_method <- normalisation_method <- task_difficulty <- NULL
 
   # Get ML experiment data.
-  data <- .get_ml_experiment_data(manuscript_dir = manuscript_dir)
+  data <- .get_ml_experiment_data(manuscript_dir = manuscript_dir, subset = subset)
 
   # Build a random forest to create latent representations of the data.
   model_data <- data[, mget(c("learner", "transformation_method", "normalisation_method", "task_difficulty", "value_rank"))]
@@ -1805,7 +1805,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     labels = difficulty_labels
   )
 
-  data_3_x_range = c(-0.07, 0.07)
+  data_3_x_range = c(-0.08, 0.08)
   data_3_labels <- data.table::data.table(
     learner = factor("random forest", levels = levels(data_3$learner)),
     normalisation_method = factor("z-standardisation", levels = levels(data_3$normalisation_method)),
@@ -1868,7 +1868,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p3 <- p3 + ggplot2::ylab("task difficulty")
   p3 <- p3 + ggplot2::xlab("normalised rank difference")
 
-  data_2_x_range = c(-0.003, 0.0085)
+  data_2_x_range = c(-0.005, 0.03)
   data_2_labels <- data.table::data.table(
     x = data_2_x_range,
     task_difficulty  = factor(c("overall", "overall"), levels = difficulty_labels),
@@ -1914,7 +1914,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p2 <- p2 + ggplot2::xlab("normalised rank difference")
   p2 <- p2 + ggplot2::ggtitle("z-standardisation vs. none")
 
-  data_1_x_range = c(-0.05, 0.30)
+  data_1_x_range = c(-0.05, 0.35)
   data_1_labels <- data.table::data.table(
     x = data_1_x_range,
     task_difficulty  = factor(c("overall", "overall"), levels = difficulty_labels),
