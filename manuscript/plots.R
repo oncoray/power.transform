@@ -1391,11 +1391,10 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 
 
-.plot_sacramento_house <- function(plot_theme) {
+.plot_ischemic_stroke <- function(plot_theme) {
   require(modeldata)
 
-  data <- data.table::as.data.table(modeldata::Sacramento)
-  x <- data$price
+  x <- modeldata::ischemic_stroke$max_max_wall_thickness
 
   return(
     ..plot_real_data(
@@ -1407,7 +1406,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 
 
-..plot_real_data <- function(plot_theme, x) {
+..plot_real_data <- function(plot_theme, x, lambda_limit = c(-4.0, 6.0)) {
   # Show density and Q-Q plots for:
   # - Original data
   # - conventional transformation
@@ -1430,6 +1429,13 @@ get_annotation_settings <- function(ggtheme = NULL) {
     transformed_data <- power.transform::power_transform(
       x = x,
       transformer = transformer
+    )
+
+    summary_data <- data.table::data.table(
+      "mu" = mean(transformed_data),
+      "sigma" = sd(transformed_data),
+      "lambda" = power.transform::get_lambda(transformer),
+      "transformation" = name
     )
 
     transformed_data <- data.table::data.table(
@@ -1457,6 +1463,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     return(list(
       "transformed_data" = transformed_data,
       "residual_data" = residual_data,
+      "summary_data" = summary_data,
       "central_normality_data" = central_normality_data
     ))
   }
@@ -1472,7 +1479,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     x = x,
     method = "yeo_johnson",
     robust = FALSE,
-    invariant = FALSE
+    invariant = FALSE,
+    lambda = lambda_limit
   )
 
   # Raymaekers robust transformer
@@ -1481,7 +1489,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     method = "yeo_johnson",
     robust = TRUE,
     invariant = FALSE,
-    estimation_method = "raymaekers_robust"
+    estimation_method = "raymaekers_robust",
+    lambda = lambda_limit
   )
 
   # Shift-sensitive transformer
@@ -1489,7 +1498,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     x = x,
     method = "yeo_johnson",
     robust = FALSE,
-    invariant = TRUE
+    invariant = TRUE,
+    lambda = lambda_limit
   )
 
   # Robust shift-sensitive transformer
@@ -1497,7 +1507,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     x = x,
     method = "yeo_johnson",
     robust = TRUE,
-    invariant = TRUE
+    invariant = TRUE,
+    lambda = lambda_limit
   )
 
   transformer_labels <- c(
@@ -1590,7 +1601,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     name = "transformation",
     values = c("#111111", "#8cd17d", "#59a14f", "#ff9d9a", "#e15759"),
     breaks = transformer_labels,
-    drop = FALSE
+    drop = FALSE,
+    guide = "none"
   )
   p_d <- p_d + ggplot2::coord_cartesian(xlim = c(-3, 3))
   p_d <- p_d + ggplot2::theme(
@@ -1622,14 +1634,14 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   # Shift-sensitive transformation ---------------------------------------------
   p2_qq <- p_qq + ggplot2::geom_point(
-    data  = residual_data[transformation %in% c("shift-sensitive", "robust invariant")]
+    data  = residual_data[transformation %in% c("invariant", "robust invariant")]
   )
   p2_qq <- p2_qq + ggplot2::theme(
     axis.title.y = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank()
   )
   p2_d <- p_d + ggplot2::geom_density(
-    data = transformed_data[transformation %in% c("shift-sensitive", "robust invariant")]
+    data = transformed_data[transformation %in% c("invariant", "robust invariant")]
   )
 
   p <- p0_d + p1_d + p2_d + p0_qq + p1_qq + p2_qq + patchwork::plot_layout(

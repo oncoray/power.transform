@@ -608,25 +608,24 @@ cap <- paste0(
 
 # Experimental Results
 
-In the previous section, we simulated data to assess shift-sensitive power transformations and their robustness against outliers. In this section, we assess these aspects using real datasets.
+## Robustness against outliers
 
-## Datasets with outliers
-
-
+In the previous section, we simulated data to assess invariant power transformations and their robustness against outliers. In this section, we assess these aspects using real data.
 
 ### Top Gear dataset
 
 ```{r top-gear, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
   "Quantile-quantile plots for the fuel consumption data in the Top Gear dataset. ",
-  "This data contains three strong outliers for highly efficient vehicles. ",
+  "The dataset contains three strong outliers for highly fuel-efficient vehicles.",
   "The left panel shows the quantile-quantile plot for the original data. ",
+  "The empirical central normality test indicates that the original data do not deviate significantly from central normality ($p=0.76$).",
   "The middle panel shows the quantile-quantile plots for data transformed using ",
   "the original Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation \\cite{Raymaekers2021-kq}. ",
-  "For these, the empirical central normality test yields $p=0.01$, and $p=0.58$, respectively. ",
+  "For these, the empirical central normality test yields $p=0.01$, and $p=0.55$, respectively. ",
   "The right panels shows the quantile-quantile plots for data transformed using ",
-  "the non-robust and robust shift-sensitive transformations. ",
-  "For these, the empirical central normality test yields $p=0.01$, and $p=0.36$, respectively. ",
+  "the non-robust and robust invariant transformations. ",
+  "For these, the empirical central normality test yields $p=0.03$, and $p=0.86$, respectively. ",
   "Samples with observed quantiles below $-3.0$ or above $3.0$ are indicated by crosses."
 )
 
@@ -635,34 +634,40 @@ cap <- paste0(
 )
 ```
 
-The Top Gear dataset contains data on 297 cars that appeared on the BBC television show *Top Gear*. Fuel consumption contains outliers. Figure \ref{fig:top-gear} shows that the outliers cause non-robust transformations to fail to transform the data to a centrally normal distribution (empirical central normality test $p = 0.01$). Robust transformations produce distributions that are centrally normal (empirical central normality test $p > 0.05$).
+The Top Gear dataset contains data on 297 vehicles that appeared on the BBC television show *Top Gear*. Within this dataset, the fuel consumption feature contains outliers due to highly fuel-efficient vehicles. Figure \ref{fig:top-gear} shows that the outliers cause non-robust transformations to fail to transform the data to a centrally normal distribution (empirical central normality test $p = 0.01$ and $p=0.03$ for conventional and invariant transformations, respectively). Robust transformations produce distributions that are centrally normal (empirical central normality test $p > 0.05$).
 
-### Housing dataset
+### Ischemic stroke dataset
 
-```{r housing-data, warning=FALSE, message=FALSE, fig.cap=cap}
+```{r ischemic-stroke, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
-  "Quantile-quantile plots for the fuel consumption data in the Top Gear dataset. ",
-  "This data contains three strong outliers for highly efficient vehicles. ",
+  "Quantile-quantile plots for the maximum arterial wall thickness in the ischemic stroke dataset [@Romano2022-gq]. ",
+  "This data contains two strong outliers. ",
   "The left panel shows the quantile-quantile plot for the original data. ",
+  "The empirical central normality test indicates that the original data do not deviate significantly from central normality ($p=0.56$).",
   "The middle panel shows the quantile-quantile plots for data transformed using ",
   "the original Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation [@Raymaekers2021-kq]. ",
-  "For these, the empirical central normality test yields $p=0.01$, and $p=0.58$, respectively. ",
+  "For these, the empirical central normality test yields $p=0.01$, and $p=0.61$, respectively. ",
   "The right panels shows the quantile-quantile plots for data transformed using ",
   "the non-robust and robust shift-sensitive transformations. ",
-  "For these, the empirical central normality test yields $p=0.01$, and $p=0.36$, respectively. ",
+  "For these, the empirical central normality test yields $p=0.02$, and $p=0.10$, respectively. ",
   "Samples with observed quantiles below $-3.0$ or above $3.0$ are indicated by crosses."
 )
 
-.plot_sacramento_house(
+.plot_ischemic_stroke(
   plot_theme = plot_theme
 )
 ```
+The ischemic stroke dataset contains historic data from 126 patients with risk at ischemic stroke [@Kuhn2019-kt].
+These patients underwent Computed Tomography Angiography to characterize the carotid artery blockages.
+The angiography imaging was then assessed, and various characteristics related to the blood vessels and the disease are measured.
+The maximum arterial wall thickness feature contains several instances with outlier values.
+Figure \ref{fig:ischemic-stroke} show that non-robust transformation fail to produce a centrally normal distribution (empirical central normality test $p = 0.01$ and $p=0.02$ for conventional and invariant transformations, respectively). Robust transformations produce distributions that are centrally normal (empirical central normality test $p > 0.05$).
 
-modeldata::Sacramento$price
+## Invariance
 
-Ames housing data set, year built
-
-### Other data ???
+Datasets that where invariance has better properties in terms of lambda and resulting mean and standard deviation.
+modeldata::ischemic_stroke$age
+modeldata::ames$Longitudinal
 
 ## Integration into end-to-end machine learning
 
@@ -800,7 +805,7 @@ cap <- paste0(
 
 In their work, Box and Cox already mention a transformation with a shift parameter, but preferred the now well-known version in Eq. **INSERT REFERENCE** for the theoretical analysis in their paper [@Box1964-mz].
 
-We investigated the use of robust invariant power transformation as part of the machine learning process, and did not find a major positive or negative effect. A possible explanation is that numeric features with large location shifts ($|\mu| > 1000.0$ were uncommon. Of the 4886 numeric features in the 232 datasets with numeric features, 266 (5%) features in 34 datasets had large location shifts, of which 200 appeared in just 2 datasets.
+We investigated the use of robust invariant power transformation as part of the machine learning process, and did not find a major positive or negative effect. A possible explanation is that numeric features with large location shifts ($|\mu| > 1000.0$) were uncommon. Of the 4886 numeric features in the 232 datasets with numeric features, 266 (5%) features in 34 datasets had large location shifts, of which 200 appeared in just 2 datasets.
 
 # Conclusion
 
