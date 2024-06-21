@@ -608,11 +608,33 @@ cap <- paste0(
 
 # Experimental Results
 
+## Invariance
+
+Invariant power transformations are intended to yield improved transformations to normality
+in the presence of large shifts in location, scales far from unity, or both.
+We previously demonstrated this property using simulations, and will now demonstrate
+it using examples from real datasets.
+
+### Age in a ...
+
+In health-related datasets patient age is a common characteristic.
+
+Show invariance to units (days vs years)
+
+### Body mass of penguins
+modeldata::penguins$body_mass_g
+
+### Longitudinal coordinates in the Ames housing dataset
+
+Datasets where invariance has better properties in terms of lambda and resulting mean and standard deviation.
+modeldata::ischemic_stroke$age
+modeldata::ames$Longitudinal
+
 ## Robustness against outliers
 
-In the previous section, we simulated data to assess invariant power transformations and their robustness against outliers. In this section, we assess these aspects using real data.
+We previously simulated data to assess invariant power transformations and their robustness against outliers. In this section, we assess these aspects using real data.
 
-### Top Gear dataset
+### Fuel efficiency in the Top Gear dataset
 
 ```{r top-gear, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
@@ -636,7 +658,7 @@ cap <- paste0(
 
 The Top Gear dataset contains data on 297 vehicles that appeared on the BBC television show *Top Gear*. Within this dataset, the fuel consumption feature contains outliers due to highly fuel-efficient vehicles. Figure \ref{fig:top-gear} shows that the outliers cause non-robust transformations to fail to transform the data to a centrally normal distribution (empirical central normality test $p = 0.01$ and $p=0.03$ for conventional and invariant transformations, respectively). Robust transformations produce distributions that are centrally normal (empirical central normality test $p > 0.05$).
 
-### Ischemic stroke dataset
+### Maximum arterial wall thickness in an ischemic stroke dataset
 
 ```{r ischemic-stroke, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
@@ -659,15 +681,9 @@ cap <- paste0(
 ```
 The ischemic stroke dataset contains historic data from 126 patients with risk at ischemic stroke [@Kuhn2019-kt].
 These patients underwent Computed Tomography Angiography to characterize the carotid artery blockages.
-The angiography imaging was then assessed, and various characteristics related to the blood vessels and the disease are measured.
+Angiography imaging was then assessed, and various characteristics related to the blood vessels and the disease are measured.
 The maximum arterial wall thickness feature contains several instances with outlier values.
 Figure \ref{fig:ischemic-stroke} show that non-robust transformation fail to produce a centrally normal distribution (empirical central normality test $p = 0.01$ and $p=0.02$ for conventional and invariant transformations, respectively). Robust transformations produce distributions that are centrally normal (empirical central normality test $p > 0.05$).
-
-## Invariance
-
-Datasets that where invariance has better properties in terms of lambda and resulting mean and standard deviation.
-modeldata::ischemic_stroke$age
-modeldata::ames$Longitudinal
 
 ## Integration into end-to-end machine learning
 
