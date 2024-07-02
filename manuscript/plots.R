@@ -1370,6 +1370,37 @@ get_annotation_settings <- function(ggtheme = NULL) {
 }
 
 
+.plot_lung_cancer_age <- function(plot_theme, lambda_limit = NULL) {
+  require(survival)
+
+  return(
+    ..plot_real_data(
+      plot_theme = plot_theme,
+      x = survival::lung$age,
+      lambda_limit = NULL
+    )
+  )
+}
+
+
+
+.plot_penguin_body_mass <- function(plot_theme, lambda_limit = NULL) {
+  require(modeldata)
+
+  x <- modeldata::penguins$body_mass_g
+  x <- x[is.finite(x)]
+
+  return(
+    ..plot_real_data(
+      plot_theme = plot_theme,
+      x = x,
+      lambda_limit = NULL
+    )
+  )
+}
+
+
+
 .plot_top_gear <- function(plot_theme) {
   require(robustHD)
 
@@ -1435,6 +1466,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
       "mu" = mean(transformed_data),
       "sigma" = sd(transformed_data),
       "lambda" = power.transform::get_lambda(transformer),
+      "shift" = power.transform::get_shift(transformer),
+      "scale" = power.transform::get_scale(transformer),
       "transformation" = name
     )
 
@@ -1528,6 +1561,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     MoreArgs = list("x" = x),
     SIMPLIFY = FALSE
   )
+  names(data) <- transformer_labels
 
   # Parse transformed data
   transformed_data <- data.table::rbindlist(
@@ -1650,7 +1684,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     heights = c(0.5, 1.0)
   )
 
-  return(p)
+  return(list("data" = data, "plot"= p))
 }
 
 

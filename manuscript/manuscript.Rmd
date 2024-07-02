@@ -612,17 +612,65 @@ cap <- paste0(
 
 Invariant power transformations are intended to yield improved transformations to normality
 in the presence of large shifts in location, scales far from unity, or both.
-We previously demonstrated this property using simulations, and will now demonstrate
-it using examples from real datasets.
+Above, this characteristic was assessed using simulations. Below, this characteristic
+will be evaluated using examples from real datasets.
 
-### Age in a ...
+### Age of patients with lung cancer
 
-In health-related datasets patient age is a common characteristic.
+A common variable in health-related datasets is age.
+Here we use data on 228 patients with lung cancer that was collected and published by Loprinzi et al. [@Loprinzi1994-cd].
+The age in the cohort was $62.4 \pm 9.1$ (mean ± standard deviation) years.
+Applying conventional and invariant Yeo-Johnson transformations to patient age yielded the following results, see Figure \ref{fig:lung-cancer-age}:
+no transformation (residual sum $\sum r_i = 16.5$);
+conventional transformation ($\lambda = 2.0$, $\sum r_i = 11.5$, $\mu_{YJ} = 1.8 \cdot 10^3$, $\sigma_{YJ} = 0.5 \cdot 10^3$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 2.0$, $\sum r_i = 11.5$, $\mu_{YJ} = 1.8 \cdot 10^3$, $\sigma_{YJ} = 0.5 \cdot 10^3$);
+shift- and scale invariant transformation ($\lambda = 0.9$, $\sum r_i = 8.8$, $\mu_{YJ} = 1.2$, $\sigma_{YJ} = 1.1$);
+and robust shift- and scale-invariant transformation ($\lambda = 0.8$, $\sum r_i = 10.6$, $\mu_{YJ} = 1.2$, $\sigma_{YJ} = 1.0$).
 
-Show invariance to units (days vs years)
+```{r lung-cancer-age, warning=FALSE, message=FALSE, fig.cap=cap}
+cap <- paste0(
+  "Quantile-quantile plots for age of patients with lung cancer, expressed in years. ",
+  "The left panel shows the quantile-quantile plot for the original data. ",
+  "The middle panel shows the quantile-quantile plots for data transformed using ",
+  "the original Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation \\cite{Raymaekers2021-kq}. ",
+  "The right panels shows the quantile-quantile plots for data transformed using ",
+  "the non-robust and robust invariant transformations."
+)
 
-### Body mass of penguins
-modeldata::penguins$body_mass_g
+out <- .plot_lung_cancer_age(plot_theme = plot_theme)
+out$plot
+```
+
+Shift- and scale-invariant transformation leads to a lower overall residual sum, indicating a better transformation.
+Moreover, conventional transformations inflated the mean $\mu_{YJ}$ and standard deviation $\sigma_{YJ}$ of the age variable after transformation.
+The empirical central normality test did not detect any statistically significant deviations from central normality for any transformation (all $p \geq 0.78$).
+
+
+### Penguin body mass
+
+Gorman, Williams and Fraser recorded body mass (in grams) of 342 penguins of three different species [@Gorman2014-eo].
+The body mass was $(4.2 \pm 0.8) \cdot 10^3$ (mean ± standard deviation) grams.
+Applying conventional and invariant Yeo-Johnson transformations to patient age yielded the following results, see Figure \ref{fig:penguin-body-mass}:
+no transformation (residual sum $\sum r_i = 48.0$);
+conventional transformation ($\lambda = 0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.102$, $\sigma_{YJ} = 4 \cdot 10^{-3}$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.101$, $\sigma_{YJ} = 4 \cdot 10^{-3}$);
+shift- and scale invariant transformation ($\lambda = 0.5$, $\sum r_i = 26.8$, $\mu_{YJ} = 0.9$, $\sigma_{YJ} = 0.9$);
+and robust shift- and scale-invariant transformation ($\lambda = 0.4$, $\sum r_i = 23.1$, $\mu_{YJ} = 0.8$, $\sigma_{YJ} = 0.8$).
+
+```{r penguin-body-mass, warning=FALSE, message=FALSE, fig.cap=cap}
+cap <- paste0(
+  "Quantile-quantile plots for penguin body mass, measured in grams. ",
+  "The left panel shows the quantile-quantile plot for the original data. ",
+  "The middle panel shows the quantile-quantile plots for data transformed using ",
+  "the original Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation \\cite{Raymaekers2021-kq}. ",
+  "The right panels shows the quantile-quantile plots for data transformed using ",
+  "the non-robust and robust invariant transformations."
+)
+
+out <- .plot_penguin_body_mass(plot_theme = plot_theme)
+out$plot
+```
+
 
 ### Longitudinal coordinates in the Ames housing dataset
 
@@ -638,7 +686,7 @@ We previously simulated data to assess invariant power transformations and their
 
 ```{r top-gear, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
-  "Quantile-quantile plots for the fuel consumption data in the Top Gear dataset. ",
+  "Quantile-quantile plots for fuel consumption data in the Top Gear dataset. ",
   "The dataset contains three strong outliers for highly fuel-efficient vehicles.",
   "The left panel shows the quantile-quantile plot for the original data. ",
   "The empirical central normality test indicates that the original data do not deviate significantly from central normality ($p=0.76$).",
@@ -651,9 +699,11 @@ cap <- paste0(
   "Samples with observed quantiles below $-3.0$ or above $3.0$ are indicated by crosses."
 )
 
-.plot_top_gear(
+out <- .plot_top_gear(
   plot_theme = plot_theme
 )
+
+out$plot
 ```
 
 The Top Gear dataset contains data on 297 vehicles that appeared on the BBC television show *Top Gear*. Within this dataset, the fuel consumption feature contains outliers due to highly fuel-efficient vehicles. Figure \ref{fig:top-gear} shows that the outliers cause non-robust transformations to fail to transform the data to a centrally normal distribution (empirical central normality test $p = 0.01$ and $p=0.03$ for conventional and invariant transformations, respectively). Robust transformations produce distributions that are centrally normal (empirical central normality test $p > 0.05$).
@@ -675,9 +725,11 @@ cap <- paste0(
   "Samples with observed quantiles below $-3.0$ or above $3.0$ are indicated by crosses."
 )
 
-.plot_ischemic_stroke(
+out <- .plot_ischemic_stroke(
   plot_theme = plot_theme
 )
+
+out$plot
 ```
 The ischemic stroke dataset contains historic data from 126 patients with risk at ischemic stroke [@Kuhn2019-kt].
 These patients underwent Computed Tomography Angiography to characterize the carotid artery blockages.
