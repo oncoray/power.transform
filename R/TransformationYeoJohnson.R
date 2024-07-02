@@ -654,7 +654,7 @@ setMethod(
 
     str <- paste0(
       "A ", ifelse(object@robust, "robust ", ""),
-      ifelse(object@shift != 0.0, "shifted ", ""),
+      ifelse(object@shift != 0.0, "shift-invariant ", ""),
       "Yeo-Johnson transformation object"
     )
 
@@ -678,10 +678,20 @@ setMethod(
   signature(object = "transformationYeoJohnsonInvariant"),
   function(object) {
 
+
+    if (object@shift != 0.0 && object@scale != 1.0) {
+      invariant_str <- "shift- and scale-invariant "
+    } else if (object@shift != 0.0) {
+      invariant_str <- "shift-invariant "
+    } else if (object@scale != 1.0) {
+      invariant_str <- "scale-invariant "
+    } else {
+      invariant_str <- ""
+    }
+
     str <- paste0(
       "A ", ifelse(object@robust, "robust ", ""),
-      ifelse(object@shift != 0.0, "shifted ", ""),
-      ifelse(object@scale != 1.0, "scaled ", ""),
+      invariant_str,
       "Yeo-Johnson transformation object"
     )
 
