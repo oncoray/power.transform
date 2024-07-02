@@ -1401,6 +1401,20 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 
 
+.plot_ames_latitude <- function(plot_theme, lambda_limit = NULL) {
+  require(modeldata)
+
+  return(
+    ..plot_real_data(
+      plot_theme = plot_theme,
+      x = modeldata::ames$Latitude,
+      lambda_limit = NULL
+    )
+  )
+}
+
+
+
 .plot_top_gear <- function(plot_theme) {
   require(robustHD)
 

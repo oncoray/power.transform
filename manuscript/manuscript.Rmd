@@ -649,7 +649,7 @@ The empirical central normality test did not detect any statistically significan
 ### Penguin body mass
 
 Gorman, Williams and Fraser recorded body mass (in grams) of 342 penguins of three different species [@Gorman2014-eo].
-The body mass was $(4.2 \pm 0.8) \cdot 10^3$ (mean ± standard deviation) grams.
+The body mass was $(4.2 \pm 0.8) \cdot 10^3$ (mean ± standard deviation) grams, and not centrally normal ($p = 0.03$).
 Applying conventional and invariant Yeo-Johnson transformations to patient age yielded the following results, see Figure \ref{fig:penguin-body-mass}:
 no transformation (residual sum $\sum r_i = 48.0$);
 conventional transformation ($\lambda = 0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.102$, $\sigma_{YJ} = 4 \cdot 10^{-3}$);
@@ -673,14 +673,35 @@ out$plot
 Shift- and scale-invariant transformation leads to a lower overall residual sum, indicating a better transformation.
 Moreover, conventional transformations led to low standard deviation $\sigma_{YJ}$ of the body mass variable after transformation.
 The empirical central normality test did not detect any statistically significant deviations from central normality for any transformation (all $p \geq 0.38$).
-The distribution of the original data was not centrally normal ($p = 0.03$).
 
 
-### Longitudinal coordinates in the Ames housing dataset
 
-Datasets where invariance has better properties in terms of lambda and resulting mean and standard deviation.
-modeldata::ischemic_stroke$age
-modeldata::ames$Longitudinal
+### Latitude in the Ames housing dataset
+
+Geospatial datasets usually contain coordinates.
+The Ames housing dataset contains data on 2930 properties that were sold between 2006 and 2010 [@De-Cock2011-jf], including their geospatial coordinates.
+The latitude was $42.03 \pm 0.02)$ (mean ± standard deviation).
+Applying conventional and invariant Yeo-Johnson transformations to latitude yielded the following results, see Figure \ref{fig:ames-latitude}:
+no transformation (residual sum $\sum r_i = 328$);
+conventional transformation ($\lambda = 62.1$, $\sum r_i = 319$, $\mu_{YJ} = 4.8 \cdot 10^{99}$, $\sigma_{YJ} = 0.1 \cdot 10^{99}$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 95.4$, $\sum r_i = 319$, $\mu_{YJ} = $, $\sigma_{YJ} = $);
+shift- and scale invariant transformation ($\lambda = 1.5$, $\sum r_i = 326$, $\mu_{YJ} = $, $\sigma_{YJ} = $);
+and robust shift- and scale-invariant transformation ($\lambda = 1.4$, $\sum r_i = 311$, $\mu_{YJ} = $, $\sigma_{YJ} = $).
+
+```{r ames-latitude, warning=FALSE, message=FALSE, fig.cap=cap}
+cap <- paste0(
+  "Quantile-quantile plots for penguin body mass, measured in grams. ",
+  "The left panel shows the quantile-quantile plot for the original data. ",
+  "The middle panel shows the quantile-quantile plots for data transformed using ",
+  "the original Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation \\cite{Raymaekers2021-kq}. ",
+  "The right panels shows the quantile-quantile plots for data transformed using ",
+  "the non-robust and robust invariant transformations."
+)
+
+out <- .plot_ames_latitude(plot_theme = plot_theme)
+out$plot
+```
+
 
 ## Robustness against outliers
 
