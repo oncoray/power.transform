@@ -670,6 +670,10 @@ cap <- paste0(
 out <- .plot_penguin_body_mass(plot_theme = plot_theme)
 out$plot
 ```
+Shift- and scale-invariant transformation leads to a lower overall residual sum, indicating a better transformation.
+Moreover, conventional transformations led to low standard deviation $\sigma_{YJ}$ of the body mass variable after transformation.
+The empirical central normality test did not detect any statistically significant deviations from central normality for any transformation (all $p \geq 0.38$).
+The distribution of the original data was not centrally normal ($p = 0.03$).
 
 
 ### Longitudinal coordinates in the Ames housing dataset
