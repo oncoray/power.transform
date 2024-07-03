@@ -108,7 +108,7 @@ cap <- paste0(
 
 Here we make the following contributions:
 
--   We devise shift and scale invariant versions of the Box-Cox and Yeo-Johnson transformation, including versions robust to outliers.
+-   We devise location- and scale-invariant versions of the Box-Cox and Yeo-Johnson transformation, including versions robust to outliers.
 
 -   We define an empirical central normality test for detecting cases where power transformations fail to yield an approximately normally distributed transformed feature.
 
@@ -118,7 +118,8 @@ Here we make the following contributions:
 
 ## Location and scale invariant power transformation
 
-Box-Cox and Yeo-Johnson transformations are modified by introducing shift parameter $x_0$ and scale parameter $s$ into equations \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}. The location and scale invariant Box-Cox transformation of a feature value $x_i$ of feature $\mathbf{X}$ under transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$ is then:
+Box-Cox and Yeo-Johnson transformations are modified by introducing shift parameter $x_0$ and scale parameter $s$ into equations \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}.
+The location- and scale-invariant Box-Cox transformation of a feature value $x_i$ of feature $\mathbf{X}$ under transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$ is then:
 
 ```{=latex}
 \begin{equation}
@@ -130,7 +131,7 @@ Box-Cox and Yeo-Johnson transformations are modified by introducing shift parame
 \end{cases}
 \end{equation}
 ```
-where $x_i - x_0 > 0$. Likewise, the shift and scale invariant Yeo-Johnson transformation of a feature value $x_i$ under transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$ is:
+where $x_i - x_0 > 0$. Likewise, the location- and scale-invariant Yeo-Johnson transformation of a feature value $x_i$ under transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$ is:
 
 ```{=latex}
 \begin{equation}
@@ -414,7 +415,7 @@ To find the optimal values for the weighting function parameters $k_1$ and $k_2$
 The double sum in right-hand side of the above equation can be considered as the loss that should be minimised.
 As mentioned earlier, transformation parameters are estimated using the BOBYQA algorithm for derivative-free bound constraint optimisation [@Powell2009-zb] through maximum likelihood estimation.
 
-The optimal weighting function parameters for weighted MLE are shown in Tables \ref{tab:optimal-weighting-parameters-box-cox} and \ref{tab:optimal-weighting-parameters-yeo-johnson} for robust, shift-sensitive Box-Cox and Yeo-Johnson transformations, respectively.
+The optimal weighting function parameters for weighted MLE are shown in Tables \ref{tab:optimal-weighting-parameters-box-cox} and \ref{tab:optimal-weighting-parameters-yeo-johnson} for robust, location- and scale-invariant Box-Cox and Yeo-Johnson transformations, respectively.
 
 ```{r include = FALSE, eval = FALSE}
 # This writes the lookup table for two-sided weighting parameters.
@@ -436,7 +437,7 @@ usethis::use_data(
 ```{=latex}
 \begin{table}
 \begin{center}
-\caption{Optimal weighting parameters and corresponding loss for \textbf{shift-sensitive Box-Cox} power transformations. $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values, and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column. The {optimal} column shows the optimal parameter values. The \textit{loss} column shows the loss achieved by each method, under optimised parameters. Lower loss indicates better robustness against outliers.}
+\caption{Optimal weighting parameters and corresponding loss for \textbf{location- and scale-invariant Box-Cox} power transformations. $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values, and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column. The {optimal} column shows the optimal parameter values. The \textit{loss} column shows the loss achieved by each method, under optimised parameters. Lower loss indicates better robustness against outliers.}
 \label{tab:optimal-weighting-parameters-box-cox}
 \begin{tabular}{l r r r r r r r}
 
@@ -516,14 +517,14 @@ cap <- paste0(
 
 To develop an empirical test for central normality we need to consider two parameters: the central portion $\kappa$ as a fixed parameter, and test statistic $\tau_{\text{gof}}$. We will first define the central portion $\kappa$.
 
-First we draw $m_d=10000$ random asymmetric generalised normal distributions. As before, each distribution is parametrised with a randomly chosen skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$. Location and scale parameters are set as $\mu = 0$ and $\sigma = 1$, respectively. $n = \lceil 10^\gamma \rceil$ values are then randomly drawn, with $\gamma \sim U\left(1.47, 3.00\right)$, which leads to between $30$ and $1000$ values being drawn to create $\mathbf{X}_i$. As before, for each distribution, up to $10 \%$ of instances are replaced by outlier values, and this is repeated $10$ times. We then compute residuals after optimising robust shift-sensitive transformations with the empirical tapered cosine weighting method.
+First we draw $m_d=10000$ random asymmetric generalised normal distributions. As before, each distribution is parametrised with a randomly chosen skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$. Location and scale parameters are set as $\mu = 0$ and $\sigma = 1$, respectively. $n = \lceil 10^\gamma \rceil$ values are then randomly drawn, with $\gamma \sim U\left(1.47, 3.00\right)$, which leads to between $30$ and $1000$ values being drawn to create $\mathbf{X}_i$. As before, for each distribution, up to $10 \%$ of instances are replaced by outlier values, and this is repeated $10$ times. We then compute residuals after optimising robust location- and scale-invariant transformations with the empirical tapered cosine weighting method.
 
 Figure \ref{fig:empirical-central-normality-residual-error} shows the residual errors of the transformed distribution as function of the empirical probability. As expected, the largest deviations from normality appear on the extremities of this range. For Box-Cox, the effect of outliers on the lower end of the distribution leads to noticeable asymmetry. Between very low and very high empirical probabilities, residual errors are constrained and relatively flat. This is the candidate range for the central portion of the data.
 
 ```{r empirical-central-normality-residual-error, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
   "Residual error as a function of empirical probability. ",
-  "Percentiles of the error are shown for robust, shift-sensitive transformations of 10000 randomly drawn asymmetric ",
+  "Percentiles of the error are shown for robust, location- and scale-invariant transformations of 10000 randomly drawn asymmetric ",
   "generalised normal distributions, with 10 randomly drawn outliers distributions, ",
   "(up to 10% of samples) each. Larger errors occur for more extreme values at the edges of each distribution. ",
   "For comparison, the 99th percentile of residual errors for transformations of outlier-free distributions are shown (grey dashed line).")
@@ -533,7 +534,7 @@ cap <- paste0(
   manuscript_dir = manuscript_dir)
 
 ```
-We then consider the empirical probability of type I errors: the probability of incorrectly classifying a centrally normal distribution as being non-normal based on the test statistic. Under the assumption that the asymmetric generalised normal distributions are centrally normal after robust transformation, this produces the relationship shown in Figure \ref{fig:empirical-central-normality-type-1-error-rate}. Since for $\kappa \leq 0.80$ error curves for both transformation methods are similar, we fix the value of the central portion $\kappa$ to 0.80. In the remaining we will use the empirical central normality test statistic values defined using robust shift-sensitive Yeo-Johnson transformations, as it is slightly more strict. This leads to test statistic values listed in Table \ref{tab:empirical-central-normality}
+We then consider the empirical probability of type I errors: the probability of incorrectly classifying a centrally normal distribution as being non-normal based on the test statistic. Under the assumption that the asymmetric generalised normal distributions are centrally normal after robust transformation, this produces the relationship shown in Figure \ref{fig:empirical-central-normality-type-1-error-rate}. Since for $\kappa \leq 0.80$ error curves for both transformation methods are similar, we fix the value of the central portion $\kappa$ to 0.80. In the remaining we will use the empirical central normality test statistic values defined using robust location- and scale-invariant Yeo-Johnson transformations, as it is slightly more strict. This leads to test statistic values listed in Table \ref{tab:empirical-central-normality}
 
 ```{r empirical-central-normality-type-1-error-rate, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
@@ -624,8 +625,8 @@ Applying conventional and invariant Yeo-Johnson transformations to patient age y
 no transformation (residual sum $\sum r_i = 16.5$);
 conventional transformation ($\lambda = 2.0$, $\sum r_i = 11.5$, $\mu_{YJ} = 1.8 \cdot 10^3$, $\sigma_{YJ} = 0.5 \cdot 10^3$);
 Raymaekers and Rousseeuw's robust adaptation ($\lambda = 2.0$, $\sum r_i = 11.5$, $\mu_{YJ} = 1.8 \cdot 10^3$, $\sigma_{YJ} = 0.5 \cdot 10^3$);
-shift- and scale invariant transformation ($\lambda = 0.9$, $\sum r_i = 8.8$, $\mu_{YJ} = 1.2$, $\sigma_{YJ} = 1.1$);
-and robust shift- and scale-invariant transformation ($\lambda = 0.8$, $\sum r_i = 10.6$, $\mu_{YJ} = 1.2$, $\sigma_{YJ} = 1.0$).
+location- and scale invariant transformation ($\lambda = 0.9$, $\sum r_i = 8.8$, $\mu_{YJ} = 1.2$, $\sigma_{YJ} = 1.1$);
+and robust location- and scale-invariant transformation ($\lambda = 0.8$, $\sum r_i = 10.6$, $\mu_{YJ} = 1.2$, $\sigma_{YJ} = 1.0$).
 
 ```{r lung-cancer-age, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
@@ -641,7 +642,7 @@ out <- .plot_lung_cancer_age(plot_theme = plot_theme)
 out$plot
 ```
 
-Shift- and scale-invariant transformation leads to a lower overall residual sum, indicating a better transformation.
+Location- and scale-invariant transformation leads to a lower overall residual sum, indicating a better transformation.
 Moreover, conventional transformations inflated the mean $\mu_{YJ}$ and standard deviation $\sigma_{YJ}$ of the age variable after transformation.
 The empirical central normality test did not detect any statistically significant deviations from central normality for any transformation (all $p \geq 0.78$).
 
@@ -654,8 +655,8 @@ Applying conventional and invariant Yeo-Johnson transformations to patient age y
 no transformation (residual sum $\sum r_i = 48.0$);
 conventional transformation ($\lambda = 0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.102$, $\sigma_{YJ} = 4 \cdot 10^{-3}$);
 Raymaekers and Rousseeuw's robust adaptation ($\lambda = 0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.101$, $\sigma_{YJ} = 4 \cdot 10^{-3}$);
-shift- and scale invariant transformation ($\lambda = 0.5$, $\sum r_i = 26.8$, $\mu_{YJ} = 0.9$, $\sigma_{YJ} = 0.9$);
-and robust shift- and scale-invariant transformation ($\lambda = 0.4$, $\sum r_i = 23.1$, $\mu_{YJ} = 0.8$, $\sigma_{YJ} = 0.8$).
+location- and scale invariant transformation ($\lambda = 0.5$, $\sum r_i = 26.8$, $\mu_{YJ} = 0.9$, $\sigma_{YJ} = 0.9$);
+and robust location- and scale-invariant transformation ($\lambda = 0.4$, $\sum r_i = 23.1$, $\mu_{YJ} = 0.8$, $\sigma_{YJ} = 0.8$).
 
 ```{r penguin-body-mass, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
@@ -670,7 +671,7 @@ cap <- paste0(
 out <- .plot_penguin_body_mass(plot_theme = plot_theme)
 out$plot
 ```
-Shift- and scale-invariant transformation leads to a lower overall residual sum, indicating a better transformation.
+Location- and scale-invariant transformation produced a lower overall residual sum, indicating a better transformation.
 Moreover, conventional transformations led to low standard deviation $\sigma_{YJ}$ of the body mass variable after transformation.
 The empirical central normality test did not detect any statistically significant deviations from central normality for any transformation (all $p \geq 0.38$).
 
@@ -684,13 +685,13 @@ The latitude was $42.03 \pm 0.02)$ (mean ± standard deviation).
 Applying conventional and invariant Yeo-Johnson transformations to latitude yielded the following results, see Figure \ref{fig:ames-latitude}:
 no transformation (residual sum $\sum r_i = 328$);
 conventional transformation ($\lambda = 62.1$, $\sum r_i = 319$, $\mu_{YJ} = 4.8 \cdot 10^{99}$, $\sigma_{YJ} = 0.1 \cdot 10^{99}$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = 95.4$, $\sum r_i = 319$, $\mu_{YJ} = $, $\sigma_{YJ} = $);
-shift- and scale invariant transformation ($\lambda = 1.5$, $\sum r_i = 326$, $\mu_{YJ} = $, $\sigma_{YJ} = $);
-and robust shift- and scale-invariant transformation ($\lambda = 1.4$, $\sum r_i = 311$, $\mu_{YJ} = $, $\sigma_{YJ} = $).
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 95.4$, $\sum r_i = 319$, $\mu_{YJ} = 6.4 \cdot 10^{153}$, $\sigma_{YJ} = 0.3 \cdot 10^{153}$);
+location- and scale invariant transformation ($\lambda = 1.5$, $\sum r_i = 326$, $\mu_{YJ} = -1.2$, $\sigma_{YJ} = 0.8$);
+and robust location- and scale-invariant transformation ($\lambda = 1.4$, $\sum r_i = 311$, $\mu_{YJ} = -1.3$, $\sigma_{YJ} = 0.9$).
 
 ```{r ames-latitude, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
-  "Quantile-quantile plots for penguin body mass, measured in grams. ",
+  "Quantile-quantile plots for latitude coordinate in a housing dataset. ",
   "The left panel shows the quantile-quantile plot for the original data. ",
   "The middle panel shows the quantile-quantile plots for data transformed using ",
   "the original Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation \\cite{Raymaekers2021-kq}. ",
@@ -701,11 +702,15 @@ cap <- paste0(
 out <- .plot_ames_latitude(plot_theme = plot_theme)
 out$plot
 ```
+Every transformation reduced the residual sum.
+The non-robust location- and scale-invariant transformation did not improve over conventional alternatives and yielded a data distribution lacking central normality (empirical central normality test: $p=0.05$).
+TranConventional transformations had high values for the $\lambda$ parameter.
 
 
 ## Robustness against outliers
 
-We previously simulated data to assess invariant power transformations and their robustness against outliers. In this section, we assess these aspects using real data.
+We previously simulated data to assess invariant power transformations and their robustness against outliers.
+Here, we assess invariant power transformations in real data with outliers.
 
 ### Fuel efficiency in the Top Gear dataset
 
@@ -745,7 +750,7 @@ cap <- paste0(
   "the original Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation [@Raymaekers2021-kq]. ",
   "For these, the empirical central normality test yields $p=0.01$, and $p=0.61$, respectively. ",
   "The right panels shows the quantile-quantile plots for data transformed using ",
-  "the non-robust and robust shift-sensitive transformations. ",
+  "the non-robust and robust location- and scale-invariant transformations. ",
   "For these, the empirical central normality test yields $p=0.02$, and $p=0.10$, respectively. ",
   "Samples with observed quantiles below $-3.0$ or above $3.0$ are indicated by crosses."
 )
@@ -896,15 +901,19 @@ cap <- paste0(
 
 # Discussion
 
-In their work, Box and Cox already mention a transformation with a shift parameter, but preferred the now well-known version in Eq. **INSERT REFERENCE** for the theoretical analysis in their paper [@Box1964-mz].
+In their work on power transformation, Box and Cox already mention transformation with a shift parameter, but preferred the version in Eq. **INSERT REFERENCE** for the theoretical analysis in their paper [@Box1964-mz], which subsequently became the convention. Yeo and Johnson's power transformation lacks a shift parameter altogether [@Yeo2000-vw].
+We showed that these power transformations are sensitive to location and scale of data distributions.
+To mitigate this issue, we defined location- and scale-invariant variants of the Box-Cox and Yeo-Johnson transformations.
+We furthermore assessed methods for making these transformations robust to outliers, and devised an empirical test for central normality.
+We showed that Conventional transformations The location- and scale-invariant transformations removed the effect of location shifts away from 0 and scaling away from 1 on estimation of the transformation parameter $\lambda$.
 
-We investigated the use of robust invariant power transformation as part of the machine learning process, and did not find a major positive or negative effect. A possible explanation is that numeric features with large location shifts ($|\mu| > 1000.0$) were uncommon. Of the 4886 numeric features in the 232 datasets with numeric features, 266 (5%) features in 34 datasets had large location shifts, of which 200 appeared in just 2 datasets.
+We investigated the use of robust invariant power transformation as part of the machine learning process, and did not find a major positive or negative effect compared to conventional transformations. A possible explanation is that numeric features with large location shifts ($|\mu| > 1000.0$) were uncommon. Of the 4886 numeric features in the 232 datasets with numeric features, 266 (5%) features in 34 datasets had large location shifts, of which 200 appeared in just 2 datasets.
 
 # Conclusion
 
 # Code availability
 
-Shift-sensitive power transformations are implemented in the `power.transform` package. This manuscript was created using R Markdown, and is available from [https://github.com/alexzwanenburg/power.transform].
+Location- and scale-invariant power transformations are implemented in the `power.transform` package. This manuscript was created using R Markdown, and is available from [https://github.com/alexzwanenburg/power.transform].
 
 
 
