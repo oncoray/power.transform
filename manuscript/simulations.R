@@ -26,10 +26,10 @@
     # generator ----------------------------------------------------------------
     generate_experiment_data <- coro::generator(
       function(
-    x_normal,
-    x_right_skewed,
-    x_left_skewed,
-    estimation_methods
+        x_normal,
+        x_right_skewed,
+        x_left_skewed,
+        estimation_methods
       ) {
         shift_range <- 10^seq(from = 0, to = 6, by = 0.1)
         scale_range <- 10^seq(from = 0, to = 6, by = 0.1)
@@ -61,7 +61,7 @@
 
                   # Iterate over shift range.
                   for (d in shift_range) {
-                    yield(list(
+                    coro::yield(list(
                       "x" = x + d,
                       "d" = d,
                       "s" = NA_real_,
@@ -77,7 +77,7 @@
 
                   # Iterate over scale range.
                   for (s in scale_range) {
-                    yield(list(
+                    coro::yield(list(
                       "x" = x * s,
                       "d" = NA_real_,
                       "s" = s,
