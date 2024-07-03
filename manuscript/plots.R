@@ -302,7 +302,10 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
 
   # Process / read data.
-  data <- .get_shifted_scaled_distribution_data(manuscript_dir = manuscript_dir)
+  data <- .get_shifted_scaled_distribution_data(
+    manuscript_dir = manuscript_dir,
+    main_manuscript = TRUE
+  )
   data <- data[estimation_method == "MLE"]
 
   # Density plots
