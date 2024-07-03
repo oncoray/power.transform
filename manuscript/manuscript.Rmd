@@ -901,13 +901,21 @@ cap <- paste0(
 
 # Discussion
 
-In their work on power transformation, Box and Cox already mention transformation with a shift parameter, but preferred the version in Eq. **INSERT REFERENCE** for the theoretical analysis in their paper [@Box1964-mz], which subsequently became the convention. Yeo and Johnson's power transformation lacks a shift parameter altogether [@Yeo2000-vw].
+In their work on power transformation, Box and Cox already mention transformation with a shift parameter, but preferred the version in Eq. \ref{eqn:box-cox-original} for the theoretical analysis in their paper [@Box1964-mz], which subsequently became the convention.
+Yeo and Johnson's power transformation lacks a shift parameter altogether [@Yeo2000-vw].
 We showed that these power transformations are sensitive to location and scale of data distributions.
 To mitigate this issue, we defined location- and scale-invariant variants of the Box-Cox and Yeo-Johnson transformations.
 We furthermore assessed methods for making these transformations robust to outliers, and devised an empirical test for central normality.
-We showed that Conventional transformations The location- and scale-invariant transformations removed the effect of location shifts away from 0 and scaling away from 1 on estimation of the transformation parameter $\lambda$.
 
-We investigated the use of robust invariant power transformation as part of the machine learning process, and did not find a major positive or negative effect compared to conventional transformations. A possible explanation is that numeric features with large location shifts ($|\mu| > 1000.0$) were uncommon. Of the 4886 numeric features in the 232 datasets with numeric features, 266 (5%) features in 34 datasets had large location shifts, of which 200 appeared in just 2 datasets.
+Robust location- and scale-invariant transformations form a suitable replacement for their conventional counterparts.
+They demonstrated robustness against outliers and prevent inaccurate transformations and potential numerical issues due to location and scale of the data distribution.
+This is particularly relevant for automated data processing, where such issues may go unnoticed.
+However, we did not find a measurable benefit for -- nor detriment to -- model performance in a machine learning experiment of 232 real-world datasets that contained at least one numeric variable.
+One reason may be that numeric features with large location shifts ($|\mu| > 1000.0$) were uncommon.
+Of the 4886 numeric variables in the 232 datasets, 266 (5%) variables in 34 datasets had large location shifts, of which 200 appeared in just 2 datasets.
+
+Robust location- and scale-invariant transformations are realised by simultaneously optimising three parameters, i.e. transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$, using maximum likelihood optimisation.
+It is feasible that standardisation of a numeric variable (e.g., through subtracting its median value and division by its interquartile range) prior to conventional transformations may achieve a similar effect in mitigating sensitivity to the distribution's location and scale.
 
 # Conclusion
 

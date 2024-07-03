@@ -54,7 +54,7 @@ parse_mean_sd_latex <- function(mu, sigma, digits=2L){
 
 # Appendix A: Log-likelihood functions for location and scale invariant power transformation
 
-Location and scale-invariant Box-Cox and Yeo-Johnson transformations are parameterised using location $x_0$ and scale $s$ parameters, in addition to transformation parameter $\lambda$.
+Location and scale-invariant Box-Cox and Yeo-Johnson transformations are parametrised using location $x_0$ and scale $s$ parameters, in addition to transformation parameter $\lambda$.
 This leads to the following transformations. The location and scale-invariant Box-Cox transformation is:
 
 ```{=latex}
