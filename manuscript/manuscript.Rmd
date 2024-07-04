@@ -915,9 +915,15 @@ One reason may be that numeric features with large location shifts ($|\mu| > 100
 Of the 4886 numeric variables in the 232 datasets, 266 (5%) variables in 34 datasets had large location shifts, of which 200 appeared in just 2 datasets.
 
 Robust location- and scale-invariant transformations are realised by simultaneously optimising three parameters, i.e. transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$, using maximum likelihood optimisation.
-It is feasible that standardisation of a numeric variable (e.g., through subtracting its median value and division by its interquartile range) prior to conventional transformations may achieve a similar effect in mitigating sensitivity to the distribution's location and scale.
+Alternatively, standardisation of a numeric variable (e.g., through subtracting its median value and division by its interquartile range) prior to conventional power transformations may achieve a similar effect in reducing sensitivity to the distribution's location and scale.
+
+This study had the following limitations.
+First, in our experimental results we focussed on the Yeo-Johnson transformation because of its ability to handle variables with negative values, and did not consider the Box-Cox transformation.
+Likewise, we focussed on maximum likelihood estimation to optimise parameters, and did not investigate other metrics to the same extent, due to lack of demonstrable benefit (Appendix B).
 
 # Conclusion
+
+Robust location- and scale-invariant power transformations allow for automated power transformation of numerical variables/
 
 # Code availability
 
