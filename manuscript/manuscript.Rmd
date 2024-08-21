@@ -225,7 +225,7 @@ where $\mu_w$ and $\sigma^2_w$ are the weighted mean and weighted variance of th
 
 Other criteria aside from MLE can be used for finding robust transformation parameters, see Appendix B. For the remainder, we will use MLE as the optimisation criterion. 
 
-There are a few options based on which weights may be set. Here, we investigate three:
+Weights may be set using several methods. Here, we investigate three:
 
 - Set weights based on probabilities of the empirical distribution of the original feature $\mathbf{X}$. Probabilities are determined as $p_i = \frac{i - 1/3}{n + 1/3}$, with $i = 1, 2, \ldots n$, with $n$ the number of instances of feature $\mathbf{X}$.
 
@@ -233,7 +233,7 @@ There are a few options based on which weights may be set. Here, we investigate 
 
 - Set weights based on the residual error between the z-score of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$ and the theoretical z-score from a standard normal distribution: $r_i =\left| \left( \phi^{\lambda, x_0, s}(x_i) - \mu_M)\right) / \sigma_M - F^{-1}_{\mathcal{N}}(p_i) \right|$, with $\mu_M$, $\sigma_M$ and $p_i$ as defined above.
 
-Based on either of the above, weights are set using a weighting function. We will investigate the following functions, where $\dot{x}_i$ can be either $p^{*}_i=2 \left( p_i - 0.5\right)$ (so that the quantiles are zero-centred), $z_i$ or $r_i$:
+Weights are set using a weighting function for all three methods. We will investigate the following functions, where $\dot{x}_i$ can be either $p^{*}_i=2 \left( p_i - 0.5\right)$ (so that the quantiles are zero-centred), $z_i$ or $r_i$:
 
 - A step function, with $k_1 \geq 0$ as threshold parameter:
 ```{=latex}
@@ -303,7 +303,7 @@ f_{\beta}\left( \alpha \frac{\left| x - \mu \right|}{\sigma} \right) & \text{, }
 \end{cases}
 \end{equation}
 ```
-Here $\alpha \in (0,1)$ is a skewness parameter. $\alpha > 0.5$ creates a distribution with a negative skew, i.e. a left-skewed distribution. A right-skewed distribution is created for $\alpha < 0.5$. $\mu \in \mathcal{R}$ and $\sigma \in (0, \infty)$ are location and scale parameters, respectively. $f_{\alpha}$ thus describes the probability density function of an asymmetric generalised normal distribution, which we will refer to here and parametrise as $\mathcal{AGN}\left(\mu, \sigma, \alpha, \beta \right)$.
+Here, $\alpha \in (0,1)$ is a skewness parameter. $\alpha > 0.5$ creates a distribution with a negative skew, i.e. a left-skewed distribution. A right-skewed distribution is created for $\alpha < 0.5$. $\mu \in \mathcal{R}$ and $\sigma \in (0, \infty)$ are location and scale parameters, respectively. $f_{\alpha}$ thus describes the probability density function of an asymmetric generalised normal distribution, which we will refer to here and parametrise as $\mathcal{AGN}\left(\mu, \sigma, \alpha, \beta \right)$.
 
 We require a quantile function (or an approximation thereof) to draw random values from an asymmetric generalised normal distribution using inverse transform sampling. Gijbels et al. derived the following quantile function $F_{\alpha}^{-1}(p)$:
 
@@ -327,7 +327,7 @@ Here, $F_{\Gamma}^{-1}$ is the quantile function of the gamma distribution with 
 
 ## Empirical central normality test
 
-Power transformations aim to transform features to a normal distribution. However, this may not always be successful or possible. Deviations from normality can be detected by normality tests, such as the Shapiro-Wilk test [@Shapiro1965-zd]. In practice, normality tests may be too stringent to assess goodness of fit in presence of large sample sizes, outliers or a combination of the two. Here we develop an empirical test for central normality. The null hypothesis $H_0$ is that the distribution is centrally normal. The alternative hypothesis $H_1$ is that the distribution is not centrally normal.
+Power transformations aim to transform features to a normal distribution. However, this may not always be successful or possible. Deviations from normality can be detected by normality tests, such as the Shapiro-Wilk test [@Shapiro1965-zd]. In practice, normality tests may be too stringent to assess goodness of fit in presence of large sample sizes, outliers, or both. Here we develop an empirical test for central normality. The null hypothesis $H_0$ is that the distribution is centrally normal. The alternative hypothesis $H_1$ is that the distribution is not centrally normal.
 
 Let central normality be defined as normality of central portion $\kappa$ of the data, i.e. $\mathbf{X}_{\text{central}} = \left\{x_i \in \mathbf{X} \, | \,  \frac{1-\kappa}{2} \leq  p_i \leq \frac{1 + \kappa}{2}\right\}$, with $p_i$ probabilities of the empirical distribution, as previously.
 We then compute the residual errors between the z-scores of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$ and the expected z-scores from a standard normal distribution: $r_i =\left| \left( \phi^{\lambda, x_0, s}(x_i) - \mu_M)\right) / \sigma_M - F^{-1}_{\mathcal{N}}(p_i) \right|$, with $\mu_M$ and $\sigma_M$ robust Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$ [@Huber1981-su].
@@ -339,16 +339,16 @@ The test statistic $\tau_{\text{ecn}}$ is then defined as:
 \tau_{\text{ecn}} = \frac{\sum_{i=1}^{N} r_i \left[r_i \in \mathbf{R}_{\text{central}}\right]}{\sum_{i=1}^N \left[r_i \in \mathbf{R}_{\text{central}}\right]} 
 \end{equation}
 ```
-Here $[\quad]$ denotes an Iverson bracket. The test statistic is equal to the mean of the residual errors of the central portion of the data. 
+Here $[\quad]$ denotes an Iverson bracket. The test statistic is equal to the mean of the residual errors of the central portion of the data.
 
 # Simulation
 
 In this section we simulate data to assess invariance to location and scale of the proposed power transformations, weighting for robust transformations, and to develop the empirical central normality test.
-The $\lambda$ parameter for conventional power transformations (Eqn. \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}) and $\lambda$, $x_0$ and $s$ parameters for location and scale invariant power transformations (Eqn. \ref{eqn:box-cox-invariant} and \ref{eqn:yeo-johnson-invariant}) are estimated using the BOBYQA algorithm for derivative-free bound constraint optimisation [@Powell2009-zb] through maximum likelihood estimation. Appendix B describes other criteria, and Appendix C the results of simulations using these criteria.
+The $\lambda$ parameter for conventional power transformations (Eqn. \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}), as well as $\lambda$, $x_0$ and $s$ parameters for location and scale invariant power transformations (Eqn. \ref{eqn:box-cox-invariant} and \ref{eqn:yeo-johnson-invariant}) are estimated using the BOBYQA algorithm for derivative-free bound constraint optimisation [@Powell2009-zb] through maximum likelihood estimation.
 
 ## Invariance to location and scale
 
-To assess whether the proposed power transformations lead to $\lambda$ values that are invariant to location and scale of the distribution, we simulate three different distributions. The first distribution is a normal distribution, as previously shown in Figure \ref{fig:decreased-normality}.
+To assess whether the proposed power transformations lead to values of $\lambda$ that are invariant to location and scale of the distribution, we simulate three different distributions. The first distribution is a normal distribution, as previously shown in Figure \ref{fig:decreased-normality}.
 We first randomly draw $10000$ values from a normal distribution: $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)$, or equivalently $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.5, 2\right)$.
 The second distribution is a right-skewed normal distribution $\mathbf{X}_{\text{right}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.2, 2\right)$.
 The third distribution is a left-skewed normal distribution $\mathbf{X}_{\text{left}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.8, 2\right)$.
