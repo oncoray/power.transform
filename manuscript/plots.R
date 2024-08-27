@@ -81,11 +81,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
   estimation_method <- distribution <- method <- version <- NULL
 
   # Process / read data.
-  data <- .get_shifted_scaled_distribution_data(
-    manuscript_dir = manuscript_dir,
-    main_manuscript = TRUE
+  data <- .get_data_problematic_transformations(
+    manuscript_dir = manuscript_dir
   )
-  data <- data[estimation_method == "MLE" & version == "conventional" & distribution == "normal"]
 
   # Get annotation settings.
   annotation_settings <- get_annotation_settings(plot_theme)

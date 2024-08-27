@@ -1,6 +1,6 @@
 ---
 title: "Location and Scale-Invariant Power Transformations for Transforming Data to Normality"
-author: "Alex Zwanenburg"
+author: "Alex Zwanenburg, Steffen Löck"
 date: "`r Sys.Date()`"
 output:
   pdf_document:
@@ -62,7 +62,7 @@ parse_mean_sd_latex <- function(mu, sigma, digits=2L){
 
 # Introduction
 
-Numerical variables in datasets may strongly deviate from normal distributions, e.g. by being skewed. This may complicate further analysis. Power transformations [@Tukey1957-rt] can help improve normality of such features. The two most commonly used transformations are that of @Box1964-mz and @Yeo2000-vw. The Box-Cox transformation of a feature value $x_i$ of feature $\mathbf{X}=\left\{x_1, x_2, \ldots, x_n \right\}$ under the transformation parameter $\lambda$ is defined as:
+Many statistical and several machine learning methods assume normality of the underlying data. However, numerical features in datasets may strongly deviate from normal distributions, e.g. by being skewed. Power transformations aim to stabilise variance and improve normality of such features [@Bartlett1947-rx, @Tukey1957-rt]. The two most commonly used transformations are that of @Box1964-mz and @Yeo2000-vw. The Box-Cox transformation of a feature value $x_i$ of feature $\mathbf{X}=\left\{x_1, x_2, \ldots, x_n \right\}$ under the transformation parameter $\lambda$ is defined as:
 
 ```{=latex}
 \begin{equation}
@@ -88,11 +88,19 @@ One limitation of the Box-Cox transformation is that it is only defined for $x_i
 \end{cases}
 \end{equation}
 ```
-The $\lambda$-parameter is typically optimised using maximum likelihood estimation under the assumption that the transformed feature is normally distributed. As noted by Raymaekers and Rousseeuw, this approach is very sensitive to the presence of outliers, and robust versions of Box-Cox and Yeo-Johnson transformations were devised [@Raymaekers2021-kq].
+The $\lambda$-parameter is typically optimised using maximum likelihood estimation under the assumption that the transformed feature is normally distributed. As noted by Raymaekers and Rousseeuw, this approach is sensitive to outliers, and robust versions of Box-Cox and Yeo-Johnson transformations were devised [@Raymaekers2021-kq].
 
-Power transformation does not guarantee that transformed variables are normally distributed. In fact, depending on location and scale of the variable, power transformation may decrease normality, as shown in Figure \ref{fig:decreased-normality}. This is problematic for automated power transformations, for three reasons. First, normality is often desired in machine learning applications. Second, a large negative or positive $\lambda$-parameter may lead to numeric issues. Third, we currently do not have a test to automatically reject poor transformations. Statistical tests for normality exist, such as the Shapiro-Wilk test [@Shapiro1965-zd]. However, given sufficiently large sample sizes, these tests can detect trivial deviations from normality and are therefore not well-suited for applications of automated power transformations in practice.
+Power transformation does not guarantee that transformed variables are normally distributed.
+Depending on location and scale of a feature and the presence of outliers, power transformation may decrease normality, as shown in Figure \ref{fig:decreased-normality}.
+This is problematic when normality of the transformed feature is not checked, e.g. in automated power transformation in machine learning workflows.
+Several issues may arise.
+First, some machine learning methods assume normality.
+Second, a large negative or positive $\lambda$-parameter may lead to numeric issues.
+Third, we currently do not have a test to automatically reject poor transformations to normality.
+Statistical tests for normality exist, such as the Shapiro-Wilk test [@Shapiro1965-zd].
+However, given sufficiently large sample sizes such tests can detect trivial deviations from normality.
 
-```{r decreased-normality, echo=FALSE, fig.cap=cap, fig.height=4.0, warning=FALSE}
+```{r decreased-normality, echo=FALSE, fig.cap=cap, fig.height=2.0, warning=FALSE}
 cap <- paste0(
   "Power transformations may reduce normality depending on location. ",
   "Variable $x$ consists of $10000$ values randomly drawn from a normal distribution. ",
@@ -110,6 +118,8 @@ cap <- paste0(
 Here we make the following contributions:
 
 -   We devise location- and scale-invariant versions of the Box-Cox and Yeo-Johnson transformation, including versions robust to outliers.
+
+-   We derive the maximum likelihood criterion for location- and scale-invariant Box-Cox and Yeo-Johnson transformations to allow for optimising transformation parameters.
 
 -   We define an empirical central normality test for detecting cases where power transformations fail to yield an approximately normally distributed transformed feature.
 
