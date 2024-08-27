@@ -1,3 +1,66 @@
+.get_data_problematic_transformations <- function(manuscript_dir) {
+  # Set seed.
+  set.seed(19L)
+
+  file_name <- file.path(manuscript_dir, "problematic_transformations_plot.RDS")
+  estimation_methods <- "mle"
+
+  x <- power.transform::ragn(10000L, location = 0, scale = 1 / sqrt(2), alpha = 0.5, beta = 2)
+
+  # generator ----------------------------------------------------------------
+  generate_experiment_data <- coro::generator(
+    function(x) {
+      shift_range <- 10^seq(from = 0, to = 6, by = 0.1)
+      scale_range <- 10^seq(from = -6, to = 0, by = 0.1)
+      outlier_range <- 10^seq(from = -1, to = 6, by = 0.1)
+
+      for (method in c("box_cox", "yeo_johnson")) {
+        # Iterate over shift range.
+        for (d in shift_range) {
+          coro::yield(list(
+            "x" = x + d,
+            "d" = d,
+            "s" = NA_real_,
+            "distribution" = distribution,
+            "method" = method,
+            "invariant" = invariant,
+            "robust" = robust,
+            "version" = version,
+            "estimation_method" = estimation_method,
+            "data_type" = "shifted"
+          ))
+        }
+
+        # Iterate over scale range.
+        for (s in scale_range) {
+          coro::yield(list(
+            "x" = x * s,
+            "d" = NA_real_,
+            "s" = s,
+            "distribution" = distribution,
+            "method" = method,
+            "invariant" = invariant,
+            "robust" = robust,
+            "version" = version,
+            "estimation_method" = estimation_method,
+            "data_type" = "scaled"
+          ))
+        }
+
+
+        for (d in outlier_shift_range) {
+          coro::yield(list(
+            "x" = c(x, offset + d),
+            "d" = d,
+            "method" = method,
+            "invariant" = FALSE,
+            "robust" = FALSE
+          ))
+      }
+    }
+  )
+}
+
 .get_shifted_scaled_distribution_data <- function(manuscript_dir, main_manuscript) {
   # Set seed.
   set.seed(19L)
