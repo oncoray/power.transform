@@ -39,15 +39,16 @@ source(file.path(manuscript_dir, "simulations.R"))
 source(file.path(manuscript_dir, "plots.R"))
 
 # Base font size.
-base_size <- 10
+base_size <- 9
 
 # Set general theme.
 plot_theme <- ggplot2::theme_light(base_size=base_size)
-plot_theme$plot.title$size <- ggplot2::rel(0.8)
+plot_theme$plot.title$size <- ggplot2::rel(1.0)
 plot_theme$plot.title$hjust <- 0.5
 plot_theme$strip.background <- ggplot2::element_blank()
 plot_theme$strip.text$colour <- NULL
 plot_theme$plot.margin <- grid::unit(c(2, 2, 2, 2), "points")
+plot_theme$legend.title
 
 parse_mean_sd_latex <- function(mu, sigma, digits=2L){
   return(paste0(
@@ -118,7 +119,7 @@ Here we make the following contributions:
 
 In this section, we will first introduce location and scale invariant versions of the Box-Cox and Yeo-Johnson transformations.
 Subsequently, we define weighted location and scale invariant transformations and weighting methods that allow for defining robust transformations.
-For the purpose of simulation we then define the quantile function for asymmetric generalised normal distributions.
+We then define the quantile function for asymmetric generalised normal distributions to enable random sampling.
 Finally, we define the overall framework for the empirical central normality test.
 
 ## Location and scale invariant power transformation
@@ -895,7 +896,7 @@ $-0.009$ for using robust invariant Yeo-Johnson transformation with empirical ce
 $-0.010$ for using robust invariant Yeo-Johnson transformation instead of conventional Yeo-Johnson transformation;
 and $-0.012$ for using using robust invariant Yeo-Johnson transformation with empirical central normality test instead of conventional Yeo-Johnson transformation.
 
-```{r marginal-effect-plot, echo=FALSE, fig.cap=cap, fig.height=12.0, warning=FALSE}
+```{r marginal-effect-plot, echo=FALSE, fig.cap=cap, fig.height=7.5, warning=FALSE}
 cap <- paste0(
   "Estimated marginal effect of learners, normalisation and transformation methods on ranked model performance scores in 22800 machine learning experiments on 285 datasets. ",
   "The top-left panel shows the marginal effect of learners, i.e. random forests and generalised linear models (GLM). ",

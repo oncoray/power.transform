@@ -269,7 +269,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
   require(ggplot2)
 
   # Prevent warnings due to non-standard evaluation.
-  estimation_method <- distribution <- method <- version <- NULL
+  estimation_method <- distribution <- method <- version <- transformation <- NULL
+  data_type <- NULL
 
   # Set seed.
   set.seed(19L)
@@ -307,6 +308,12 @@ get_annotation_settings <- function(ggtheme = NULL) {
     main_manuscript = TRUE
   )
   data <- data[estimation_method == "MLE"]
+  data[, transformation := paste0(method, " ", version)]
+  data$transformation <- factor(
+    data$transformation,
+    levels = c("Box-Cox conventional", "Box-Cox invariant", "Yeo-Johnson conventional", "Yeo-Johnson invariant"),
+    labels = c("conventional BC", "invariant BC", "conventional YJ", "invariant YJ")
+  )
 
   # Density plots
   p_dens <- ggplot2::ggplot(
@@ -326,18 +333,15 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p <- ggplot2::ggplot(
     mapping = ggplot2::aes(
       y = .data$lambda,
-      colour = .data$method,
-      shape = .data$version
+      colour = .data$transformation
     )
   )
   p <- p + plot_theme
-  p <- p + paletteer::scale_color_paletteer_d(
-    name = "method",
-    palette = "ggthemes::Tableau_10",
+  p <- p + ggplot2::scale_colour_discrete(
+    name = "transformation",
+    type = c("#4E79A7", "#A0CBE8", "#F28E2B", "#FFBE7D"),
     drop = FALSE
   )
-  p <- p + ggplot2::scale_shape_discrete(name = "version")
-
 
   # Normal distribution --------------------------------------------------------
 
@@ -362,7 +366,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   ## Box-Cox transformation ----------------------------------------------------
   p_normal_shift_bc <- p_normal_shift + ggplot2::geom_point(
-    data = data[distribution == "normal" & method == "Box-Cox"],
+    data = data[distribution == "normal" & method == "Box-Cox" & data_type == "shifted"],
     mapping = ggplot2::aes(x = .data$shift)
   )
   p_normal_shift_bc <- p_normal_shift_bc + ggplot2::theme(
@@ -372,7 +376,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
 
   p_normal_scale_bc <- p_normal_scale + ggplot2::geom_point(
-    data = data[distribution == "normal" & method == "Box-Cox"],
+    data = data[distribution == "normal" & method == "Box-Cox" & data_type == "scaled"],
     mapping = ggplot2::aes(x = .data$scale)
   )
   p_normal_scale_bc <- p_normal_scale_bc + ggplot2::theme(
@@ -387,12 +391,12 @@ get_annotation_settings <- function(ggtheme = NULL) {
   ## Yeo-Johnson transformation ------------------------------------------------
 
   p_normal_shift_yj <- p_normal_shift + ggplot2::geom_point(
-    data = data[distribution == "normal" & method == "Yeo-Johnson"],
+    data = data[distribution == "normal" & method == "Yeo-Johnson" & data_type == "shifted"],
     mapping = ggplot2::aes(x = .data$shift)
   )
 
   p_normal_scale_yj <- p_normal_scale + ggplot2::geom_point(
-    data = data[distribution == "normal" & method == "Yeo-Johnson"],
+    data = data[distribution == "normal" & method == "Yeo-Johnson" & data_type == "scaled"],
     mapping = ggplot2::aes(x = .data$scale)
   )
   p_normal_scale_yj <- p_normal_scale_yj + ggplot2::theme(
@@ -424,7 +428,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   ## Box-Cox transformation ----------------------------------------------------
   p_right_shift_bc <- p_right_shift + ggplot2::geom_point(
-    data = data[distribution =="right-skewed" & method == "Box-Cox"],
+    data = data[distribution =="right-skewed" & method == "Box-Cox" & data_type == "shifted"],
     mapping = ggplot2::aes(x = .data$shift)
   )
   p_right_shift_bc <- p_right_shift_bc + ggplot2::theme(
@@ -435,7 +439,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
 
   p_right_scale_bc <- p_right_scale + ggplot2::geom_point(
-    data = data[distribution == "right-skewed" & method == "Box-Cox"],
+    data = data[distribution == "right-skewed" & method == "Box-Cox" & data_type == "scaled"],
     mapping = ggplot2::aes(x = .data$scale)
   )
   p_right_scale_bc <- p_right_scale_bc + ggplot2::theme(
@@ -450,7 +454,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   ## Yeo-Johnson transformation ------------------------------------------------
 
   p_right_shift_yj <- p_right_shift + ggplot2::geom_point(
-    data = data[distribution == "right-skewed" & method == "Yeo-Johnson"],
+    data = data[distribution == "right-skewed" & method == "Yeo-Johnson" & data_type == "shifted"],
     mapping = ggplot2::aes(x = .data$shift)
   )
   p_right_shift_yj <- p_right_shift_yj + ggplot2::theme(
@@ -458,7 +462,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
 
   p_right_scale_yj <- p_right_scale + ggplot2::geom_point(
-    data = data[distribution == "right-skewed" & method == "Yeo-Johnson"],
+    data = data[distribution == "right-skewed" & method == "Yeo-Johnson" & data_type == "scaled"],
     mapping = ggplot2::aes(x = .data$scale)
   )
   p_right_scale_yj <- p_right_scale_yj + ggplot2::theme(
@@ -491,7 +495,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   ## Box-Cox transformation ----------------------------------------------------
   p_left_shift_bc <- p_left_shift + ggplot2::geom_point(
-    data = data[distribution =="left-skewed" & method == "Box-Cox"],
+    data = data[distribution =="left-skewed" & method == "Box-Cox" & data_type == "shifted"],
     mapping = ggplot2::aes(x = .data$shift)
   )
   p_left_shift_bc <- p_left_shift_bc + ggplot2::theme(
@@ -502,7 +506,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
 
   p_left_scale_bc <- p_left_scale + ggplot2::geom_point(
-    data = data[distribution == "left-skewed" & method == "Box-Cox"],
+    data = data[distribution == "left-skewed" & method == "Box-Cox" & data_type == "scaled"],
     mapping = ggplot2::aes(x = .data$scale)
   )
   p_left_scale_bc <- p_left_scale_bc + ggplot2::theme(
@@ -517,7 +521,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   ## Yeo-Johnson transformation ------------------------------------------------
 
   p_left_shift_yj <- p_left_shift + ggplot2::geom_point(
-    data = data[distribution == "left-skewed" & method == "Yeo-Johnson"],
+    data = data[distribution == "left-skewed" & method == "Yeo-Johnson" & data_type == "shifted"],
     mapping = ggplot2::aes(x = .data$shift)
   )
   p_left_shift_yj <- p_left_shift_yj + ggplot2::theme(
@@ -525,7 +529,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
 
   p_left_scale_yj <- p_left_scale + ggplot2::geom_point(
-    data = data[distribution == "left-skewed" & method == "Yeo-Johnson"],
+    data = data[distribution == "left-skewed" & method == "Yeo-Johnson" & data_type == "scaled"],
     mapping = ggplot2::aes(x = .data$scale)
   )
   p_left_scale_yj <- p_left_scale_yj + ggplot2::theme(
