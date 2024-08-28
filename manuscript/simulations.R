@@ -3,63 +3,135 @@
   set.seed(19L)
 
   file_name <- file.path(manuscript_dir, "problematic_transformations_plot.RDS")
-  estimation_methods <- "mle"
 
-  x <- power.transform::ragn(10000L, location = 0, scale = 1 / sqrt(2), alpha = 0.5, beta = 2)
+  if (!file.exists(file_name)) {
+    x <- power.transform::ragn(
+      10000L,
+      location = 0.0,
+      scale = 1.0 / sqrt(2.0),
+      alpha = 0.5,
+      beta = 2.0
+    )
 
-  # generator ----------------------------------------------------------------
-  generate_experiment_data <- coro::generator(
-    function(x) {
-      shift_range <- 10^seq(from = 0, to = 6, by = 0.1)
-      scale_range <- 10^seq(from = -6, to = 0, by = 0.1)
-      outlier_range <- 10^seq(from = -1, to = 6, by = 0.1)
+    # generator ----------------------------------------------------------------
+    generate_experiment_data <- coro::generator(
+      function(x) {
+        shift_range <- 10^seq(from = 0, to = 6, by = 0.1)
+        scale_range <- 10^seq(from = -6, to = 0, by = 0.1)
+        outlier_range <- 10^seq(from = -1, to = 6, by = 0.1)
 
-      for (method in c("box_cox", "yeo_johnson")) {
-        # Iterate over shift range.
-        for (d in shift_range) {
-          coro::yield(list(
-            "x" = x + d,
-            "d" = d,
-            "s" = NA_real_,
-            "distribution" = distribution,
-            "method" = method,
-            "invariant" = invariant,
-            "robust" = robust,
-            "version" = version,
-            "estimation_method" = estimation_method,
-            "data_type" = "shifted"
-          ))
+        for (method in c("box_cox", "yeo_johnson")) {
+          # Iterate over shift range.
+          for (d in shift_range) {
+            coro::yield(list(
+              "x" = x + d,
+              "y" = d,
+              "method" = method,
+              "invariant" = FALSE,
+              "robust" = FALSE,
+              "estimation_method" = "mle",
+              "data_type" = "shift"
+            ))
+          }
+
+          # Iterate over scale range.
+          for (s in scale_range) {
+            coro::yield(list(
+              "x" = x * s + 10.0,
+              "y" = s,
+              "method" = method,
+              "invariant" = FALSE,
+              "robust" = FALSE,
+              "estimation_method" = "mle",
+              "data_type" = "scale"
+            ))
+          }
+
+
+          for (d in outlier_range) {
+            coro::yield(list(
+              "x" = c(x, d),
+              "y" = d,
+              "method" = method,
+              "invariant" = FALSE,
+              "robust" = FALSE,
+              "estimation_method" = "mle",
+              "data_type" = "outlier"
+            ))
+          }
         }
-
-        # Iterate over scale range.
-        for (s in scale_range) {
-          coro::yield(list(
-            "x" = x * s,
-            "d" = NA_real_,
-            "s" = s,
-            "distribution" = distribution,
-            "method" = method,
-            "invariant" = invariant,
-            "robust" = robust,
-            "version" = version,
-            "estimation_method" = estimation_method,
-            "data_type" = "scaled"
-          ))
-        }
-
-
-        for (d in outlier_shift_range) {
-          coro::yield(list(
-            "x" = c(x, offset + d),
-            "d" = d,
-            "method" = method,
-            "invariant" = FALSE,
-            "robust" = FALSE
-          ))
       }
+    )
+
+    .compute_lambda <- function(parameter_set) {
+
+      transformer <- suppressWarnings(
+        power.transform::find_transformation_parameters(
+          x = parameter_set$x,
+          method = parameter_set$method,
+          robust = parameter_set$robust,
+          invariant = parameter_set$invariant,
+          estimation_method = parameter_set$estimation_method
+        )
+      )
+
+      return(
+        data.table::data.table(
+          "method" = parameter_set$method,
+          "y" = log10(parameter_set$y),
+          "lambda" = transformer@lambda,
+          "x_0" = transformer@shift,
+          "s" = transformer@scale,
+          "data_type" = parameter_set$data_type
+        )
+      )
     }
+
+    experiments <- coro::collect(generate_experiment_data(x = x))
+
+    data <- lapply(
+      X = experiments,
+      FUN = .compute_lambda
+    )
+
+    # Start cluster
+    cl <- parallel::makeCluster(8L)
+
+    # Compute all data in parallel.
+    data <- parallel::parLapply(
+      cl = cl,
+      X = experiments,
+      fun = .compute_lambda
+    )
+
+    # Stop cluster.
+    parallel::stopCluster(cl)
+
+    # Combine data into a single table.
+    data <- data.table::rbindlist(data)
+
+    # Save to file.
+    saveRDS(data, file_name)
+
+  } else {
+    data <- readRDS(file_name)
+  }
+
+  # Update method and data type..
+  data$method <- factor(
+    x = data$method,
+    levels = c("box_cox", "yeo_johnson"),
+    labels = c("Box-Cox", "Yeo-Johnson")
   )
+  data$data_type <- factor(
+    x = data$data_type,
+    levels = c("shift", "scale", "outlier")
+  )
+
+  return(data)
 }
+
+
 
 .get_shifted_scaled_distribution_data <- function(manuscript_dir, main_manuscript) {
   # Set seed.

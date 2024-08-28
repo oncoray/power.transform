@@ -5,6 +5,7 @@ date: "`r Sys.Date()`"
 output:
   pdf_document:
     latex_engine: lualatex
+papersize: a4
 bibliography: refs.bib
 header-includes:
 - \usepackage{amsmath}
@@ -90,32 +91,31 @@ One limitation of the Box-Cox transformation is that it is only defined for $x_i
 ```
 The $\lambda$-parameter is typically optimised using maximum likelihood estimation under the assumption that the transformed feature is normally distributed. As noted by Raymaekers and Rousseeuw, this approach is sensitive to outliers, and robust versions of Box-Cox and Yeo-Johnson transformations were devised [@Raymaekers2021-kq].
 
-Power transformation does not guarantee that transformed variables are normally distributed.
+Power transformation does not guarantee that transformed features are normally distributed.
 Depending on location and scale of a feature and the presence of outliers, power transformation may decrease normality, as shown in Figure \ref{fig:decreased-normality}.
-This is problematic when normality of the transformed feature is not checked, e.g. in automated power transformation in machine learning workflows.
-Several issues may arise.
-First, some machine learning methods assume normality.
-Second, a large negative or positive $\lambda$-parameter may lead to numeric issues.
-Third, we currently do not have a test to automatically reject poor transformations to normality.
-Statistical tests for normality exist, such as the Shapiro-Wilk test [@Shapiro1965-zd].
-However, given sufficiently large sample sizes such tests can detect trivial deviations from normality.
+If normality of the transformed feature is not checked, e.g. in automated power transformation in machine learning workflows, several issues may arise.
+For example, statistical tests such as ANOVA may produce incorrect results due to violation of the normality assumption.
+Likewise, machine learning methods that assume normality of input features may suffer a decrease in performance.
+Also, large negative or positive $\lambda$-parameters may lead to numeric issues in any subsequent computations.
 
-```{r decreased-normality, echo=FALSE, fig.cap=cap, fig.height=2.0, warning=FALSE}
+Statistical tests for normality, such as the Shapiro-Wilk test [@Shapiro1965-zd], could be automatically applied to transformed features.
+However, given sufficiently large sample sizes such tests can detect trivial deviations from normality, and may lead to rejection of sufficiently good power transformations.
+
+```{r decreased-normality, echo=FALSE, fig.cap=cap, fig.height=2.5, warning=FALSE}
 cap <- paste0(
-  "Power transformations may reduce normality depending on location. ",
-  "Variable $x$ consists of $10000$ values randomly drawn from a normal distribution. ",
-  "For the left-hand panels, that distribution is parameterised as $\\mathcal{N}(\\mu, 1)$, ",
-  "whereas for the right-hand row, the distribution is $\\mathcal{N}(0, \\sigma)$. " ,
-  "For both Box-Cox and Yeo-Johnson transformations, we would expect $\\lambda = 1$, since $x$ is already normally distributed. ",
-  "The figure shows that instead, $\\lambda$ is strongly dependent on the location $\\mu$, ",
-  "and breaks down due to numerical issues for $\\mu > 5 \\cdot 10^3$. ",
-  "Here, scale did not affect Box-Cox and Yeo-Johnson transformations of variables drawn from normal distributions."
+  "Effect of location shift, scale and outliers on estimation of Box-Cox and Yeo-Johnson transformation parameter $\\lambda$. ",
+  "$10000$ samples were drawn from a normal distribution: ",
+  "$\\mathcal{N}(\\mu, 1)$ for the shift dataset, $\\mathcal{N}(10, \\sigma)$ for the scale dataset and $\\mathcal{N}(0, 1)$ for the outlier dataset. ",
+  "Additionally, an outlier with value $d$ was added to the outlier dataset. ",
+  "Since samples are drawn from a normal distribution, a transformation parameter of $\\lambda = 1$ is expected. ",
+  "However, a large shift in location, a scale that is small compared to the location, or presence of large outliers ",
+  "lead to incorrectly estimated transformation parameter values. "
 )
 
 .plot_reduced_normality(plot_theme = plot_theme, manuscript_dir = manuscript_dir)
 ```
 
-Here we make the following contributions:
+To address these issues, we make the following contributions:
 
 -   We devise location- and scale-invariant versions of the Box-Cox and Yeo-Johnson transformation, including versions robust to outliers.
 
@@ -127,8 +127,8 @@ Here we make the following contributions:
 
 # Theory
 
-In this section, we will first introduce location and scale invariant versions of the Box-Cox and Yeo-Johnson transformations.
-Subsequently, we define weighted location and scale invariant transformations and weighting methods that allow for defining robust transformations.
+In this section, we will first introduce location- and scale-invariant versions of the Box-Cox and Yeo-Johnson transformations.
+Subsequently, we define weighted location- and scale-invariant transformations and weighting methods for robust transformations.
 We then define the quantile function for asymmetric generalised normal distributions to enable random sampling.
 Finally, we define the overall framework for the empirical central normality test.
 
@@ -162,7 +162,9 @@ where $x_i - x_0 > 0$. Likewise, the location- and scale-invariant Yeo-Johnson t
 \end{equation}
 ```
 
-For both invariant transformations, $\lambda$, $x_0$ and $s$ parameters are obtained by maximising the log-likelihood function. A full derivation is shown in Appendix A. The invariant Box-Cox log-likelihood function is:
+For both invariant transformations, $\lambda$, $x_0$ and $s$ parameters can be obtained by maximising the log-likelihood function, i.e. using maximum likelihood estimation (MLE).
+A full derivation of the log-likelihood function for both transformations is shown in Appendix A.
+The location- and scale-invariant Box-Cox log-likelihood function is:
 
 ```{=latex}
 \begin{equation}
@@ -173,7 +175,8 @@ For both invariant transformations, $\lambda$, $x_0$ and $s$ parameters are obta
 \end{split}
 \end{equation}
 ```
-where $\mu$ and $\sigma^2$ are the mean and variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0, s} (\mathbf{X})$, respectively. Similarly, the invariant Yeo-Johnson log-likelihood function is:
+where $\mu$ and $\sigma^2$ are the mean and variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0, s} (\mathbf{X})$, respectively.
+Similarly, the location- and scale-invariant Yeo-Johnson log-likelihood function is:
 
 ```{=latex}
 \begin{equation}
@@ -189,21 +192,17 @@ where $\mu$ and $\sigma^2$ are the mean and variance of the Box-Cox transformed 
 
 ## Robust location and scale invariant power transformations
 
-```{r sensitivity-to-outliers, echo=FALSE, fig.cap=cap, fig.height=2.0, warning=FALSE}
-cap <- paste0(
-  "Power transformations are affected by outliers. ",
-  "Variable $x$ consists of $1000$ values randomly drawn from a normal distribution $\\mathcal{N}(0, 1)$, ",
-  "with a single outlier with value $d$. ",
-  "For both Box-Cox and Yeo-Johnson transformations, we would expect $\\lambda = 1$, since $x$ is already normally distributed. ",
-  "The figure shows that instead, $\\lambda$ is strongly affected by the presence of the outlier at $d$.")
+Real-world data may contain outliers, to which maximum likelihood estimation can be sensitive.
+Their presence may lead to poor transformations to normality, as shown in Figure \ref{fig:decreased-normality}.
+As indicated by @Raymaekers2021-kq, the general aim of power transformations should be to transform non-outlier data to normality, i.e. achieve *central normality*.
+To achieve this, they devised an iterative procedure to find a robust estimate of the transformation parameter $\lambda$.
+Briefly, this process requires identifying outliers in the data and weighting such instances during the optimisation process.
+@Raymaekers2021-kq achieve this through weighted maximum likelihood estimation.
+However, because this procedure iteratively estimates and updates $\lambda$, it can not be used here to simultaneously estimate $\lambda$, $x_0$ and $s$ for location- and scale-invariant power transformations.
+Nonetheless, as a procedure, weighted MLE can be used for estimating the transformation, shift and scale parameters.
 
-.plot_sensitivity_to_outlier(plot_theme = plot_theme, manuscript_dir = manuscript_dir)
-
-```
-
-Real-world data may contain outliers, to which maximum likelihood estimation can be sensitive. Their presence may lead to poor transformations to normality, as shown in Figure \ref{fig:sensitivity-to-outliers}. As indicated by @Raymaekers2021-kq, the general aim of power transformations should be to transform non-outlier data to normality, i.e. achieve *central normality*. To achieve this, they devised an iterative procedure to find a robust estimate of the transformation parameter $\lambda$. Because this procedure iteratively updates $\lambda$, it can not be used to simultaneously estimate $\lambda$, $x_0$ and $s$ for invariant power transformations.
-
-In essence, obtaining robust transformation parameters that provide central normality requires identifying outliers in the data and weighting such instances during the optimisation process. @Raymaekers2021-kq achieve this through weighted maximum likelihood estimation. Here, weighted maximum likelihood estimation is based on equations \ref{eqn:box-cox-invariant-log-likelihood} and \ref{eqn:yeo-johnson-invariant-log-likelihood}. Compared to @Raymaekers2021-kq, these log-likelihood functions includes additional terms to accommodate estimation of $x_0$ and $s$. The weighted invariant Box-Cox log-likelihood function is:
+Here, weighted maximum likelihood estimation is based on equations \ref{eqn:box-cox-invariant-log-likelihood} and \ref{eqn:yeo-johnson-invariant-log-likelihood}.
+Compared to @Raymaekers2021-kq, these log-likelihood functions includes additional terms to accommodate estimation of $x_0$ and $s$. The weighted location- and scale-invariant Box-Cox log-likelihood function is:
 
 ```{=latex}
 \begin{equation}
@@ -222,7 +221,7 @@ where $\mu_w$ and $\sigma^2_w$ are the weighted mean and weighted variance of th
 \end{equation}
 ```
 
-Analogously, the weighted invariant Yeo-Johnson log-likelihood function is:
+Analogously, the weighted location- and scale-invariant Yeo-Johnson log-likelihood function is:
 
 ```{=latex}
 \begin{equation}
@@ -241,17 +240,8 @@ where $\mu_w$ and $\sigma^2_w$ are the weighted mean and weighted variance of th
 \end{equation}
 ```
 
-Other criteria aside from MLE can be used for finding robust transformation parameters, see Appendix B. For the remainder, we will use MLE as the optimisation criterion. 
-
-Weights may be set using several methods. Here, we investigate three:
-
-- Set weights based on probabilities of the empirical distribution of the original feature $\mathbf{X}$. Probabilities are determined as $p_i = \frac{i - 1/3}{n + 1/3}$, with $i = 1, 2, \ldots n$, with $n$ the number of instances of feature $\mathbf{X}$.
-
-- Set weights based on the z-score of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$. After @Raymaekers2021-kq, $z_i = \frac{\phi^{\lambda, x_0, s}(x_i) - \mu_M}{\sigma_M}$. Here, $\mu_M$ and $\sigma_M$ are robust Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$ [@Huber1981-su].
-
-- Set weights based on the residual error between the z-score of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$ and the theoretical z-score from a standard normal distribution: $r_i =\left| \left( \phi^{\lambda, x_0, s}(x_i) - \mu_M)\right) / \sigma_M - F^{-1}_{\mathcal{N}}(p_i) \right|$, with $\mu_M$, $\sigma_M$ and $p_i$ as defined above.
-
-Weights are set using a weighting function for all three methods. We will investigate the following functions, where $\dot{x}_i$ can be either $p^{*}_i=2 \left( p_i - 0.5\right)$ (so that the quantiles are zero-centred), $z_i$ or $r_i$:
+The weights $w_i$ in equations \ref{eqn:box-cox-weighted-invariant-log-likelihood} and \ref{eqn:yeo-johnson-weighted-invariant-log-likelihood} can be set using several weighting functions.
+Here, we investigate three:
 
 - A step function, with $k_1 \geq 0$ as threshold parameter:
 ```{=latex}
@@ -288,7 +278,9 @@ w_i =
 \end{equation}
 ```
 
-All weighting functions share the characteristic that for $\left| \dot{x}_i \right|< k_1$, instances are fully weighted, i.e. when $k_1 > 0$ the weighting functions are symmetric window functions with a flat top. The triangle and tapered cosine functions then gradually down-weight instances with $k_1 \leq \left| \dot{x}_i \right| \leq k_2$, and assign no weight to instances $\left| x_i \right| > k_2$. Examples of the three types of weighting function are shown in Figure \ref{fig:weighting-functions}.
+All weighting functions share the characteristic that for $\left| \dot{x}_i \right|< k_1$, instances are fully weighted, i.e. when $k_1 > 0$ the weighting functions are symmetric window functions with a flat top.
+The triangle and tapered cosine functions then gradually down-weight instances with $k_1 \leq \left| \dot{x}_i \right| \leq k_2$, and assign no weight to instances $\left| x_i \right| > k_2$.
+Examples of these weighting function are shown in Figure \ref{fig:weighting-functions}.
 
 ```{r weighting-functions, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
 cap <- paste0(
@@ -298,6 +290,21 @@ cap <- paste0(
 
 .plot_weighting_functions(plot_theme = plot_theme)
 ```
+
+Each weighting function has an argument $\dot{x}$ that is related to the (transformed) feature in one of several ways:
+
+- The weighting function uses empirical probabilities of the distribution of the original feature $\mathbf{X}$.
+  Probabilities are determined as $p_i = \frac{i - 1/3}{n + 1/3}$, with $i = 1, 2, \ldots n$, with $n$ the number of instances of feature $\mathbf{X}$.
+  Then $\dot{x}_i = p^{*}_i=2 \left( p_i - 0.5\right)$, so that argument is zero-centered.
+
+- The weighting function uses the z-score of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$.
+  After @Raymaekers2021-kq, $z_i = \frac{\phi^{\lambda, x_0, s}(x_i) - \mu_M}{\sigma_M}$.
+  Here, $\mu_M$ and $\sigma_M$ are robust Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$ [@Huber1981-su].
+  Then $\dot{x}_i = z_i$.
+
+- The weighting function uses the residual error between the z-score of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$ and the theoretical z-score from a standard normal distribution: $r_i =\left| \left( \phi^{\lambda, x_0, s}(x_i) - \mu_M)\right) / \sigma_M - F^{-1}_{\mathcal{N}}(p_i) \right|$, with $\mu_M$, $\sigma_M$ and $p_i$ as defined above.
+  Then $\dot{x}_i = r_i$.
+
 
 ## Asymmetric generalised normal distributions
 
@@ -334,11 +341,11 @@ F_{\alpha}^{-1}(p; \mu, \sigma, \beta) =
 \end{cases}
 \end{equation}
 ```
-The quantile function for the asymmetric generalised normal distribution $F_{\alpha}^{-1}(p)$ thus incorporates the quantile function $F_{\beta}^{-1}(p^{*})$ of the symmetric generalised normal distribution. $F_{\beta}^{-1}(p^{*})$ was derived by Griffin to be [@Griffin2018-bf]:
+The quantile function for the asymmetric generalised normal distribution $F_{\alpha}^{-1}(p)$ thus incorporates the quantile function $F_{\beta}^{-1}(p^{*})$ of the symmetric generalised normal distribution. $F_{\beta}^{-1}(p)$ was derived by Griffin to be [@Griffin2018-bf]:
 
 ```{=latex}
 \begin{equation}
-F_{\beta}^{-1}(p^{*}) = \sgn\left(p^{*} - 0.5 \right) F_{\Gamma}^{-1}\left(2 \left|p^{*} - 0.5 \right|; 1 / \beta \right)
+F_{\beta}^{-1}(p) = \sgn\left(p - 0.5 \right) F_{\Gamma}^{-1}\left(2 \left|p - 0.5 \right|; 1 / \beta \right)
 \end{equation}
 ```
 Here, $F_{\Gamma}^{-1}$ is the quantile function of the gamma distribution with shape $1 / \beta$, which can be numerically approximated. 
@@ -641,7 +648,7 @@ will be evaluated using examples from real datasets.
 
 ### Age of patients with lung cancer
 
-A common variable in health-related datasets is age.
+A common feature in health-related datasets is age.
 Here we use data on 228 patients with lung cancer that was collected and published by Loprinzi et al. [@Loprinzi1994-cd].
 The age in the cohort was $62.4 \pm 9.1$ (mean ± standard deviation) years.
 Applying conventional and invariant Yeo-Johnson transformations to patient age yielded the following results, see Figure \ref{fig:lung-cancer-age}:
@@ -666,7 +673,7 @@ out$plot
 ```
 
 Location- and scale-invariant transformation leads to a lower overall residual sum, indicating a better transformation.
-Moreover, conventional transformations inflated the mean $\mu_{YJ}$ and standard deviation $\sigma_{YJ}$ of the age variable after transformation.
+Moreover, conventional transformations inflated the mean $\mu_{YJ}$ and standard deviation $\sigma_{YJ}$ of the age feature after transformation.
 The empirical central normality test did not detect any statistically significant deviations from central normality for any transformation (all $p \geq 0.78$).
 
 
@@ -695,7 +702,7 @@ out <- .plot_penguin_body_mass(plot_theme = plot_theme)
 out$plot
 ```
 Location- and scale-invariant transformation produced a lower overall residual sum, indicating a better transformation.
-Moreover, conventional transformations led to low standard deviation $\sigma_{YJ}$ of the body mass variable after transformation.
+Moreover, conventional transformations led to low standard deviation $\sigma_{YJ}$ of the body mass feature after transformation.
 The empirical central normality test did not detect any statistically significant deviations from central normality for any transformation (all $p \geq 0.38$).
 
 
@@ -933,9 +940,9 @@ We furthermore assessed methods for making these transformations robust to outli
 Robust location- and scale-invariant transformations form a suitable replacement for their conventional counterparts.
 They demonstrated robustness against outliers and prevent inaccurate transformations and potential numerical issues due to location and scale of the data distribution.
 This is particularly relevant for automated data processing, where such issues may go unnoticed.
-However, we did not find a measurable benefit for -- nor detriment to -- model performance in a machine learning experiment of 232 real-world datasets that contained at least one numeric variable.
+However, we did not find a measurable benefit for -- nor detriment to -- model performance in a machine learning experiment of 232 real-world datasets that contained at least one numeric feature.
 One reason may be that numeric features with large location shifts ($|\mu| > 1000.0$) were uncommon.
-Of the 4886 numeric variables in the 232 datasets, 266 (5%) variables in 34 datasets had large location shifts, of which 200 appeared in just 2 datasets.
+Of the 4886 numeric features in the 232 datasets, 266 (5%) features in 34 datasets had large location shifts, of which 200 appeared in just 2 datasets.
 
 Robust location- and scale-invariant transformations are realised by simultaneously optimising three parameters, i.e. transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$, using maximum likelihood optimisation.
 Alternatively, standardisation of a numeric variable (e.g., through subtracting its median value and division by its interquartile range) prior to conventional power transformations may achieve a similar effect in reducing sensitivity to the distribution's location and scale.
@@ -946,7 +953,7 @@ Likewise, we focussed on maximum likelihood estimation to optimise parameters, a
 
 # Conclusion
 
-Robust location- and scale-invariant power transformations allow for automated power transformation of numerical variables/
+Robust location- and scale-invariant power transformations allow for automated power transformation of numerical features.
 
 # Code availability
 

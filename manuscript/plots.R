@@ -78,7 +78,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   require(ggplot2)
 
   # Prevent warnings due to non-standard evaluation.
-  estimation_method <- distribution <- method <- version <- NULL
+  data_type <- method <- NULL
 
   # Process / read data.
   data <- .get_data_problematic_transformations(
@@ -100,7 +100,18 @@ get_annotation_settings <- function(ggtheme = NULL) {
     linetype = "longdash",
     colour = "grey40"
   )
-  p <- p + ggplot2::annotate(
+  p <- p + paletteer::scale_color_paletteer_d(
+    palette = "ggthemes::Tableau_10",
+    name = "transformation",
+    drop = FALSE
+  )
+
+  # Branch into shift and scale-specific plots
+  p_shift <- p + ggplot2::scale_x_continuous(
+    name = latex2exp::TeX("$\\mu$"),
+    labels = scales::math_format()
+  )
+  p_shift <- p_shift + ggplot2::annotate(
     geom = "text",
     x = 6,
     y = 1,
@@ -112,30 +123,50 @@ get_annotation_settings <- function(ggtheme = NULL) {
     vjust = -1.0,
     hjust = 1.0
   )
-  p <- p + paletteer::scale_color_paletteer_d(
-    palette = "ggthemes::Tableau_10",
-    name = "method",
-    drop = FALSE
-  )
-  p <- p + ggplot2::scale_y_continuous(
-    name = latex2exp::TeX("$\\lambda$"),
-    limits = c(0.0, 6.0)
-  )
 
-  # Branch into shift and scale-specific plots
-  p_shift <- p + ggplot2::scale_x_continuous(
-    name = latex2exp::TeX("$\\mu$"),
-    labels = scales::math_format()
-  )
   p_scale <- p + ggplot2::scale_x_continuous(
     name = latex2exp::TeX("$\\sigma$"),
     labels = scales::math_format()
   )
+  p_scale <- p_scale + ggplot2::annotate(
+    geom = "text",
+    x = -6,
+    y = 1,
+    label = "expected",
+    colour = annotation_settings$colour,
+    family = annotation_settings$family,
+    fontface = annotation_settings$face,
+    size = annotation_settings$geom_text_size,
+    vjust = -1.0,
+    hjust = 0.0
+  )
+
+  p_outlier <- p + ggplot2::scale_x_continuous(
+    name = "d",
+    labels = scales::math_format()
+  )
+  p_outlier <- p_outlier + ggplot2::annotate(
+    geom = "text",
+    x = 6,
+    y = 1,
+    label = "expected",
+    colour = annotation_settings$colour,
+    family = annotation_settings$family,
+    fontface = annotation_settings$face,
+    size = annotation_settings$geom_text_size,
+    vjust = -1.0,
+    hjust = 1.0
+  )
 
   # Box-Cox transformation -----------------------------------------------------
   p_bc_shift <- p_shift + ggplot2::geom_point(
-    data = data[method == "Box-Cox"],
-    mapping = ggplot2::aes(x = .data$shift)
+    data = data[method == "Box-Cox" & data_type == "shift"],
+    mapping = ggplot2::aes(x = .data$y)
+  )
+  p_bc_shift <- p_bc_shift + ggplot2::labs(title = "shift")
+  p_bc_shift <- p_bc_shift + ggplot2::scale_y_continuous(
+    name = latex2exp::TeX("$\\lambda$"),
+    limits = c(0, 6)
   )
   p_bc_shift <- p_bc_shift + ggplot2::theme(
     axis.text.x = ggplot2::element_blank(),
@@ -144,13 +175,26 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
 
   p_bc_scale <- p_scale + ggplot2::geom_point(
-    data = data[method == "Box-Cox"],
-    mapping = ggplot2::aes(x = .data$scale)
+    data = data[method == "Box-Cox" & data_type == "scale"],
+    mapping = ggplot2::aes(x = .data$y)
   )
+  p_bc_scale <- p_bc_scale + ggplot2::labs(title = "scale")
+  p_bc_scale <- p_bc_scale + ggplot2::ylim(c(0, 6))
   p_bc_scale <- p_bc_scale + ggplot2::theme(
-    axis.text.y = ggplot2::element_blank(),
     axis.title.y = ggplot2::element_blank(),
-    axis.ticks.y = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_blank(),
+    axis.title.x = ggplot2::element_blank(),
+    axis.ticks.x = ggplot2::element_blank()
+  )
+
+  p_bc_outlier <- p_outlier + ggplot2::geom_point(
+    data = data[method == "Box-Cox" & data_type == "outlier"],
+    mapping = ggplot2::aes(x = .data$y)
+  )
+  p_bc_outlier <- p_bc_outlier + ggplot2::labs(title = "outlier")
+  p_bc_outlier <- p_bc_outlier + ggplot2::ylim(c(-0.2, 1.2))
+  p_bc_outlier <- p_bc_outlier + ggplot2::theme(
+    axis.title.y = ggplot2::element_blank(),
     axis.text.x = ggplot2::element_blank(),
     axis.title.x = ggplot2::element_blank(),
     axis.ticks.x = ggplot2::element_blank()
@@ -158,24 +202,37 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   # Yeo-Johnson transformation -------------------------------------------------
   p_yj_shift <- p_shift + ggplot2::geom_point(
-    data = data[method == "Yeo-Johnson"],
-    mapping = ggplot2::aes(x = .data$shift)
+    data = data[method == "Yeo-Johnson" & data_type == "shift"],
+    mapping = ggplot2::aes(x = .data$y)
+  )
+  p_yj_shift <- p_yj_shift + ggplot2::scale_y_continuous(
+    name = latex2exp::TeX("$\\lambda$"),
+    limits = c(0, 6)
   )
 
   p_yj_scale <- p_scale + ggplot2::geom_point(
-    data = data[method == "Yeo-Johnson"],
-    mapping = ggplot2::aes(x = .data$scale)
+    data = data[method == "Yeo-Johnson" & data_type == "scale"],
+    mapping = ggplot2::aes(x = .data$y)
   )
+  p_yj_scale <- p_yj_scale + ggplot2::ylim(c(0, 6))
   p_yj_scale <- p_yj_scale + ggplot2::theme(
-    axis.text.y = ggplot2::element_blank(),
-    axis.title.y = ggplot2::element_blank(),
-    axis.ticks.y = ggplot2::element_blank()
+    axis.title.y = ggplot2::element_blank()
+  )
+
+  p_yj_outlier <- p_outlier + ggplot2::geom_point(
+    data = data[method == "Yeo-Johnson" & data_type == "outlier"],
+    mapping = ggplot2::aes(x = .data$y)
+  )
+  p_yj_outlier <- p_yj_outlier + ggplot2::ylim(c(-0.2, 1.2))
+  p_yj_outlier <- p_yj_outlier + ggplot2::theme(
+    axis.title.y = ggplot2::element_blank()
   )
 
   # Patch all the plots together.
-  p <- p_bc_shift + p_bc_scale + p_yj_shift + p_yj_scale +
+  p <- p_bc_shift + p_bc_scale + p_bc_outlier +
+    p_yj_shift + p_yj_scale + p_yj_outlier +
     patchwork::plot_layout(
-      ncol = 2,
+      ncol = 3,
       guides = "collect"
     )
 
