@@ -957,6 +957,6 @@ Robust location- and scale-invariant power transformations allow for automated p
 
 # Code availability
 
-Location- and scale-invariant power transformations are implemented in the `power.transform` package. This manuscript was created using R Markdown, and is available from [https://github.com/alexzwanenburg/power.transform].
+Location- and scale-invariant power transformations are implemented in the `power.transform` package for R, and is available from [https://github.com/oncoray/power.transform] and the CRAN repository. The manuscript was created using R Markdown and is also available from the power.transform GitHub repository.
 
 # References
