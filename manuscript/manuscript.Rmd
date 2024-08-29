@@ -243,50 +243,50 @@ where $\mu_w$ and $\sigma^2_w$ are the weighted mean and weighted variance of th
 The weights $w_i$ in equations \ref{eqn:box-cox-weighted-invariant-log-likelihood} and \ref{eqn:yeo-johnson-weighted-invariant-log-likelihood} can be set using several weighting functions.
 Here, we investigate three:
 
-- A step function, with $k_1 \geq 0$ as threshold parameter:
+- A step function, with $\delta_1 \geq 0$ as threshold parameter:
 ```{=latex}
 \begin{equation}
 w_i =
 \begin{cases}
-1 & \text{if } \left| \dot{x}_i \right| \leq k_1\\
-0 & \text{if } \left| \dot{x}_i \right| > k_1
+1 & \text{if } \left| \dot{x}_i \right| \leq \delta_1\\
+0 & \text{if } \left| \dot{x}_i \right| > \delta_1
 \end{cases}
 \end{equation}
 ```
 
-- A triangle function (or generalised Huber weight), with $k_1 \geq 0$ and $k_2 \geq k_1$ as threshold parameters:
+- A triangle function (or generalised Huber weight), with $\delta_1 \geq 0$ and $\delta_2 \geq \delta_1$ as threshold parameters:
 ```{=latex}
 \begin{equation}
 w_i =
 \begin{cases}
-1 & \text{if } \left| \dot{x}_i \right| < k_1\\
-1 - \frac{\left| \dot{x}_i \right| - k_1}{k_2 - k_1} & \text{if } k_1 \leq \left| \dot{x}_i \right| \leq k_2 \\
-0 & \text{if } \left| \dot{x}_i \right| > k_2
+1 & \text{if } \left| \dot{x}_i \right| < \delta_1\\
+1 - \frac{\left| \dot{x}_i \right| - \delta_1}{\delta_2 - \delta_1} & \text{if } \delta_1 \leq \left| \dot{x}_i \right| \leq \delta_2 \\
+0 & \text{if } \left| \dot{x}_i \right| > \delta_2
 \end{cases}
 \end{equation}
 ```
 
-- A tapered cosine function [@Tukey1967-eb], with $k_1 \geq 0$ and $k_2 \geq k_1$ as threshold parameters:
+- A tapered cosine function [@Tukey1967-eb], with $\delta_1 \geq 0$ and $\delta_2 \geq \delta_1$ as threshold parameters:
 ```{=latex}
 \begin{equation}
 w_i =
 \begin{cases}
-1 & \text{if } \left| \dot{x}_i \right| < k_1\\
-0.5 + 0.5 \cos\left(\pi \frac{\left| \dot{x}_i \right| - k_1}{k_2 - k_1} \right) & \text{if } k_1 \leq \left| \dot{x}_i \right| \leq k_2 \\
-0 & \text{if } \left| \dot{x}_i \right| > k_2
+1 & \text{if } \left| \dot{x}_i \right| < \delta_1\\
+0.5 + 0.5 \cos\left(\pi \frac{\left| \dot{x}_i \right| - \delta_1}{\delta_2 - \delta_1} \right) & \text{if } \delta_1 \leq \left| \dot{x}_i \right| \leq \delta_2 \\
+0 & \text{if } \left| \dot{x}_i \right| > \delta_2
 \end{cases}
 \end{equation}
 ```
 
-All weighting functions share the characteristic that for $\left| \dot{x}_i \right|< k_1$, instances are fully weighted, i.e. when $k_1 > 0$ the weighting functions are symmetric window functions with a flat top.
-The triangle and tapered cosine functions then gradually down-weight instances with $k_1 \leq \left| \dot{x}_i \right| \leq k_2$, and assign no weight to instances $\left| x_i \right| > k_2$.
+All weighting functions share the characteristic that for $\left| \dot{x}_i \right|< \delta_1$, instances are fully weighted, i.e. when $\delta_1 > 0$ the weighting functions are symmetric window functions with a flat top.
+The triangle and tapered cosine functions then gradually down-weight instances with $\delta_1 \leq \left| \dot{x}_i \right| \leq \delta_2$, and assign no weight to instances $\left| x_i \right| > \delta_2$.
 Examples of these weighting function are shown in Figure \ref{fig:weighting-functions}.
 
-```{r weighting-functions, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
+```{r weighting-functions, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=1.5}
 cap <- paste0(
   "Weighting functions investigated in this study to make power transformations more robust against outliers. ",
-  "The step function was parameterised with $k_1 = 0.60$. ",
-  "The triangle and tapered cosine functions were both parameterised with $k_1 = 0.30$ and $k_2 = 0.90$.")
+  "The step function was parameterised with $\\delta_1 = 0.60$. ",
+  "The triangle and tapered cosine functions were both parameterised with $\\delta_1 = 0.30$ and $\\delta_2 = 0.90$.")
 
 .plot_weighting_functions(plot_theme = plot_theme)
 ```
@@ -432,12 +432,12 @@ Q_3 + \left(1.5 + x^{*} \right) \text{IQR} & \text{if } x^{*} \geq 0
 $Q_1$, $Q_3$ and $\text{IQR}$ are the first quartile, third quartile and interquartile range of $\mathbf{X}_i$, respectively.
 Outlier values randomly replaced values in $\mathbf{X}_i$ to create $\mathbf{X}_{i,j}$.
 
-To find the optimal values for the weighting function parameters $k_1$ and $k_2$ (if applicable), we minimised the absolute difference between the $\lambda_{r}$ parameter obtained for transformation in the presence of outliers, and the $\lambda_0$ parameter obtained using the non-robust transformations in absence of outliers:
+To find the optimal values for the weighting function parameters $\delta_1$ and $\delta_2$ (if applicable), we minimised the absolute difference between the $\lambda_{r}$ parameter obtained for transformation in the presence of outliers, and the $\lambda_0$ parameter obtained using the non-robust transformations in absence of outliers:
 
 ```{=latex}
 \begin{equation}
 \label{eqn:minimisation-weighting}
-\left\{ \hat{k}_1, \hat{k}_2 \right\} = \argmin_{k_1, k_2} \sum_{i=1}^{m_d} \sum_{j=1}^{m_{out}} \left| \lambda_r \left(\mathbf{X}_{i, j}; k_1, k_2 \right) - \lambda_0 \left(\mathbf{X}_i \right) \right|
+\left\{ \hat{\delta}_1, \hat{\delta}_2 \right\} = \argmin_{\delta_1, \delta_2} \sum_{i=1}^{m_d} \sum_{j=1}^{m_{out}} \left| \lambda_r \left(\mathbf{X}_{i, j}; \delta_1, \delta_2 \right) - \lambda_0 \left(\mathbf{X}_i \right) \right|
 \end{equation}
 ```
 
@@ -469,7 +469,7 @@ usethis::use_data(
 \begin{tabular}{l r r r r r r r}
 
 \toprule
-method & \multicolumn{3}{c}{$k_1$} & \multicolumn{3}{c}{$k_2$} & loss \\
+method & \multicolumn{3}{c}{$\delta_1$} & \multicolumn{3}{c}{$\delta_2$} & loss \\
 & initial & limits & optimal & initial & limits & optimal & \\
 
 \midrule
@@ -498,7 +498,7 @@ $r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.38 & 1.00 & $(0, 10]$ & 1.41 & 1
 \begin{tabular}{l r r r r r r r}
 
 \toprule
-method & \multicolumn{3}{c}{$k_1$} & \multicolumn{3}{c}{$k_2$} & loss \\
+method & \multicolumn{3}{c}{$\delta_1$} & \multicolumn{3}{c}{$\delta_2$} & loss \\
 & initial & limits & optimal & initial & limits & optimal & \\
 
 \midrule
@@ -955,8 +955,8 @@ Likewise, we focussed on maximum likelihood estimation to optimise parameters, a
 
 Robust location- and scale-invariant power transformations allow for automated power transformation of numerical features.
 
-# Code availability
+# Data and code availability
 
-Location- and scale-invariant power transformations are implemented in the `power.transform` package for R, and is available from [https://github.com/oncoray/power.transform] and the CRAN repository. The manuscript was created using R Markdown and is also available from the power.transform GitHub repository.
+Location- and scale-invariant power transformations are implemented in the `power.transform` package for R, and is available from [https://github.com/oncoray/power.transform] and the CRAN repository [INSERT LINK HERE]. The manuscript was created using R Markdown and is also available from the power.transform GitHub repository. Data and results for the machine learning experiment are separately available from Zenodo [INSERT LINK HERE].
 
 # References
