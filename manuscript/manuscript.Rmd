@@ -19,7 +19,9 @@ header-includes:
 knitr::opts_chunk$set(
   echo = FALSE,
   eval = TRUE,
-  fig.align= "center")
+  fig.align = "center",
+  dev = "cairo_pdf"
+  )
 
 # Allow for defining figure captions within a chunk.
 knitr::opts_knit$set(
@@ -132,7 +134,7 @@ Subsequently, we define weighted location- and scale-invariant transformations a
 We then define the quantile function for asymmetric generalised normal distributions to enable random sampling.
 Finally, we define the overall framework for the empirical central normality test.
 
-## Location and scale invariant power transformation
+## Location- and scale-invariant power transformation
 
 Box-Cox and Yeo-Johnson transformations are modified by introducing shift parameter $x_0$ and scale parameter $s$ into equations \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}.
 The location- and scale-invariant Box-Cox transformation of a feature value $x_i$ of feature $\mathbf{X}$ under transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$ is then:
@@ -190,7 +192,7 @@ Similarly, the location- and scale-invariant Yeo-Johnson log-likelihood function
 where $\mu$ and $\sigma^2$ are the mean and variance of the Box-Cox transformed feature $\phi_{\text{YJ}}^{\lambda, x_0, s} (\mathbf{X})$, respectively.
 
 
-## Robust location and scale invariant power transformations
+## Robust location- and scale-invariant power transformations
 
 Real-world data may contain outliers, to which maximum likelihood estimation can be sensitive.
 Their presence may lead to poor transformations to normality, as shown in Figure \ref{fig:decreased-normality}.
@@ -368,8 +370,8 @@ Here $[\quad]$ denotes an Iverson bracket. The test statistic is equal to the me
 
 # Simulation
 
-In this section we used simulated data to assess invariance to location and scale of the proposed power transformations, weighting for robust transformations, and to develop the empirical central normality test.
-The $\lambda$ parameter for conventional power transformations (Eqn. \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}), as well as $\lambda$, $x_0$ and $s$ parameters for location and scale invariant power transformations (Eqn. \ref{eqn:box-cox-invariant} and \ref{eqn:yeo-johnson-invariant}) were estimated using the BOBYQA algorithm for derivative-free bound constraint optimisation [@Powell2009-zb] through maximum likelihood estimation.
+We used simulated data to assess invariance to location and scale of the proposed power transformations, weighting for robust transformations, and to develop the empirical central normality test.
+The $\lambda$ parameter for conventional power transformations (Eqn. \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}), as well as $\lambda$, $x_0$ and $s$ parameters for location- and scale-invariant power transformations (Eqn. \ref{eqn:box-cox-invariant} and \ref{eqn:yeo-johnson-invariant}) were estimated using the BOBYQA algorithm for derivative-free bound constraint optimisation [@Powell2009-zb] through maximum likelihood estimation.
 
 ## Invariance to location and scale
 
@@ -377,11 +379,11 @@ To assess whether the proposed power transformations lead to values of $\lambda$
 We first randomly drew $10000$ values from a normal distribution: $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)$, or equivalently $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.5, 2\right)$.
 The second distribution was a right-skewed normal distribution $\mathbf{X}_{\text{right}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.2, 2\right)$.
 The third distribution was a left-skewed normal distribution $\mathbf{X}_{\text{left}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.8, 2\right)$.
-We then computed transformation parameter $\lambda$ using the original definitions (equations \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}) and the location and scale invariant definitions (equations \ref{eqn:box-cox-invariant} and \ref{eqn:yeo-johnson-invariant}) for each distribution.
+We then computed transformation parameter $\lambda$ using the original definitions (equations \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}) and the location- and scale-invariant definitions (equations \ref{eqn:box-cox-invariant} and \ref{eqn:yeo-johnson-invariant}) for each distribution.
 To assess location invariance, a positive value $d_{\text{shift}}$ was added to each distribution with $d_{\text{shift}} \in [1, 10^6]$.
 Similarly, to assess scale invariance, each distribution was multiplied by a positive value $d_{\text{scale}}$, where $d_{\text{scale}} \in [1, 10^6]$.
 
-```{r shifted-distributions, warning=FALSE, message=FALSE, fig.cap=cap}
+```{r shifted-distributions, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=3.5}
 cap <- paste0(
   "Invariant power transformation produces transformation parameters that are invariant to location and shape. ",
   "Samples were drawn from normal, right-skewed and left-skewed distributions, respectively, which then underwent a shift $d_{\\text{shift}}$ or multiplication by $d_{\\text{scale}}$. ",
@@ -393,21 +395,17 @@ cap <- paste0(
 ```
 
 The result is shown in Figure \ref{fig:shifted-distributions}.
-For each distribution, transformation parameter $\lambda$ varied with $d_{\text{shift}}$ and $d_{\text{scale}}$ when estimated using the original definitions.
-The effect of location on the estimated $\lambda$ value for conventional power transformations is noticeable for all three distributions.
-However scale only affected $\lambda$ for features that were sampled from a skewed distribution.
-In contrast, estimation of $\lambda$ using invariant power transformations was invariant to both $d_{\text{shift}}$ and $d_{\text{scale}}$. 
+For each distribution, transformation parameter $\lambda$ varied with $d_{\text{shift}}$ and $d_{\text{scale}}$ when estimated for conventional transformations.
+In contrast, estimation of $\lambda$ for invariant power transformations was invariant to both $d_{\text{shift}}$ and $d_{\text{scale}}$.
 
 ## Robust transformations
 
-Outliers may be present in data and affect estimation of power transformation parameters.
+Outliers may be present in data and affect estimation of transformation parameters.
 The log-likelihood function can be weighted to assign less weight to outlier instances, see equations \ref{eqn:box-cox-weighted-invariant-log-likelihood} and \ref{eqn:yeo-johnson-weighted-invariant-log-likelihood}.
-We proposed three weighting methods: probabilities of the empirical distribution of the original feature, the z-score of the transformed feature values, or the residual error between the z-score of the transformed feature values and their expected z-score based on the normal distribution.
-The weight itself is then assigned to each instance using one of three weighting functions: step, triangle and tapered cosine.
-The weighting functions have one (step) or two (triangle, tapered cosine) parameters.
-Here we investigate how these parameters should be set to find robust transformation parameter $\lambda_r$.
+We proposed three weighting function: step, triangle and tapered cosine, that have one, two and two parameters, respectively.
+Each weighting function then takes one of three values as input: probabilities of the empirical distribution of the original feature, the z-score of the transformed feature values, or the residual error between the z-score of the transformed feature values and their expected z-score based on the normal distribution.
 
-We randomly drew $m_d=100$ asymmetric generalised normal distributions.
+To determine the weighting function parameters for each of the nine combinations, $m_d=100$ asymmetric generalised normal distributions were drawn.
 Each distribution was parametrised with a randomly chosen skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$.
 Location and scale parameters were set as $\mu = 0$ and $\sigma = 1$, respectively.
 $n = \lceil 10^\gamma \rceil$ instances were then randomly drawn, with $\gamma \sim U\left(2, 4\right)$, i.e., between $100$ and $10000$ values are drawn to create $\mathbf{X}_i$. 
@@ -432,7 +430,7 @@ Q_3 + \left(1.5 + x^{*} \right) \text{IQR} & \text{if } x^{*} \geq 0
 $Q_1$, $Q_3$ and $\text{IQR}$ are the first quartile, third quartile and interquartile range of $\mathbf{X}_i$, respectively.
 Outlier values randomly replaced values in $\mathbf{X}_i$ to create $\mathbf{X}_{i,j}$.
 
-To find the optimal values for the weighting function parameters $\delta_1$ and $\delta_2$ (if applicable), we minimised the absolute difference between the $\lambda_{r}$ parameter obtained for transformation in the presence of outliers, and the $\lambda_0$ parameter obtained using the non-robust transformations in absence of outliers:
+To find the optimal values for the weighting function parameters $\delta_1$ and $\delta_2$ (if applicable), we minimised the absolute difference between the $\lambda_{r}$ parameter obtained for robust transformation in the presence of outliers, and the $\lambda_0$ parameter obtained using the non-robust transformations in absence of outliers:
 
 ```{=latex}
 \begin{equation}
@@ -442,7 +440,7 @@ To find the optimal values for the weighting function parameters $\delta_1$ and 
 ```
 
 Minimisation was conducted using the BOBYQA algorithm for derivative-free bound constraint optimisation [@Powell2009-zb].
-The resulting weighting function parameters for weighted MLE are shown in Tables \ref{tab:optimal-weighting-parameters-box-cox} and \ref{tab:optimal-weighting-parameters-yeo-johnson} for robust location and scale invariant Box-Cox and Yeo-Johnson transformations, respectively.
+The resulting weighting function parameters for weighted MLE are shown in Tables \ref{tab:optimal-weighting-parameters-box-cox} and \ref{tab:optimal-weighting-parameters-yeo-johnson} for robust location- and scale-invariant Box-Cox and Yeo-Johnson transformations, respectively.
 
 ```{r include = FALSE, eval = FALSE}
 # This writes the lookup table for two-sided weighting parameters.
@@ -493,7 +491,7 @@ $r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.38 & 1.00 & $(0, 10]$ & 1.41 & 1
 ```{=latex}
 \begin{table}
 \begin{center}
-\caption{Optimal weighting parameters and corresponding loss for \textbf{invariant Yeo-Johnson} power transformations. $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values, and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column. The {optimal} column shows the optimal parameter values. The \textit{loss} column shows the loss achieved by each method, under optimised parameters. Lower loss indicates better robustness against outliers.}
+\caption{Optimal weighting parameters and corresponding loss for \textbf{location- and scale-invariant Yeo-Johnson} power transformations. $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values, and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column. The {optimal} column shows the optimal parameter values. The \textit{loss} column shows the loss achieved by each method, under optimised parameters. Lower loss indicates better robustness against outliers.}
 \label{tab:optimal-weighting-parameters-yeo-johnson}
 \begin{tabular}{l r r r r r r r}
 
@@ -523,11 +521,11 @@ In the presence of outliers, the Yeo-Johnson transformation yielded smaller erro
 For both transformations, weighting based on empirical probabilities yielded the most consistent $\lambda$ parameter estimates in the presence of outliers.
 Other methods did not outperform the non-robust transformation method.
 
-```{r optimised-weighting-function-parameters, warning=FALSE, message=FALSE, fig.cap=cap}
+```{r optimised-weighting-function-parameters, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=3.5}
 cap <- paste0(
   "Robustness of power transformations after optimising weighting function parameters. ",
-  "The distribution of errors, i.e. the difference between robustly fitted $\\hat{\\lambda}^r$ ",
-  "and expected $\\hat{\\lambda}_{0}$ found in the absence of outliers, is shown for 1000 randomly ",
+  "The distribution of errors, i.e. the difference between robustly fitted $\\lambda^r$ ",
+  "and expected $\\lambda_{0}$ found in the absence of outliers, is shown for 1000 randomly ",
   "parametrised asymmetric generalised normal distributions with up to 10% outliers on either side ",
   "of the distribution. The top and bottom panel show errors for the invariant Box-Cox ",
   "and invariant Yeo-Johnson transformations, respectively. ",
@@ -545,13 +543,17 @@ cap <- paste0(
 
 ## Empirical central normality test
 
-To develop an empirical test for central normality we need to consider two parameters: the central portion $\kappa$ as a fixed parameter, and test statistic $\tau_{\text{gof}}$. We will first define the central portion $\kappa$.
+To develop an empirical test for central normality we need to consider two parameters: the central portion $\kappa$ as a fixed parameter, and test statistic $\tau_{\text{ecn}}$. We will first define the central portion $\kappa$.
 
 First we draw $m_d=10000$ random asymmetric generalised normal distributions. As before, each distribution is parametrised with a randomly chosen skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$. Location and scale parameters are set as $\mu = 0$ and $\sigma = 1$, respectively. $n = \lceil 10^\gamma \rceil$ values are then randomly drawn, with $\gamma \sim U\left(1.47, 3.00\right)$, which leads to between $30$ and $1000$ values being drawn to create $\mathbf{X}_i$. As before, for each distribution, up to $10 \%$ of instances are replaced by outlier values, and this is repeated $10$ times. We then compute residuals after optimising robust location- and scale-invariant transformations with the empirical tapered cosine weighting method.
 
-Figure \ref{fig:empirical-central-normality-residual-error} shows the residual errors of the transformed distribution as function of the empirical probability. As expected, the largest deviations from normality appear on the extremities of this range. For Box-Cox, the effect of outliers on the lower end of the distribution leads to noticeable asymmetry. Between very low and very high empirical probabilities, residual errors are constrained and relatively flat. This is the candidate range for the central portion of the data.
+Figure \ref{fig:empirical-central-normality-residual-error} shows the residual errors of the transformed distribution as function of the empirical probability.
+As expected, the largest deviations from normality appear on the extremities of this range.
+For Box-Cox transformations, the effect of outliers on the lower end of the distribution leads to noticeable asymmetry.
+Between very low and very high empirical probabilities, residual errors are constrained and relatively flat.
+This is the candidate range for the central portion of the data.
 
-```{r empirical-central-normality-residual-error, warning=FALSE, message=FALSE, fig.cap=cap}
+```{r empirical-central-normality-residual-error, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
 cap <- paste0(
   "Residual error as a function of empirical probability. ",
   "Percentiles of the error are shown for robust, location- and scale-invariant transformations of 10000 randomly drawn asymmetric ",
@@ -564,12 +566,12 @@ cap <- paste0(
   manuscript_dir = manuscript_dir)
 
 ```
-We then consider the empirical probability of type I errors: the probability of incorrectly classifying a centrally normal distribution as being non-normal based on the test statistic. Under the assumption that the asymmetric generalised normal distributions are centrally normal after robust transformation, this produces the relationship shown in Figure \ref{fig:empirical-central-normality-type-1-error-rate}. Since for $\kappa \leq 0.80$ error curves for both transformation methods are similar, we fix the value of the central portion $\kappa$ to 0.80. In the remaining we will use the empirical central normality test statistic values defined using robust location- and scale-invariant Yeo-Johnson transformations, as it is slightly more strict. This leads to test statistic values listed in Table \ref{tab:empirical-central-normality}
+We then consider the empirical probability of type I errors: the probability of incorrectly classifying a centrally normal distribution as being non-normal based on the test statistic $\tau_{\text{ecn}}$. Under the assumption that the asymmetric generalised normal distributions are centrally normal after robust transformation, this produces the relationship shown in Figure \ref{fig:empirical-central-normality-type-1-error-rate}. Since for $\kappa \leq 0.80$ error curves for both transformation methods are similar, we fix the value of the central portion $\kappa$ to 0.80. In the remaining we will use the empirical central normality test statistic values defined using robust location- and scale-invariant Yeo-Johnson transformations, as it is slightly more strict. This leads to test statistic values listed in Table \ref{tab:empirical-central-normality}
 
-```{r empirical-central-normality-type-1-error-rate, warning=FALSE, message=FALSE, fig.cap=cap}
+```{r empirical-central-normality-type-1-error-rate, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
 cap <- paste0(
   "Type 1 error rate of transformed asymmetric generalised normal distributions as function of ",
-  "the test statistic for the central portion $\\kappa$ of the distribution.")
+  "the test statistic $\\tau_{\\text{ecn}}$ for the central portion $\\kappa$ of the distribution.")
 
 .plot_type_1_error_rate(
   plot_theme = plot_theme,
@@ -655,7 +657,7 @@ Applying conventional and invariant Yeo-Johnson transformations to patient age y
 no transformation (residual sum $\sum r_i = 16.5$);
 conventional transformation ($\lambda = 2.0$, $\sum r_i = 11.5$, $\mu_{YJ} = 1.8 \cdot 10^3$, $\sigma_{YJ} = 0.5 \cdot 10^3$);
 Raymaekers and Rousseeuw's robust adaptation ($\lambda = 2.0$, $\sum r_i = 11.5$, $\mu_{YJ} = 1.8 \cdot 10^3$, $\sigma_{YJ} = 0.5 \cdot 10^3$);
-location- and scale invariant transformation ($\lambda = 0.9$, $\sum r_i = 8.8$, $\mu_{YJ} = 1.2$, $\sigma_{YJ} = 1.1$);
+location- and scale-invariant transformation ($\lambda = 0.9$, $\sum r_i = 8.8$, $\mu_{YJ} = 1.2$, $\sigma_{YJ} = 1.1$);
 and robust location- and scale-invariant transformation ($\lambda = 0.8$, $\sum r_i = 10.6$, $\mu_{YJ} = 1.2$, $\sigma_{YJ} = 1.0$).
 
 ```{r lung-cancer-age, warning=FALSE, message=FALSE, fig.cap=cap}
@@ -685,7 +687,7 @@ Applying conventional and invariant Yeo-Johnson transformations to patient age y
 no transformation (residual sum $\sum r_i = 48.0$);
 conventional transformation ($\lambda = 0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.102$, $\sigma_{YJ} = 4 \cdot 10^{-3}$);
 Raymaekers and Rousseeuw's robust adaptation ($\lambda = 0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.101$, $\sigma_{YJ} = 4 \cdot 10^{-3}$);
-location- and scale invariant transformation ($\lambda = 0.5$, $\sum r_i = 26.8$, $\mu_{YJ} = 0.9$, $\sigma_{YJ} = 0.9$);
+location- and scale-invariant transformation ($\lambda = 0.5$, $\sum r_i = 26.8$, $\mu_{YJ} = 0.9$, $\sigma_{YJ} = 0.9$);
 and robust location- and scale-invariant transformation ($\lambda = 0.4$, $\sum r_i = 23.1$, $\mu_{YJ} = 0.8$, $\sigma_{YJ} = 0.8$).
 
 ```{r penguin-body-mass, warning=FALSE, message=FALSE, fig.cap=cap}
@@ -716,7 +718,7 @@ Applying conventional and invariant Yeo-Johnson transformations to latitude yiel
 no transformation (residual sum $\sum r_i = 328$);
 conventional transformation ($\lambda = 62.1$, $\sum r_i = 319$, $\mu_{YJ} = 4.8 \cdot 10^{99}$, $\sigma_{YJ} = 0.1 \cdot 10^{99}$);
 Raymaekers and Rousseeuw's robust adaptation ($\lambda = 95.4$, $\sum r_i = 319$, $\mu_{YJ} = 6.4 \cdot 10^{153}$, $\sigma_{YJ} = 0.3 \cdot 10^{153}$);
-location- and scale invariant transformation ($\lambda = 1.5$, $\sum r_i = 326$, $\mu_{YJ} = -1.2$, $\sigma_{YJ} = 0.8$);
+location- and scale-invariant transformation ($\lambda = 1.5$, $\sum r_i = 326$, $\mu_{YJ} = -1.2$, $\sigma_{YJ} = 0.8$);
 and robust location- and scale-invariant transformation ($\lambda = 1.4$, $\sum r_i = 311$, $\mu_{YJ} = -1.3$, $\sigma_{YJ} = 0.9$).
 
 ```{r ames-latitude, warning=FALSE, message=FALSE, fig.cap=cap}

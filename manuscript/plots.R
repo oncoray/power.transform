@@ -929,7 +929,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p <- p + ggplot2::facet_wrap("method", nrow = 2)
   p <- p + paletteer::scale_fill_paletteer_d(
     palette = "ggthemes::Tableau_10",
-    drop = FALSE
+    drop = FALSE,
+    name = "transformation"
   )
   p <- p + geom_text(
     data = pass_rate_data,
@@ -944,7 +945,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     size = annotation_settings$geom_text_size,
     vjust = 0.5
   )
-  p <- p + ggplot2::scale_y_sqrt(name = latex2exp::TeX("$| \\hat{\\lambda}^r - \\hat{\\lambda}_{0}|$"))
+  p <- p + ggplot2::scale_y_sqrt(name = latex2exp::TeX("$| \\lambda_r - \\lambda_0 |$"))
   p <- p + ggplot2::scale_x_discrete(guide = ggplot2::guide_axis(n.dodge = 2))
   p <- p + ggplot2::xlab("weighting method")
 
@@ -1013,6 +1014,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     )
   )
   p_bc <- p_bc + plot_theme
+  p_bc <- p_bc + ggplot2::theme(legend.key.size = grid::unit(0.3, 'lines'))
   p_bc <- p_bc + ggplot2::geom_line()
   p_bc <- p_bc + ggplot2::geom_line(
     data = outlier_free_data[method == "Box-Cox"],
@@ -1024,7 +1026,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     linetype = "dashed"
   )
   p_bc <- p_bc + ggplot2::scale_colour_discrete(
-    name = "percentile (Box-Cox)",
+    name = "percentile\n(Box-Cox)",
     type = c("50 %" = "#ABC6E2", "90 %" = "#779EC6", "95 %" = "#4E79A7", "99 %" = "#346394", "100 %" = "#1D4D7E")
   )
   p_bc <- p_bc + ggplot2::xlab("empirical probability")
@@ -1043,6 +1045,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     )
   )
   p_yj <- p_yj + plot_theme
+  p_yj <- p_yj + ggplot2::theme(legend.key.size = grid::unit(0.3, 'lines'))
   p_yj <- p_yj + ggplot2::geom_line()
   p_yj <- p_yj + ggplot2::geom_line(
     data = outlier_free_data[method == "Yeo-Johnson"],
@@ -1054,7 +1057,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     linetype = "dashed"
   )
   p_yj <- p_yj + ggplot2::scale_colour_discrete(
-    name = "percentile (Yeo-Johnson)",
+    name = "percentile\n(Yeo-Johnson)",
     type = c("50 %" = "#FFBD7D", "90 %" = "#FFA954", "95 %" = "#F28E2B", "99 %" = "#CD6B0B", "100 %" = "#A25000")
   )
   p_yj <- p_yj + ggplot2::xlab("empirical probability")
@@ -1140,6 +1143,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     )
   )
   p_bc <- p_bc + plot_theme
+  p_bc <- p_bc + ggplot2::theme(legend.key.size = grid::unit(0.3, 'lines'))
   p_bc <- p_bc + ggplot2::geom_step()
   p_bc <- p_bc + ggplot2::scale_colour_discrete(
     name = "central portion κ\n(Box-Cox)",
@@ -1165,6 +1169,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     )
   )
   p_yj <- p_yj + plot_theme
+  p_yj <- p_yj + ggplot2::theme(legend.key.size = grid::unit(0.3, 'lines'))
   p_yj <- p_yj + ggplot2::geom_step()
   p_yj <- p_yj + ggplot2::scale_colour_discrete(
     name = "central portion κ\n(Yeo-Johnson)",
@@ -1177,7 +1182,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
       "100 %" = "#904109"
     )
   )
-  p_yj <- p_yj + ggplot2::xlab("test statistic")
+  p_yj <- p_yj + ggplot2::xlab(latex2exp::TeX("test statistic $\tau_{\text{ecn}}$"))
   p_yj <- p_yj + ggplot2::coord_cartesian(xlim = c(0, 0.25))
   p_yj <- p_yj + ggplot2::theme(
     axis.title.y = ggplot2::element_blank(),
