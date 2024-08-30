@@ -19,12 +19,4 @@ Stable versions of `power.transformation` can be installed from CRAN.
     require(devtools)
     devtools::install_github("https://github.com/alexzwanenburg/power.transform")
 
-## Example
-
-This is a basic example which shows you how to solve a common problem:
-
-``` r
-library(power.transform)
-## basic example code
-```
 
