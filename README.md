@@ -1,5 +1,9 @@
+<img src="icon/hexicon.svg" align="right" width="120"/>
 
-# power.transform <img src="icon/hexicon.svg" align="right" width="120"/>
+![GitHub License](https://img.shields.io/github/license/oncoray/mirp)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/oncoray/power.transform/auto-test-package_time_trigger.yml)
+
+# power.transform 
 
 `power.transformation` is an R-package for power transformation of data to
 normality.
