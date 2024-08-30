@@ -450,10 +450,10 @@ The results are shown in Figure \ref{fig:shifted-distributions-appendix}.
 
 ```{r shifted-distributions-appendix, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
-  "Invariant power transformation produces transformation parameters that are invariant to location and shape. ",
+  "Invariant power transformation produces transformation parameters that are invariant to location and scale. ",
   "Samples were drawn from normal, right-skewed and left-skewed distributions, respectively, which then underwent a shift $d_{\\text{shift}}$ or multiplication by $d_{\\text{scale}}$. ",
-  "Estimates of transformation parameter $\\lambda$ with the conventional power transformations (circle) show strong dependency on the overall location and scale of the distribution, ",
-  "whereas estimates with the invariant power transformations (triangle) are constant."
+  "Estimates of the transformation parameter $\\lambda$ for the conventional power transformations show strong dependency on the overall location and scale of the distribution and the optimisation criterion, ",
+  "whereas estimates obtained for the location- and scale-invariant power transformations are constant."
 )
 
 .plot_shifted_distributions_appendix(manuscript_dir = manuscript_dir, plot_theme = plot_theme)
