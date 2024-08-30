@@ -1,21 +1,27 @@
 ---
 title: "Appendix"
-author: "Alex Zwanenburg"
+author: "Alex Zwanenburg, Steffen Löck"
 date: "`r Sys.Date()`"
-output: html_document
+output:
+  pdf_document:
+    latex_engine: lualatex
+papersize: a4
+bibliography: refs.bib
 header-includes:
-- \usepackage{amsmath}
-- \usepackage{booktabs}
-- \DeclareMathOperator*{\argmax}{argmax}
-- \DeclareMathOperator*{\argmin}{argmin}
-- \DeclareMathOperator{\sgn}{sgn}
+  - \usepackage{amsmath}
+  - \usepackage{booktabs}
+  - \DeclareMathOperator*{\argmax}{argmax}
+  - \DeclareMathOperator*{\argmin}{argmin}
+  - \DeclareMathOperator{\sgn}{sgn}
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   echo = FALSE,
   eval = TRUE,
-  fig.align= "center")
+  fig.align = "center",
+  dev = "cairo_pdf"
+)
 
 # Allow for defining figure captions within a chunk.
 knitr::opts_knit$set(
@@ -29,27 +35,29 @@ require(latex2exp)
 require(coro)
 require(paletteer)
 require(robustHD)
-require(modeldata)
 
 manuscript_dir <- file.path("C:/Users/alexz/Documents/GitHub/power.transform/manuscript")
 source(file.path(manuscript_dir, "simulations.R"))
 source(file.path(manuscript_dir, "plots.R"))
 
 # Base font size.
-base_size <- 10
+base_size <- 9
 
 # Set general theme.
 plot_theme <- ggplot2::theme_light(base_size=base_size)
 plot_theme$plot.title$size <- ggplot2::rel(1.0)
+plot_theme$plot.title$hjust <- 0.5
 plot_theme$strip.background <- ggplot2::element_blank()
 plot_theme$strip.text$colour <- NULL
 plot_theme$plot.margin <- grid::unit(c(2, 2, 2, 2), "points")
+plot_theme$legend.key.size <- grid::unit(0.3, 'lines')
 
 parse_mean_sd_latex <- function(mu, sigma, digits=2L){
   return(paste0(
     "$", round(mu, digits=digits), " \\pm ", round(sigma, digits=digits), "$"
   ))
 }
+
 ```
 
 # Appendix A: Log-likelihood functions for location and scale invariant power transformation
@@ -129,9 +137,9 @@ With $\mu$ the average of $\phi^{\lambda, x_0, s}(\mathbf{X})$ and $\sigma^2$ it
 The first two terms derive directly from the log-likelihood function of a normal distribution, and are not specific to the type of power transformation used.
 However, the final term differs between Box-Cox and Yeo-Johnson transformations.
 
-## Box-Cox transformation
+## Location- and scale-invariant Box-Cox transformation
 
-For the Box-Cox transformation the partial derivative is:
+For the location- and scale-invariant Box-Cox transformation the partial derivative is:
 ```{=latex}
 \begin{equation}
 \begin{split}
@@ -152,7 +160,7 @@ Thus the final term in $\mathcal{l}_{\text{BC}}^{\lambda, x_0, s}$ is:
 \end{equation}
 ```
 
-This leads to the following log-likelihood for the Box-Cox transformation:
+This leads to the following log-likelihood:
 ```{=latex}
 \begin{equation}
 \begin{split}
@@ -162,7 +170,7 @@ This leads to the following log-likelihood for the Box-Cox transformation:
 \end{equation}
 ```
 
-We introduced per-sample weights $w_i$ to facilitate robust power transformations. The log likelihood of the robust Box-Cox transformation is:
+We introduced per-sample weights $w_i$ to facilitate robust power transformations. The weighted log-likelihood of the location- and scale-invariant Box-Cox transformation is:
 ```{=latex}
 \begin{equation}
 \begin{split}
@@ -179,9 +187,9 @@ where $\mu_w$ and $\sigma^2_w$ are the weighted mean and weighted variance of th
 \end{equation}
 ```
 
-## Yeo-Johnson transformation
+## Location- and scale-invariant Yeo-Johnson transformation
 
-For the Yeo-Johnson transformation, the partial derivative is:
+For the location- and scale-invariant Yeo-Johnson transformation, the partial derivative is:
 ```{=latex}
 \begin{equation}
 \frac{\partial}{\partial x_i} \phi_{\text{YJ}}^{\lambda, x_0, s}(x_i) =
@@ -201,7 +209,7 @@ Thus the final term in $\mathcal{l}_{\text{YJ}}^{\lambda, x_0, s}$ is:
 \end{equation}
 ```
 
-This lead to the following log-likelihood for the Yeo-Johnson transformation:
+This leads to the following log-likelihood:
 ```{=latex}
 \begin{equation}
 \begin{split}
@@ -211,7 +219,7 @@ This lead to the following log-likelihood for the Yeo-Johnson transformation:
 \end{equation}
 ```
 
-The log likelihood of the robust Yeo-Johnson transformation is:
+The weighted log-likelihood for location- and scale-invariant Yeo-Johnson transformation is:
 ```{=latex}
 \begin{equation}
 \begin{split}
@@ -231,75 +239,102 @@ where $\mu_w$ and $\sigma^2_w$ are the weighted mean and weighted variance of th
 
 # Appendix B: Optimisation of transformation parameters
 
-Maximum likelihood estimation (MLE) is commonly used to optimise parameters for power transformation. Generally, optimisation requires minimisation or maximisation of a criterion. In MLE, the maximised criterion is the log-likelihood function of the normal distribution. Here, we investigate power transformation using optimisation criteria that are closely related to test statistics for normality tests.
+Maximum likelihood estimation (MLE) is commonly used to optimise parameters for power transformation.
+Generally, optimisation requires minimisation or maximisation of a criterion.
+In MLE, the maximised criterion is the log-likelihood function of the normal distribution.
+Here, we investigate power transformation using optimisation criteria that are closely related to test statistics for normality tests.
 
-Let $\mathbf{X}$ be a feature with ordered feature values, and $\mathbf{Y}^\lambda =\psi^{\lambda} \left(\mathbf{X} \right)$ and $\mathbf{Y}^{\lambda, x_0} =\psi^{\lambda, x_0} \left(\mathbf{X} \right)$ its transformed values using conventional and shift and scale invariant power transformations, respectively. Since power transformations are monotonic, $\mathbf{Y}$ will likewise be ordered.
+Let $\mathbf{X}$ be a feature with ordered feature values, and $\mathbf{Y}^\lambda =\phi^{\lambda} \left(\mathbf{X} \right)$ and $\mathbf{Y}^{\lambda, x_0, s} =\phi^{\lambda, x_0, s} \left(\mathbf{X} \right)$ its transformed values using conventional and shift and scale invariant power transformations, respectively. Since power transformations are monotonic, $\mathbf{Y}$ will likewise be ordered.
 
-Below we will focus on criteria based on the empirical density function and those based on skewness and kurtosis of the transformed featured. Other potential criteria, such as the Shapiro-Wilk test statistic [@Shapiro1965-zd] are not investigated here. In the case of the Shapiro-Wilk test statistic this is because of lack of scalability to features with many ($> 5000$) instances, and because adapting the test statistic to include weights is not straightforward.
+Below we will focus on criteria based on the empirical density function and those based on skewness and kurtosis of the transformed featured.
+Other potential criteria, such as the Shapiro-Wilk test statistic [@Shapiro1965-zd] are not investigated here.
+In the case of the Shapiro-Wilk test statistic this is because of lack of scalability to features with many ($> 5000$) instances, and because adapting the test statistic to include weights is not straightforward.
 
 ## Empirical density function-based criteria
 
-The first class of criteria is based on the empirical distribution function (EDF). Transformation parameters are then fit through minimisation of the distance between the empirical distribution function $F_{\epsilon}$ and the cumulative density function (CDF) of the normal distribution $F_{\mathcal{N}}$. Let $F_{\epsilon}\left(x_i \right) = \frac{i - 1/3}{n + 1/3}$ be the empirical probability of instance $i$. The normal distribution is parametrised by location parameter $\mu$ and scale parameter $\sigma$, both of which have to be estimated from the data. For non-robust power transformation, $\mu$ and $\sigma$ are sample mean and sample standard deviation, respectively. For robust power transformations, we estimate $\mu$ and $\sigma$ as Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0} (\mathbf{X})$ [@Huber1981-su].
+The first class of criteria is based on the empirical distribution function (EDF).
+Transformation parameters are then fit through minimisation of the distance between the empirical distribution function $F_{\epsilon}$ and the cumulative density function (CDF) of the normal distribution $F_{\mathcal{N}}$.
+Let $F_{\epsilon}\left(x_i \right) = \frac{i - 1/3}{n + 1/3}$ be the empirical probability of instance $i$.
+The normal distribution is parametrised by location parameter $\mu$ and scale parameter $\sigma$, both of which have to be estimated from the data. 
+For non-robust power transformation, $\mu$ and $\sigma$ are sample mean and sample standard deviation, respectively.
+For robust power transformations, we estimate $\mu$ and $\sigma$ as Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$ [@Huber1981-su].
 
 ### Anderson-Darling criterion
 
-The Anderson-Darling criterion is based on the empirical distribution function of $\mathbf{X}$. We define this criterion as follows:
+The Anderson-Darling criterion is based on the empirical distribution function of $\mathbf{X}$.
+We define this criterion as follows:
 
 ```{=latex}
 \begin{equation}
-U_{\text{AD}} \left(\mathbf{X}, \lambda, x_0 \right) = \frac{1}{\sum_{i=1}^n w_i} \sum_{i=1}^n w_i \frac{\left( F_{\epsilon}\left(x_i \right) - F_{\mathcal{N}} \left(\psi^{\lambda, x_0} \left(x_i \right); \mu, \sigma \right) \right)^2} {F_{\mathcal{N}} \left(\psi^{\lambda, x_0} \left(x_i \right); \mu, \sigma \right) \left(1 - F_{\mathcal{N}} \left(\psi^{\lambda, x_0} \left(x_i \right); \mu, \sigma \right) \right) }
+U_{\text{AD}} \left(\mathbf{X}, \lambda, x_0 \right) = \frac{1}{\sum_{i=1}^n w_i} \sum_{i=1}^n w_i \frac{\left( F_{\epsilon}\left(x_i \right) - F_{\mathcal{N}} \left(\phi^{\lambda, x_0, s} \left(x_i \right); \mu, \sigma \right) \right)^2} {F_{\mathcal{N}} \left(\phi^{\lambda, x_0, s} \left(x_i \right); \mu, \sigma \right) \left(1 - F_{\mathcal{N}} \left(\phi^{\lambda, x_0, s} \left(x_i \right); \mu, \sigma \right) \right) }
 \end{equation}
 ```
 
-Here $\mu$ and $\sigma$ are location and scale parameters as described above, and $w_i$ are weights as described in section **Insert**. For non-robust power transformations, all $w_i = 1$. Note that this criterion is not the same as the Anderson-Darling test statistic [@Anderson1952-gz], which involves solving (or approximating) an integral function, contains an extra scalar multiplication term, and does not include any extraneous weights $w_i$. The Anderson-Darling criterion seeks to minimise the squared Euclidean distance between the EDF and the normal CDF, with differences at the upper and lower end of the normal CDF receiving more weight than those at the the centre of the CDF.
+Here $w_i$ are weights, and $\mu$ and $\sigma$ are location and scale parameters. 
+For non-robust power transformations, all $w_i = 1$.
+Note that this criterion is not the same as the Anderson-Darling test statistic [@Anderson1952-gz], which involves solving (or approximating) an integral function, contains an extra scalar multiplication term, and does not include weights.
+The Anderson-Darling criterion seeks to minimise the squared Euclidean distance between the EDF and the normal CDF, with differences at the upper and lower end of the normal CDF receiving more weight than those at the the centre of the CDF.
 
 ### Cramér-von Mises criterion
 
-The Cramér-von Mises criterion is also based on the empirical distribution function of $\mathbf{X}$. We define the Cramér-von Mises criterion as follows:
+The Cramér-von Mises criterion is also based on the empirical distribution function of $\mathbf{X}$.
+We define the Cramér-von Mises criterion as follows:
 ```{=latex}
 \begin{equation}
-U_{\text{CvM}} \left(\mathbf{X}, \lambda, x_0 \right) = \frac{1}{\sum_{i=1}^n w_i} \sum_{i=1}^n w_i \left( F_{\epsilon}\left(x_i \right) - F_{\mathcal{N}} \left(\psi^{\lambda, x_0} \left(x_i \right); \mu, \sigma \right) \right)^2
+U_{\text{CvM}} \left(\mathbf{X}, \lambda, x_0 \right) = \frac{1}{\sum_{i=1}^n w_i} \sum_{i=1}^n w_i \left( F_{\epsilon}\left(x_i \right) - F_{\mathcal{N}} \left(\phi^{\lambda, x_0, s} \left(x_i \right); \mu, \sigma \right) \right)^2
 \end{equation}
 ```
 
-Here $\mu$ and $\sigma$ are location and scale parameters as described above, and $w_i$ are weights as described in section **Insert**. For non-robust power transformations, all $w_i = 1$. The criterion is similar to the Cramér-von Mises test statistic [@Cramer1928-rc, @Von_Mises1928-ef], aside from a additive scalar value and the introduction of extraneous weights. This criterion, like the Anderson-Darling criterion, seeks to minimise the squared Euclidean distance between the EDF and the normal CDF. Unlike the Anderson-Darling criterion, this criterion weights all instances equally.
+Here $w_i$ are weights, and $\mu$ and $\sigma$ are location and scale parameters.
+For non-robust power transformations, all $w_i = 1$.
+The criterion is similar to the Cramér-von Mises test statistic [@Cramer1928-rc, @Von_Mises1928-ef], aside from a additive scalar value and the introduction of weights.
+This criterion, like the Anderson-Darling criterion, seeks to minimise the squared Euclidean distance between the EDF and the normal CDF.
+Unlike the Anderson-Darling criterion, this criterion weights all instances equally.
 
-For conventional power transformations with a fixed shift parameter, the transformation $\phi^{\lambda, x_0} (\mathbf{X})$ may be substituted by $\phi^{\lambda} (\mathbf{X})$ in the definition of the Cramér-von Mises criterion.
+For conventional power transformations with a fixed shift parameter, the transformation $\phi^{\lambda, x_0, s} (\mathbf{X})$ may be substituted by $\phi^{\lambda} (\mathbf{X})$ in the definition of the Cramér-von Mises criterion.
 
 ## Skewness-kurtosis-based criteria
 
-The second class of criteria seeks to reduce skewness and (excess) kurtosis of the transformed feature $\mathbf{Y}$. We will first define the location $\mu$ and scale $\sigma$ of the the transformed as these are required for computing skewness and kurtosis. Here, $\mu$ is defined as:
+The second class of criteria seeks to reduce skewness and (excess) kurtosis of the transformed feature $\mathbf{Y}$.
+We will first define the location $\mu$ and scale $\sigma$ of the the transformed as these are required for computing skewness and kurtosis.
+Here, $\mu$ is defined as:
 
 ```{=latex}
 \begin{equation}
-\mu = \frac{\sum_{i=1}^n \phi^{\lambda, x_0} \left(x_i \right)} {\sum_{i=1}^n w_i}
+\mu = \frac{\sum_{i=1}^n \phi^{\lambda, x_0, s} \left(x_i \right)} {\sum_{i=1}^n w_i}
 \end{equation}
 ```
 
-The location, or mean, is weighted using weights $w_i$, as described in section **Insert**. For non-robust transformations, $w_i = 1$. Then, $sigma^2$ is defined as:
+The location, or mean, is weighted using weights $w_i$.
+For non-robust transformations, $w_i = 1$.
+Then, $sigma^2$ is defined as:
 ```{=latex}
 \begin{equation}
-\sigma^2 = \frac{\sum_{i=1}^n w_i \left(\phi^{\lambda, x_0} \left( x_i \right) - \mu \right)^2}{\sum_{i=1}^n w_i}
+\sigma^2 = \frac{\sum_{i=1}^n w_i \left(\phi^{\lambda, x_0, s} \left( x_i \right) - \mu \right)^2}{\sum_{i=1}^n w_i}
 \end{equation}
 ```
 
 Skewness is defined as:
 ```{=latex}
 \begin{equation}
-s = \frac{\sum_{i=1}^n w_i \left(\phi^{\lambda, x_0} \left( x_i \right) - \mu \right)^3}{\sigma^3 \sum_{i=1}^n w_i}
+s = \frac{\sum_{i=1}^n w_i \left(\phi^{\lambda, x_0, s} \left( x_i \right) - \mu \right)^3}{\sigma^3 \sum_{i=1}^n w_i}
 \end{equation}
 ```
 
 Kurtosis is defined as:
 ```{=latex}
 \begin{equation}
-k = \frac{\sum_{i=1}^n w_i \left(\phi^{\lambda, x_0} \left( x_i \right) - \mu \right)^4}{\sigma^4 \sum_{i=1}^n w_i}
+k = \frac{\sum_{i=1}^n w_i \left(\phi^{\lambda, x_0, s} \left( x_i \right) - \mu \right)^4}{\sigma^4 \sum_{i=1}^n w_i}
 \end{equation}
 ```
 
 ### D'Agostino criterion
 
-The D'Agostino criterion defined here follows the D'Agostino $K^2$ test statistic [@DAgostino1990-kp]. This test statistic is composed of two separate test statistics, one of which is related to skewness, and the other to kurtosis. Both test statistics are computed in several steps. Let us first define $\nu=\sum_{i=1}^n w_i$. Thus for non-robust power transformations, $\nu = n$.
+The D'Agostino criterion defined here follows the D'Agostino $K^2$ test statistic [@DAgostino1990-kp].
+This test statistic is composed of two separate test statistics, one of which is related to skewness, and the other to kurtosis.
+Both test statistics are computed in several steps.
+Let us first define $\nu=\sum_{i=1}^n w_i$.
+Thus for non-robust power transformations, $\nu = n$.
 
 For the skewness test statistic we first compute [@DAgostino1990-kp]:
 
@@ -372,7 +407,8 @@ The main difference between the test statistic as originally formulated, and the
 
 ### Jarque-Bera criterion
 
-The second criterion based on skewness and kurtosis is the Jarque-Bera criterion. It is relatively simple to compute, compared to the D'Agostino criterion:
+The second criterion based on skewness and kurtosis is the Jarque-Bera criterion.
+It is relatively simple to compute compared to the D'Agostino criterion:
 ```{=latex}
 \begin{equation}
 U_{\text{JB}} \left(\mathbf{X}, \lambda, x_0 \right) = s^2 + \left(k - 3\right)^2 / 4
@@ -399,8 +435,18 @@ For conventional power transformations with fixed location and scale parameters,
 ```
 
 
+# Appendix C: Simulations with other optimisation criteria
 
-# Appendix B: Simulations with other optimisation criteria
+Invariance of location- and scale-invariant power transformations was assessed using the optimisation criteria in (Appendix B)[Appendix B: Optimisation of transformation parameters].
+This follows the simulation in the main manuscript, where MLE was used for optimization.
+In short, we first randomly drew $10000$ values from a normal distribution: $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)$, or equivalently $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.5, 2\right)$.
+The second distribution was a right-skewed normal distribution $\mathbf{X}_{\text{right}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.2, 2\right)$.
+The third distribution was a left-skewed normal distribution $\mathbf{X}_{\text{left}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.8, 2\right)$.
+We then computed transformation parameter $\lambda$ using the original definitions (equations \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}) and the location- and scale-invariant definitions (equations \ref{eqn:box-cox-invariant} and \ref{eqn:yeo-johnson-invariant}) for each distribution using different optimisation criteria.
+To assess location invariance, a positive value $d_{\text{shift}}$ was added to each distribution with $d_{\text{shift}} \in [1, 10^6]$.
+Similarly, to assess scale invariance, each distribution was multiplied by a positive value $d_{\text{scale}}$, where $d_{\text{scale}} \in [1, 10^6]$.
+
+The results are shown in Figure \ref{fig:shifted-distributions-appendix}.
 
 ```{r shifted-distributions-appendix, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
@@ -412,3 +458,5 @@ cap <- paste0(
 
 .plot_shifted_distributions_appendix(manuscript_dir = manuscript_dir, plot_theme = plot_theme)
 ```
+
+# Appendix D: Experimental results using location- and scale-invariant Box-Cox transformation

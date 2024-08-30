@@ -1,5 +1,6 @@
 ---
-title: "Location and Scale-Invariant Power Transformations for Transforming Data to Normality"
+title: "Location and Scale-Invariant Power Transformations for Transforming Data to
+  Normality"
 author: "Alex Zwanenburg, Steffen Löck"
 date: "`r Sys.Date()`"
 output:
@@ -8,20 +9,20 @@ output:
 papersize: a4
 bibliography: refs.bib
 header-includes:
-  - \usepackage{amsmath}
-  - \usepackage{booktabs}
-  - \DeclareMathOperator*{\argmax}{argmax}
-  - \DeclareMathOperator*{\argmin}{argmin}
-  - \DeclareMathOperator{\sgn}{sgn}
+- \usepackage{amsmath}
+- \usepackage{booktabs}
+- \DeclareMathOperator*{\argmax}{argmax}
+- \DeclareMathOperator*{\argmin}{argmin}
+- \DeclareMathOperator{\sgn}{sgn}
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
+  dev = "cairo_pdf",
   echo = FALSE,
   eval = TRUE,
-  fig.align = "center",
-  dev = "cairo_pdf"
-  )
+  fig.align = "center"
+)
 
 # Allow for defining figure captions within a chunk.
 knitr::opts_knit$set(
@@ -384,7 +385,7 @@ The $\lambda$ parameter for conventional power transformations (Eqn. \ref{eqn:bo
 
 ## Invariance to location and scale
 
-To assess whether the proposed power transformations lead to values of $\lambda$ that are invariant to location and scale of the distribution, we simulated three different distributions. The first distribution was a normal distribution, as previously shown in Figure \ref{fig:decreased-normality}.
+To assess whether the proposed power transformations lead to values of $\lambda$ that are invariant to location and scale of the distribution, we simulated three different distributions.
 We first randomly drew $10000$ values from a normal distribution: $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)$, or equivalently $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.5, 2\right)$.
 The second distribution was a right-skewed normal distribution $\mathbf{X}_{\text{right}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.2, 2\right)$.
 The third distribution was a left-skewed normal distribution $\mathbf{X}_{\text{left}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.8, 2\right)$.

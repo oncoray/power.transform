@@ -1955,6 +1955,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     mapping = ggplot2::aes(x = value, y = task_difficulty, fill = task_difficulty)
   )
   p3 <- p3 + plot_theme
+  p3 <- p3 + ggplot2::theme(strip.clip = "off")
   p3 <- p3 + ggplot2::geom_vline(
     xintercept = 0.0,
     linetype = "longdash",
