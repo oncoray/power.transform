@@ -8,11 +8,11 @@ output:
 papersize: a4
 bibliography: refs.bib
 header-includes:
-- \usepackage{amsmath}
-- \usepackage{booktabs}
-- \DeclareMathOperator*{\argmax}{argmax}
-- \DeclareMathOperator*{\argmin}{argmin}
-- \DeclareMathOperator{\sgn}{sgn}
+  - \usepackage{amsmath}
+  - \usepackage{booktabs}
+  - \DeclareMathOperator*{\argmax}{argmax}
+  - \DeclareMathOperator*{\argmin}{argmin}
+  - \DeclareMathOperator{\sgn}{sgn}
 ---
 
 ```{r setup, include=FALSE}
@@ -51,7 +51,7 @@ plot_theme$plot.title$hjust <- 0.5
 plot_theme$strip.background <- ggplot2::element_blank()
 plot_theme$strip.text$colour <- NULL
 plot_theme$plot.margin <- grid::unit(c(2, 2, 2, 2), "points")
-plot_theme$legend.title
+plot_theme$legend.key.size <- grid::unit(0.3, 'lines')
 
 parse_mean_sd_latex <- function(mu, sigma, digits=2L){
   return(paste0(
@@ -62,6 +62,8 @@ parse_mean_sd_latex <- function(mu, sigma, digits=2L){
 ```
 
 # Abstract
+
+To-do
 
 # Introduction
 
@@ -105,13 +107,13 @@ However, given sufficiently large sample sizes such tests can detect trivial dev
 
 ```{r decreased-normality, echo=FALSE, fig.cap=cap, fig.height=2.5, warning=FALSE}
 cap <- paste0(
-  "Effect of location shift, scale and outliers on estimation of Box-Cox and Yeo-Johnson transformation parameter $\\lambda$. ",
+  "Effect of location, scale and outliers on estimation of the Box-Cox and Yeo-Johnson transformation parameter $\\lambda$. ",
   "$10000$ samples were drawn from a normal distribution: ",
   "$\\mathcal{N}(\\mu, 1)$ for the shift dataset, $\\mathcal{N}(10, \\sigma)$ for the scale dataset and $\\mathcal{N}(0, 1)$ for the outlier dataset. ",
   "Additionally, an outlier with value $d$ was added to the outlier dataset. ",
   "Since samples are drawn from a normal distribution, a transformation parameter of $\\lambda = 1$ is expected. ",
   "However, a large shift in location, a scale that is small compared to the location, or presence of large outliers ",
-  "lead to incorrectly estimated transformation parameter values. "
+  "lead to incorrectly estimated transformation parameter values."
 )
 
 .plot_reduced_normality(plot_theme = plot_theme, manuscript_dir = manuscript_dir)
@@ -287,8 +289,9 @@ Examples of these weighting function are shown in Figure \ref{fig:weighting-func
 ```{r weighting-functions, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=1.5}
 cap <- paste0(
   "Weighting functions investigated in this study to make power transformations more robust against outliers. ",
-  "The step function was parameterised with $\\delta_1 = 0.60$. ",
-  "The triangle and tapered cosine functions were both parameterised with $\\delta_1 = 0.30$ and $\\delta_2 = 0.90$.")
+  "In this example, the step function was parameterised with $\\delta_1 = 0.60$. ",
+  "The triangle and tapered cosine functions were both parameterised with $\\delta_1 = 0.30$ and $\\delta_2 = 0.90$."
+)
 
 .plot_weighting_functions(plot_theme = plot_theme)
 ```
@@ -354,7 +357,13 @@ Here, $F_{\Gamma}^{-1}$ is the quantile function of the gamma distribution with 
 
 ## Empirical central normality test
 
-Power transformations aim to transform features to a normal distribution. However, this may not always be successful or possible. Deviations from normality can be detected by normality tests, such as the Shapiro-Wilk test [@Shapiro1965-zd]. In practice, normality tests may be too stringent to assess goodness of fit in presence of large sample sizes, outliers, or both. Here we develop an empirical test for central normality. The null hypothesis $H_0$ is that the distribution is centrally normal. The alternative hypothesis $H_1$ is that the distribution is not centrally normal.
+Power transformations aim to transform features to a normal distribution.
+However, this may not always be successful or possible.
+Deviations from normality can be detected by normality tests, such as the Shapiro-Wilk test [@Shapiro1965-zd].
+In practice, normality tests may be too stringent with large sample sizes, outliers, or both.
+Here we develop an empirical test for central normality.
+The null hypothesis $H_0$ is that the distribution is centrally normal.
+The alternative hypothesis $H_1$ is that the distribution is not centrally normal.
 
 Let central normality be defined as normality of central portion $\kappa$ of the data, i.e. $\mathbf{X}_{\text{central}} = \left\{x_i \in \mathbf{X} \, | \,  \frac{1-\kappa}{2} \leq  p_i \leq \frac{1 + \kappa}{2}\right\}$, with $p_i$ probabilities of the empirical distribution, as previously.
 We then compute the residual errors between the z-scores of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$ and the expected z-scores from a standard normal distribution: $r_i =\left| \left( \phi^{\lambda, x_0, s}(x_i) - \mu_M)\right) / \sigma_M - F^{-1}_{\mathcal{N}}(p_i) \right|$, with $\mu_M$ and $\sigma_M$ robust Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$ [@Huber1981-su].
@@ -385,10 +394,10 @@ Similarly, to assess scale invariance, each distribution was multiplied by a pos
 
 ```{r shifted-distributions, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=3.5}
 cap <- paste0(
-  "Invariant power transformation produces transformation parameters that are invariant to location and shape. ",
+  "Invariant power transformation produces transformation parameters that are invariant to location and scale. ",
   "Samples were drawn from normal, right-skewed and left-skewed distributions, respectively, which then underwent a shift $d_{\\text{shift}}$ or multiplication by $d_{\\text{scale}}$. ",
-  "Estimates of transformation parameter $\\lambda$ with the conventional power transformations (circle) show strong dependency on the overall location and scale of the distribution, ",
-  "whereas estimates with the invariant power transformations (triangle) are constant."
+  "Estimates of the transformation parameter $\\lambda$ for the conventional power transformations show strong dependency on the overall location and scale of the distribution, ",
+  "whereas estimates obtained for the location- and scale-invariant power transformations are constant."
 )
 
 .plot_shifted_distributions(manuscript_dir = manuscript_dir, plot_theme = plot_theme)
@@ -462,7 +471,7 @@ usethis::use_data(
 ```{=latex}
 \begin{table}
 \begin{center}
-\caption{Optimal weighting parameters and corresponding loss for \textbf{location- and scale-invariant Box-Cox} power transformations. $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values, and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column. The {optimal} column shows the optimal parameter values. The \textit{loss} column shows the loss achieved by each method, under optimised parameters. Lower loss indicates better robustness against outliers.}
+\caption{Optimal weighting parameters and corresponding loss for location- and scale-invariant Box-Cox power transformations. $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values, and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column. The {optimal} column shows the optimal parameter values. The \textit{loss} column shows the loss achieved by each method, under optimised parameters. Lower loss indicates better robustness against outliers.}
 \label{tab:optimal-weighting-parameters-box-cox}
 \begin{tabular}{l r r r r r r r}
 
@@ -527,11 +536,12 @@ cap <- paste0(
   "The distribution of errors, i.e. the difference between robustly fitted $\\lambda^r$ ",
   "and expected $\\lambda_{0}$ found in the absence of outliers, is shown for 1000 randomly ",
   "parametrised asymmetric generalised normal distributions with up to 10% outliers on either side ",
-  "of the distribution. The top and bottom panel show errors for the invariant Box-Cox ",
-  "and invariant Yeo-Johnson transformations, respectively. ",
+  "of the distribution. The top and bottom panel show errors for the location- and scale-invariant Box-Cox ",
+  "and Yeo-Johnson transformations, respectively. ",
   "In each panel, the error distribution for the non-robust transformation is shown to the left ",
   "for comparison with different weighting methods. ",
-  "Note that a square root transformation was used along the $y$-axis. Median errors are shown above each distribution."
+  "Note that a square root transformation was applied along the $y$-axis for display purposes. ",
+  "Median errors are shown above each distribution."
 )
 
 .plot_optimised_weighting_function_parameters(
@@ -553,22 +563,23 @@ For Box-Cox transformations, the effect of outliers on the lower end of the dist
 Between very low and very high empirical probabilities, residual errors are constrained and relatively flat.
 This is the candidate range for the central portion of the data.
 
-```{r empirical-central-normality-residual-error, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
+```{r empirical-central-normality-residual-error, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=3.0}
 cap <- paste0(
   "Residual error as a function of empirical probability. ",
   "Percentiles of the error are shown for robust, location- and scale-invariant transformations of 10000 randomly drawn asymmetric ",
-  "generalised normal distributions, with 10 randomly drawn outliers distributions, ",
-  "(up to 10% of samples) each. Larger errors occur for more extreme values at the edges of each distribution. ",
-  "For comparison, the 99th percentile of residual errors for transformations of outlier-free distributions are shown (grey dashed line).")
+  "generalised normal distributions, for each of which outliers were randomly drawn 10 times ",
+  "(up to 10% of samples). Larger errors occur at the edges of each distribution."
+)
 
 .plot_residuals(
   plot_theme = plot_theme,
-  manuscript_dir = manuscript_dir)
+  manuscript_dir = manuscript_dir
+)
 
 ```
 We then consider the empirical probability of type I errors: the probability of incorrectly classifying a centrally normal distribution as being non-normal based on the test statistic $\tau_{\text{ecn}}$. Under the assumption that the asymmetric generalised normal distributions are centrally normal after robust transformation, this produces the relationship shown in Figure \ref{fig:empirical-central-normality-type-1-error-rate}. Since for $\kappa \leq 0.80$ error curves for both transformation methods are similar, we fix the value of the central portion $\kappa$ to 0.80. In the remaining we will use the empirical central normality test statistic values defined using robust location- and scale-invariant Yeo-Johnson transformations, as it is slightly more strict. This leads to test statistic values listed in Table \ref{tab:empirical-central-normality}
 
-```{r empirical-central-normality-type-1-error-rate, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
+```{r empirical-central-normality-type-1-error-rate, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=3.0}
 cap <- paste0(
   "Type 1 error rate of transformed asymmetric generalised normal distributions as function of ",
   "the test statistic $\\tau_{\\text{ecn}}$ for the central portion $\\kappa$ of the distribution.")
@@ -580,7 +591,7 @@ cap <- paste0(
 ```
 
 ```{r include = FALSE, eval = FALSE}
-# This writes the lookup table for the goodness of fit test to the
+# This writes the lookup table for the empirical central normality test to the
 # power.transform package.
 load(file = "./R/sysdata.rda")
 
@@ -605,7 +616,7 @@ table_data <- .get_test_statistics_data(manuscript_dir = manuscript_dir)
 ```{=latex}
 \begin{table}
 \begin{center}
-\caption{Test statistic for empirical central normality at $\kappa = 0.80$ as a function of Type I error rate.}
+\caption{Test statistic $\tau_{\text{ecn}}$ for empirical central normality at $\kappa = 0.80$ as a function of Type I error rate.}
 \label{tab:empirical-central-normality}
 \begin{tabular}{c c c c c c c}
 
@@ -622,12 +633,12 @@ table_data <- .get_test_statistics_data(manuscript_dir = manuscript_dir)
 
 In Figure \ref{fig:empirical-central-normality-examples} we apply the empirical central normality test to assess central normality of features that are composed of a mixture of samples drawn from two normal distributions. With increased separation of the underlying normal distributions, the probability of the feature being centrally normal decreases, as expected.
 
-```{r empirical-central-normality-examples, warning=FALSE, message=FALSE, fig.cap=cap}
+```{r empirical-central-normality-examples, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
 cap <- paste0(
-  "Bi-modal distributions and empirical goodness of fit test results. ",
+  "Bi-modal distributions and empirical central normality test results. ",
   "The feature (black) is a mixture of two identical sample sets (blue and orange) ",
   "drawn from normal distributions that are offset by a distance $d$. ",
-  "We use the empirical goodness of fit test to compute p-values for the hypothesis that ",
+  "We use the empirical centrally normality test to compute the probability for the hypothesis that ",
   "the distribution is centrally normal. As may be observed, with increasing offset $d$ ",
   "the probability that the feature is centrally normal decreases. ",
   "Quantile-quantile plots are drawn below each distribution."
@@ -643,10 +654,10 @@ cap <- paste0(
 
 ## Invariance
 
-Invariant power transformations are intended to yield improved transformations to normality
-in the presence of large shifts in location, scales far from unity, or both.
-Above, this characteristic was assessed using simulations. Below, this characteristic
-will be evaluated using examples from real datasets.
+Location- and scale-invariant power transformations are intended to yield improved transformations to normality in the presence of large shifts in location, distributions that due to location and scale are not centered near zero, or both.
+Earlier, we assessed these transformations using simulated data.
+In the following, they are evaluated using examples from real datasets.
+We focus on the Yeo-Johnson transformations because 
 
 ### Age of patients with lung cancer
 
@@ -660,14 +671,14 @@ Raymaekers and Rousseeuw's robust adaptation ($\lambda = 2.0$, $\sum r_i = 11.5$
 location- and scale-invariant transformation ($\lambda = 0.9$, $\sum r_i = 8.8$, $\mu_{YJ} = 1.2$, $\sigma_{YJ} = 1.1$);
 and robust location- and scale-invariant transformation ($\lambda = 0.8$, $\sum r_i = 10.6$, $\mu_{YJ} = 1.2$, $\sigma_{YJ} = 1.0$).
 
-```{r lung-cancer-age, warning=FALSE, message=FALSE, fig.cap=cap}
+```{r lung-cancer-age, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=1.5}
 cap <- paste0(
   "Quantile-quantile plots for age of patients with lung cancer, expressed in years. ",
-  "The left panel shows the quantile-quantile plot for the original data. ",
-  "The middle panel shows the quantile-quantile plots for data transformed using ",
-  "the original Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation \\cite{Raymaekers2021-kq}. ",
-  "The right panels shows the quantile-quantile plots for data transformed using ",
-  "the non-robust and robust invariant transformations."
+  "The left panel shows the quantile-quantile plot for the original feature ",
+  "The middle panel shows the quantile-quantile plots for the feature transformed using ",
+  "the conventional Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation. ",
+  "The right panel shows the quantile-quantile plots for the feature transformed using ",
+  "the non-robust and robust location- and-scale invariant transformations."
 )
 
 out <- .plot_lung_cancer_age(plot_theme = plot_theme)
@@ -690,14 +701,14 @@ Raymaekers and Rousseeuw's robust adaptation ($\lambda = 0.5$, $\sum r_i = 32.2$
 location- and scale-invariant transformation ($\lambda = 0.5$, $\sum r_i = 26.8$, $\mu_{YJ} = 0.9$, $\sigma_{YJ} = 0.9$);
 and robust location- and scale-invariant transformation ($\lambda = 0.4$, $\sum r_i = 23.1$, $\mu_{YJ} = 0.8$, $\sigma_{YJ} = 0.8$).
 
-```{r penguin-body-mass, warning=FALSE, message=FALSE, fig.cap=cap}
+```{r penguin-body-mass, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=1.5}
 cap <- paste0(
   "Quantile-quantile plots for penguin body mass, measured in grams. ",
-  "The left panel shows the quantile-quantile plot for the original data. ",
-  "The middle panel shows the quantile-quantile plots for data transformed using ",
-  "the original Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation \\cite{Raymaekers2021-kq}. ",
-  "The right panels shows the quantile-quantile plots for data transformed using ",
-  "the non-robust and robust invariant transformations."
+  "The left panel shows the quantile-quantile plot for the original feature ",
+  "The middle panel shows the quantile-quantile plots for the feature transformed using ",
+  "the conventional Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation. ",
+  "The right panel shows the quantile-quantile plots for the feature transformed using ",
+  "the non-robust and robust location- and-scale invariant transformations."
 )
 
 out <- .plot_penguin_body_mass(plot_theme = plot_theme)
@@ -721,14 +732,14 @@ Raymaekers and Rousseeuw's robust adaptation ($\lambda = 95.4$, $\sum r_i = 319$
 location- and scale-invariant transformation ($\lambda = 1.5$, $\sum r_i = 326$, $\mu_{YJ} = -1.2$, $\sigma_{YJ} = 0.8$);
 and robust location- and scale-invariant transformation ($\lambda = 1.4$, $\sum r_i = 311$, $\mu_{YJ} = -1.3$, $\sigma_{YJ} = 0.9$).
 
-```{r ames-latitude, warning=FALSE, message=FALSE, fig.cap=cap}
+```{r ames-latitude, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=1.5}
 cap <- paste0(
   "Quantile-quantile plots for latitude coordinate in a housing dataset. ",
-  "The left panel shows the quantile-quantile plot for the original data. ",
-  "The middle panel shows the quantile-quantile plots for data transformed using ",
-  "the original Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation \\cite{Raymaekers2021-kq}. ",
-  "The right panels shows the quantile-quantile plots for data transformed using ",
-  "the non-robust and robust invariant transformations."
+  "The left panel shows the quantile-quantile plot for the original feature ",
+  "The middle panel shows the quantile-quantile plots for the feature transformed using ",
+  "the conventional Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation. ",
+  "The right panel shows the quantile-quantile plots for the feature transformed using ",
+  "the non-robust and robust location- and-scale invariant transformations."
 )
 
 out <- .plot_ames_latitude(plot_theme = plot_theme)
@@ -736,7 +747,7 @@ out$plot
 ```
 Every transformation reduced the residual sum.
 The non-robust location- and scale-invariant transformation did not improve over conventional alternatives and yielded a data distribution lacking central normality (empirical central normality test: $p=0.05$).
-TranConventional transformations had high values for the $\lambda$ parameter.
+However, conventional transformations had high values for the $\lambda$ parameter, which could lead to numerical issues.
 
 
 ## Robustness against outliers
@@ -746,17 +757,17 @@ Here, we assess invariant power transformations in real data with outliers.
 
 ### Fuel efficiency in the Top Gear dataset
 
-```{r top-gear, warning=FALSE, message=FALSE, fig.cap=cap}
+```{r top-gear, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=1.5}
 cap <- paste0(
   "Quantile-quantile plots for fuel consumption data in the Top Gear dataset. ",
-  "The dataset contains three strong outliers for highly fuel-efficient vehicles.",
-  "The left panel shows the quantile-quantile plot for the original data. ",
-  "The empirical central normality test indicates that the original data do not deviate significantly from central normality ($p=0.76$).",
-  "The middle panel shows the quantile-quantile plots for data transformed using ",
-  "the original Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation \\cite{Raymaekers2021-kq}. ",
+  "The feature contains three strong outliers related to highly fuel-efficient vehicles.",
+  "The left panel shows the quantile-quantile plot for the original feature. ",
+  "The empirical central normality test indicates that the original feature does not deviate significantly from central normality ($p=0.76$).",
+  "The middle panel shows the quantile-quantile plots for the feature transformed using ",
+  "the conventional Yeo-Johnson transformation and Raymaekers and Rousseeuw's robust adaptation. ",
   "For these, the empirical central normality test yields $p=0.01$, and $p=0.55$, respectively. ",
-  "The right panels shows the quantile-quantile plots for data transformed using ",
-  "the non-robust and robust invariant transformations. ",
+  "The right panel shows the quantile-quantile plots for the feature transformed using ",
+  "the non-robust and robust location- and scale-invariant transformations. ",
   "For these, the empirical central normality test yields $p=0.03$, and $p=0.86$, respectively. ",
   "Samples with observed quantiles below $-3.0$ or above $3.0$ are indicated by crosses."
 )
@@ -772,16 +783,16 @@ The Top Gear dataset contains data on 297 vehicles that appeared on the BBC tele
 
 ### Maximum arterial wall thickness in an ischemic stroke dataset
 
-```{r ischemic-stroke, warning=FALSE, message=FALSE, fig.cap=cap}
+```{r ischemic-stroke, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=1.5}
 cap <- paste0(
-  "Quantile-quantile plots for the maximum arterial wall thickness in the ischemic stroke dataset [@Romano2022-gq]. ",
-  "This data contains two strong outliers. ",
-  "The left panel shows the quantile-quantile plot for the original data. ",
-  "The empirical central normality test indicates that the original data do not deviate significantly from central normality ($p=0.56$).",
-  "The middle panel shows the quantile-quantile plots for data transformed using ",
-  "the original Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation [@Raymaekers2021-kq]. ",
+  "Quantile-quantile plots for the maximum arterial wall thickness in patients with ischemic stroke. ",
+  "This feature contains two strong outliers. ",
+  "The left panel shows the quantile-quantile plot for the original feature. ",
+  "The empirical central normality test indicates that the original feature does not deviate significantly from central normality ($p=0.56$). ",
+  "The middle panel shows the quantile-quantile plots for the feature transformed using ",
+  "the conventional Yeo-Johnson transformation and Raymaekers and Rousseeuw's robust adaptation. ",
   "For these, the empirical central normality test yields $p=0.01$, and $p=0.61$, respectively. ",
-  "The right panels shows the quantile-quantile plots for data transformed using ",
+  "The right panel show the quantile-quantile plots for the feature transformed using ",
   "the non-robust and robust location- and scale-invariant transformations. ",
   "For these, the empirical central normality test yields $p=0.02$, and $p=0.10$, respectively. ",
   "Samples with observed quantiles below $-3.0$ or above $3.0$ are indicated by crosses."
@@ -904,7 +915,7 @@ h_transformation <- friedman.test(as.matrix(data[, "dataset" := NULL]))
 Here we focus on the subset of 232 datasets that contain numeric features. 
 Considering single process parameters, the choice of learner (Wilcoxon signed rank test: $p < 10^{-8})$) and normalisation method (Wilcoxon signed rank test: $p = 0.007$) had a significant impact (at significance level $p = 0.050$), but transformation method (Friedman test: $p = 0.054$) did not.
 
-To estimate the marginal effects of process parameters, including transformation method, we first fit a regression random forest (ranger package [@Wright2017-rf] (version 0.16.0); 2000 trees, minimum node size 2, other hyperparameters default) with process parameters and task difficulty as predictors and normalised rank as response variable.
+To estimate the marginal effects of process parameters, including transformation method, we first fit a regression random forest (ranger package [@Wright2017-rf] version 0.16.0): 2000 trees, minimum node size 2, other hyperparameters default) with process parameters and task difficulty as predictors and normalised rank as response variable.
 The estimated marginal effects are shown in Figure \ref{fig:marginal-effect-plot}.
 On the scale of normalised ranks ($[0.0, 1.0]$), the overall estimated marginal effect of using a random forest instead of generalised linear model was $0.272$.
 The overall marginal effect of using z-standardisation to normalise features was $0.008$.
@@ -917,7 +928,7 @@ and $-0.012$ for using using robust invariant Yeo-Johnson transformation with em
 
 ```{r marginal-effect-plot, echo=FALSE, fig.cap=cap, fig.height=7.5, warning=FALSE}
 cap <- paste0(
-  "Estimated marginal effect of learners, normalisation and transformation methods on ranked model performance scores in 22800 machine learning experiments on 285 datasets. ",
+  "Estimated marginal effect of learners, normalisation and transformation methods on ranked model performance scores in 18560 machine learning experiments on 232 datasets. ",
   "The top-left panel shows the marginal effect of learners, i.e. random forests and generalised linear models (GLM). ",
   "Random forests outperform GLM models for all task difficulties. ",
   "The top-right panel shows the marginal effect of feature normalisation methods, i.e. no normalisation and z-standardisation. ",
@@ -925,7 +936,7 @@ cap <- paste0(
   "The bottom panel shows the marginal effects of different transformation methods, split by learner and normalisation method. ",
   "There is no consistent behaviour, and estimated effects are neglible. ",
   "Note that the ranges of the $x$-axes of the three main panels differ. ",
-  "ECTN: empirical central normality test."
+  "ECNT: empirical central normality test."
 )
 
 .plot_marginal_effects(plot_theme = plot_theme, manuscript_dir = manuscript_dir)
@@ -939,26 +950,31 @@ We showed that these power transformations are sensitive to location and scale o
 To mitigate this issue, we defined location- and scale-invariant variants of the Box-Cox and Yeo-Johnson transformations.
 We furthermore assessed methods for making these transformations robust to outliers, and devised an empirical test for central normality.
 
-Robust location- and scale-invariant transformations form a suitable replacement for their conventional counterparts.
-They demonstrated robustness against outliers and prevent inaccurate transformations and potential numerical issues due to location and scale of the data distribution.
+Robust location- and scale-invariant transformations are a suitable replacement for their conventional counterparts.
+They demonstrated robustness against outliers and prevent inaccurate transformations and potential numerical issues due to location and scale of the distribution of a feature.
 This is particularly relevant for automated data processing, where such issues may go unnoticed.
-However, we did not find a measurable benefit for -- nor detriment to -- model performance in a machine learning experiment of 232 real-world datasets that contained at least one numeric feature.
+However, we did not find a meaningful benefit for -- nor detriment to -- model performance in a machine learning experiment of 232 real-world datasets that contained at least one numeric feature.
 One reason may be that numeric features with large location shifts ($|\mu| > 1000.0$) were uncommon.
 Of the 4886 numeric features in the 232 datasets, 266 (5%) features in 34 datasets had large location shifts, of which 200 appeared in just 2 datasets.
 
-Robust location- and scale-invariant transformations are realised by simultaneously optimising three parameters, i.e. transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$, using maximum likelihood optimisation.
+Location- and scale-invariant transformations are realised by simultaneously optimising three parameters, i.e. transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$.
 Alternatively, standardisation of a numeric variable (e.g., through subtracting its median value and division by its interquartile range) prior to conventional power transformations may achieve a similar effect in reducing sensitivity to the distribution's location and scale.
 
 This study had the following limitations.
-First, in our experimental results we focussed on the Yeo-Johnson transformation because of its ability to handle variables with negative values, and did not consider the Box-Cox transformation.
-Likewise, we focussed on maximum likelihood estimation to optimise parameters, and did not investigate other metrics to the same extent, due to lack of demonstrable benefit (Appendix B).
+First, in our experimental results we focussed on the Yeo-Johnson transformation because of its ability to handle features with negative values, and did not evaluate the Box-Cox transformation.
+Likewise, we focussed on MLE to optimise parameters, and did not investigate other metrics to the same extent, due to lack of demonstrable benefit (Appendix B).
+
 
 # Conclusion
 
-Robust location- and scale-invariant power transformations allow for automated power transformation of numerical features.
+Compared to their conventional versions, robust location- and scale-invariant Box-Cox and Yeo-Johnson transformations reduce sensitivity to outliers and the location and scale of features.
+An empirical central normality test can assess the quality of transformation of features to normal distributions.
+The combination of both facilitate the use of power transformations in automated data analysis workflows.
+
 
 # Data and code availability
 
 Location- and scale-invariant power transformations are implemented in the `power.transform` package for R, and is available from [https://github.com/oncoray/power.transform] and the CRAN repository [INSERT LINK HERE]. The manuscript was created using R Markdown and is also available from the power.transform GitHub repository. Data and results for the machine learning experiment are separately available from Zenodo [INSERT LINK HERE].
+
 
 # References

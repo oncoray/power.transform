@@ -1014,7 +1014,6 @@ get_annotation_settings <- function(ggtheme = NULL) {
     )
   )
   p_bc <- p_bc + plot_theme
-  p_bc <- p_bc + ggplot2::theme(legend.key.size = grid::unit(0.3, 'lines'))
   p_bc <- p_bc + ggplot2::geom_line()
   p_bc <- p_bc + ggplot2::geom_line(
     data = outlier_free_data[method == "Box-Cox"],
@@ -1045,7 +1044,6 @@ get_annotation_settings <- function(ggtheme = NULL) {
     )
   )
   p_yj <- p_yj + plot_theme
-  p_yj <- p_yj + ggplot2::theme(legend.key.size = grid::unit(0.3, 'lines'))
   p_yj <- p_yj + ggplot2::geom_line()
   p_yj <- p_yj + ggplot2::geom_line(
     data = outlier_free_data[method == "Yeo-Johnson"],
@@ -1143,7 +1141,6 @@ get_annotation_settings <- function(ggtheme = NULL) {
     )
   )
   p_bc <- p_bc + plot_theme
-  p_bc <- p_bc + ggplot2::theme(legend.key.size = grid::unit(0.3, 'lines'))
   p_bc <- p_bc + ggplot2::geom_step()
   p_bc <- p_bc + ggplot2::scale_colour_discrete(
     name = "central portion κ\n(Box-Cox)",
@@ -1169,7 +1166,6 @@ get_annotation_settings <- function(ggtheme = NULL) {
     )
   )
   p_yj <- p_yj + plot_theme
-  p_yj <- p_yj + ggplot2::theme(legend.key.size = grid::unit(0.3, 'lines'))
   p_yj <- p_yj + ggplot2::geom_step()
   p_yj <- p_yj + ggplot2::scale_colour_discrete(
     name = "central portion κ\n(Yeo-Johnson)",
@@ -1182,7 +1178,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
       "100 %" = "#904109"
     )
   )
-  p_yj <- p_yj + ggplot2::xlab(latex2exp::TeX("test statistic $\tau_{\text{ecn}}$"))
+  p_yj <- p_yj + ggplot2::xlab(latex2exp::TeX("test statistic $\\tau_{\\text{ecn}}$"))
   p_yj <- p_yj + ggplot2::coord_cartesian(xlim = c(0, 0.25))
   p_yj <- p_yj + ggplot2::theme(
     axis.title.y = ggplot2::element_blank(),
@@ -1370,7 +1366,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
       family = annotation_settings$family,
       fontface = annotation_settings$face,
       size = annotation_settings$geom_text_size,
-      vjust = 2.0,
+      vjust = -0.5,
       hjust = 0.5
     )
 
@@ -1403,8 +1399,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
       show_original = FALSE,
       ggtheme = plot_theme)
 
-    p_qq <- p_qq + ggplot2::xlab("Expected quantile")
-    p_qq <- p_qq + ggplot2::ylab("Observed quantile")
+    p_qq <- p_qq + ggplot2::xlab("expected quantile")
+    p_qq <- p_qq + ggplot2::ylab("observed quantile")
 
     p_qq <- p_qq + ggplot2::coord_cartesian(
       xlim = c(-4.0, 4.0),
@@ -1431,7 +1427,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   p <- p_1$density + p_2$density + p_3$density + p_4$density + p_5$density +
     p_1$qq + p_2$qq + p_3$qq + p_4$qq + p_5$qq +
-    patchwork::plot_layout(ncol = 5, heights = c(1, 0.5))
+    patchwork::plot_layout(ncol = 5, heights = c(1.3, 1))
 
   return(p)
 }
@@ -1701,8 +1697,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     intercept = 0.0,
     slope = 1.0
   )
-  p_qq <- p_qq + ggplot2::xlab("Expected quantile")
-  p_qq <- p_qq + ggplot2::ylab("Observed quantile")
+  p_qq <- p_qq + ggplot2::xlab("expected quantile")
+  p_qq <- p_qq + ggplot2::ylab("observed quantile")
 
   # Density plots.
   p_d <- ggplot2::ggplot(
@@ -1719,12 +1715,14 @@ get_annotation_settings <- function(ggtheme = NULL) {
     drop = FALSE,
     guide = "none"
   )
-  p_d <- p_d + ggplot2::coord_cartesian(xlim = c(-3, 3))
+  p_d <- p_d + ggplot2::xlim(c(-3, 3))
   p_d <- p_d + ggplot2::theme(
-    axis.text.x = ggplot2::element_blank(),
-    axis.title.x = ggplot2::element_blank(),
-    axis.text.y = ggplot2::element_blank(),
-    axis.title.y = ggplot2::element_blank()
+    axis.title = ggplot2::element_blank(),
+    axis.line = ggplot2::element_blank(),
+    axis.ticks = ggplot2::element_blank(),
+    axis.text = ggplot2::element_blank(),
+    panel.grid = ggplot2::element_blank(),
+    panel.border = ggplot2::element_blank()
   )
 
   # Without transformation -----------------------------------------------------
@@ -1734,6 +1732,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p0_d <- p_d + ggplot2::geom_density(
     data = transformed_data[transformation == "none"]
   )
+  p0_d <- p0_d + ggplot2::labs(title = "none")
 
   # Standard transformation ----------------------------------------------------
   p1_qq <- p_qq + ggplot2::geom_point(
@@ -1746,6 +1745,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p1_d <- p_d + ggplot2::geom_density(
     data = transformed_data[transformation %in% c("conventional", "Raymaekers-Rousseeuw")]
   )
+  p1_d <- p1_d + ggplot2::labs(title = "conventional")
 
   # Shift-sensitive transformation ---------------------------------------------
   p2_qq <- p_qq + ggplot2::geom_point(
@@ -1758,11 +1758,12 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p2_d <- p_d + ggplot2::geom_density(
     data = transformed_data[transformation %in% c("invariant", "robust invariant")]
   )
+  p2_d <- p2_d + ggplot2::labs(title = "invariant")
 
   p <- p0_d + p1_d + p2_d + p0_qq + p1_qq + p2_qq + patchwork::plot_layout(
     ncol = 3,
     guides = "collect",
-    heights = c(0.5, 1.0)
+    heights = c(0.3, 1.0)
   )
 
   return(list("data" = data, "plot"= p))
@@ -1926,6 +1927,11 @@ get_annotation_settings <- function(ggtheme = NULL) {
     levels = c("none", "robust_standardisation"),
     labels = c("no normalisation", "z-standardisation")
   )
+  data_3[, "learner_normalisation_method":= paste0(learner, "\n", normalisation_method)]
+  data_3$learner_normalisation_method <- factor(
+    data_3$learner_normalisation_method,
+    levels = c("GLM\nno normalisation", "GLM\nz-standardisation", "random forest\nno normalisation", "random forest\nz-standardisation")
+  )
   data_3$task_difficulty <- factor(
     data_3$task_difficulty,
     levels = difficulty_levels,
@@ -1955,7 +1961,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     colour = "grey40"
   )
   p3 <- p3 + ggplot2::geom_col(show.legend = FALSE)
-  p3 <- p3 + ggplot2::facet_grid(learner + normalisation_method ~ transformation_method)
+  p3 <- p3 + ggplot2::facet_grid(learner_normalisation_method ~ transformation_method)
   p3 <- p3 + ggplot2::geom_text(
     x = data_3_x_range[1L],
     ggplot2::aes(label=label_1),
