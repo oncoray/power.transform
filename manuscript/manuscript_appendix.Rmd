@@ -51,6 +51,13 @@ plot_theme$strip.background <- ggplot2::element_blank()
 plot_theme$strip.text$colour <- NULL
 plot_theme$plot.margin <- grid::unit(c(2, 2, 2, 2), "points")
 plot_theme$legend.key.size <- grid::unit(0.3, 'lines')
+plot_theme$plot.tag <- ggplot2::element_text(
+  size = ggplot2::rel(1.0),
+  hjust = 0.0,
+  vjust = 0.0,
+  inherit.blank = FALSE
+)
+plot_theme$plot.tag.position <- c(0, 1)
 
 parse_mean_sd_latex <- function(mu, sigma, digits=2L){
   return(paste0(
@@ -460,3 +467,12 @@ cap <- paste0(
 ```
 
 # Appendix D: Experimental results using location- and scale-invariant Box-Cox transformation
+
+```{r experimental-results-invariance-appendix, warning=FALSE, message=FALSE, fig.cap=cap}
+cap <- paste0(
+  "Blabla"
+)
+
+data <- .plot_experimental_invariance(plot_theme = plot_theme, method = "box_cox")
+data$p
+```

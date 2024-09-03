@@ -1740,7 +1740,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
   p1_qq <- p1_qq + ggplot2::theme(
     axis.title.y = ggplot2::element_blank(),
-    axis.ticks.y = ggplot2::element_blank()
+    axis.text.y = ggplot2::element_blank()
   )
   p1_d <- p_d + ggplot2::geom_density(
     data = transformed_data[transformation %in% c("conventional", "Raymaekers-Rousseeuw")]
@@ -1753,7 +1753,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
   p2_qq <- p2_qq + ggplot2::theme(
     axis.title.y = ggplot2::element_blank(),
-    axis.ticks.y = ggplot2::element_blank()
+    axis.text.y = ggplot2::element_blank()
   )
   p2_d <- p_d + ggplot2::geom_density(
     data = transformed_data[transformation %in% c("invariant", "robust invariant")]
@@ -1767,6 +1767,344 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
 
   return(list("data" = data, "plot"= p))
+}
+
+
+
+.plot_experimental_invariance <- function(plot_theme, lambda_limit = NULL, method = "yeo_johnson") {
+
+  # Age
+  p_age <- ..plot_combined_real_data(
+    plot_theme = plot_theme,
+    x = survival::lung$age,
+    data_name = "age",
+    lambda_limit = lambda_limit,
+    method = method,
+    first_set = TRUE
+  )
+
+  # Penguin body mass
+  x <- modeldata::penguins$body_mass_g
+  x <- x[is.finite(x)]
+  p_pen <- ..plot_combined_real_data(
+    plot_theme = plot_theme,
+    x = x,
+    data_name = "penguin body mass",
+    lambda_limit = lambda_limit,
+    method = method
+  )
+
+  # Housing latitude
+  p_lat <- ..plot_combined_real_data(
+    plot_theme = plot_theme,
+    x = modeldata::ames$Latitude,
+    data_name = "latitude",
+    lambda_limit = lambda_limit,
+    method = method,
+    last_set = TRUE
+  )
+
+  p <- p_age$density[[1]] + p_age$density[[2]] + p_age$density[[3]] +
+    p_age$qq[[1]] + p_age$qq[[2]] + p_age$qq[[3]] +
+    p_pen$density[[1]] + p_pen$density[[2]] + p_pen$density[[3]] +
+    p_pen$qq[[1]] + p_pen$qq[[2]] + p_pen$qq[[3]] +
+    p_lat$density[[1]] + p_lat$density[[2]] + p_lat$density[[3]] +
+    p_lat$qq[[1]] + p_lat$qq[[2]] + p_lat$qq[[3]] +
+    patchwork::plot_layout(
+      ncol = 3,
+      guides = "collect",
+      heights = c(0.2, 1.0, 0.2, 1.0, 0.2, 1.0)
+    )
+  browser()
+  return(list(
+    "data" = list("age" = p_age$data, "penguin_body_mass" = p_pen$data, "latitude" = p_lat$data),
+    "plot"= p
+  ))
+}
+
+
+..plot_combined_real_data <- function(
+    plot_theme,
+    x,
+    data_name,
+    lambda_limit = c(-4.0, 6.0),
+    method = "yeo_johnson",
+    first_set = FALSE,
+    last_set = FALSE
+) {
+  # Show density and Q-Q plots for:
+  # - Original data
+  # - conventional transformation
+  # - Raymaekers
+  # - location- and shift-invariant transformation
+  # - robust location- and shift-invariant transformation
+  #
+  # Compute empirical test p-value.
+
+  # Prevent undue warnings.
+  transformation <- z_observed <- NULL
+
+  plot_limits <- c(-3.0, 3.0)
+
+  ..parse_data <- function(
+    x,
+    transformer,
+    name
+  ) {
+    transformed_data <- power.transform::power_transform(
+      x = x,
+      transformer = transformer
+    )
+
+    summary_data <- data.table::data.table(
+      "mu" = mean(transformed_data),
+      "sigma" = sd(transformed_data),
+      "lambda" = power.transform::get_lambda(transformer),
+      "shift" = power.transform::get_shift(transformer),
+      "scale" = power.transform::get_scale(transformer),
+      "transformation" = name
+    )
+
+    transformed_data <- data.table::data.table(
+      x = transformed_data,
+      x_standardised = (transformed_data - stats::median(transformed_data)) / stats::IQR(transformed_data),
+      transformation = name
+    )
+
+    residual_data <- power.transform::get_residuals(
+      x = x,
+      transformer = transformer
+    )
+
+    residual_data[, "transformation" := name]
+
+    central_normality_data <- data.table::data.table(
+      p_value = power.transform::assess_transformation(
+        x = x,
+        transformer = transformer,
+        verbose = FALSE
+      ),
+      transformation = name
+    )
+
+    return(list(
+      "transformed_data" = transformed_data,
+      "residual_data" = residual_data,
+      "summary_data" = summary_data,
+      "central_normality_data" = central_normality_data
+    ))
+  }
+
+  # No transformer
+  no_transformer <- power.transform::find_transformation_parameters(
+    x = x,
+    method = "none"
+  )
+
+  # Conventional transformer
+  conv_transformer <- power.transform::find_transformation_parameters(
+    x = x,
+    method = method,
+    robust = FALSE,
+    invariant = FALSE,
+    lambda = lambda_limit
+  )
+
+  # Raymaekers robust transformer
+  rr_transformer <- power.transform::find_transformation_parameters(
+    x = x,
+    method = method,
+    robust = TRUE,
+    invariant = FALSE,
+    estimation_method = "raymaekers_robust",
+    lambda = lambda_limit
+  )
+
+  # Location- and scale-invariant transformer
+  invar_transformer <- power.transform::find_transformation_parameters(
+    x = x,
+    method = method,
+    robust = FALSE,
+    invariant = TRUE,
+    lambda = lambda_limit
+  )
+
+  # Robust location- and scale-invariant transformer
+  invar_robust_transformer <- power.transform::find_transformation_parameters(
+    x = x,
+    method = method,
+    robust = TRUE,
+    invariant = TRUE,
+    lambda = lambda_limit
+  )
+
+  transformer_labels <- c(
+    "none", "conventional", "Raymaekers-Rousseeuw", "invariant", "robust invariant"
+  )
+
+  data <- mapply(
+    FUN = ..parse_data,
+    transformer = list(
+      no_transformer,
+      conv_transformer,
+      rr_transformer,
+      invar_transformer,
+      invar_robust_transformer
+    ),
+    name = transformer_labels,
+    MoreArgs = list("x" = x),
+    SIMPLIFY = FALSE
+  )
+  names(data) <- transformer_labels
+
+  # Parse transformed data
+  transformed_data <- data.table::rbindlist(
+    lapply(data, function(x) (x$transformed_data)),
+    use.names = TRUE
+  )
+  transformed_data$transformation <- factor(
+    transformed_data$transformation,
+    levels = transformer_labels
+  )
+
+  # Parse residual data
+  residual_data <- data.table::rbindlist(
+    lapply(data, function(x) (x$residual_data)),
+    use.names = TRUE
+  )
+  residual_data$transformation <- factor(
+    residual_data$transformation,
+    levels = transformer_labels
+  )
+  residual_data[, ":="("z_observed_truncated" = z_observed, "truncated" = FALSE)]
+  residual_data[z_observed < plot_limits[1], ":="("z_observed_truncated" = plot_limits[1], "truncated" = TRUE)]
+  residual_data[z_observed > plot_limits[2], ":="("z_observed_truncated" = plot_limits[2], "truncated" = TRUE)]
+
+  # Parse central normality data.
+  central_normality_data <- data.table::rbindlist(
+    lapply(data, function(x) (x$central_normality_data)),
+    use.names = TRUE
+  )
+
+  # Quantile-quantile plots.
+  p_qq <- ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = .data$z_expected,
+      y = .data$z_observed_truncated,
+      colour = .data$transformation,
+      shape = .data$truncated
+    ))
+  p_qq <- p_qq + plot_theme
+  p_qq <- p_qq + ggplot2::theme(
+    plot.tag = ggplot2::element_text(
+      face = "bold",
+      margin = ggplot2::margin(0, 0, 2, 0)
+    )
+  )
+  p_qq <- p_qq + ggplot2::scale_colour_manual(
+    name = "transformation",
+    values = c("#111111", "#8cd17d", "#59a14f", "#ff9d9a", "#e15759"),
+    breaks = transformer_labels,
+    drop = FALSE
+  )
+  p_qq <- p_qq + ggplot2::scale_shape_manual(
+    values = c(1, 4),
+    labels = c(FALSE, TRUE),
+    guide = "none"
+  )
+  p_qq <- p_qq + ggplot2::coord_cartesian(
+    xlim = plot_limits,
+    ylim = plot_limits
+  )
+  p_qq <- p_qq + ggplot2::geom_abline(
+    intercept = 0.0,
+    slope = 1.0
+  )
+  p_qq <- p_qq + ggplot2::xlab("expected quantile")
+  p_qq <- p_qq + ggplot2::ylab("observed quantile")
+
+  if (!last_set) {
+    p_qq <- p_qq + ggplot2::theme(
+      axis.title.x = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_blank(),
+      plot.margin = grid::unit(c(2, 2, 10, 2), "points")
+    )
+  }
+
+  # Density plots.
+  p_d <- ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = .data$x_standardised,
+      y = ggplot2::after_stat(scaled),
+      colour = .data$transformation
+    ))
+  p_d <- p_d + plot_theme
+  p_d <- p_d + ggplot2::scale_colour_manual(
+    name = "transformation",
+    values = c("#111111", "#8cd17d", "#59a14f", "#ff9d9a", "#e15759"),
+    breaks = transformer_labels,
+    drop = FALSE,
+    guide = "none"
+  )
+  p_d <- p_d + ggplot2::xlim(c(-3, 3))
+  p_d <- p_d + ggplot2::theme(
+    axis.title = ggplot2::element_blank(),
+    axis.line = ggplot2::element_blank(),
+    axis.ticks = ggplot2::element_blank(),
+    axis.text = ggplot2::element_blank(),
+    panel.grid = ggplot2::element_blank(),
+    panel.border = ggplot2::element_blank()
+  )
+
+  if (!first_set) {
+    p_d <- p_d + ggplot2::theme(
+      title = ggplot2::element_blank()
+    )
+  }
+
+  # Without transformation -----------------------------------------------------
+  p0_qq <- p_qq + ggplot2::geom_point(
+    data = residual_data[transformation == "none"]
+  )
+  p0_d <- p_d + ggplot2::geom_density(
+    data = transformed_data[transformation == "none"]
+  )
+  p0_d <- p0_d + ggplot2::labs(
+    title = "original",
+    tag = paste0(data_name)
+  )
+
+  # Standard transformation ----------------------------------------------------
+  p1_qq <- p_qq + ggplot2::geom_point(
+    data  = residual_data[transformation %in% c("conventional", "Raymaekers-Rousseeuw")]
+  )
+  p1_qq <- p1_qq + ggplot2::theme(
+    axis.title.y = ggplot2::element_blank(),
+    axis.text.y = ggplot2::element_blank()
+  )
+  p1_d <- p_d + ggplot2::geom_density(
+    data = transformed_data[transformation %in% c("conventional", "Raymaekers-Rousseeuw")]
+  )
+  p1_d <- p1_d + ggplot2::labs(title = "conventional")
+
+  # Location- and scale invariant transformation -------------------------------
+  p2_qq <- p_qq + ggplot2::geom_point(
+    data  = residual_data[transformation %in% c("invariant", "robust invariant")]
+  )
+  p2_qq <- p2_qq + ggplot2::theme(
+    axis.title.y = ggplot2::element_blank(),
+    axis.text.y = ggplot2::element_blank()
+  )
+  p2_d <- p_d + ggplot2::geom_density(
+    data = transformed_data[transformation %in% c("invariant", "robust invariant")]
+  )
+  p2_d <- p2_d + ggplot2::labs(title = "invariant")
+
+  return(list(
+    "density" = list(p0_d, p1_d, p2_d),
+    "qq" = list(p0_qq, p1_qq, p2_qq),
+    "data" = data
+  ))
 }
 
 
