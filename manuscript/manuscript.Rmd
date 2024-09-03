@@ -75,7 +75,7 @@ To-do
 
 # Introduction
 
-Many statistical and several machine learning methods assume normality of the underlying data. However, numerical features in datasets may strongly deviate from normal distributions, e.g. by being skewed. Power transformations aim to stabilise variance and improve normality of such features [@Bartlett1947-rx, @Tukey1957-rt]. The two most commonly used transformations are that of @Box1964-mz and @Yeo2000-vw. The Box-Cox transformation of a feature value $x_i$ of feature $\mathbf{X}=\left\{x_1, x_2, \ldots, x_n \right\}$ under the transformation parameter $\lambda$ is defined as:
+Many statistical and several machine learning methods assume normality of the underlying data, e.g. analysis of variance or . However, numerical features in datasets may strongly deviate from normal distributions, e.g. by being skewed. Power transformations aim to stabilise variance and improve normality of such features [@Bartlett1947-rx; @Tukey1957-rt]. The two most commonly used transformations are that of @Box1964-mz and @Yeo2000-vw. The Box-Cox transformation of a feature value $x_i$ of feature $\mathbf{X}=\left\{x_1, x_2, \ldots, x_n \right\}$ under the transformation parameter $\lambda$ is defined as:
 
 ```{=latex}
 \begin{equation}
