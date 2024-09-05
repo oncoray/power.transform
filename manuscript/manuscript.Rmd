@@ -523,7 +523,7 @@ $r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.38 & 1.00 & $(0, 10]$ & 1.41 & 1
 ```{=latex}
 \begin{table}
 \begin{center}
-\caption{Optimal weighting parameters and corresponding loss for \textbf{location- and scale-invariant Yeo-Johnson} power transformations. $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values, and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column. The {optimal} column shows the optimal parameter values. The \textit{loss} column shows the loss achieved by each method, under optimised parameters. Lower loss indicates better robustness against outliers.}
+\caption{Optimal weighting parameters and corresponding loss for location- and scale-invariant Yeo-Johnson power transformations. $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values, and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column. The {optimal} column shows the optimal parameter values. The \textit{loss} column shows the loss achieved by each method, under optimised parameters. Lower loss indicates better robustness against outliers.}
 \label{tab:optimal-weighting-parameters-yeo-johnson}
 \begin{tabular}{l r r r r r r r}
 
@@ -982,6 +982,15 @@ Of the 4886 numeric features in the 232 datasets, 266 (5%) features in 34 datase
 
 Location- and scale-invariant transformations are realised by simultaneously optimising three parameters, i.e. transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$.
 Alternatively, standardisation of a numeric variable (e.g., through subtracting its median value and division by its interquartile range) prior to conventional power transformations may achieve a similar effect in reducing sensitivity to the distribution's location and scale.
+
+We assessed several methods for robust power transformation.
+Methods using the z-score of the transformed feature or the residual error yielded worse results than the non-robust method.
+Different initial values, closer to the upper limits ($\delta_1 = 10.0; \delta_2 = 10.0$), led to a reduced loss.
+However, these values effectively correspond to a non-robust transformation, where all instances receive the same weight.
+Underperformance of these methods could be explained by their use of transformed features for setting weights.
+In essence, parameter optimisation with MLE also affects weights.
+This may lead to different optimal values for transformation parameter $\lambda$, which increases the presented loss.
+
 
 This study had the following limitations.
 First, in our experimental results we focussed on the Yeo-Johnson transformation because of its ability to handle features with negative values, and did not evaluate the Box-Cox transformation.
