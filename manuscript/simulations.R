@@ -1561,6 +1561,129 @@
 
 
 
+.get_goodness_of_fit_data_normal_only <- function(
+    manuscript_dir,
+    residual_fun = NULL,
+    n_distributions = 10000L,
+    parallel = TRUE
+) {
+  # Only sample normally distributed data without outliers.
+
+  # Non-standard evaluation in data.table.
+  p <- outlier_id <- NULL
+
+  external_fun <- FALSE
+  if (!is.null(residual_fun)) external_fun <- TRUE
+
+
+  .compute_residuals <- function(x, n_sample = 200L) {
+    # Set interpolation points.
+    p_sample <- (seq_len(n_sample) - 1 / 3) / (n_sample + 1 / 3)
+
+    # Determine residuals for Box-Cox transformations.
+    transformer <- suppressWarnings(power.transform::find_transformation_parameters(
+      x = x$x,
+      method = "none"
+    ))
+
+    residual_data <- power.transform::get_residuals(
+      x = x$x,
+      transformer = transformer
+    )
+
+    residual <- stats::approx(
+      x = residual_data$p,
+      y = abs(residual_data$residual),
+      xout = p_sample,
+      rule = 2,
+      ties = max
+    )$y
+
+    data <- data.table::data.table(
+      "distribution_id" = x$parameter$ii,
+      "outlier_id" = x$parameters$jj,
+      "p" = seq_along(p_sample),
+      "residual" = residual,
+      "method" = "none"
+    )
+
+    data$method <- factor(
+      x = data$method,
+      levels = c("none"),
+      labels = c("none")
+    )
+
+    return(data)
+  }
+
+  file_name <- file.path(manuscript_dir, "residual_plot_only_normal.RDS")
+
+  if (!file.exists(file_name) || external_fun) {
+    if (!external_fun) {
+      residual_fun <- .compute_residuals
+    }
+
+    # computations -------------------------------------------------------------
+    set.seed(95)
+
+    # Generate alpha, beta and n. Unlike for determining weighing function
+    # parameters, we assess smaller datasets, notably between 30 and 1000
+    # samples.
+    n <- stats::runif(n = n_distributions, min = 1.47, max = 3)
+    n <- ceiling(10^n)
+
+    alpha <- 0.5
+    beta <- 2.0
+
+    # Generate corresponding distributions.
+    x <- mapply(
+      power.transform::ragn,
+      n = n,
+      alpha = alpha,
+      beta = beta
+    )
+
+    if (parallel) {
+      # Start cluster
+      cl <- parallel::makeCluster(18L)
+
+      # Compute all data in parallel.
+      data <- parallel::parLapply(
+        cl = cl,
+        X = x,
+        fun = residual_fun
+      )
+
+      # Stop cluster.
+      parallel::stopCluster(cl)
+    } else {
+      data <- lapply(
+        X = x,
+        FUN = residual_fun
+      )
+    }
+
+    data <- data.table::rbindlist(data)
+
+    if (!external_fun) {
+      saveRDS(
+        object = data,
+        file = file_name
+      )
+    }
+  } else {
+    data <- readRDS(file_name)
+  }
+
+  # Convert p to empirical probabilities.
+  data[, "p" := (p - 1 / 3) / (200 + 1 / 3)]
+  data[, "has_outliers" := outlier_id > 1L]
+
+  return(data)
+}
+
+
+
 .get_test_statistics_data <- function(manuscript_dir, as_table = TRUE, reduce = FALSE) {
   # Non-standard evaluation in data.table.
   residual <- p <- n <- test_statistic <- method <- alpha <- NULL

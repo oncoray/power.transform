@@ -466,7 +466,32 @@ cap <- paste0(
 .plot_shifted_distributions_appendix(manuscript_dir = manuscript_dir, plot_theme = plot_theme)
 ```
 
-# Appendix D: Experimental results using location- and scale-invariant Box-Cox transformation
+# Appendix D: Empirical central normality test
+
+The empirical central normality test was derived using data sampled from asymmetric generalised normal distributions, including outliers, to resemble more realistic datasets.
+Here we assess the type I error rate of two, less realistic, sets of data:
+
+1. Data sampled from asymmetric generalised normal distributions without outliers.
+2. Data sampled from normal distributions without outliers, without any power transformation applied.
+
+Other aspects of the experiment remain the same.
+Thus, we first drew $m_d=10000$ random distributions.
+For asymmetric generalised normal distributions, each distribution was parametrised with a randomly chosen skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$.
+For fully normal distributions, skewness parameter $\alpha = 0.5$ and shape parameter $\beta = 2.0$ were fixed.
+Location and scale parameters were set as $\mu = 0$ and $\sigma = 1$, respectively.
+$n = \lceil 10^\gamma \rceil$ values were then randomly drawn, with $\gamma \sim U\left(1.47, 3.00\right)$, which led to between $30$ and $1000$ values being drawn to create $\mathbf{X}_i$.
+Residuals were then computed after performing robust location- and scale-invariant transformations with the empirical tapered cosine weighting method for the dataset with asymmetric generalised normal distributions,
+and without any transformation for the dataset with only normal distributions.
+
+```{r empirical-central-normality-test-appendix, warning=FALSE, message=FALSE, fig.cap=cap}
+cap <- paste0(
+  "Blabla"
+)
+
+
+```
+
+# Appendix E: Experimental results using location- and scale-invariant Box-Cox transformation
 
 ```{r experimental-results-invariance-appendix, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
