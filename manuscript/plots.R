@@ -80,6 +80,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
   # Prevent warnings due to non-standard evaluation.
   data_type <- method <- NULL
 
+  stroke <- 0.2
+  size <- 1.0
+
   # Process / read data.
   data <- .get_data_problematic_transformations(
     manuscript_dir = manuscript_dir
@@ -120,7 +123,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     family = annotation_settings$family,
     fontface = annotation_settings$face,
     size = annotation_settings$geom_text_size,
-    vjust = -1.0,
+    vjust = -0.5,
     hjust = 1.0
   )
 
@@ -137,7 +140,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     family = annotation_settings$family,
     fontface = annotation_settings$face,
     size = annotation_settings$geom_text_size,
-    vjust = -1.0,
+    vjust = -0.5,
     hjust = 0.0
   )
 
@@ -154,14 +157,16 @@ get_annotation_settings <- function(ggtheme = NULL) {
     family = annotation_settings$family,
     fontface = annotation_settings$face,
     size = annotation_settings$geom_text_size,
-    vjust = -1.0,
+    vjust = -0.5,
     hjust = 1.0
   )
 
   # Box-Cox transformation -----------------------------------------------------
   p_bc_shift <- p_shift + ggplot2::geom_point(
     data = data[method == "Box-Cox" & data_type == "shift"],
-    mapping = ggplot2::aes(x = .data$y)
+    mapping = ggplot2::aes(x = .data$y),
+    stroke = stroke,
+    size = size
   )
   p_bc_shift <- p_bc_shift + ggplot2::labs(title = "shift")
   p_bc_shift <- p_bc_shift + ggplot2::scale_y_continuous(
@@ -176,7 +181,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   p_bc_scale <- p_scale + ggplot2::geom_point(
     data = data[method == "Box-Cox" & data_type == "scale"],
-    mapping = ggplot2::aes(x = .data$y)
+    mapping = ggplot2::aes(x = .data$y),
+    stroke = stroke,
+    size = size
   )
   p_bc_scale <- p_bc_scale + ggplot2::labs(title = "scale")
   p_bc_scale <- p_bc_scale + ggplot2::ylim(c(0, 6))
@@ -189,7 +196,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   p_bc_outlier <- p_outlier + ggplot2::geom_point(
     data = data[method == "Box-Cox" & data_type == "outlier"],
-    mapping = ggplot2::aes(x = .data$y)
+    mapping = ggplot2::aes(x = .data$y),
+    stroke = stroke,
+    size = size
   )
   p_bc_outlier <- p_bc_outlier + ggplot2::labs(title = "outlier")
   p_bc_outlier <- p_bc_outlier + ggplot2::ylim(c(-0.2, 1.2))
@@ -203,7 +212,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
   # Yeo-Johnson transformation -------------------------------------------------
   p_yj_shift <- p_shift + ggplot2::geom_point(
     data = data[method == "Yeo-Johnson" & data_type == "shift"],
-    mapping = ggplot2::aes(x = .data$y)
+    mapping = ggplot2::aes(x = .data$y),
+    stroke = stroke,
+    size = size
   )
   p_yj_shift <- p_yj_shift + ggplot2::scale_y_continuous(
     name = latex2exp::TeX("$\\lambda$"),
@@ -212,7 +223,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   p_yj_scale <- p_scale + ggplot2::geom_point(
     data = data[method == "Yeo-Johnson" & data_type == "scale"],
-    mapping = ggplot2::aes(x = .data$y)
+    mapping = ggplot2::aes(x = .data$y),
+    stroke = stroke,
+    size = size
   )
   p_yj_scale <- p_yj_scale + ggplot2::ylim(c(0, 6))
   p_yj_scale <- p_yj_scale + ggplot2::theme(
@@ -221,7 +234,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   p_yj_outlier <- p_outlier + ggplot2::geom_point(
     data = data[method == "Yeo-Johnson" & data_type == "outlier"],
-    mapping = ggplot2::aes(x = .data$y)
+    mapping = ggplot2::aes(x = .data$y),
+    stroke = stroke,
+    size = size
   )
   p_yj_outlier <- p_yj_outlier + ggplot2::ylim(c(-0.2, 1.2))
   p_yj_outlier <- p_yj_outlier + ggplot2::theme(
@@ -327,6 +342,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
   estimation_method <- distribution <- method <- version <- transformation <- NULL
   data_type <- NULL
 
+  stroke <- 0.2
+  size <- 1.0
+
   # Set seed.
   set.seed(19L)
 
@@ -388,13 +406,19 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p <- ggplot2::ggplot(
     mapping = ggplot2::aes(
       y = .data$lambda,
-      colour = .data$transformation
+      colour = .data$transformation,
+      shape = .data$transformation,
     )
   )
   p <- p + plot_theme
   p <- p + ggplot2::scale_colour_discrete(
     name = "transformation",
     type = c("#4E79A7", "#A0CBE8", "#F28E2B", "#FFBE7D"),
+    drop = FALSE
+  )
+  p <- p + ggplot2::scale_shape_manual(
+    name = "transformation",
+    values = c(16, 4, 16, 4),
     drop = FALSE
   )
 
@@ -422,7 +446,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
   ## Box-Cox transformation ----------------------------------------------------
   p_normal_shift_bc <- p_normal_shift + ggplot2::geom_point(
     data = data[distribution == "normal" & method == "Box-Cox" & data_type == "shifted"],
-    mapping = ggplot2::aes(x = .data$shift)
+    mapping = ggplot2::aes(x = .data$shift),
+    stroke = stroke,
+    size = size
   )
   p_normal_shift_bc <- p_normal_shift_bc + ggplot2::theme(
     axis.text.x = ggplot2::element_blank(),
@@ -432,7 +458,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   p_normal_scale_bc <- p_normal_scale + ggplot2::geom_point(
     data = data[distribution == "normal" & method == "Box-Cox" & data_type == "scaled"],
-    mapping = ggplot2::aes(x = .data$scale)
+    mapping = ggplot2::aes(x = .data$scale),
+    stroke = stroke,
+    size = size
   )
   p_normal_scale_bc <- p_normal_scale_bc + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),
@@ -447,12 +475,16 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   p_normal_shift_yj <- p_normal_shift + ggplot2::geom_point(
     data = data[distribution == "normal" & method == "Yeo-Johnson" & data_type == "shifted"],
-    mapping = ggplot2::aes(x = .data$shift)
+    mapping = ggplot2::aes(x = .data$shift),
+    stroke = stroke,
+    size = size
   )
 
   p_normal_scale_yj <- p_normal_scale + ggplot2::geom_point(
     data = data[distribution == "normal" & method == "Yeo-Johnson" & data_type == "scaled"],
-    mapping = ggplot2::aes(x = .data$scale)
+    mapping = ggplot2::aes(x = .data$scale),
+    stroke = stroke,
+    size = size
   )
   p_normal_scale_yj <- p_normal_scale_yj + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),
@@ -484,7 +516,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
   ## Box-Cox transformation ----------------------------------------------------
   p_right_shift_bc <- p_right_shift + ggplot2::geom_point(
     data = data[distribution =="right-skewed" & method == "Box-Cox" & data_type == "shifted"],
-    mapping = ggplot2::aes(x = .data$shift)
+    mapping = ggplot2::aes(x = .data$shift),
+    stroke = stroke,
+    size = size
   )
   p_right_shift_bc <- p_right_shift_bc + ggplot2::theme(
     axis.title.y = ggplot2::element_blank(),
@@ -495,7 +529,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   p_right_scale_bc <- p_right_scale + ggplot2::geom_point(
     data = data[distribution == "right-skewed" & method == "Box-Cox" & data_type == "scaled"],
-    mapping = ggplot2::aes(x = .data$scale)
+    mapping = ggplot2::aes(x = .data$scale),
+    stroke = stroke,
+    size = size
   )
   p_right_scale_bc <- p_right_scale_bc + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),
@@ -510,7 +546,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   p_right_shift_yj <- p_right_shift + ggplot2::geom_point(
     data = data[distribution == "right-skewed" & method == "Yeo-Johnson" & data_type == "shifted"],
-    mapping = ggplot2::aes(x = .data$shift)
+    mapping = ggplot2::aes(x = .data$shift),
+    stroke = stroke,
+    size = size
   )
   p_right_shift_yj <- p_right_shift_yj + ggplot2::theme(
     axis.title.y = ggplot2::element_blank()
@@ -518,7 +556,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   p_right_scale_yj <- p_right_scale + ggplot2::geom_point(
     data = data[distribution == "right-skewed" & method == "Yeo-Johnson" & data_type == "scaled"],
-    mapping = ggplot2::aes(x = .data$scale)
+    mapping = ggplot2::aes(x = .data$scale),
+    stroke = stroke,
+    size = size
   )
   p_right_scale_yj <- p_right_scale_yj + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),
@@ -551,7 +591,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
   ## Box-Cox transformation ----------------------------------------------------
   p_left_shift_bc <- p_left_shift + ggplot2::geom_point(
     data = data[distribution =="left-skewed" & method == "Box-Cox" & data_type == "shifted"],
-    mapping = ggplot2::aes(x = .data$shift)
+    mapping = ggplot2::aes(x = .data$shift),
+    stroke = stroke,
+    size = size
   )
   p_left_shift_bc <- p_left_shift_bc + ggplot2::theme(
     axis.title.y = ggplot2::element_blank(),
@@ -562,7 +604,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   p_left_scale_bc <- p_left_scale + ggplot2::geom_point(
     data = data[distribution == "left-skewed" & method == "Box-Cox" & data_type == "scaled"],
-    mapping = ggplot2::aes(x = .data$scale)
+    mapping = ggplot2::aes(x = .data$scale),
+    stroke = stroke,
+    size = size
   )
   p_left_scale_bc <- p_left_scale_bc + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),
@@ -577,7 +621,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   p_left_shift_yj <- p_left_shift + ggplot2::geom_point(
     data = data[distribution == "left-skewed" & method == "Yeo-Johnson" & data_type == "shifted"],
-    mapping = ggplot2::aes(x = .data$shift)
+    mapping = ggplot2::aes(x = .data$shift),
+    stroke = stroke,
+    size = size
   )
   p_left_shift_yj <- p_left_shift_yj + ggplot2::theme(
     axis.title.y = ggplot2::element_blank()
@@ -585,7 +631,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   p_left_scale_yj <- p_left_scale + ggplot2::geom_point(
     data = data[distribution == "left-skewed" & method == "Yeo-Johnson" & data_type == "scaled"],
-    mapping = ggplot2::aes(x = .data$scale)
+    mapping = ggplot2::aes(x = .data$scale),
+    stroke = stroke,
+    size = size
   )
   p_left_scale_yj <- p_left_scale_yj + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),

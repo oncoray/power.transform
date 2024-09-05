@@ -75,7 +75,11 @@ To-do
 
 # Introduction
 
-Many statistical and several machine learning methods assume normality of the underlying data, e.g. analysis of variance or . However, numerical features in datasets may strongly deviate from normal distributions, e.g. by being skewed. Power transformations aim to stabilise variance and improve normality of such features [@Bartlett1947-rx; @Tukey1957-rt]. The two most commonly used transformations are that of @Box1964-mz and @Yeo2000-vw. The Box-Cox transformation of a feature value $x_i$ of feature $\mathbf{X}=\left\{x_1, x_2, \ldots, x_n \right\}$ under the transformation parameter $\lambda$ is defined as:
+Many statistical and some machine learning methods assume normality of the underlying data, e.g. analysis of variance and linear discriminant analysis.
+However, numerical features in datasets may strongly deviate from normal distributions, e.g. by being skewed.
+Power transformations aim to stabilise variance and improve normality of such features [@Bartlett1947-rx; @Tukey1957-rt].
+The two most commonly used transformations are that of @Box1964-mz and @Yeo2000-vw.
+The Box-Cox transformation of a feature value $x_i$ of feature $\mathbf{X}=\left\{x_1, x_2, \ldots, x_n \right\}$ under the transformation parameter $\lambda$ is defined as:
 
 ```{=latex}
 \begin{equation}
@@ -101,14 +105,15 @@ One limitation of the Box-Cox transformation is that it is only defined for $x_i
 \end{cases}
 \end{equation}
 ```
-The $\lambda$-parameter is typically optimised using maximum likelihood estimation under the assumption that the transformed feature is normally distributed. As noted by Raymaekers and Rousseeuw, this approach is sensitive to outliers, and robust versions of Box-Cox and Yeo-Johnson transformations were devised [@Raymaekers2021-kq].
+The $\lambda$-parameter is typically optimised using maximum likelihood estimation under the assumption that the transformed feature is normally distributed.
+As noted by Raymaekers and Rousseeuw, this approach is sensitive to outliers, and robust versions of Box-Cox and Yeo-Johnson transformations were devised [@Raymaekers2021-kq].
 
-Power transformation does not guarantee that transformed features are normally distributed.
-Depending on location and scale of a feature and the presence of outliers, power transformation may decrease normality, as shown in Figure \ref{fig:decreased-normality}.
+Applying a power transformation does not guarantee that transformed features are normally distributed.
+Depending on location and scale of a feature and the presence of outliers, power transformations may decrease normality, as shown in Figure \ref{fig:decreased-normality}.
 If normality of the transformed feature is not checked, e.g. in automated power transformation in machine learning workflows, several issues may arise.
 For example, statistical tests such as ANOVA may produce incorrect results due to violation of the normality assumption.
 Likewise, machine learning methods that assume normality of input features may suffer a decrease in performance.
-Also, large negative or positive $\lambda$-parameters may lead to numeric issues in any subsequent computations.
+Moreover, large negative or positive $\lambda$-parameters may lead to numeric issues in any subsequent computations.
 
 Statistical tests for normality, such as the Shapiro-Wilk test [@Shapiro1965-zd], could be automatically applied to transformed features.
 However, given sufficiently large sample sizes such tests can detect trivial deviations from normality, and may lead to rejection of sufficiently good power transformations.
@@ -187,7 +192,8 @@ The location- and scale-invariant Box-Cox log-likelihood function is:
 \end{split}
 \end{equation}
 ```
-where $\mu$ and $\sigma^2$ are the mean and variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0, s} (\mathbf{X})$, respectively.
+subject to $x_i - x_0 > 0$.
+$\mu$ and $\sigma^2$ are the mean and variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0, s} (\mathbf{X})$, respectively.
 Similarly, the location- and scale-invariant Yeo-Johnson log-likelihood function is:
 
 ```{=latex}
@@ -199,7 +205,7 @@ Similarly, the location- and scale-invariant Yeo-Johnson log-likelihood function
 \end{split}
 \end{equation}
 ```
-where $\mu$ and $\sigma^2$ are the mean and variance of the Box-Cox transformed feature $\phi_{\text{YJ}}^{\lambda, x_0, s} (\mathbf{X})$, respectively.
+where $\mu$ and $\sigma^2$ are the mean and variance of the Yeo-Johnson transformed feature $\phi_{\text{YJ}}^{\lambda, x_0, s} (\mathbf{X})$, respectively.
 
 
 ## Robust location- and scale-invariant power transformations
@@ -214,13 +220,14 @@ However, because this procedure iteratively estimates and updates $\lambda$, it 
 Nonetheless, as a procedure, weighted MLE can be used for estimating the transformation, shift and scale parameters.
 
 Here, weighted maximum likelihood estimation is based on equations \ref{eqn:box-cox-invariant-log-likelihood} and \ref{eqn:yeo-johnson-invariant-log-likelihood}.
-Compared to @Raymaekers2021-kq, these log-likelihood functions includes additional terms to accommodate estimation of $x_0$ and $s$. The weighted location- and scale-invariant Box-Cox log-likelihood function is:
+Compared to @Raymaekers2021-kq, these log-likelihood functions includes additional terms to accommodate estimation of $x_0$ and $s$.
+The weighted location- and scale-invariant Box-Cox log-likelihood function is:
 
 ```{=latex}
 \begin{equation}
 \label{eqn:box-cox-weighted-invariant-log-likelihood}
 \begin{split}
-\mathcal{l}_{\text{rBC}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
+\mathcal{l}_{\text{rBC}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi_{\text{BC}}^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
 & - \lambda \left( \sum_{i=1}^n w_i \right) \log s + \left( \lambda - 1 \right) \sum_{i=1}^n w_i \log \left[ x_i - x_0 \right]
 \end{split}
 \end{equation}
@@ -229,7 +236,7 @@ where $\mu_w$ and $\sigma^2_w$ are the weighted mean and weighted variance of th
 
 ```{=latex}
 \begin{equation}
-\sigma_w^2 = \frac{\sum_{i=1}^n w_i \left(\phi_{\text{BC}}^{\lambda, x_0, s} (x_i) - \mu_w \right)^2}{\sum_{i=1}^n w_i} \quad \text{with } \mu_w = \frac{\sum_{i=1}^n \phi_{\text{BC}}^{\lambda, x_0, s} (x_i)} {\sum_{i=1}^n w_i}
+\sigma_w^2 = \frac{\sum_{i=1}^n w_i \left(\phi_{\text{BC}}^{\lambda, x_0, s} (x_i) - \mu_w \right)^2}{\sum_{i=1}^n w_i} \quad \text{with } \mu_w = \frac{\sum_{i=1}^n w_i \phi_{\text{BC}}^{\lambda, x_0, s} (x_i)} {\sum_{i=1}^n w_i}
 \end{equation}
 ```
 
@@ -239,7 +246,7 @@ Analogously, the weighted location- and scale-invariant Yeo-Johnson log-likeliho
 \begin{equation}
 \label{eqn:yeo-johnson-weighted-invariant-log-likelihood}
 \begin{split}
-\mathcal{l}_{\text{rYJ}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
+\mathcal{l}_{\text{rYJ}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi_{\text{YJ}}^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
 & - \left( \sum_{i=1}^n w_i \right) \log s + (\lambda - 1) \sum_{i=1}^n w_i \sgn(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
 \end{split}
 \end{equation}
@@ -248,12 +255,12 @@ where $\mu_w$ and $\sigma^2_w$ are the weighted mean and weighted variance of th
 
 ```{=latex}
 \begin{equation}
-\sigma_w^2 = \frac{\sum_{i=1}^n w_i \left(\phi_{\text{YJ}}^{\lambda, x_0, s} (x_i) - \mu_w \right)^2}{\sum_{i=1}^n w_i} \quad \text{with } \mu_w = \frac{\sum_{i=1}^n \phi_{\text{YJ}}^{\lambda, x_0, s} (x_i)} {\sum_{i=1}^n w_i}
+\sigma_w^2 = \frac{\sum_{i=1}^n w_i \left(\phi_{\text{YJ}}^{\lambda, x_0, s} (x_i) - \mu_w \right)^2}{\sum_{i=1}^n w_i} \quad \text{with } \mu_w = \frac{\sum_{i=1}^n w_i \phi_{\text{YJ}}^{\lambda, x_0, s} (x_i)} {\sum_{i=1}^n w_i}
 \end{equation}
 ```
 
-The weights $w_i$ in equations \ref{eqn:box-cox-weighted-invariant-log-likelihood} and \ref{eqn:yeo-johnson-weighted-invariant-log-likelihood} can be set using several weighting functions.
-Here, we investigate three:
+The weights $w_i$ in equations \ref{eqn:box-cox-weighted-invariant-log-likelihood} and \ref{eqn:yeo-johnson-weighted-invariant-log-likelihood} can be set using several weighting functions. 
+Using $\dot{x}_i$ as an argument that will be defined later, we investigate three weighting functions:
 
 - A step function, with $\delta_1 \geq 0$ as threshold parameter:
 ```{=latex}
@@ -307,7 +314,7 @@ cap <- paste0(
 Each weighting function has an argument $\dot{x}$ that is related to the (transformed) feature in one of several ways:
 
 - The weighting function uses empirical probabilities of the distribution of the original feature $\mathbf{X}$.
-  Probabilities are determined as $p_i = \frac{i - 1/3}{n + 1/3}$, with $i = 1, 2, \ldots n$, with $n$ the number of instances of feature $\mathbf{X}$.
+  After sorting $\mathbf{X}$ in ascending order, probabilities are determined as $p_i = \frac{i - 1/3}{n + 1/3}$, with $i = 1, 2, \ldots n$, with $n$ the number of instances of feature $\mathbf{X}$.
   Then $\dot{x}_i = p^{*}_i=2 \left( p_i - 0.5\right)$, so that argument is zero-centered.
 
 - The weighting function uses the z-score of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$.
@@ -315,7 +322,7 @@ Each weighting function has an argument $\dot{x}$ that is related to the (transf
   Here, $\mu_M$ and $\sigma_M$ are robust Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$ [@Huber1981-su].
   Then $\dot{x}_i = z_i$.
 
-- The weighting function uses the residual error between the z-score of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$ and the theoretical z-score from a standard normal distribution: $r_i =\left| \left( \phi^{\lambda, x_0, s}(x_i) - \mu_M)\right) / \sigma_M - F^{-1}_{\mathcal{N}}(p_i) \right|$, with $\mu_M$, $\sigma_M$ and $p_i$ as defined above.
+- After sorting $\mathbf{X}$ in ascending order, the weighting function uses the residual error between the z-score of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$ and the theoretical z-score from a standard normal distribution: $r_i =\left| \left( \phi^{\lambda, x_0, s}(x_i) - \mu_M)\right) / \sigma_M - F^{-1}_{\mathcal{N}}(p_i) \right|$, with $\mu_M$, $\sigma_M$ and $p_i$ as defined above.
   Then $\dot{x}_i = r_i$.
 
 
@@ -325,7 +332,7 @@ Modifications intended to make power transformations invariant to location and s
 
 ```{=latex}
 \begin{equation}
-f_{\beta}(x) = \frac{\beta}{2\Gamma \left(1 / \beta \right)} e^{-\left| x \right|^\beta}
+f_{\beta}(x) = \frac{\beta}{2\Gamma\left(1 / \beta \right)} e^{-\left| x \right|^\beta}
 \end{equation}
 ```
 Here, $\Gamma$ is the gamma function, and $\beta$ is a strictly positive shape parameter. For $\beta = 1$, the probability density function describes a Laplace distribution. A normal distribution is found for $\beta=2$, and for large $\beta$, the distribution approaches a uniform distribution. We will refrain from introducing scale and location parameters here directly.
@@ -354,7 +361,7 @@ F_{\alpha}^{-1}(p; \mu, \sigma, \beta) =
 \end{cases}
 \end{equation}
 ```
-The quantile function for the asymmetric generalised normal distribution $F_{\alpha}^{-1}(p)$ thus incorporates the quantile function $F_{\beta}^{-1}(p^{*})$ of the symmetric generalised normal distribution. $F_{\beta}^{-1}(p)$ was derived by Griffin to be [@Griffin2018-bf]:
+The quantile function for the asymmetric generalised normal distribution $F_{\alpha}^{-1}$ thus incorporates the quantile function $F_{\beta}^{-1}$ of the symmetric generalised normal distribution. $F_{\beta}^{-1}$ was derived by Griffin to be [@Griffin2018-bf]:
 
 ```{=latex}
 \begin{equation}
@@ -373,7 +380,7 @@ Here we develop an empirical test for central normality.
 The null hypothesis $H_0$ is that the distribution is centrally normal.
 The alternative hypothesis $H_1$ is that the distribution is not centrally normal.
 
-Let central normality be defined as normality of central portion $\kappa$ of the data, i.e. $\mathbf{X}_{\text{central}} = \left\{x_i \in \mathbf{X} \, | \,  \frac{1-\kappa}{2} \leq  p_i \leq \frac{1 + \kappa}{2}\right\}$, with $p_i$ probabilities of the empirical distribution, as previously.
+Let central normality be defined as the normality of central portion $\kappa$ of the data, i.e. $\mathbf{X}_{\text{central}} = \left\{x_i \in \mathbf{X} \, | \,  \frac{1-\kappa}{2} \leq  p_i \leq \frac{1 + \kappa}{2}\right\}$, with $p_i$ probabilities of the empirical distribution, as previously.
 We then compute the residual errors between the z-scores of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$ and the expected z-scores from a standard normal distribution: $r_i =\left| \left( \phi^{\lambda, x_0, s}(x_i) - \mu_M)\right) / \sigma_M - F^{-1}_{\mathcal{N}}(p_i) \right|$, with $\mu_M$ and $\sigma_M$ robust Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$ [@Huber1981-su].
 The set of residual errors for the central portion of the data is then $\mathbf{R}_{\text{central}} = \left\{ r_i \in \left\{ r_1, r_2, \ldots, r_n\right\} \, | \,  \frac{1-\kappa}{2} \leq  p_i \leq \frac{1 + \kappa}{2}\right\}$.
 
@@ -383,20 +390,28 @@ The test statistic $\tau_{\text{ecn}}$ is then defined as:
 \tau_{\text{ecn}} = \frac{\sum_{i=1}^{N} r_i \left[r_i \in \mathbf{R}_{\text{central}}\right]}{\sum_{i=1}^N \left[r_i \in \mathbf{R}_{\text{central}}\right]} 
 \end{equation}
 ```
-Here $[\quad]$ denotes an Iverson bracket. The test statistic is equal to the mean of the residual errors of the central portion of the data.
+Here $[\quad]$ denotes an Iverson bracket.
+The test statistic is equal to the mean of the residual errors of the central portion of the data.
+
+To use the test statistic, the central portion of the data needs to be defined and the Type 1 error rates determined.
+We will do so in the [Simulation](#simulation) section.
+
 
 # Simulation
 
 We used simulated data to assess invariance to location and scale of the proposed power transformations, weighting for robust transformations, and to develop the empirical central normality test.
 The $\lambda$ parameter for conventional power transformations (Eqn. \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}), as well as $\lambda$, $x_0$ and $s$ parameters for location- and scale-invariant power transformations (Eqn. \ref{eqn:box-cox-invariant} and \ref{eqn:yeo-johnson-invariant}) were estimated using the BOBYQA algorithm for derivative-free bound constraint optimisation [@Powell2009-zb] through maximum likelihood estimation.
+The required algorithms were implemented in the `power.transform` R software package **ADD REFERENCE**.
+Of note, the `power.transform` package shifts feature values into the positive domain if negative or zero values are present for Box-Cox power transformations.
+
 
 ## Invariance to location and scale
 
 To assess whether the proposed power transformations lead to values of $\lambda$ that are invariant to location and scale of the distribution, we simulated three different distributions.
 We first randomly drew $10000$ values from a normal distribution: $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)$, or equivalently $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.5, 2\right)$.
-The second distribution was a right-skewed normal distribution $\mathbf{X}_{\text{right}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.2, 2\right)$.
-The third distribution was a left-skewed normal distribution $\mathbf{X}_{\text{left}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.8, 2\right)$.
-We then computed transformation parameter $\lambda$ using the original definitions (equations \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}) and the location- and scale-invariant definitions (equations \ref{eqn:box-cox-invariant} and \ref{eqn:yeo-johnson-invariant}) for each distribution.
+The second distribution was a right-skewed generalised normal distribution $\mathbf{X}_{\text{right}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.2, 2\right)$.
+The third distribution was a left-skewed generalised normal distribution $\mathbf{X}_{\text{left}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.8, 2\right)$.
+We then computed transformation parameter $\lambda$ using the original definitions (Eqn. \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}) and the location- and scale-invariant definitions (Eqn. \ref{eqn:box-cox-invariant} and \ref{eqn:yeo-johnson-invariant}) for each distribution.
 To assess location invariance, a positive value $d_{\text{shift}}$ was added to each distribution with $d_{\text{shift}} \in [1, 10^6]$.
 Similarly, to assess scale invariance, each distribution was multiplied by a positive value $d_{\text{scale}}$, where $d_{\text{scale}} \in [1, 10^6]$.
 
@@ -428,7 +443,7 @@ Location and scale parameters were set as $\mu = 0$ and $\sigma = 1$, respective
 $n = \lceil 10^\gamma \rceil$ instances were then randomly drawn, with $\gamma \sim U\left(2, 4\right)$, i.e., between $100$ and $10000$ values are drawn to create $\mathbf{X}_i$. 
 
 Outlier values were then drawn to randomly replace a fraction of the values of $\mathbf{X}_i$.
-This was repeated $m_{out} = 10$ times, with outlier fractions regularly spaced in $[0.00, 0.10]$.
+This was repeated $m_{\text{out}} = 10$ times, with outlier fractions regularly spaced in $[0.00, 0.10]$.
 Thus up to 10 percent of the values could be replaced by outliers.
 Outlier values were set according to @Tukey1977-xm, as follows.
 Let $x^{*} \sim U\left(-2, 2\right)$.
@@ -445,14 +460,14 @@ Q_3 + \left(1.5 + x^{*} \right) \text{IQR} & \text{if } x^{*} \geq 0
 ```
 
 $Q_1$, $Q_3$ and $\text{IQR}$ are the first quartile, third quartile and interquartile range of $\mathbf{X}_i$, respectively.
-Outlier values randomly replaced values in $\mathbf{X}_i$ to create $\mathbf{X}_{i,j}$.
+Outlier values randomly replaced values in $\mathbf{X}_i$ to create $\mathbf{X}_{i,j}$, with $j \in \left\{ 1, \ldots, m_{\text{out}} \right\}$
 
 To find the optimal values for the weighting function parameters $\delta_1$ and $\delta_2$ (if applicable), we minimised the absolute difference between the $\lambda_{r}$ parameter obtained for robust transformation in the presence of outliers, and the $\lambda_0$ parameter obtained using the non-robust transformations in absence of outliers:
 
 ```{=latex}
 \begin{equation}
 \label{eqn:minimisation-weighting}
-\left\{ \hat{\delta}_1, \hat{\delta}_2 \right\} = \argmin_{\delta_1, \delta_2} \sum_{i=1}^{m_d} \sum_{j=1}^{m_{out}} \left| \lambda_r \left(\mathbf{X}_{i, j}; \delta_1, \delta_2 \right) - \lambda_0 \left(\mathbf{X}_i \right) \right|
+\left\{ \hat{\delta}_1, \hat{\delta}_2 \right\} = \argmin_{\delta_1, \delta_2} \sum_{i=1}^{m_d} \sum_{j=1}^{m_{\text{out}}} \left| \lambda_r \left(\mathbf{X}_{i, j}; \delta_1, \delta_2 \right) - \lambda_0 \left(\mathbf{X}_i \right) \right|
 \end{equation}
 ```
 
