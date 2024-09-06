@@ -488,7 +488,7 @@ cap <- paste0(
   "Blabla"
 )
 
-
+.plot_type_1_error_rate_appendix(plot_theme = plot_theme, manuscript_dir = manuscript_dir)
 ```
 
 # Appendix E: Experimental results using location- and scale-invariant Box-Cox transformation

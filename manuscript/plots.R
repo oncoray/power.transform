@@ -1201,7 +1201,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
       "100 %" = "#324b67"
     )
   )
-  p_bc <- p_bc + ggplot2::xlab("test statistic")
+  p_bc <- p_bc + ggplot2::xlab(latex2exp::TeX("test statistic $\\tau_{ecn}$"))
   p_bc <- p_bc + ggplot2::ylab("type I error rate")
   p_bc <- p_bc + ggplot2::coord_cartesian(xlim = c(0, 0.25))
 
@@ -1226,7 +1226,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
       "100 %" = "#904109"
     )
   )
-  p_yj <- p_yj + ggplot2::xlab(latex2exp::TeX("test statistic $\\tau_{\\text{ecn}}$"))
+  p_yj <- p_yj + ggplot2::xlab(latex2exp::TeX("test statistic $\\tau_{ecn}$"))
   p_yj <- p_yj + ggplot2::coord_cartesian(xlim = c(0, 0.25))
   p_yj <- p_yj + ggplot2::theme(
     axis.title.y = ggplot2::element_blank(),
@@ -1243,94 +1243,192 @@ get_annotation_settings <- function(ggtheme = NULL) {
 .plot_type_1_error_rate_appendix <- function(plot_theme, manuscript_dir) {
   # Prevent warnings due to non-standard evaluation.
   residual <- rejected <- p <- n <- mare <- method <- NULL
+  outlier_id <- type <- NULL
 
-  # Get data
-  data <- .get_test_statistics_data_appendix(manuscript_dir = manuscript_dir)
+  file_name <- file.path(manuscript_dir, "type_1_error_rate_plot_appendix.RDS")
 
-  central_width <- c(0.60, 0.70, 0.80, 0.90, 0.95, 1.00)
+  if (!file.exists(file_name)) {
+    # Get data. We need three datasets:
+    # - Dataset presented in main manuscript.
+    # -
+    data <- .get_goodness_of_fit_data(manuscript_dir = manuscript_dir)
+    data_no_outlier <- data.table::copy(data[outlier_id == 1L])
+    data_no_outlier$method <- factor(
+      data_no_outlier$method,
+      levels = c("Box-Cox", "Yeo-Johnson"),
+      labels = c("Box-Cox (no outlier)", "Yeo-Johnson (no outlier)")
+    )
+    data_normal <- .get_goodness_of_fit_data_normal_only(manuscript_dir = manuscript_dir)
+    data <- data.table::rbindlist(list(data, data_no_outlier, data_normal))
 
-  data$kappa <- factor(
-    x = data$kappa,
-    levels = central_width,
-    labels = c("60 %", "70 %", "80 %", "90 %", "95 %", "100 %")
-  )
 
-  data <- data[kappa == "80 %"]
+    # Process data
+    central_width <- c(0.60, 0.70, 0.80, 0.90, 0.95, 1.00)
+    mare_data <- list()
 
-  plot_start_list <- list()
-  ii <- 1L
-  for (method in levels(data$method)) {
-    for (method_tag in levels(data$method_tag)) {
-      for (kappa in levels(data$kappa)) {
-        plot_start_list[[ii]] <- data.table::data.table(
-          mare = 0.0,
-          method = method,
-          method_tag = method_tag,
-          n = 0L,
-          rejected = 1.0,
-          kappa = kappa
-        )
+    for (ii in seq_along(central_width)) {
+      p_lower <- 0.50 - central_width[ii] / 2
+      p_upper <- 0.50 + central_width[ii] / 2
 
-        ii <- ii + 1L
-      }
+      x <- data.table::copy(data)
+
+      # Clip empirical probabilities to centre.
+      x <- x[p >= p_lower & p <= p_upper]
+
+      # Compute mean absolute residual error per feature.
+      x <- x[, list("mare" = mean(residual)), by = c("distribution_id", "outlier_id", "method")]
+      x <- x[, list("n" = .N), by = c("mare", "method")][order(mare, method)]
+      x[, "rejected" := 1.0 - cumsum(n) / sum(n), by = "method"]
+      x <- rbind(
+        data.table::data.table(
+          "mare" = c(0.0, 0.0, 0.0, 0.0, 0.0),
+          "method" = c("Box-Cox", "Yeo-Johnson", "Box-Cox (no outlier)", "Yeo-Johnson (no outlier)", "none"),
+          "n" = 0L,
+          "rejected" = 1.0
+        ),
+        x
+      )
+
+      x[, "kappa" := central_width[ii]]
+
+      mare_data[[ii]] <- x
     }
+
+    data <- data.table::rbindlist(mare_data)
+
+    data$kappa <- factor(
+      x = data$kappa,
+      levels = central_width,
+      labels = c("60 %", "70 %", "80 %", "90 %", "95 %", "100 %")
+    )
+
+    saveRDS(data, file_name)
+
+  } else {
+    data <- readRDS(file_name)
   }
 
-  data <- data.table::rbindlist(c(list(data), plot_start_list))
-
-  p_bc <- ggplot2::ggplot(
-    data = data[method == "Box-Cox"],
+  p <- ggplot2::ggplot(
+    data = data[kappa == "80 %", ],
     mapping = ggplot2::aes(
       x = mare,
       y = rejected,
-      colour = method_tag
+      colour = method
     )
   )
-  p_bc <- p_bc + plot_theme
-  p_bc <- p_bc + ggplot2::geom_step()
-  p_bc <- p_bc + ggplot2::scale_colour_discrete(
-    name = "power transform variant\n(Box-Cox)",
+  p <- p + plot_theme
+  p <- p + ggplot2::geom_step()
+  p <- p + ggplot2::scale_colour_discrete(
+    name = "type",
     type = c(
-      "robust, shift sens. (MLE)" = "#bacbde",
-      "conventional (MLE)" = "#98b2cd",
-      "robust, shift sens. (C-vM)" = "#42648a",
-      "conventional (C-vM)" = "#324b67"
+      "Box-Cox" = "#4E79A7",
+      "Yeo-Johnson" = "#F28E2B",
+      "Box-Cox (no outlier)" = "#A0CBE8",
+      "Yeo-Johnson (no outlier)" = "#FFBE7D",
+      "none" = "#59A14F"
     )
   )
-  p_bc <- p_bc + ggplot2::xlab("test statistic")
-  p_bc <- p_bc + ggplot2::ylab("type I error rate")
-  p_bc <- p_bc + ggplot2::coord_cartesian(xlim = c(0, 0.15))
-
-  p_yj <- ggplot2::ggplot(
-    data = data[method == "Yeo-Johnson"],
-    mapping = ggplot2::aes(
-      x = mare,
-      y = rejected,
-      colour = method_tag
-    )
-  )
-  p_yj <- p_yj + plot_theme
-  p_yj <- p_yj + ggplot2::geom_step()
-  p_yj <- p_yj + ggplot2::scale_colour_discrete(
-    name = "power transform variant\n(Yeo-Johnson)",
-    type = c(
-      "robust, shift sens. (MLE)" = "#f9c59f",
-      "conventional (MLE)" = "#f6a76f",
-      "robust, shift sens. (C-vM)" = "#c0570c",
-      "conventional (C-vM)" = "#904109"
-    )
-  )
-  p_yj <- p_yj + ggplot2::xlab("test statistic")
-  p_yj <- p_yj + ggplot2::coord_cartesian(xlim = c(0, 0.15))
-  p_yj <- p_yj + ggplot2::theme(
-    axis.title.y = ggplot2::element_blank(),
-    axis.text.y = ggplot2::element_blank()
-  )
-
-  p <- p_bc + p_yj + patchwork::plot_layout(ncol = 2, guides = "collect")
+  p <- p + ggplot2::xlab(latex2exp::TeX("test statistic $\\tau_{ecn}$"))
+  p <- p + ggplot2::ylab("type I error rate")
+  p <- p + ggplot2::coord_cartesian(xlim = c(0, 0.25))
 
   return(p)
 }
+
+#
+#
+#
+# .plot_type_1_error_rate_appendix <- function(plot_theme, manuscript_dir) {
+#   # Prevent warnings due to non-standard evaluation.
+#   residual <- rejected <- p <- n <- mare <- method <- NULL
+#
+#   # Get data
+#   data <- .get_test_statistics_data_appendix(manuscript_dir = manuscript_dir)
+#
+#   central_width <- c(0.60, 0.70, 0.80, 0.90, 0.95, 1.00)
+#
+#   data$kappa <- factor(
+#     x = data$kappa,
+#     levels = central_width,
+#     labels = c("60 %", "70 %", "80 %", "90 %", "95 %", "100 %")
+#   )
+#
+#   data <- data[kappa == "80 %"]
+#
+#   plot_start_list <- list()
+#   ii <- 1L
+#   for (method in levels(data$method)) {
+#     for (method_tag in levels(data$method_tag)) {
+#       for (kappa in levels(data$kappa)) {
+#         plot_start_list[[ii]] <- data.table::data.table(
+#           mare = 0.0,
+#           method = method,
+#           method_tag = method_tag,
+#           n = 0L,
+#           rejected = 1.0,
+#           kappa = kappa
+#         )
+#
+#         ii <- ii + 1L
+#       }
+#     }
+#   }
+#
+#   data <- data.table::rbindlist(c(list(data), plot_start_list))
+#
+#   p_bc <- ggplot2::ggplot(
+#     data = data[method == "Box-Cox"],
+#     mapping = ggplot2::aes(
+#       x = mare,
+#       y = rejected,
+#       colour = method_tag
+#     )
+#   )
+#   p_bc <- p_bc + plot_theme
+#   p_bc <- p_bc + ggplot2::geom_step()
+#   p_bc <- p_bc + ggplot2::scale_colour_discrete(
+#     name = "power transform variant\n(Box-Cox)",
+#     type = c(
+#       "robust, shift sens. (MLE)" = "#bacbde",
+#       "conventional (MLE)" = "#98b2cd",
+#       "robust, shift sens. (C-vM)" = "#42648a",
+#       "conventional (C-vM)" = "#324b67"
+#     )
+#   )
+#   p_bc <- p_bc + ggplot2::xlab("test statistic")
+#   p_bc <- p_bc + ggplot2::ylab("type I error rate")
+#   p_bc <- p_bc + ggplot2::coord_cartesian(xlim = c(0, 0.15))
+#
+#   p_yj <- ggplot2::ggplot(
+#     data = data[method == "Yeo-Johnson"],
+#     mapping = ggplot2::aes(
+#       x = mare,
+#       y = rejected,
+#       colour = method_tag
+#     )
+#   )
+#   p_yj <- p_yj + plot_theme
+#   p_yj <- p_yj + ggplot2::geom_step()
+#   p_yj <- p_yj + ggplot2::scale_colour_discrete(
+#     name = "power transform variant\n(Yeo-Johnson)",
+#     type = c(
+#       "robust, shift sens. (MLE)" = "#f9c59f",
+#       "conventional (MLE)" = "#f6a76f",
+#       "robust, shift sens. (C-vM)" = "#c0570c",
+#       "conventional (C-vM)" = "#904109"
+#     )
+#   )
+#   p_yj <- p_yj + ggplot2::xlab("test statistic")
+#   p_yj <- p_yj + ggplot2::coord_cartesian(xlim = c(0, 0.15))
+#   p_yj <- p_yj + ggplot2::theme(
+#     axis.title.y = ggplot2::element_blank(),
+#     axis.text.y = ggplot2::element_blank()
+#   )
+#
+#   p <- p_bc + p_yj + patchwork::plot_layout(ncol = 2, guides = "collect")
+#
+#   return(p)
+# }
 
 
 .plot_bimodal_distribution_test <- function(plot_theme, manuscript_dir) {

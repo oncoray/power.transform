@@ -1576,18 +1576,18 @@
   if (!is.null(residual_fun)) external_fun <- TRUE
 
 
-  .compute_residuals <- function(x, n_sample = 200L) {
+  .compute_residuals <- function(x, ii, n_sample = 200L) {
     # Set interpolation points.
     p_sample <- (seq_len(n_sample) - 1 / 3) / (n_sample + 1 / 3)
 
     # Determine residuals for Box-Cox transformations.
     transformer <- suppressWarnings(power.transform::find_transformation_parameters(
-      x = x$x,
+      x = x,
       method = "none"
     ))
 
     residual_data <- power.transform::get_residuals(
-      x = x$x,
+      x = x,
       transformer = transformer
     )
 
@@ -1600,8 +1600,8 @@
     )$y
 
     data <- data.table::data.table(
-      "distribution_id" = x$parameter$ii,
-      "outlier_id" = x$parameters$jj,
+      "distribution_id" = ii,
+      "outlier_id" = 1L,
       "p" = seq_along(p_sample),
       "residual" = residual,
       "method" = "none"
@@ -1643,25 +1643,13 @@
       beta = beta
     )
 
-    if (parallel) {
-      # Start cluster
-      cl <- parallel::makeCluster(18L)
-
-      # Compute all data in parallel.
-      data <- parallel::parLapply(
-        cl = cl,
-        X = x,
-        fun = residual_fun
-      )
-
-      # Stop cluster.
-      parallel::stopCluster(cl)
-    } else {
-      data <- lapply(
-        X = x,
-        FUN = residual_fun
-      )
-    }
+    data <- mapply(
+      FUN = residual_fun,
+      x = x,
+      ii = seq_along(x),
+      SIMPLIFY = FALSE,
+      USE.NAMES = FALSE
+    )
 
     data <- data.table::rbindlist(data)
 

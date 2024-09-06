@@ -600,7 +600,11 @@ cap <- paste0(
 )
 
 ```
-We then consider the empirical probability of type I errors: the probability of incorrectly classifying a centrally normal distribution as being non-normal based on the test statistic $\tau_{\text{ecn}}$. Under the assumption that the asymmetric generalised normal distributions are centrally normal after robust transformation, this produces the relationship shown in Figure \ref{fig:empirical-central-normality-type-1-error-rate}. Since for $\kappa \leq 0.80$ error curves for both transformation methods are similar, we fix the value of the central portion $\kappa$ to 0.80. In the remaining we will use the empirical central normality test statistic values defined using robust location- and scale-invariant Yeo-Johnson transformations, as it is slightly more strict. This leads to test statistic values listed in Table \ref{tab:empirical-central-normality}
+We then consider the empirical probability of type I errors: the probability of incorrectly classifying a centrally normal distribution as being non-normal based on the test statistic $\tau_{\text{ecn}}$.
+Under the assumption that the asymmetric generalised normal distributions are centrally normal after robust transformation, this produces the relationship shown in Figure \ref{fig:empirical-central-normality-type-1-error-rate}.
+Since for $\kappa \leq 0.80$ error curves for both transformation methods are similar, we fix the value of the central portion $\kappa$ to 0.80.
+In the remaining we will use the empirical central normality test statistic values defined using robust location- and scale-invariant Yeo-Johnson transformations, as it is slightly more strict.
+This leads to test statistic values listed in Table \ref{tab:empirical-central-normality}
 
 ```{r empirical-central-normality-type-1-error-rate, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=3.0}
 cap <- paste0(
@@ -641,13 +645,13 @@ table_data <- .get_test_statistics_data(manuscript_dir = manuscript_dir)
 \begin{center}
 \caption{Test statistic $\tau_{\text{ecn}}$ for empirical central normality at $\kappa = 0.80$ as a function of Type I error rate.}
 \label{tab:empirical-central-normality}
-\begin{tabular}{c c c c c c c}
+\begin{tabular}{l | c c c c c c c}
 
 \toprule
-0.50 & 0.20 & 0.10 & 0.05 & 0.02 & 0.01 & 0.001 \\
+type I error rate & 0.50 & 0.20 & 0.10 & 0.05 & 0.02 & 0.01 & 0.001 \\
 
 \midrule
-0.041 & 0.062 & 0.075 & 0.088 & 0.103 & 0.115 & 0.154 \\
+$\tau_{\text{ecn}}$ & 0.041 & 0.062 & 0.075 & 0.088 & 0.103 & 0.115 & 0.154 \\
 \bottomrule
 \end{tabular}
 \end{center}
