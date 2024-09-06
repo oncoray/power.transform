@@ -1243,7 +1243,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
 .plot_type_1_error_rate_appendix <- function(plot_theme, manuscript_dir) {
   # Prevent warnings due to non-standard evaluation.
   residual <- rejected <- p <- n <- mare <- method <- NULL
-  outlier_id <- type <- NULL
+  outlier_id <- test_statistic <- NULL
 
   file_name <- file.path(manuscript_dir, "type_1_error_rate_plot_appendix.RDS")
 
@@ -1308,6 +1308,11 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data <- readRDS(file_name)
   }
 
+  data$method <- factor(
+    data$method,
+    c("Box-Cox", "Box-Cox (no outlier)", "Yeo-Johnson", "Yeo-Johnson (no outlier)", "none")
+  )
+
   p <- ggplot2::ggplot(
     data = data[kappa == "80 %", ],
     mapping = ggplot2::aes(
@@ -1322,8 +1327,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     name = "type",
     type = c(
       "Box-Cox" = "#4E79A7",
-      "Yeo-Johnson" = "#F28E2B",
       "Box-Cox (no outlier)" = "#A0CBE8",
+      "Yeo-Johnson" = "#F28E2B",
       "Yeo-Johnson (no outlier)" = "#FFBE7D",
       "none" = "#59A14F"
     )
@@ -1332,7 +1337,33 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p <- p + ggplot2::ylab("type I error rate")
   p <- p + ggplot2::coord_cartesian(xlim = c(0, 0.25))
 
-  return(p)
+  # Process test data.
+  significance_values <- c(0.50, 0.20, 0.10, 0.05, 0.02, 0.01, 0.001)
+
+  test_data <- data[
+    kappa == "80 %",
+    list(
+      "test_statistic" = stats::spline(
+        x = rejected,
+        y = mare,
+        method = "hyman",
+        xout = significance_values
+      )$y,
+      "alpha" = significance_values
+    ),
+    by = "method"
+  ]
+
+  test_data$alpha <- factor(test_data$alpha, levels=significance_values)
+  test_data[, "test_statistic" := round(test_statistic, digits=3)]
+
+  test_data <- data.table::dcast(
+    data = test_data,
+    method ~ alpha,
+    value.var = "test_statistic"
+  )
+
+  return(list("p" = p, "data" = test_data))
 }
 
 #
@@ -1961,7 +1992,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
       guides = "collect",
       heights = c(0.2, 1.0, 0.2, 1.0, 0.2, 1.0)
     )
-  browser()
+
   return(list(
     "data" = list("age" = p_age$data, "penguin_body_mass" = p_pen$data, "latitude" = p_lat$data),
     "plot"= p

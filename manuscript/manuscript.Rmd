@@ -603,7 +603,7 @@ cap <- paste0(
 We then consider the empirical probability of type I errors: the probability of incorrectly classifying a centrally normal distribution as being non-normal based on the test statistic $\tau_{\text{ecn}}$.
 Under the assumption that the asymmetric generalised normal distributions are centrally normal after robust transformation, this produces the relationship shown in Figure \ref{fig:empirical-central-normality-type-1-error-rate}.
 Since for $\kappa \leq 0.80$ error curves for both transformation methods are similar, we fix the value of the central portion $\kappa$ to 0.80.
-In the remaining we will use the empirical central normality test statistic values defined using robust location- and scale-invariant Yeo-Johnson transformations, as it is slightly more strict.
+In the remaining we will use the empirical central normality test statistic values defined using robust location- and scale-invariant Yeo-Johnson transformations, as it is more conservative (see Appendix E).
 This leads to test statistic values listed in Table \ref{tab:empirical-central-normality}
 
 ```{r empirical-central-normality-type-1-error-rate, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=3.0}
@@ -995,10 +995,12 @@ Underperformance of these methods could be explained by their use of transformed
 In essence, parameter optimisation with MLE also affects weights.
 This may lead to different optimal values for transformation parameter $\lambda$, which increases the presented loss.
 
+The empirical test for central normality differs from other tests for normality in that the test statistic is independent of the number of samples.
+This makes this test more practical for assessing central normality for larger sample numbers, where other test may detect trivial deviations from normality.
 
 This study had the following limitations.
 First, in our experimental results we focussed on the Yeo-Johnson transformation because of its ability to handle features with negative values, and did not evaluate the Box-Cox transformation.
-Likewise, we focussed on MLE to optimise parameters, and did not investigate other metrics to the same extent, due to lack of demonstrable benefit (Appendix B).
+Likewise, we focussed on MLE to optimise parameters, and did not investigate other metrics to the same extent, due to lack of demonstrable benefit (Appendix B-D).
 
 
 # Conclusion

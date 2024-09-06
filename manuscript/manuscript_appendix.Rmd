@@ -466,7 +466,18 @@ cap <- paste0(
 .plot_shifted_distributions_appendix(manuscript_dir = manuscript_dir, plot_theme = plot_theme)
 ```
 
-# Appendix D: Empirical central normality test
+# Appendix D: Experimental results using location- and scale-invariant Box-Cox transformation
+
+```{r experimental-results-invariance-appendix, warning=FALSE, message=FALSE, fig.cap=cap}
+cap <- paste0(
+  "Blabla"
+)
+
+data <- .plot_experimental_invariance(plot_theme = plot_theme, method = "box_cox")
+data$p
+```
+
+# Appendix E: Empirical central normality test
 
 The empirical central normality test was derived using data sampled from asymmetric generalised normal distributions, including outliers, to resemble more realistic datasets.
 Here we assess the type I error rate of two, less realistic, sets of data:
@@ -483,21 +494,44 @@ $n = \lceil 10^\gamma \rceil$ values were then randomly drawn, with $\gamma \sim
 Residuals were then computed after performing robust location- and scale-invariant transformations with the empirical tapered cosine weighting method for the dataset with asymmetric generalised normal distributions,
 and without any transformation for the dataset with only normal distributions.
 
+
 ```{r empirical-central-normality-test-appendix, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
-  "Blabla"
+  "Type 1 error rate as function of the test statistic $\\tau_{\\text{ecn}}$ ",
+  "for five datasets, with central portion $\\kappa=0.80$. ",
+  "The type 1 error rate is computed from $m_d=10000$ randomly sampled features, ",
+  "These are sampled from asymmetric generalized normal distributions, with and without outliers (Box-Cox and Yeo-Johnson), ",
+  "or normal distributions with outliers (none). ",
+  "The test statistic is computed as the average residual of each feature after (Box-Cox and Yeo-Johnson) robust location- and shift-invariant power transformation, or before (none)."
 )
 
-.plot_type_1_error_rate_appendix(plot_theme = plot_theme, manuscript_dir = manuscript_dir)
-```
-
-# Appendix E: Experimental results using location- and scale-invariant Box-Cox transformation
-
-```{r experimental-results-invariance-appendix, warning=FALSE, message=FALSE, fig.cap=cap}
-cap <- paste0(
-  "Blabla"
-)
-
-data <- .plot_experimental_invariance(plot_theme = plot_theme, method = "box_cox")
+data <- .plot_type_1_error_rate_appendix(plot_theme = plot_theme, manuscript_dir = manuscript_dir)
 data$p
 ```
+
+```{=latex}
+\begin{table}
+\begin{center}
+\caption{Test statistic $\tau_{\text{ecn}}$ for empirical central normality at $\kappa = 0.80$ as a function of Type I error rate for several datasets.}
+\label{tab:empirical-central-normality-appendix}
+\begin{tabular}{l | c c c c c c c}
+
+\toprule
+type I error rate & 0.50 & 0.20 & 0.10 & 0.05 & 0.02 & 0.01 & 0.001 \\
+
+\midrule
+Box-Cox                  & 0.047 & 0.073 & 0.090 & 0.106 & 0.126 & 0.140 & 0.188 \\
+Box-Cox (no outlier)     & 0.043 & 0.065 & 0.079 & 0.092 & 0.106 & 0.116 & 0.155 \\
+Yeo-Johnson              & 0.041 & 0.062 & 0.075 & 0.088 & 0.103 & 0.115 & 0.154 \\
+Yeo-Johnson (no outlier) & 0.041 & 0.061 & 0.074 & 0.085 & 0.099 & 0.109 & 0.139 \\
+normal distr.            & 0.039 & 0.066 & 0.083 & 0.097 & 0.117 & 0.132 & 0.174 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+```
+
+The results are shown in Figure \ref{fig:empirical-central-normality-test-appendix} and Table \ref {tab:empirical-central-normality-appendix}.
+These indicate that the test behaves similarly for the different datasets.
+For low type 1 error rates the test statistic proposed in the main manuscript is more conservative than alternatives 
+based on residuals after Box-Cox transformations of asymmetric generalised normally distributed features or on residuals from strictly normally distributed features.
