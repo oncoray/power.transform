@@ -485,7 +485,7 @@ Here we assess the type I error rate of two, less realistic, sets of data:
 1. Data sampled from asymmetric generalised normal distributions without outliers.
 2. Data sampled from normal distributions without outliers, without any power transformation applied.
 
-Other aspects of the experiment remain the same.
+Other aspects of the experiment remained the same.
 Thus, we first drew $m_d=10000$ random distributions.
 For asymmetric generalised normal distributions, each distribution was parametrised with a randomly chosen skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$.
 For fully normal distributions, skewness parameter $\alpha = 0.5$ and shape parameter $\beta = 2.0$ were fixed.

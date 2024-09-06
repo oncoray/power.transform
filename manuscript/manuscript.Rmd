@@ -684,7 +684,8 @@ cap <- paste0(
 Location- and scale-invariant power transformations are intended to yield improved transformations to normality in the presence of large shifts in location, distributions that due to location and scale are not centered near zero, or both.
 Earlier, we assessed these transformations using simulated data.
 In the following, they are evaluated using examples from real datasets.
-We focus on the Yeo-Johnson transformations because 
+We focus on the Yeo-Johnson transformation because of its ability to handle features with negative values.
+Results for Box-Cox transformations are shown in Appendix D.
 
 ### Age of patients with lung cancer
 
@@ -692,7 +693,7 @@ A common feature in health-related datasets is age.
 Here we use data on 228 patients with lung cancer that was collected and published by Loprinzi et al. [@Loprinzi1994-cd].
 The age in the cohort was $62.4 \pm 9.1$ (mean ± standard deviation) years.
 Applying conventional and invariant Yeo-Johnson transformations to patient age yielded the following results, see Figure \ref{fig:lung-cancer-age}:
-no transformation (residual sum $\sum r_i = 16.5$);
+no transformation (sum of residuals with normal distribution $\sum r_i = 16.5$);
 conventional transformation ($\lambda = 2.0$, $\sum r_i = 11.5$, $\mu_{YJ} = 1.8 \cdot 10^3$, $\sigma_{YJ} = 0.5 \cdot 10^3$);
 Raymaekers and Rousseeuw's robust adaptation ($\lambda = 2.0$, $\sum r_i = 11.5$, $\mu_{YJ} = 1.8 \cdot 10^3$, $\sigma_{YJ} = 0.5 \cdot 10^3$);
 location- and scale-invariant transformation ($\lambda = 0.9$, $\sum r_i = 8.8$, $\mu_{YJ} = 1.2$, $\sigma_{YJ} = 1.1$);
@@ -712,8 +713,9 @@ out <- .plot_lung_cancer_age(plot_theme = plot_theme)
 out$plot
 ```
 
-Location- and scale-invariant transformation leads to a lower overall residual sum, indicating a better transformation.
-Moreover, conventional transformations inflated the mean $\mu_{YJ}$ and standard deviation $\sigma_{YJ}$ of the age feature after transformation.
+Location- and scale-invariant transformation led to a lower overall residual sum, indicating a better transformation.
+Robust location- and scale-invariant transformation had a higher residual sum compared to the non-robust variant, which may be due to the lack of outliers in the data.
+Conventional transformations inflated the mean $\mu_{YJ}$ and standard deviation $\sigma_{YJ}$ of the age feature after transformation.
 The empirical central normality test did not detect any statistically significant deviations from central normality for any transformation (all $p \geq 0.78$).
 
 
@@ -721,7 +723,7 @@ The empirical central normality test did not detect any statistically significan
 
 Gorman, Williams and Fraser recorded body mass (in grams) of 342 penguins of three different species [@Gorman2014-eo].
 The body mass was $(4.2 \pm 0.8) \cdot 10^3$ (mean ± standard deviation) grams, and not centrally normal ($p = 0.03$).
-Applying conventional and invariant Yeo-Johnson transformations to patient age yielded the following results, see Figure \ref{fig:penguin-body-mass}:
+Applying conventional and invariant Yeo-Johnson transformations to body mass yielded the following results, see Figure \ref{fig:penguin-body-mass}:
 no transformation (residual sum $\sum r_i = 48.0$);
 conventional transformation ($\lambda = 0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.102$, $\sigma_{YJ} = 4 \cdot 10^{-3}$);
 Raymaekers and Rousseeuw's robust adaptation ($\lambda = 0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.101$, $\sigma_{YJ} = 4 \cdot 10^{-3}$);
@@ -731,7 +733,7 @@ and robust location- and scale-invariant transformation ($\lambda = 0.4$, $\sum 
 ```{r penguin-body-mass, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=1.5}
 cap <- paste0(
   "Quantile-quantile plots for penguin body mass, measured in grams. ",
-  "The left panel shows the quantile-quantile plot for the original feature ",
+  "The left panel shows the quantile-quantile plot for the original feature. ",
   "The middle panel shows the quantile-quantile plots for the feature transformed using ",
   "the conventional Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation. ",
   "The right panel shows the quantile-quantile plots for the feature transformed using ",
@@ -1000,7 +1002,7 @@ This makes this test more practical for assessing central normality for larger s
 
 This study had the following limitations.
 First, in our experimental results we focussed on the Yeo-Johnson transformation because of its ability to handle features with negative values, and did not evaluate the Box-Cox transformation.
-Likewise, we focussed on MLE to optimise parameters, and did not investigate other metrics to the same extent, due to lack of demonstrable benefit (Appendix B-D).
+Likewise, we focussed on MLE to optimise parameters, and did not investigate other metrics to the same extent, due to lack of demonstrable benefit (Appendix B-C).
 
 
 # Conclusion
