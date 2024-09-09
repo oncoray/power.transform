@@ -2183,15 +2183,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
       shape = .data$truncated
     ))
   p_qq <- p_qq + plot_theme
-  p_qq <- p_qq + ggplot2::theme(
-    plot.tag = ggplot2::element_text(
-      face = "bold",
-      margin = ggplot2::margin(0, 0, 2, 0)
-    )
-  )
   p_qq <- p_qq + ggplot2::scale_colour_manual(
     name = "transformation",
-    values = c("#111111", "#8cd17d", "#59a14f", "#ff9d9a", "#e15759"),
+    values = c("#111111", "#59a14f", "#8cd17d", "#e15759", "#ff9d9a"),
     breaks = transformer_labels,
     drop = FALSE
   )
@@ -2233,6 +2227,16 @@ get_annotation_settings <- function(ggtheme = NULL) {
       colour = .data$transformation
     ))
   p_d <- p_d + plot_theme
+  p_d <- p_d + ggplot2::theme(
+    plot.tag = ggplot2::element_text(
+      face = "bold",
+      margin = ggplot2::margin(0, 0, 2, 0)
+    )
+  )
+  p_d <- p_d + ggplot2::theme(
+    plot.margin = grid::unit(c(5, 2, 0, 2), "points")
+  )
+
   p_d <- p_d + ggplot2::scale_colour_manual(
     name = "transformation",
     values = c("#111111", "#8cd17d", "#59a14f", "#ff9d9a", "#e15759"),
