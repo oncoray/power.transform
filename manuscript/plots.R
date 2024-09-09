@@ -1840,6 +1840,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
   residual_data[z_observed < plot_limits[1], ":="("z_observed_truncated" = plot_limits[1], "truncated" = TRUE)]
   residual_data[z_observed > plot_limits[2], ":="("z_observed_truncated" = plot_limits[2], "truncated" = TRUE)]
 
+  # Set robust tag
+  residual_data[]
+
   # Parse central normality data.
   central_normality_data <- data.table::rbindlist(
     lapply(data, function(x) (x$central_normality_data)),
@@ -1852,6 +1855,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
       x = .data$z_expected,
       y = .data$z_observed_truncated,
       colour = .data$transformation,
+      size = .data$transformation,
       shape = .data$truncated
     ))
   p_qq <- p_qq + plot_theme
@@ -1861,8 +1865,14 @@ get_annotation_settings <- function(ggtheme = NULL) {
     breaks = transformer_labels,
     drop = FALSE
   )
+  p_qq <- p_qq + ggplot2::scale_size_manual(
+    name = "transformation",
+    values = c(1.2, 1.2, 0.6, 1.2, 0.6),
+    breaks = transformer_labels,
+    drop = FALSE
+  )
   p_qq <- p_qq + ggplot2::scale_shape_manual(
-    values = c(1, 4),
+    values = c(16, 4),
     labels = c(FALSE, TRUE),
     guide = "none"
   )
@@ -2169,6 +2179,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
       x = .data$z_expected,
       y = .data$z_observed_truncated,
       colour = .data$transformation,
+      size = .data$transformation,
       shape = .data$truncated
     ))
   p_qq <- p_qq + plot_theme
@@ -2184,8 +2195,14 @@ get_annotation_settings <- function(ggtheme = NULL) {
     breaks = transformer_labels,
     drop = FALSE
   )
+  p_qq <- p_qq + ggplot2::scale_size_manual(
+    name = "transformation",
+    values = c(1.2, 1.2, 0.6, 1.2, 0.6),
+    breaks = transformer_labels,
+    drop = FALSE
+  )
   p_qq <- p_qq + ggplot2::scale_shape_manual(
-    values = c(1, 4),
+    values = c(16, 4),
     labels = c(FALSE, TRUE),
     guide = "none"
   )
