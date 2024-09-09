@@ -477,6 +477,16 @@ data <- .plot_experimental_invariance(plot_theme = plot_theme, method = "box_cox
 data$p
 ```
 
+
+```{r experimental-results-outlier-robustness-appendix, warning=FALSE, message=FALSE, fig.cap=cap}
+cap <- paste0(
+  "Blabla"
+)
+
+data <- .plot_experimental_outlier_robustness(plot_theme = plot_theme, method = "box_cox")
+data$p
+```
+
 # Appendix E: Empirical central normality test
 
 The empirical central normality test was derived using data sampled from asymmetric generalised normal distributions, including outliers, to resemble more realistic datasets.

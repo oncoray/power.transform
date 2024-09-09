@@ -2010,6 +2010,48 @@ get_annotation_settings <- function(ggtheme = NULL) {
 }
 
 
+
+.plot_experimental_outlier_robustness <- function(plot_theme, lambda_limit = NULL, method = "yeo_johnson") {
+  # Top gear data
+  utils::data("TopGear", package = "robustHD", envir = environment())
+  data <- data.table::as.data.table(TopGear)
+  x <- data$MPG
+  x <- x[!is.na(x)]
+  p_top <- ..plot_combined_real_data(
+    plot_theme = plot_theme,
+    x = x,
+    data_name = "fuel efficiency",
+    lambda_limit = lambda_limit,
+    first_set = TRUE
+  )
+
+  # Ischemic stroke
+  p_mwt <- ..plot_combined_real_data(
+    plot_theme = plot_theme,
+    x = modeldata::ischemic_stroke$max_max_wall_thickness,
+    data_name = "arterial wall thickness",
+    lambda_limit = lambda_limit,
+    last_set = TRUE
+  )
+
+  p <- p_top$density[[1]] + p_top$density[[2]] + p_top$density[[3]] +
+    p_top$qq[[1]] + p_top$qq[[2]] + p_top$qq[[3]] +
+    p_mwt$density[[1]] + p_mwt$density[[2]] + p_mwt$density[[3]] +
+    p_mwt$qq[[1]] + p_mwt$qq[[2]] + p_mwt$qq[[3]] +
+    patchwork::plot_layout(
+      ncol = 3,
+      guides = "collect",
+      heights = c(0.2, 1.0, 0.2, 1.0)
+    )
+
+  return(list(
+    "data" = list("fuel_efficiency" = p_top$data, "arterial_wall_thickness" = p_mwt$data),
+    "plot"= p
+  ))
+}
+
+
+
 ..plot_combined_real_data <- function(
     plot_theme,
     x,
