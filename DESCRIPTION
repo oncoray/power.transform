@@ -7,7 +7,9 @@ Authors@R:
            email = "alexander.zwanenburg@nct-dresden.de",
            role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-0342-9545")),
-    person("German Cancer Research Center (DKFZ)", role="cph"))
+      person("Steffen", "Löck", role="aut"),
+      person("German Cancer Research Center (DKFZ)", role="cph")
+    )
 Description:
   Location- and scale-invariant Box-Cox and Yeo-Johnson power transformations
   allow for transforming variables with distributions distant from 0 to
