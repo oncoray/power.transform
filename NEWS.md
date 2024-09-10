@@ -1,3 +1,3 @@
-# power.transform 0.0.0.9000
+# Version 1.0.0
 
-* Added a `NEWS.md` file to track changes to the package.
+This is the initial public release of the `power.transform` package.
