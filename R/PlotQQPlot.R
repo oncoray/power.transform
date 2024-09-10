@@ -23,9 +23,13 @@
 #'   x = x,
 #'   method = "box_cox")
 #'
-#' plot_qq_plot(
-#'   x = x,
-#'   transformer = transformer)
+#' if (rlang::is_installed("ggplot2")) {
+#'   plot_qq_plot(
+#'     x = x,
+#'     transformer = transformer
+#'   )
+#' }
+#'
 plot_qq_plot <- function(
     x,
     transformer,

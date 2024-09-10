@@ -45,7 +45,11 @@ transformer <- find_transformation_parameters(
   x = x,
   method = "box_cox")
 
-plot_qq_plot(
-  x = x,
-  transformer = transformer)
+if (rlang::is_installed("ggplot2")) {
+  plot_qq_plot(
+    x = x,
+    transformer = transformer
+  )
+}
+
 }

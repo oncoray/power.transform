@@ -105,7 +105,7 @@ is_package_installed <- function(name) {
 
 
 
-require_package <- function(x, purpose = NULL, ...) {
+require_package <- function(x, purpose = NULL, call = rlang::caller_env(), ...) {
 
   # Check whether packages are installed, without loading the
   # packages.
@@ -128,7 +128,7 @@ require_package <- function(x, purpose = NULL, ...) {
     ifelse(is.null(purpose), ": ", paste0(" ", purpose, ": ")),
     paste_s(x), ".")
 
-  stop(message_str)
+  rlang::abort(message_str, call = call)
 }
 
 

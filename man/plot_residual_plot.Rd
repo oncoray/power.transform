@@ -46,16 +46,21 @@ difference between expected normal quantiles and observed quantiles.
 x <- exp(stats::rnorm(1000))
 transformer <- find_transformation_parameters(
   x = x,
-  method = "box_cox")
+  method = "box_cox"
+)
 
-plot_residual_plot(
-  x = x,
-  transformer = transformer)
+if (rlang::is_installed("ggplot2")) {
+  plot_residual_plot(
+    x = x,
+    transformer = transformer
+  )
 
-# Plot only central 80\% of the data.
-plot_residual_plot(
-  x = x,
-  transformer = transformer,
-  centre_width = 0.80,
-  show_original = FALSE)
+  # Plot only central 80\% of the data.
+  plot_residual_plot(
+    x = x,
+    transformer = transformer,
+    centre_width = 0.80,
+    show_original = FALSE
+  )
+}
 }
