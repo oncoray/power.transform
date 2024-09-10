@@ -1,5 +1,5 @@
 Package: power.transform
-Title: Location and Scale Invariant Power Transformations for Normalizing Data
+Title: Location and Scale Invariant Power Transformations
 Version: 1.0.0
 Authors@R: 
     c(
