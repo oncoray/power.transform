@@ -51,10 +51,6 @@ rsconnect/
 .Rdata
 .DS_Store
 
-# Package documentation
-man/
-*.Rd
-
 # Manuscript
 manuscript/manuscript.pdf
 manuscript/manuscript.log
