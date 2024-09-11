@@ -780,13 +780,12 @@ data$p
 
 The Top Gear dataset contains data on 297 vehicles that appeared on the BBC television show *Top Gear* [@Alfons2021-kc].
 Within this dataset, the fuel consumption feature contains outliers due to highly fuel-efficient vehicles.
-
 Applying conventional and invariant Yeo-Johnson transformations to the fuel consumption feature yielded the following results, see Figure \ref{fig:experimental-results-outlier-robustness}:
-no transformation (residual sum $\sum r_i = 110$, $p=0.76$);
-conventional transformation ($\lambda = -0.7$, $\sum r_i = 30$, $\mu_{YJ} = 1.0$, $\sigma_{YJ} = 0.1$, $p=0.01$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = 1.1$, $\sum r_i = 137$, $\mu_{YJ} = 7.2$, $\sigma_{YJ} = 14$, $p=0.61$);
-location- and scale-invariant transformation ($\lambda = 0.2$, $\sum r_i = 12$, $\mu_{YJ} = -11.8$, $\sigma_{YJ} = 6.9$, $p=0.13$);
-and robust location- and scale-invariant transformation ($\lambda = -0.6$, $\sum r_i = 27$, $\mu_{YJ} = 0.7$, $\sigma_{YJ} = 0.1$, $p=0.10$).
+no transformation (residual sum $\sum r_i = 54$, $p=0.56$);
+conventional transformation ($\lambda = -0.1$, $\sum r_i = 55$, $\mu_{YJ} = 3.0$, $\sigma_{YJ} = 0.3$, $p=0.01$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 0.8$, $\sum r_i = 48$, $\mu_{YJ} = 29$, $\sigma_{YJ} = 15$, $p=0.61$);
+location- and scale-invariant transformation ($\lambda = -1.3$, $\sum r_i = 44$, $\mu_{YJ} = 0.5$, $\sigma_{YJ} = 0.1$, $p=0.13$);
+and robust location- and scale-invariant transformation ($\lambda = -0.9$, $\sum r_i = 50$, $\mu_{YJ} = 2.0$, $\sigma_{YJ} = 2.3$, $p=0.10$).
 
 Outliers cause non-robust transformations to fail to transform the data to a centrally normal distribution (empirical central normality test $p = 0.01$ and $p=0.03$ for conventional and invariant transformations, respectively).
 Robust transformations produce distributions that are centrally normal (empirical central normality test $p > 0.05$).
