@@ -468,24 +468,107 @@ cap <- paste0(
 
 # Appendix D: Experimental results using location- and scale-invariant Box-Cox transformation
 
+The effect of using location- and scale-invariant transformations was investigated using real-world datasets.
+
+## Invariance
+
+Results for Box-Cox transformations of features without outliers are shown in Figure \ref{fig:experimental-results-invariance-appendix}.
+
 ```{r experimental-results-invariance-appendix, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
-  "Blabla"
+  "Quantile-quantile plots for several datasets: age of patients with lung cancer (top row); ",
+  "penguin body mass (middle row); ",
+  "and latitude coordinates of houses sold in Ames, Iowa (bottom row). ",
+  "Multiple quantile-quantile plots are shown: for the original feature (left column); ",
+  "the feature transformed using the conventional Box-Cox transformation ",
+  "and Raymaekers and Rousseeuw's robust adaptation (middle column); ",
+  "and the feature transformed using the non-robust and robust location- and-scale ",
+  "invariant Box-Cox transformations (right column)."
 )
 
 data <- .plot_experimental_invariance(plot_theme = plot_theme, method = "box_cox")
 data$p
 ```
 
+### Age of patients with lung cancer
+
+Applying conventional and invariant Box-Cox transformations to age of patients with lung cancer [@Loprinzi1994-cd] yielded the following results:
+no transformation (sum of residuals with normal distribution $\sum r_i = 16.5$);
+conventional transformation ($\lambda = 1.9$, $\sum r_i = 11.5$, $\mu_{BC} = 1.6 \cdot 10^3$, $\sigma_{BC} = 0.4 \cdot 10^3$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 1.9$, $\sum r_i = 11.5$, $\mu_{BC} = 1.6 \cdot 10^3$, $\sigma_{BC} = 0.4 \cdot 10^3$);
+location- and scale-invariant transformation ($\lambda = 1.7$, $\sum r_i = 11.6$, $\mu_{BC} = 1.9$, $\sigma_{BC} = 0.8$);
+and robust location- and scale-invariant transformation ($\lambda = 1.5$, $\sum r_i = 11.6$, $\mu_{BC} = 3.6$, $\sigma_{BC} = 1.2$).
+
+Compared to location- and scale-invariant Yeo-Johnson transformations, the Box-Cox transformations do not reduce residuals compared to conventional variants.
+
+
+### Penguin body mass
+
+Applying conventional and invariant Box-Cox transformations to the body mass of penguins [@Gorman2014-eo] yielded the following results:
+no transformation (residual sum $\sum r_i = 48.0$);
+conventional transformation ($\lambda = -0.5$, $\sum r_i = 32.2$, $\mu_{BC} = 2.1$, $\sigma_{BC} = 4 \cdot 10^{-3}$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = -0.5$, $\sum r_i = 32.2$, $\mu_{BC} = 2.1$, $\sigma_{BC} = 4 \cdot 10^{-3}$);
+location- and scale-invariant transformation ($\lambda = 0.5$, $\sum r_i = 27.3$, $\mu_{BC} = 0.3$, $\sigma_{BC} = 0.6$);
+and robust location- and scale-invariant transformation ($\lambda = 0.2$, $\sum r_i = 25.2$, $\mu_{BC} = 0.4$, $\sigma_{BC} = 0.6$).
+
+Just as for location- and scale-invariant Yeo-Johnson transformations, Box-Cox transformations produced a lower overall residual sum compared to their conventional counterparts.
+Similarly, conventional transformations led to low standard deviation $\sigma_{YJ}$ of the body mass feature after transformation.
+
+
+### Latitude in the Ames housing dataset
+
+Applying conventional and invariant Box-Cox transformations to the latitude of houses in the Ames housing dataset [@De-Cock2011-jf] yielded the following results:
+no transformation (residual sum $\sum r_i = 328$);
+conventional transformation ($\lambda = 62.1$, $\sum r_i = 319$, $\mu_{BC} = 1.1 \cdot 10^{99}$, $\sigma_{BC} = 0.0 \cdot 10^{99}$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 96.0$, $\sum r_i = 319$, $\mu_{BC} = 6.2 \cdot 10^{153}$, $\sigma_{BC} = 0.3 \cdot 10^{153}$);
+location- and scale-invariant transformation ($\lambda = 1.9$, $\sum r_i = 312$, $\mu_{BC} = 2.3$, $\sigma_{BC} = 0.9$);
+and robust location- and scale-invariant transformation ($\lambda = 1.2$, $\sum r_i = 316$, $\mu_{BC} = 5.5$, $\sigma_{BC} = 1.4$.
+
+Similar to conventional Yeo-Johnson transformations (non-robust and robust), conventional Box-Cox transformations had high values for the $\lambda$ parameter, which could lead to numerical issues.
+Location- and scale-invariant Box-Cox transformations did not suffer from this issue.
+
+
+## Robustness against outliers
+
+Results for Box-Cox transformations of features with outliers are shown in Figure \ref{fig:results-outlier-robustness-appendix}.
 
 ```{r experimental-results-outlier-robustness-appendix, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
-  "Blabla"
+  "Quantile-quantile plots for two datasets with outliers: vehicle fuel consumption ",
+  "(top row), where outliers are related to highly fuel-efficient vehicles; ",
+  "and maximum arterial wall thickness in patients with ischemic stroke (bottom row). ",
+  "Multiple quantile-quantile plots are shown: for the original feature (left column); ",
+  "the feature transformed using the conventional Box-Cox transformation ",
+  "and Raymaekers and Rousseeuw's robust adaptation (middle column); ",
+  "and the feature transformed using the non-robust and robust location- and-scale ",
+  "invariant Box-Cox transformations (right column). ",
+  "Samples with observed quantiles below $-3.0$ or above $3.0$ are indicated by crosses."
 )
 
 data <- .plot_experimental_outlier_robustness(plot_theme = plot_theme, method = "box_cox")
 data$p
 ```
+
+### Fuel efficiency in the Top Gear dataset
+
+The Top Gear dataset contains data on 297 vehicles, with outliers related highly fuel-efficient vehicles [@Alfons2021-kc].
+Applying conventional and invariant Box-Cox transformations to the fuel consumption feature yielded the following results:
+no transformation (residual sum $\sum r_i = 54$, $p=0.76$);
+conventional transformation ($\lambda = -0.1$, $\sum r_i = 55$, $\mu_{BC} = 3.0$, $\sigma_{BC} = 0.3$, $p=0.01$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 0.8$, $\sum r_i = 48$, $\mu_{BC} = 29$, $\sigma_{BC} = 15$, $p=0.55$);
+location- and scale-invariant transformation ($\lambda = -1.3$, $\sum r_i = 44$, $\mu_{BC} = 0.5$, $\sigma_{BC} = 0.1$, $p=0.03$);
+and robust location- and scale-invariant transformation ($\lambda = 0.9$, $\sum r_i = 49$, $\mu_{BC} = 2.0$, $\sigma_{BC} = 2.3$, $p=0.58$).
+
+
+### Maximum arterial wall thickness in an ischemic stroke dataset
+
+The ischemic stroke dataset contains historic data from 126 patients with risk at ischemic stroke [@Kuhn2019-kt].
+Applying conventional and invariant Box-Cox transformations to the maximum arterial wall thickness feature yielded the following results:
+no transformation (residual sum $\sum r_i = 110$, $p=0.56$);
+conventional transformation ($\lambda = -0.7$, $\sum r_i = 30$, $\mu_{BC} = 1.0$, $\sigma_{BC} = 0.1$, $p=0.01$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 1.1$, $\sum r_i = 136$, $\mu_{BC} = 7.2$, $\sigma_{BC} = 14$, $p=0.61$);
+location- and scale-invariant transformation ($\lambda = 0.2$, $\sum r_i = 12$, $\mu_{BC} = -11.8$, $\sigma_{BC} = 6.9$, $p=0.13$);
+and robust location- and scale-invariant transformation ($\lambda = -0.6$, $\sum r_i = 27$, $\mu_{BC} = 0.7$, $\sigma_{BC} = 0.1$, $p=0.10$).
 
 # Appendix E: Empirical central normality test
 

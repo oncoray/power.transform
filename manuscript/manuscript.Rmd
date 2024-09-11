@@ -59,7 +59,7 @@ plot_theme$plot.tag <- ggplot2::element_text(
   vjust = 0.0,
   inherit.blank = FALSE
 )
-plot_theme$plot.tag.position <- c(0, 1)
+plot_theme$plot.tag.position <- c(0.2, 1)
 
 parse_mean_sd_latex <- function(mu, sigma, digits=2L){
   return(paste0(
@@ -687,31 +687,33 @@ In the following, they are evaluated using examples from real datasets.
 We focus on the Yeo-Johnson transformation because of its ability to handle features with negative values.
 Results for Box-Cox transformations are shown in Appendix D.
 
+```{r experimental-results-invariance, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=5.0}
+cap <- paste0(
+  "Quantile-quantile plots for several datasets: age of patients with lung cancer (top row); ",
+  "penguin body mass (middle row); ",
+  "and latitude coordinates of houses sold in Ames, Iowa (bottom row). ",
+  "Multiple quantile-quantile plots are shown: for the original feature (left column); ",
+  "the feature transformed using the conventional Yeo-Johnson transformation ",
+  "and Raymaekers and Rousseeuw's robust adaptation (middle column); ",
+  "and the feature transformed using the non-robust and robust location- and-scale ",
+  "invariant Yeo-Johnson transformations (right column)."
+)
+
+data <- .plot_experimental_invariance(plot_theme = plot_theme, method = "yeo_johnson")
+data$p
+```
+
 ### Age of patients with lung cancer
 
 A common feature in health-related datasets is age.
 Here we use data on 228 patients with lung cancer that was collected and published by Loprinzi et al. [@Loprinzi1994-cd].
 The age in the cohort was $62.4 \pm 9.1$ (mean ± standard deviation) years.
-Applying conventional and invariant Yeo-Johnson transformations to patient age yielded the following results, see Figure \ref{fig:lung-cancer-age}:
+Applying conventional and invariant Yeo-Johnson transformations to patient age yielded the following results, see Figure \ref{fig:experimental-results-invariance}:
 no transformation (sum of residuals with normal distribution $\sum r_i = 16.5$);
 conventional transformation ($\lambda = 2.0$, $\sum r_i = 11.5$, $\mu_{YJ} = 1.8 \cdot 10^3$, $\sigma_{YJ} = 0.5 \cdot 10^3$);
 Raymaekers and Rousseeuw's robust adaptation ($\lambda = 2.0$, $\sum r_i = 11.5$, $\mu_{YJ} = 1.8 \cdot 10^3$, $\sigma_{YJ} = 0.5 \cdot 10^3$);
 location- and scale-invariant transformation ($\lambda = 0.9$, $\sum r_i = 8.8$, $\mu_{YJ} = 1.2$, $\sigma_{YJ} = 1.1$);
 and robust location- and scale-invariant transformation ($\lambda = 0.8$, $\sum r_i = 10.6$, $\mu_{YJ} = 1.2$, $\sigma_{YJ} = 1.0$).
-
-```{r lung-cancer-age, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=1.5}
-cap <- paste0(
-  "Quantile-quantile plots for age of patients with lung cancer, expressed in years. ",
-  "The left panel shows the quantile-quantile plot for the original feature ",
-  "The middle panel shows the quantile-quantile plots for the feature transformed using ",
-  "the conventional Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation. ",
-  "The right panel shows the quantile-quantile plots for the feature transformed using ",
-  "the non-robust and robust location- and-scale invariant transformations."
-)
-
-out <- .plot_lung_cancer_age(plot_theme = plot_theme)
-out$plot
-```
 
 Location- and scale-invariant transformation led to a lower overall residual sum, indicating a better transformation.
 Robust location- and scale-invariant transformation had a higher residual sum compared to the non-robust variant, which may be due to the lack of outliers in the data.
@@ -723,30 +725,16 @@ The empirical central normality test did not detect any statistically significan
 
 Gorman, Williams and Fraser recorded body mass (in grams) of 342 penguins of three different species [@Gorman2014-eo].
 The body mass was $(4.2 \pm 0.8) \cdot 10^3$ (mean ± standard deviation) grams, and not centrally normal ($p = 0.03$).
-Applying conventional and invariant Yeo-Johnson transformations to body mass yielded the following results, see Figure \ref{fig:penguin-body-mass}:
+Applying conventional and invariant Yeo-Johnson transformations to body mass yielded the following results, see Figure \ref{fig:experimental-results-invariance}:
 no transformation (residual sum $\sum r_i = 48.0$);
-conventional transformation ($\lambda = 0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.102$, $\sigma_{YJ} = 4 \cdot 10^{-3}$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = 0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.101$, $\sigma_{YJ} = 4 \cdot 10^{-3}$);
+conventional transformation ($\lambda = -0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.1$, $\sigma_{YJ} = 4 \cdot 10^{-3}$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = -0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.1$, $\sigma_{YJ} = 4 \cdot 10^{-3}$);
 location- and scale-invariant transformation ($\lambda = 0.5$, $\sum r_i = 26.8$, $\mu_{YJ} = 0.9$, $\sigma_{YJ} = 0.9$);
 and robust location- and scale-invariant transformation ($\lambda = 0.4$, $\sum r_i = 23.1$, $\mu_{YJ} = 0.8$, $\sigma_{YJ} = 0.8$).
 
-```{r penguin-body-mass, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=1.5}
-cap <- paste0(
-  "Quantile-quantile plots for penguin body mass, measured in grams. ",
-  "The left panel shows the quantile-quantile plot for the original feature. ",
-  "The middle panel shows the quantile-quantile plots for the feature transformed using ",
-  "the conventional Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation. ",
-  "The right panel shows the quantile-quantile plots for the feature transformed using ",
-  "the non-robust and robust location- and-scale invariant transformations."
-)
-
-out <- .plot_penguin_body_mass(plot_theme = plot_theme)
-out$plot
-```
 Location- and scale-invariant transformation produced a lower overall residual sum, indicating a better transformation.
 Moreover, conventional transformations led to low standard deviation $\sigma_{YJ}$ of the body mass feature after transformation.
 The empirical central normality test did not detect any statistically significant deviations from central normality for any transformation (all $p \geq 0.38$).
-
 
 
 ### Latitude in the Ames housing dataset
@@ -754,26 +742,13 @@ The empirical central normality test did not detect any statistically significan
 Geospatial datasets usually contain coordinates.
 The Ames housing dataset contains data on 2930 properties that were sold between 2006 and 2010 [@De-Cock2011-jf], including their geospatial coordinates.
 The latitude was $42.03 \pm 0.02)$ (mean ± standard deviation).
-Applying conventional and invariant Yeo-Johnson transformations to latitude yielded the following results, see Figure \ref{fig:ames-latitude}:
+Applying conventional and invariant Yeo-Johnson transformations to latitude yielded the following results, see Figure \ref{fig:experimental-results-invariance}:
 no transformation (residual sum $\sum r_i = 328$);
 conventional transformation ($\lambda = 62.1$, $\sum r_i = 319$, $\mu_{YJ} = 4.8 \cdot 10^{99}$, $\sigma_{YJ} = 0.1 \cdot 10^{99}$);
 Raymaekers and Rousseeuw's robust adaptation ($\lambda = 95.4$, $\sum r_i = 319$, $\mu_{YJ} = 6.4 \cdot 10^{153}$, $\sigma_{YJ} = 0.3 \cdot 10^{153}$);
 location- and scale-invariant transformation ($\lambda = 1.5$, $\sum r_i = 326$, $\mu_{YJ} = -1.2$, $\sigma_{YJ} = 0.8$);
 and robust location- and scale-invariant transformation ($\lambda = 1.4$, $\sum r_i = 311$, $\mu_{YJ} = -1.3$, $\sigma_{YJ} = 0.9$).
 
-```{r ames-latitude, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=1.5}
-cap <- paste0(
-  "Quantile-quantile plots for latitude coordinate in a housing dataset. ",
-  "The left panel shows the quantile-quantile plot for the original feature ",
-  "The middle panel shows the quantile-quantile plots for the feature transformed using ",
-  "the conventional Yeo-Johnson transformation, and Raymaekers and Rousseeuw's robust adaptation. ",
-  "The right panel shows the quantile-quantile plots for the feature transformed using ",
-  "the non-robust and robust location- and-scale invariant transformations."
-)
-
-out <- .plot_ames_latitude(plot_theme = plot_theme)
-out$plot
-```
 Every transformation reduced the residual sum.
 The non-robust location- and scale-invariant transformation did not improve over conventional alternatives and yielded a data distribution lacking central normality (empirical central normality test: $p=0.05$).
 However, conventional transformations had high values for the $\lambda$ parameter, which could lead to numerical issues.
@@ -784,60 +759,46 @@ However, conventional transformations had high values for the $\lambda$ paramete
 We previously simulated data to assess invariant power transformations and their robustness against outliers.
 Here, we assess invariant power transformations in real data with outliers.
 
-### Fuel efficiency in the Top Gear dataset
-
-```{r top-gear, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=1.5}
+```{r experimental-results-outlier-robustness, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=3.5}
 cap <- paste0(
-  "Quantile-quantile plots for fuel consumption data in the Top Gear dataset. ",
-  "The feature contains three strong outliers related to highly fuel-efficient vehicles.",
-  "The left panel shows the quantile-quantile plot for the original feature. ",
-  "The empirical central normality test indicates that the original feature does not deviate significantly from central normality ($p=0.76$).",
-  "The middle panel shows the quantile-quantile plots for the feature transformed using ",
-  "the conventional Yeo-Johnson transformation and Raymaekers and Rousseeuw's robust adaptation. ",
-  "For these, the empirical central normality test yields $p=0.01$, and $p=0.55$, respectively. ",
-  "The right panel shows the quantile-quantile plots for the feature transformed using ",
-  "the non-robust and robust location- and scale-invariant transformations. ",
-  "For these, the empirical central normality test yields $p=0.03$, and $p=0.86$, respectively. ",
+  "Quantile-quantile plots for two datasets with outliers: vehicle fuel consumption ",
+  "(top row), where outliers are related to highly fuel-efficient vehicles; ",
+  "and maximum arterial wall thickness in patients with ischemic stroke (bottom row). ",
+  "Multiple quantile-quantile plots are shown: for the original feature (left column); ",
+  "the feature transformed using the conventional Yeo-Johnson transformation ",
+  "and Raymaekers and Rousseeuw's robust adaptation (middle column); ",
+  "and the feature transformed using the non-robust and robust location- and-scale ",
+  "invariant Yeo-Johnson transformations (right column). ",
   "Samples with observed quantiles below $-3.0$ or above $3.0$ are indicated by crosses."
 )
 
-out <- .plot_top_gear(
-  plot_theme = plot_theme
-)
-
-out$plot
+data <- .plot_experimental_outlier_robustness(plot_theme = plot_theme, method = "yeo_johnson")
+data$p
 ```
 
-The Top Gear dataset contains data on 297 vehicles that appeared on the BBC television show *Top Gear*. Within this dataset, the fuel consumption feature contains outliers due to highly fuel-efficient vehicles. Figure \ref{fig:top-gear} shows that the outliers cause non-robust transformations to fail to transform the data to a centrally normal distribution (empirical central normality test $p = 0.01$ and $p=0.03$ for conventional and invariant transformations, respectively). Robust transformations produce distributions that are centrally normal (empirical central normality test $p > 0.05$).
+### Fuel efficiency in the Top Gear dataset
+
+The Top Gear dataset contains data on 297 vehicles that appeared on the BBC television show *Top Gear* [@Alfons2021-kc].
+Within this dataset, the fuel consumption feature contains outliers due to highly fuel-efficient vehicles.
+
+Applying conventional and invariant Yeo-Johnson transformations to the fuel consumption feature yielded the following results, see Figure \ref{fig:experimental-results-outlier-robustness}:
+no transformation (residual sum $\sum r_i = 110$, $p=0.76$);
+conventional transformation ($\lambda = -0.7$, $\sum r_i = 30$, $\mu_{YJ} = 1.0$, $\sigma_{YJ} = 0.1$, $p=0.01$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 1.1$, $\sum r_i = 137$, $\mu_{YJ} = 7.2$, $\sigma_{YJ} = 14$, $p=0.61$);
+location- and scale-invariant transformation ($\lambda = 0.2$, $\sum r_i = 12$, $\mu_{YJ} = -11.8$, $\sigma_{YJ} = 6.9$, $p=0.13$);
+and robust location- and scale-invariant transformation ($\lambda = -0.6$, $\sum r_i = 27$, $\mu_{YJ} = 0.7$, $\sigma_{YJ} = 0.1$, $p=0.10$).
+
+Outliers cause non-robust transformations to fail to transform the data to a centrally normal distribution (empirical central normality test $p = 0.01$ and $p=0.03$ for conventional and invariant transformations, respectively).
+Robust transformations produce distributions that are centrally normal (empirical central normality test $p > 0.05$).
 
 ### Maximum arterial wall thickness in an ischemic stroke dataset
 
-```{r ischemic-stroke, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=1.5}
-cap <- paste0(
-  "Quantile-quantile plots for the maximum arterial wall thickness in patients with ischemic stroke. ",
-  "This feature contains two strong outliers. ",
-  "The left panel shows the quantile-quantile plot for the original feature. ",
-  "The empirical central normality test indicates that the original feature does not deviate significantly from central normality ($p=0.56$). ",
-  "The middle panel shows the quantile-quantile plots for the feature transformed using ",
-  "the conventional Yeo-Johnson transformation and Raymaekers and Rousseeuw's robust adaptation. ",
-  "For these, the empirical central normality test yields $p=0.01$, and $p=0.61$, respectively. ",
-  "The right panel show the quantile-quantile plots for the feature transformed using ",
-  "the non-robust and robust location- and scale-invariant transformations. ",
-  "For these, the empirical central normality test yields $p=0.02$, and $p=0.10$, respectively. ",
-  "Samples with observed quantiles below $-3.0$ or above $3.0$ are indicated by crosses."
-)
-
-out <- .plot_ischemic_stroke(
-  plot_theme = plot_theme
-)
-
-out$plot
-```
 The ischemic stroke dataset contains historic data from 126 patients with risk at ischemic stroke [@Kuhn2019-kt].
 These patients underwent Computed Tomography Angiography to characterize the carotid artery blockages.
 Angiography imaging was then assessed, and various characteristics related to the blood vessels and the disease are measured.
 The maximum arterial wall thickness feature contains several instances with outlier values.
-Figure \ref{fig:ischemic-stroke} show that non-robust transformation fail to produce a centrally normal distribution (empirical central normality test $p = 0.01$ and $p=0.02$ for conventional and invariant transformations, respectively). Robust transformations produce distributions that are centrally normal (empirical central normality test $p > 0.05$).
+Figure \ref{fig:experimental-results-outlier-robustness} shows that non-robust transformations fail to produce a centrally normal distribution (empirical central normality test $p = 0.01$ and $p=0.02$ for conventional and invariant transformations, respectively).
+Robust transformations produce distributions that are centrally normal (empirical central normality test $p > 0.05$).
 
 ## Integration into end-to-end machine learning
 
@@ -848,7 +809,7 @@ each dataset was used to train a model for each of 16 process configurations.
 Each process configuration specifies the learner (generalised linear model or
 random forest), transformation method (none, conventional Yeo-Johnson, robust
 invariant Yeo-Johnson, robust invariant Yeo-Johnson with empirical central
-normality test ($p = 0.01$)), and normalisation method (none,
+normality test (rejecting transformations with $p \leq 0.01$), and normalisation method (none,
 $z$-standardisation), yielding 16 distinct configurations.
 Before each experiment, each dataset was randomly split into a training (70%)
 and holdout test (30%) set five times. Thus, a total of 22800 models were
@@ -1000,9 +961,7 @@ This may lead to different optimal values for transformation parameter $\lambda$
 The empirical test for central normality differs from other tests for normality in that the test statistic is independent of the number of samples.
 This makes this test more practical for assessing central normality for larger sample numbers, where other test may detect trivial deviations from normality.
 
-This study had the following limitations.
-First, in our experimental results we focussed on the Yeo-Johnson transformation because of its ability to handle features with negative values, and did not evaluate the Box-Cox transformation.
-Likewise, we focussed on MLE to optimise parameters, and did not investigate other metrics to the same extent, due to lack of demonstrable benefit (Appendix B-C).
+As a limitation, we did observe several numerical issues for optimisation criteria other than MLE (appendix B).
 
 
 # Conclusion
