@@ -1014,7 +1014,7 @@ The combination of both facilitate the use of power transformations in automated
 
 # Data and code availability
 
-Location- and scale-invariant power transformations are implemented in the `power.transform` package for R, and is available from [https://github.com/oncoray/power.transform] and the CRAN repository [INSERT LINK HERE]. The manuscript was created using R Markdown and is also available from the power.transform GitHub repository. Data and results for the machine learning experiment are separately available from Zenodo [INSERT LINK HERE].
+Location- and scale-invariant power transformations were implemented in the `power.transform` package for R, which is available from [https://github.com/oncoray/power.transform] and the CRAN repository [INSERT LINK HERE]. The manuscript was created using R Markdown and is likewise available from the `power.transform` GitHub repository. Data and results for the machine learning experiment are separately available from Zenodo [https://doi.org/10.5281/zenodo.13736671].
 
 
 # References
