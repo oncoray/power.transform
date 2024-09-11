@@ -5,6 +5,6 @@
 ^LICENSE\.txt$
 ^NEWS$
 ^cran-comments\.md$
-^manuscript
+^manuscript$
 ^icon$
 ^\.github$

@@ -11,13 +11,13 @@ Authors@R:
       person("German Cancer Research Center (DKFZ)", role="cph")
     )
 Description:
-  Location- and scale-invariant Box-Cox and Yeo-Johnson power transformations
-  allow for transforming variables with distributions distant from 0 to
-  normality. Transformers are implemented as S4 objects. These allow for
-  transforming new instances to normality after optimising fitting parameters on 
-  other data. A test for central normality allows for rejecting transformations
-  that fail to produce a suitably normal distribution, independent of sample 
-  number.
+    Location- and scale-invariant Box-Cox and Yeo-Johnson power transformations
+    allow for transforming variables with distributions distant from 0 to
+    normality. Transformers are implemented as S4 objects. These allow for
+    transforming new instances to normality after optimising fitting parameters
+    on other data. A test for central normality allows for rejecting 
+    transformations that fail to produce a suitably normal distribution, 
+    independent of sample number.
 URL: https://github.com/oncoray/power.transform
 BugReports: https://github.com/oncoray/power.transform/issues
 License: EUPL
