@@ -24,7 +24,7 @@ jobs:
       matrix:
         r-version: ["release"]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-  
+
     steps:
       - uses: actions/checkout@v4
       - uses: r-lib/actions/setup-pandoc@v2
@@ -37,10 +37,12 @@ jobs:
           extra-packages: |
             any::rcmdcheck
           needs: check
-        
+          working-directory: R
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
           args: 'c("--no-manual", "--as-cran", "--no-vignettes", "--no-build-vignettes")'
           build_args: 'c("--no-build-vignettes", "--no-manual")'
           error-on: '"error"'
+          working-directory: R
