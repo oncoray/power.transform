@@ -565,10 +565,10 @@ and robust location- and scale-invariant transformation ($\lambda = 1.1$, $\sum 
 The ischemic stroke dataset contains historic data from 126 patients with risk at ischemic stroke [@Kuhn2019-kt].
 Applying conventional and invariant Box-Cox transformations to the maximum arterial wall thickness feature yielded the following results:
 no transformation (residual sum $\sum r_i = 110$, $p=0.56$);
-conventional transformation ($\lambda = -0.5$, $\sum r_i = 30$, $\mu_{BC} = 1.0$, $\sigma_{BC} = 0.2$, $p=0.01$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = 1.1$, $\sum r_i = 136$, $\mu_{BC} = 5.5$, $\sigma_{BC} = 12$, $p=0.60$);
-location- and scale-invariant transformation ($\lambda = -1.0$, $\sum r_i = 12$, $\mu_{BC} = 0.7$, $\sigma_{BC} = 0.1$, $p=0.01$);
-and robust location- and scale-invariant transformation ($\lambda = 0.5$, $\sum r_i = 27$, $\mu_{BC} = 2.2$, $\sigma_{BC} = 1.4$, $p=0.35$).
+conventional transformation ($\lambda = -0.5$, $\sum r_i = 33$, $\mu_{BC} = 1.0$, $\sigma_{BC} = 0.2$, $p=0.01$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 1.1$, $\sum r_i = 127$, $\mu_{BC} = 5.5$, $\sigma_{BC} = 12$, $p=0.60$);
+location- and scale-invariant transformation ($\lambda = -1.0$, $\sum r_i = 28$, $\mu_{BC} = 0.7$, $\sigma_{BC} = 0.1$, $p=0.01$);
+and robust location- and scale-invariant transformation ($\lambda = 0.5$, $\sum r_i = 56$, $\mu_{BC} = 2.2$, $\sigma_{BC} = 1.4$, $p=0.35$).
 
 # Appendix E: Empirical central normality test
 
