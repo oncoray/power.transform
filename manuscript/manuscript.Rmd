@@ -955,6 +955,22 @@ The empirical central normality test indicated that robust transformations are b
 However, in a machine learning experiment of 232 real-world datasets that contained at least one numeric feature, we did not find a meaningful benefit of for -- nor detriment to -- model performance for location- and scale-invariant power transformations.
 One reason may be that numeric features with large location shifts ($|\mu| > 1000.0$) were uncommon.
 Of the 4886 numeric features in the 232 datasets, 266 (5%) features in 34 datasets had large location shifts, of which 200 appeared in just 2 datasets.
+For the latter two datasets, the transformation method does not show significant difference between groups (Friedman test; $p > 0.05$).
+```{r include = FALSE, eval = TRUE}
+
+data <- .get_ml_experiment_data(manuscript_dir = manuscript_dir)
+data <- data[dataset %in% c("Hill_Valley_with_noise", "Hill_Valley_without_noise")]
+
+# Convert to data matrix. First aggregate within each experiment because the
+# Friedman test is not for repeated measurements.
+data <- data.table::dcast(
+  data,
+  dataset ~ transformation_method, value.var="value_rank",
+  fun.aggregate = mean
+)
+
+h_transformation <- friedman.test(as.matrix(data[, "dataset" := NULL]))
+```
 
 Location- and scale-invariant transformations are realised by simultaneously optimising three parameters, i.e. transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$.
 Alternatively, standardisation of a numeric variable (e.g., through subtracting its median value and division by its interquartile range) prior to conventional power transformations may achieve a similar effect in reducing sensitivity to the distribution's location and scale.
