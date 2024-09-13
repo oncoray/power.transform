@@ -2022,6 +2022,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     x = x,
     data_name = "fuel efficiency",
     lambda_limit = lambda_limit,
+    method = method,
     first_set = TRUE
   )
 
@@ -2031,6 +2032,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     x = modeldata::ischemic_stroke$max_max_wall_thickness,
     data_name = "arterial wall thickness",
     lambda_limit = lambda_limit,
+    method = method,
     last_set = TRUE
   )
 

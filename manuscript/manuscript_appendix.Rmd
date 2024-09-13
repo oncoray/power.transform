@@ -556,8 +556,8 @@ Applying conventional and invariant Box-Cox transformations to the fuel consumpt
 no transformation (residual sum $\sum r_i = 54$, $p=0.76$);
 conventional transformation ($\lambda = -0.1$, $\sum r_i = 55$, $\mu_{BC} = 3.0$, $\sigma_{BC} = 0.3$, $p=0.01$);
 Raymaekers and Rousseeuw's robust adaptation ($\lambda = 0.8$, $\sum r_i = 48$, $\mu_{BC} = 29$, $\sigma_{BC} = 15$, $p=0.55$);
-location- and scale-invariant transformation ($\lambda = -1.3$, $\sum r_i = 44$, $\mu_{BC} = 0.5$, $\sigma_{BC} = 0.1$, $p=0.03$);
-and robust location- and scale-invariant transformation ($\lambda = 0.9$, $\sum r_i = 49$, $\mu_{BC} = 2.0$, $\sigma_{BC} = 2.3$, $p=0.58$).
+location- and scale-invariant transformation ($\lambda = -0.7$, $\sum r_i = 44$, $\mu_{BC} = 0.6$, $\sigma_{BC} = 0.2$, $p=0.02$);
+and robust location- and scale-invariant transformation ($\lambda = 1.1$, $\sum r_i = 59$, $\mu_{BC} = 2.4$, $\sigma_{BC} = 1.8$, $p=0.83$).
 
 
 ### Maximum arterial wall thickness in an ischemic stroke dataset
@@ -565,10 +565,10 @@ and robust location- and scale-invariant transformation ($\lambda = 0.9$, $\sum 
 The ischemic stroke dataset contains historic data from 126 patients with risk at ischemic stroke [@Kuhn2019-kt].
 Applying conventional and invariant Box-Cox transformations to the maximum arterial wall thickness feature yielded the following results:
 no transformation (residual sum $\sum r_i = 110$, $p=0.56$);
-conventional transformation ($\lambda = -0.7$, $\sum r_i = 30$, $\mu_{BC} = 1.0$, $\sigma_{BC} = 0.1$, $p=0.01$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = 1.1$, $\sum r_i = 136$, $\mu_{BC} = 7.2$, $\sigma_{BC} = 14$, $p=0.61$);
-location- and scale-invariant transformation ($\lambda = 0.2$, $\sum r_i = 12$, $\mu_{BC} = -11.8$, $\sigma_{BC} = 6.9$, $p=0.13$);
-and robust location- and scale-invariant transformation ($\lambda = -0.6$, $\sum r_i = 27$, $\mu_{BC} = 0.7$, $\sigma_{BC} = 0.1$, $p=0.10$).
+conventional transformation ($\lambda = -0.5$, $\sum r_i = 30$, $\mu_{BC} = 1.0$, $\sigma_{BC} = 0.2$, $p=0.01$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 1.1$, $\sum r_i = 136$, $\mu_{BC} = 5.5$, $\sigma_{BC} = 12$, $p=0.60$);
+location- and scale-invariant transformation ($\lambda = -1.0$, $\sum r_i = 12$, $\mu_{BC} = 0.7$, $\sigma_{BC} = 0.1$, $p=0.01$);
+and robust location- and scale-invariant transformation ($\lambda = 0.5$, $\sum r_i = 27$, $\mu_{BC} = 2.2$, $\sigma_{BC} = 1.4$, $p=0.35$).
 
 # Appendix E: Empirical central normality test
 
@@ -628,3 +628,11 @@ The results are shown in Figure \ref{fig:empirical-central-normality-test-append
 These indicate that the test behaves similarly for the different datasets.
 For low type 1 error rates the test statistic proposed in the main manuscript is more conservative than alternatives 
 based on residuals after Box-Cox transformations of asymmetric generalised normally distributed features or on residuals from strictly normally distributed features.
+
+
+# Appendix F: Normalisation before transformation
+
+```{r include = FALSE, eval = TRUE}
+
+data <- .assess_standardisation_before_transformation()
+```
