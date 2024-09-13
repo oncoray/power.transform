@@ -635,4 +635,7 @@ based on residuals after Box-Cox transformations of asymmetric generalised norma
 ```{r include = FALSE, eval = TRUE}
 
 data <- .assess_standardisation_before_transformation()
+data <- data[transformation %in% c("none", "conventional", "conventional (z-score norm.)", "conventional (robust scaling)", "invariant"), mget(c("residuals", "transformation", "dataset"))]
+data[, "residuals" := round(residuals, digits = 1L)]
+data.table::dcast(data, dataset ~ transformation, value.var = "residuals")
 ```

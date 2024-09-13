@@ -2119,3 +2119,182 @@
 
   return(feature_data)
 }
+
+
+
+.assess_standardisation_before_transformation <- function(
+    lambda_limit = NULL,
+    method = "yeo_johnson"
+) {
+  data <- list()
+
+  # Age of lung cancer patients
+  data[[1L]] <- ..standardisation_before_transformation(
+    x = survival::lung$age,
+    data_name = "age",
+    lambda_limit = lambda_limit,
+    method = method
+  )
+
+  # Penguin body mass
+  x <- modeldata::penguins$body_mass_g
+  x <- x[is.finite(x)]
+  data[[2L]] <- ..standardisation_before_transformation(
+    x = x,
+    data_name = "penguin body mass",
+    lambda_limit = lambda_limit,
+    method = method
+  )
+
+  # Housing latitude
+  data[[3L]] <- ..standardisation_before_transformation(
+    x = modeldata::ames$Latitude,
+    data_name = "latitude",
+    lambda_limit = lambda_limit,
+    method = method
+  )
+
+  # Fuel efficiency
+  utils::data("TopGear", package = "robustHD", envir = environment())
+  tg_data <- data.table::as.data.table(TopGear)
+  x <- tg_data$MPG
+  x <- x[!is.na(x)]
+  data[[4L]] <- ..standardisation_before_transformation(
+    x = x,
+    data_name = "fuel efficiency",
+    lambda_limit = lambda_limit,
+    method = method
+  )
+
+  # Maximum arterial wall thickness
+  data[[5L]] <- ..standardisation_before_transformation(
+    x = modeldata::ischemic_stroke$max_max_wall_thickness,
+    data_name = "arterial wall thickness",
+    lambda_limit = lambda_limit,
+    method = method
+  )
+
+  data <- rbindlist(data, use.names = TRUE)
+  return(data)
+}
+
+
+..standardisation_before_transformation <- function(
+    x,
+    data_name,
+    lambda_limit = c(-4.0, 6.0),
+    method = "yeo_johnson"
+) {
+
+  ..parse_data <- function(
+    transformation_method,
+    x
+  ) {
+
+    if (endsWith(transformation_method, "(z-score norm.)")) {
+      x <- (x - mean(x)) / stats::sd(x)
+
+    } else if (endsWith(transformation_method, "(robust scaling)")) {
+      x <- (x - stats::median(x)) / stats::IQR(x)
+    }
+
+    if (startsWith(transformation_method, "none")) {
+      # No transformer
+      transformer <- power.transform::find_transformation_parameters(
+        x = x,
+        method = "none"
+      )
+
+    } else if (startsWith(transformation_method, "conventional")) {
+      # Conventional transformer
+      transformer <- power.transform::find_transformation_parameters(
+        x = x,
+        method = method,
+        robust = FALSE,
+        invariant = FALSE,
+        lambda = lambda_limit
+      )
+
+    } else if (startsWith(transformation_method, "Raymaekers-Rousseeuw")) {
+      # Raymaekers robust transformer
+      transformer <- power.transform::find_transformation_parameters(
+        x = x,
+        method = method,
+        robust = TRUE,
+        invariant = FALSE,
+        estimation_method = "raymaekers_robust",
+        lambda = lambda_limit
+      )
+
+    } else if (startsWith(transformation_method, "invariant")) {
+      # Location- and scale-invariant transformer
+      transformer <- power.transform::find_transformation_parameters(
+        x = x,
+        method = method,
+        robust = FALSE,
+        invariant = TRUE,
+        lambda = lambda_limit
+      )
+
+    } else if (startsWith(transformation_method, "robust invariant")) {
+      # Robust location- and scale-invariant transformer
+      transformer <- power.transform::find_transformation_parameters(
+        x = x,
+        method = method,
+        robust = TRUE,
+        invariant = TRUE,
+        lambda = lambda_limit
+      )
+
+    } else {
+      stop(paste0("No known transformer_method: ", transformation_method))
+    }
+
+    # Transform data
+    transformed_data <- power.transform::power_transform(
+      x = x,
+      transformer = transformer
+    )
+
+    residual_data <- power.transform::get_residuals(
+      x = x,
+      transformer = transformer
+    )
+
+    summary_data <- data.table::data.table(
+      "residuals" = sum(abs(residual_data$residual)),
+      "mu" = mean(transformed_data),
+      "sigma" = sd(transformed_data),
+      "lambda" = power.transform::get_lambda(transformer),
+      "shift" = power.transform::get_shift(transformer),
+      "scale" = power.transform::get_scale(transformer),
+      "p_value" = power.transform::assess_transformation(
+        x = x,
+        transformer = transformer,
+        verbose = FALSE
+      ),
+      "transformation" = transformation_method
+    )
+
+    return(summary_data)
+  }
+
+  transformer_labels <- c(
+    "none",
+    "conventional", "conventional (z-score norm.)", "conventional (robust scaling)",
+    "Raymaekers-Rousseeuw", "Raymaekers-Rousseeuw (z-score norm.)", "Raymaekers-Rousseeuw (robust scaling)",
+    "invariant", "robust invariant"
+  )
+
+  data <- lapply(
+    transformer_labels,
+    ..parse_data,
+    x = x
+  )
+
+  data <- data.table::rbindlist(data, use.names = TRUE)
+  data$transformation <- factor(x = data$transformation, levels = transformer_labels)
+  data[, "dataset" := data_name]
+
+  return(data)
+}
