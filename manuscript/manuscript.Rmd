@@ -401,7 +401,7 @@ We will do so in the [Simulation](#simulation) section.
 
 We used simulated data to assess invariance to location and scale of the proposed power transformations, weighting for robust transformations, and to develop the empirical central normality test.
 The $\lambda$ parameter for conventional power transformations (Eqn. \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}), as well as $\lambda$, $x_0$ and $s$ parameters for location- and scale-invariant power transformations (Eqn. \ref{eqn:box-cox-invariant} and \ref{eqn:yeo-johnson-invariant}) were estimated using the BOBYQA algorithm for derivative-free bound constraint optimisation [@Powell2009-zb] through maximum likelihood estimation.
-The required algorithms were implemented in the `power.transform` R software package **ADD REFERENCE**.
+The required algorithms were implemented in the `power.transform` R software package [@Zwanenburg2024-kq].
 Of note, the `power.transform` package shifts feature values into the positive domain if negative or zero values are present for Box-Cox power transformations.
 
 
@@ -998,7 +998,7 @@ The combination of both facilitate the use of power transformations in automated
 
 # Data and code availability
 
-Location- and scale-invariant power transformations were implemented in the `power.transform` package for R, which is available from [https://github.com/oncoray/power.transform] and the CRAN repository [INSERT LINK HERE]. The manuscript was created using R Markdown and is likewise available from the `power.transform` GitHub repository. Data and results for the machine learning experiment are separately available from Zenodo [https://doi.org/10.5281/zenodo.13736671].
+Location- and scale-invariant power transformations were implemented in the `power.transform` package for R, which is available from [GitHub](https://github.com/oncoray/power.transform) and the [CRAN repository](https://cran.r-project.org/package=power.transform). The manuscript was created using R Markdown and is likewise available from the `power.transform` GitHub repository. Data and results for the machine learning experiment are separately available from [Zenodo](https://doi.org/10.5281/zenodo.13736671).
 
 
 # References
