@@ -974,6 +974,7 @@ h_transformation <- friedman.test(as.matrix(data[, "dataset" := NULL]))
 
 Location- and scale-invariant transformations are realised by simultaneously optimising three parameters, i.e. transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$.
 Alternatively, standardisation of a numeric variable (e.g., through subtracting its median value and division by its interquartile range) prior to conventional power transformations may achieve a similar effect in reducing sensitivity to the distribution's location and scale.
+While this alternative helps prevent numerical issues -- provided that normalisation does not lead to negative values for Box-Cox transformation -- location- and scale-invariant transformations seem to provide an overall better transformation to normality (Appendix F).
 
 We assessed several methods for robust power transformation.
 Methods using the z-score of the transformed feature or the residual error yielded worse results than the non-robust method.
@@ -986,7 +987,7 @@ This may lead to different optimal values for transformation parameter $\lambda$
 The empirical test for central normality differs from other tests for normality in that the test statistic is independent of the number of samples.
 This makes this test more practical for assessing central normality for larger sample numbers, where other test may detect trivial deviations from normality.
 
-As a limitation, we did observe several numerical issues for optimisation criteria other than MLE (appendix B).
+As a limitation, we did observe several numerical issues for optimisation criteria other than MLE (Appendix B).
 
 
 # Conclusion

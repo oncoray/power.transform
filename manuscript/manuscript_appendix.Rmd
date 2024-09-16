@@ -632,10 +632,37 @@ based on residuals after Box-Cox transformations of asymmetric generalised norma
 
 # Appendix F: Normalisation before transformation
 
-```{r include = FALSE, eval = TRUE}
+An alternative to location- and scale-invariant transformations is normalising feature distributions prior to conventional transformations.
+Table \ref{tab:normalisation-before-transformation-appendix} shows residual errors, after transformation to normality, of the five features from real-world datasets presented previously in Appendix D and the main manuscript.
+In these examples location- and scale-invariant transformations have similar or lower residual errors compared to errors resulting from normalisation prior to transformation.
+
+```{r include = FALSE, eval = FALSE}
 
 data <- .assess_standardisation_before_transformation()
 data <- data[transformation %in% c("none", "conventional", "conventional (z-score norm.)", "conventional (robust scaling)", "invariant"), mget(c("residuals", "transformation", "dataset"))]
 data[, "residuals" := round(residuals, digits = 1L)]
 data.table::dcast(data, dataset ~ transformation, value.var = "residuals")
 ```
+```{=latex}
+\begin{table}
+\begin{center}
+\caption{Residual errors for features from real-world datasets after Yeo-Johnson transformation to normality. conv.: conventional; norm.: normalisation; rob.: robust}
+\label{tab:normalisation-before-transformation-appendix}
+\begin{tabular}{l | c c c c c}
+
+\toprule
+feature & none & conventional & conv. (z-score norm.) & conv. (rob. scaling) & invariant \\
+
+\midrule
+age                     &  16.5 &  11.5 &  11.5 &  11.3 &   8.8 \\
+penguin body mass       &  48.0 &  32.2 &  33.3 &  32.2 &  26.8 \\
+latitude                & 328.1 & 319.0 & 326.2 & 324.5 & 326.4 \\
+fuel efficiency         &  54.5 &  55.3 &  49.0 &  53.3 &  44.0 \\
+arterial wall thickness & 110.1 &  30.0 &  19.3 &  31.8 &  12.2 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+```
+
+# References
