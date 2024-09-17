@@ -401,7 +401,7 @@ We will do so in the [Simulation](#simulation) section.
 
 We used simulated data to assess invariance to location and scale of the proposed power transformations, weighting for robust transformations, and to develop the empirical central normality test.
 The $\lambda$ parameter for conventional power transformations (Eqn. \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}), as well as $\lambda$, $x_0$ and $s$ parameters for location- and scale-invariant power transformations (Eqn. \ref{eqn:box-cox-invariant} and \ref{eqn:yeo-johnson-invariant}) were estimated using the BOBYQA algorithm for derivative-free bound constraint optimisation [@Powell2009-zb] through maximum likelihood estimation.
-The required algorithms were implemented in the `power.transform` R software package [@Zwanenburg2024-kq].
+The required algorithms were implemented in the `power.transform` R software package [@Zwanenburg2024-kq] (version 1.0.0).
 Of note, the `power.transform` package shifts feature values into the positive domain if negative or zero values are present for Box-Cox power transformations.
 
 
@@ -973,21 +973,31 @@ h_transformation <- friedman.test(as.matrix(data[, "dataset" := NULL]))
 ```
 
 Location- and scale-invariant transformations are realised by simultaneously optimising three parameters, i.e. transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$.
+We derived the log-likelihood function to facilitate optimisation using MLE.
 Alternatively, standardisation of a numeric variable (e.g., through subtracting its median value and division by its interquartile range) prior to conventional power transformations may achieve a similar effect in reducing sensitivity to the distribution's location and scale.
-While this alternative helps prevent numerical issues -- provided that normalisation does not lead to negative values for Box-Cox transformation -- location- and scale-invariant transformations seem to provide an overall better transformation to normality (Appendix F).
+While this alternative helps prevent these issues -- provided that normalisation does not lead to negative values for Box-Cox transformation -- location- and scale-invariant transformations seem to provide an overall better transformation to normality (Appendix F).
 
 We assessed several methods for robust power transformation.
-Methods using the z-score of the transformed feature or the residual error yielded worse results than the non-robust method.
-Different initial values, closer to the upper limits ($\delta_1 = 10.0; \delta_2 = 10.0$), led to a reduced loss.
+Methods that relied on the z-score of the transformed feature or the residual error yielded worse results than the non-robust method.
+This is partly due to the initial choice of threshold parameters.
+Using different initial values, closer to the upper limits ($\delta_1 = 10.0; \delta_2 = 10.0$), led to a reduced loss.
 However, these values effectively correspond to a non-robust transformation, where all instances receive the same weight.
 Underperformance of these methods could be explained by their use of transformed features for setting weights.
-In essence, parameter optimisation with MLE also affects weights.
-This may lead to different optimal values for transformation parameter $\lambda$, which increases the presented loss.
+Consequently, the weights change at each iteration in the MLE optimisation process.
+This increases local variance in the log-likelihood function and create local optima that the optimiser may not handle well.
+As a consequence, optimal values for transformation parameter $\lambda$ might differ, which increases the presented loss for optimising threshold parameters.
+Methods that relied on the empirical probability did not suffer from this issue, as weights remained fixed during MLE.
 
-The empirical test for central normality differs from other tests for normality in that the test statistic is independent of the number of samples.
-This makes this test more practical for assessing central normality for larger sample numbers, where other test may detect trivial deviations from normality.
+We introduced an empirical test for central normality to assess whether distributions deviate from normality in a way that might require closer inspection prior to further processing.
+The empirical test for central normality differs from other tests for normality, such as the Shapiro-Wilk test [@Shapiro1965-zd], in that the test statistic is independent of the number of samples.
+This makes this test more practical for assessing central normality for larger sample numbers, where other test may detect inconsequential deviations from normality.
 
-As a limitation, we did observe several numerical issues for optimisation criteria other than MLE (Appendix B).
+This work has the following limitation.
+Firstly, we did observe several numerical stability issues for optimisation criteria other than MLE (Appendix B).
+These appear in regions where transformation parameters would lead to very large or small numbers when using conventional power transformations.
+For MLE stability issues were not observed.
+Secondly, the empirical central normality test is based on simulations instead of statistical theory, and relies on a somewhat arbitrary definition of the central portion of a distribution.
+Thus, while the test may asses whether data is sufficiently normally distributed for practical purposes, it should not be used as a strict test for normality.
 
 
 # Conclusion
