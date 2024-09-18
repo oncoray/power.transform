@@ -38,7 +38,7 @@ require(paletteer)
 require(robustHD)
 require(modeldata)
 
-manuscript_dir <- file.path("C:/Users/alexz/Documents/GitHub/power.transform/manuscript")
+manuscript_dir <- file.path("C:/Users/alexz/Documents/GitHub/power.transform/manuscript_rmarkdown")
 source(file.path(manuscript_dir, "simulations.R"))
 source(file.path(manuscript_dir, "plots.R"))
 

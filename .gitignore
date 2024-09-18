@@ -38,6 +38,7 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+.Rprofile
 
 # pkgdown site
 docs/
@@ -52,13 +53,12 @@ rsconnect/
 .DS_Store
 
 # Manuscript
-manuscript/manuscript.pdf
-manuscript/manuscript.log
-manuscript/manuscript.html
-manuscript/residual_plot.RDS
-manuscript/ml_experiment/
-manuscript/ml_experiment_offset/
-.Rprofile
-manuscript/manuscript_appendix_a.html
-manuscript/manuscript_appendix.pdf
-manuscript/manuscript_appendix.log
+manuscript_rmarkdown/manuscript.pdf
+manuscript_rmarkdown/manuscript.log
+manuscript_rmarkdown/manuscript.html
+manuscript_rmarkdown/residual_plot.RDS
+manuscript_rmarkdown/ml_experiment/
+manuscript_rmarkdown/ml_experiment_offset/
+manuscript_rmarkdown/manuscript_appendix.html
+manuscript_rmarkdown/manuscript_appendix.pdf
+manuscript_rmarkdown/manuscript_appendix.log
