@@ -6,6 +6,7 @@ date: "`r Sys.Date()`"
 output:
   pdf_document:
     latex_engine: lualatex
+    keep_tex: true
 papersize: a4
 bibliography: refs.bib
 header-includes:
