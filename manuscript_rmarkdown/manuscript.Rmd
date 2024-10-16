@@ -953,10 +953,10 @@ This is particularly relevant for automated data processing, where such issues m
 Compared to non-robust location- and scale-invariant transformations, real-world examples with outliers showed higher residual errors of transformed features. 
 Robust transformations seek to minimise residual errors for the central part of the distribution, instead of the entire distribution, including outliers.
 The empirical central normality test indicated that robust transformations are better able to achieve central normality in the presence of outliers.
-However, in a machine learning experiment of 232 real-world datasets that contained at least one numeric feature, we did not find a meaningful benefit of for -- nor detriment to -- model performance for location- and scale-invariant power transformations.
+However, in a machine learning experiment of 232 real-world datasets that contained at least one numeric feature, we did not find a meaningful benefit -- nor detriment -- to model performance for location- and scale-invariant power transformations.
 One reason may be that numeric features with large location shifts ($|\mu| > 1000.0$) were uncommon.
 Of the 4886 numeric features in the 232 datasets, 266 (5%) features in 34 datasets had large location shifts, of which 200 appeared in just 2 datasets.
-For the latter two datasets, the transformation method does not show significant difference between groups (Friedman test; $p > 0.05$).
+For the latter two datasets, the transformation method did not show significant difference between groups (Friedman test; $p > 0.05$).
 ```{r include = FALSE, eval = TRUE}
 
 data <- .get_ml_experiment_data(manuscript_dir = manuscript_dir)
@@ -985,15 +985,15 @@ Using different initial values, closer to the upper limits ($\delta_1 = 10.0; \d
 However, these values effectively correspond to a non-robust transformation, where all instances receive the same weight.
 Underperformance of these methods could be explained by their use of transformed features for setting weights.
 Consequently, the weights change at each iteration in the MLE optimisation process.
-This increases local variance in the log-likelihood function and create local optima that the optimiser may not handle well.
+This increases local variance in the log-likelihood function and creates local optima that the optimiser may not handle well.
 As a consequence, optimal values for transformation parameter $\lambda$ might differ, which increases the presented loss for optimising threshold parameters.
 Methods that relied on the empirical probability did not suffer from this issue, as weights remained fixed during MLE.
 
 We introduced an empirical test for central normality to assess whether distributions deviate from normality in a way that might require closer inspection prior to further processing.
 The empirical test for central normality differs from other tests for normality, such as the Shapiro-Wilk test [@Shapiro1965-zd], in that the test statistic is independent of the number of samples.
-This makes this test more practical for assessing central normality for larger sample numbers, where other test may detect inconsequential deviations from normality.
+This makes this test more practical for assessing central normality for larger sample numbers, where other tests may detect inconsequential deviations from normality.
 
-This work has the following limitation.
+This work has the following limitations.
 Firstly, we did observe several numerical stability issues for optimisation criteria other than MLE (Appendix B).
 These appear in regions where transformation parameters would lead to very large or small numbers when using conventional power transformations.
 For MLE stability issues were not observed.
