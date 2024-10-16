@@ -81,7 +81,7 @@ This leads to the following transformations. The location and scale-invariant Bo
 \end{cases}
 \end{equation}
 ```
-Where $x_i - x_0 > 0$.
+where $x_i - x_0 > 0$.
 The location and scale-invariant Yeo-Johnson transformation is:
 
 ```{=latex}
@@ -177,7 +177,8 @@ This leads to the following log-likelihood:
 \end{equation}
 ```
 
-We introduced per-sample weights $w_i$ to facilitate robust power transformations. The weighted log-likelihood of the location- and scale-invariant Box-Cox transformation is:
+Similarly to @Raymaekers2024-zf, sample weights $w_i$ are introduced to facilitate robust power transformations.
+The weighted log-likelihood of the location- and scale-invariant Box-Cox transformation is:
 ```{=latex}
 \begin{equation}
 \begin{split}
@@ -263,7 +264,7 @@ The first class of criteria is based on the empirical distribution function (EDF
 Transformation parameters are then fit through minimisation of the distance between the empirical distribution function $F_{\epsilon}$ and the cumulative density function (CDF) of the normal distribution $F_{\mathcal{N}}$.
 Let $F_{\epsilon}\left(x_i \right) = \frac{i - 1/3}{n + 1/3}$ be the empirical probability of instance $i$.
 The normal distribution is parametrised by location parameter $\mu$ and scale parameter $\sigma$, both of which have to be estimated from the data. 
-For non-robust power transformation, $\mu$ and $\sigma$ are sample mean and sample standard deviation, respectively.
+For non-robust power transformations, $\mu$ and $\sigma$ are sample mean and sample standard deviation, respectively.
 For robust power transformations, we estimate $\mu$ and $\sigma$ as Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$ [@Huber1981-su].
 
 ### Anderson-Darling criterion
@@ -314,7 +315,7 @@ Here, $\mu$ is defined as:
 
 The location, or mean, is weighted using weights $w_i$.
 For non-robust transformations, $w_i = 1$.
-Then, $sigma^2$ is defined as:
+Then, $\sigma^2$ is defined as:
 ```{=latex}
 \begin{equation}
 \sigma^2 = \frac{\sum_{i=1}^n w_i \left(\phi^{\lambda, x_0, s} \left( x_i \right) - \mu \right)^2}{\sum_{i=1}^n w_i}
@@ -371,7 +372,7 @@ Z_s = \delta \log\left[\frac{\beta_1}{\alpha} + \sqrt{\frac{\beta_1^2}{\alpha^2}
 \end{equation}
 ```
 
-For the kurtosis test statistic we first compute [@DAgostino1990-kp, @Anscombe1983-nz]:
+For the kurtosis test statistic we first compute [@DAgostino1990-kp; @Anscombe1983-nz]:
 
 ```{=latex}
 \begin{equation}
@@ -444,7 +445,7 @@ For conventional power transformations with fixed location and scale parameters,
 
 # Appendix C: Simulations with other optimisation criteria
 
-Invariance of location- and scale-invariant power transformations was assessed using the optimisation criteria in (Appendix B)[Appendix B: Optimisation of transformation parameters].
+Invariance of location- and scale-invariant power transformations was assessed using the optimisation criteria in [Appendix B](Appendix B: Optimisation of transformation parameters).
 This follows the simulation in the main manuscript, where MLE was used for optimization.
 In short, we first randomly drew $10000$ values from a normal distribution: $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)$, or equivalently $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.5, 2\right)$.
 The second distribution was a right-skewed normal distribution $\mathbf{X}_{\text{right}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.2, 2\right)$.
@@ -522,7 +523,7 @@ no transformation (residual sum $\sum r_i = 328$);
 conventional transformation ($\lambda = 62.1$, $\sum r_i = 319$, $\mu_{BC} = 1.1 \cdot 10^{99}$, $\sigma_{BC} = 0.0 \cdot 10^{99}$);
 Raymaekers and Rousseeuw's robust adaptation ($\lambda = 96.0$, $\sum r_i = 319$, $\mu_{BC} = 6.2 \cdot 10^{153}$, $\sigma_{BC} = 0.3 \cdot 10^{153}$);
 location- and scale-invariant transformation ($\lambda = 1.9$, $\sum r_i = 312$, $\mu_{BC} = 2.3$, $\sigma_{BC} = 0.9$);
-and robust location- and scale-invariant transformation ($\lambda = 1.2$, $\sum r_i = 316$, $\mu_{BC} = 5.5$, $\sigma_{BC} = 1.4$.
+and robust location- and scale-invariant transformation ($\lambda = 1.2$, $\sum r_i = 316$, $\mu_{BC} = 5.5$, $\sigma_{BC} = 1.4$).
 
 Similar to conventional Yeo-Johnson transformations (non-robust and robust), conventional Box-Cox transformations had high values for the $\lambda$ parameter, which could lead to numerical issues.
 Location- and scale-invariant Box-Cox transformations did not suffer from this issue.
@@ -530,7 +531,7 @@ Location- and scale-invariant Box-Cox transformations did not suffer from this i
 
 ## Robustness against outliers
 
-Results for Box-Cox transformations of features with outliers are shown in Figure \ref{fig:results-outlier-robustness-appendix}.
+Results for Box-Cox transformations of features with outliers are shown in Figure \ref{fig:experimental-results-outlier-robustness-appendix}.
 
 ```{r experimental-results-outlier-robustness-appendix, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
@@ -590,9 +591,9 @@ and without any transformation for the dataset with only normal distributions.
 
 ```{r empirical-central-normality-test-appendix, warning=FALSE, message=FALSE, fig.cap=cap}
 cap <- paste0(
-  "Type 1 error rate as function of the test statistic $\\tau_{\\text{ecn}}$ ",
+  "Type I error rate as function of the test statistic $\\tau_{\\text{ecn}}$ ",
   "for five datasets, with central portion $\\kappa=0.80$. ",
-  "The type 1 error rate is computed from $m_d=10000$ randomly sampled features, ",
+  "The type I error rate is computed from $m_d=10000$ randomly sampled features, ",
   "These are sampled from asymmetric generalized normal distributions, with and without outliers (Box-Cox and Yeo-Johnson), ",
   "or normal distributions with outliers (none). ",
   "The test statistic is computed as the average residual of each feature after (Box-Cox and Yeo-Johnson) robust location- and shift-invariant power transformation, or before (none)."
@@ -626,7 +627,7 @@ normal distr.            & 0.039 & 0.066 & 0.083 & 0.097 & 0.117 & 0.132 & 0.174
 
 The results are shown in Figure \ref{fig:empirical-central-normality-test-appendix} and Table \ref {tab:empirical-central-normality-appendix}.
 These indicate that the test behaves similarly for the different datasets.
-For low type 1 error rates the test statistic proposed in the main manuscript is more conservative than alternatives 
+For low type I error rates, the test statistic proposed in the main manuscript is more conservative than alternatives 
 based on residuals after Box-Cox transformations of asymmetric generalised normally distributed features or on residuals from strictly normally distributed features.
 
 

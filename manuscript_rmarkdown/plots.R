@@ -664,6 +664,10 @@ get_annotation_settings <- function(ggtheme = NULL) {
   # Prevent warnings due to non-standard evaluation.
   distribution <- method <- data_type <- version <- NULL
 
+  # Update plot theme
+  plot_theme$plot.tag.position <- "top"
+  plot_theme$plot.tag$margin <- grid::unit(c(0, 0, 2, 0), "points")
+
   ..create_plot <- function(
     p,
     distr,
@@ -870,6 +874,11 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p_left_scale_conv_yj <- ..create_plot(p_left, "left-skewed", "Yeo-Johnson", "conventional", "scaled")
   p_left_scale_invar_yj <- ..create_plot(p_left, "left-skewed", "Yeo-Johnson", "invariant", "scaled", last_row = TRUE)
 
+  # Add tags
+  p_normal_shift_conv_bc <- p_normal_shift_conv_bc + ggplot2::labs(tag = "conventional Box-Cox")
+  p_normal_shift_invar_bc <- p_normal_shift_invar_bc + ggplot2::labs(tag = "invariant Box-Cox")
+  p_normal_shift_conv_yj <- p_normal_shift_conv_yj + ggplot2::labs(tag = "conventional Yeo-Johnson")
+  p_normal_shift_invar_yj <- p_normal_shift_invar_yj + ggplot2::labs(tag = "invariant Yeo-Johnson")
 
   # Patch all the plots together.
   p <-
@@ -2343,7 +2352,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   # Without transformation -----------------------------------------------------
   p0_qq <- p_qq + ggplot2::geom_point(
-    data = residual_data[transformation == "none"]
+    data = residual_data[transformation == "none"],
+    show.legend = c(colour = TRUE, size = TRUE, shape = FALSE)
   )
   p0_d <- p_d + ggplot2::geom_density(
     data = transformed_data[transformation == "none"]
@@ -2355,7 +2365,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   # Standard transformation ----------------------------------------------------
   p1_qq <- p_qq + ggplot2::geom_point(
-    data  = residual_data[transformation %in% c("conventional", "Raymaekers-Rousseeuw")]
+    data  = residual_data[transformation %in% c("conventional", "Raymaekers-Rousseeuw")],
+    show.legend = c(colour = TRUE, size = TRUE, shape = FALSE)
   )
   p1_qq <- p1_qq + ggplot2::theme(
     axis.title.y = ggplot2::element_blank(),
@@ -2368,7 +2379,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   # Location- and scale invariant transformation -------------------------------
   p2_qq <- p_qq + ggplot2::geom_point(
-    data  = residual_data[transformation %in% c("invariant", "robust invariant")]
+    data  = residual_data[transformation %in% c("invariant", "robust invariant")],
+    show.legend = c(colour = TRUE, size = TRUE, shape = FALSE)
   )
   p2_qq <- p2_qq + ggplot2::theme(
     axis.title.y = ggplot2::element_blank(),
