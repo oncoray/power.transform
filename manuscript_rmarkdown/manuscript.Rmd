@@ -107,7 +107,7 @@ One limitation of the Box-Cox transformation is that it is only defined for $x_i
 \end{equation}
 ```
 The $\lambda$-parameter is typically optimised using maximum likelihood estimation under the assumption that the transformed feature is normally distributed.
-As noted by Raymaekers and Rousseeuw, this approach is sensitive to outliers, and robust versions of Box-Cox and Yeo-Johnson transformations were devised [@Raymaekers2021-kq].
+As noted by Raymaekers and Rousseeuw, this approach is sensitive to outliers, and robust versions of Box-Cox and Yeo-Johnson transformations were devised [@Raymaekers2024-zf].
 
 Applying a power transformation does not guarantee that transformed features are normally distributed.
 Depending on location and scale of a feature and the presence of outliers, power transformations may decrease normality, as shown in Figure \ref{fig:decreased-normality}.
@@ -213,15 +213,15 @@ where $\mu$ and $\sigma^2$ are the mean and variance of the Yeo-Johnson transfor
 
 Real-world data may contain outliers, to which maximum likelihood estimation can be sensitive.
 Their presence may lead to poor transformations to normality, as shown in Figure \ref{fig:decreased-normality}.
-As indicated by @Raymaekers2021-kq, the general aim of power transformations should be to transform non-outlier data to normality, i.e. achieve *central normality*.
+As indicated by @Raymaekers2024-zf, the general aim of power transformations should be to transform non-outlier data to normality, i.e. achieve *central normality*.
 To achieve this, they devised an iterative procedure to find a robust estimate of the transformation parameter $\lambda$.
 Briefly, this process requires identifying outliers in the data and weighting such instances during the optimisation process.
-@Raymaekers2021-kq achieve this through weighted maximum likelihood estimation.
+@Raymaekers2024-zf achieve this through weighted maximum likelihood estimation.
 However, because this procedure iteratively estimates and updates $\lambda$, it can not be used here to simultaneously estimate $\lambda$, $x_0$ and $s$ for location- and scale-invariant power transformations.
 Nonetheless, as a procedure, weighted MLE can be used for estimating the transformation, shift and scale parameters.
 
 Here, weighted maximum likelihood estimation is based on equations \ref{eqn:box-cox-invariant-log-likelihood} and \ref{eqn:yeo-johnson-invariant-log-likelihood}.
-Compared to @Raymaekers2021-kq, these log-likelihood functions includes additional terms to accommodate estimation of $x_0$ and $s$.
+Compared to @Raymaekers2024-zf, these log-likelihood functions includes additional terms to accommodate estimation of $x_0$ and $s$.
 The weighted location- and scale-invariant Box-Cox log-likelihood function is:
 
 ```{=latex}
@@ -319,7 +319,7 @@ Each weighting function has an argument $\dot{x}$ that is related to the (transf
   Then $\dot{x}_i = p^{*}_i=2 \left( p_i - 0.5\right)$, so that argument is zero-centered.
 
 - The weighting function uses the z-score of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$.
-  After @Raymaekers2021-kq, $z_i = \frac{\phi^{\lambda, x_0, s}(x_i) - \mu_M}{\sigma_M}$.
+  After @Raymaekers2024-zf, $z_i = \frac{\phi^{\lambda, x_0, s}(x_i) - \mu_M}{\sigma_M}$.
   Here, $\mu_M$ and $\sigma_M$ are robust Huber M-estimates of location and scale of the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$ [@Huber1981-su].
   Then $\dot{x}_i = z_i$.
 
