@@ -166,7 +166,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[method == "Box-Cox" & data_type == "shift"],
     mapping = ggplot2::aes(x = .data$y),
     stroke = stroke,
-    size = size
+    size = size,
+    show.legend = TRUE
   )
   p_bc_shift <- p_bc_shift + ggplot2::labs(title = "shift")
   p_bc_shift <- p_bc_shift + ggplot2::scale_y_continuous(
@@ -183,7 +184,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[method == "Box-Cox" & data_type == "scale"],
     mapping = ggplot2::aes(x = .data$y),
     stroke = stroke,
-    size = size
+    size = size,
+    show.legend = TRUE
   )
   p_bc_scale <- p_bc_scale + ggplot2::labs(title = "scale")
   p_bc_scale <- p_bc_scale + ggplot2::ylim(c(0, 6))
@@ -198,7 +200,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[method == "Box-Cox" & data_type == "outlier"],
     mapping = ggplot2::aes(x = .data$y),
     stroke = stroke,
-    size = size
+    size = size,
+    show.legend = TRUE
   )
   p_bc_outlier <- p_bc_outlier + ggplot2::labs(title = "outlier")
   p_bc_outlier <- p_bc_outlier + ggplot2::ylim(c(-0.2, 1.2))
@@ -214,7 +217,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[method == "Yeo-Johnson" & data_type == "shift"],
     mapping = ggplot2::aes(x = .data$y),
     stroke = stroke,
-    size = size
+    size = size,
+    show.legend = TRUE
   )
   p_yj_shift <- p_yj_shift + ggplot2::scale_y_continuous(
     name = latex2exp::TeX("$\\lambda$"),
@@ -225,7 +229,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[method == "Yeo-Johnson" & data_type == "scale"],
     mapping = ggplot2::aes(x = .data$y),
     stroke = stroke,
-    size = size
+    size = size,
+    show.legend = TRUE
   )
   p_yj_scale <- p_yj_scale + ggplot2::ylim(c(0, 6))
   p_yj_scale <- p_yj_scale + ggplot2::theme(
@@ -236,7 +241,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[method == "Yeo-Johnson" & data_type == "outlier"],
     mapping = ggplot2::aes(x = .data$y),
     stroke = stroke,
-    size = size
+    size = size,
+    show.legend = TRUE
   )
   p_yj_outlier <- p_yj_outlier + ggplot2::ylim(c(-0.2, 1.2))
   p_yj_outlier <- p_yj_outlier + ggplot2::theme(
@@ -448,7 +454,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[distribution == "normal" & method == "Box-Cox" & data_type == "shifted"],
     mapping = ggplot2::aes(x = .data$shift),
     stroke = stroke,
-    size = size
+    size = size,
+    show.legend = TRUE
   )
   p_normal_shift_bc <- p_normal_shift_bc + ggplot2::theme(
     axis.text.x = ggplot2::element_blank(),
@@ -460,7 +467,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[distribution == "normal" & method == "Box-Cox" & data_type == "scaled"],
     mapping = ggplot2::aes(x = .data$scale),
     stroke = stroke,
-    size = size
+    size = size,
+    show.legend = TRUE
   )
   p_normal_scale_bc <- p_normal_scale_bc + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),
@@ -477,14 +485,16 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[distribution == "normal" & method == "Yeo-Johnson" & data_type == "shifted"],
     mapping = ggplot2::aes(x = .data$shift),
     stroke = stroke,
-    size = size
+    size = size,
+    show.legend = TRUE
   )
 
   p_normal_scale_yj <- p_normal_scale + ggplot2::geom_point(
     data = data[distribution == "normal" & method == "Yeo-Johnson" & data_type == "scaled"],
     mapping = ggplot2::aes(x = .data$scale),
     stroke = stroke,
-    size = size
+    size = size,
+    show.legend = TRUE
   )
   p_normal_scale_yj <- p_normal_scale_yj + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),
@@ -518,7 +528,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[distribution =="right-skewed" & method == "Box-Cox" & data_type == "shifted"],
     mapping = ggplot2::aes(x = .data$shift),
     stroke = stroke,
-    size = size
+    size = size,
+    show.legend = TRUE
   )
   p_right_shift_bc <- p_right_shift_bc + ggplot2::theme(
     axis.title.y = ggplot2::element_blank(),
@@ -531,7 +542,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[distribution == "right-skewed" & method == "Box-Cox" & data_type == "scaled"],
     mapping = ggplot2::aes(x = .data$scale),
     stroke = stroke,
-    size = size
+    size = size,
+    show.legend = TRUE
   )
   p_right_scale_bc <- p_right_scale_bc + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),
@@ -548,7 +560,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[distribution == "right-skewed" & method == "Yeo-Johnson" & data_type == "shifted"],
     mapping = ggplot2::aes(x = .data$shift),
     stroke = stroke,
-    size = size
+    size = size,
+    show.legend = TRUE
   )
   p_right_shift_yj <- p_right_shift_yj + ggplot2::theme(
     axis.title.y = ggplot2::element_blank()
@@ -558,7 +571,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[distribution == "right-skewed" & method == "Yeo-Johnson" & data_type == "scaled"],
     mapping = ggplot2::aes(x = .data$scale),
     stroke = stroke,
-    size = size
+    size = size,
+    show.legend = TRUE
   )
   p_right_scale_yj <- p_right_scale_yj + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),
@@ -593,7 +607,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[distribution =="left-skewed" & method == "Box-Cox" & data_type == "shifted"],
     mapping = ggplot2::aes(x = .data$shift),
     stroke = stroke,
-    size = size
+    size = size,
+    show.legend = TRUE
   )
   p_left_shift_bc <- p_left_shift_bc + ggplot2::theme(
     axis.title.y = ggplot2::element_blank(),
@@ -606,7 +621,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[distribution == "left-skewed" & method == "Box-Cox" & data_type == "scaled"],
     mapping = ggplot2::aes(x = .data$scale),
     stroke = stroke,
-    size = size
+    size = size,
+    show.legend = TRUE
   )
   p_left_scale_bc <- p_left_scale_bc + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),
@@ -623,7 +639,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[distribution == "left-skewed" & method == "Yeo-Johnson" & data_type == "shifted"],
     mapping = ggplot2::aes(x = .data$shift),
     stroke = stroke,
-    size = size
+    size = size,
+    show.legend = TRUE
   )
   p_left_shift_yj <- p_left_shift_yj + ggplot2::theme(
     axis.title.y = ggplot2::element_blank()
@@ -633,7 +650,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     data = data[distribution == "left-skewed" & method == "Yeo-Johnson" & data_type == "scaled"],
     mapping = ggplot2::aes(x = .data$scale),
     stroke = stroke,
-    size = size
+    size = size,
+    show.legend = TRUE
   )
   p_left_scale_yj <- p_left_scale_yj + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),
@@ -666,7 +684,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   # Update plot theme
   plot_theme$plot.tag.position <- "top"
-  plot_theme$plot.tag$margin <- grid::unit(c(0, 0, 2, 0), "points")
+  plot_theme$plot.tag$margin <- grid::unit(c(0, 0, 5, 0), "points")
+  plot_theme$plot.tag$face <- "bold"
 
   ..create_plot <- function(
     p,

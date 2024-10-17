@@ -5,6 +5,7 @@ date: "`r Sys.Date()`"
 output:
   pdf_document:
     latex_engine: lualatex
+    keep_tex: true
 papersize: a4
 bibliography: refs.bib
 header-includes:
@@ -461,7 +462,8 @@ cap <- paste0(
   "Invariant power transformation produces transformation parameters that are invariant to location and scale. ",
   "Samples were drawn from normal, right-skewed and left-skewed distributions, respectively, which then underwent a shift $d_{\\text{shift}}$ or multiplication by $d_{\\text{scale}}$. ",
   "Estimates of the transformation parameter $\\lambda$ for the conventional power transformations show strong dependency on the overall location and scale of the distribution and the optimisation criterion, ",
-  "whereas estimates obtained for the location- and scale-invariant power transformations are constant."
+  "whereas estimates obtained for the location- and scale-invariant power transformations are constant. ",
+  "For location- and scale-invariant power transformations, the Anderson-Darling criterion leads to unstable estimates of $\\lambda$ for skewed distributions, possibly due to large weights being assigned to samples at the upper and lower ends of the distribution." 
 )
 
 .plot_shifted_distributions_appendix(manuscript_dir = manuscript_dir, plot_theme = plot_theme)

@@ -56,6 +56,8 @@ rsconnect/
 manuscript_rmarkdown/manuscript.pdf
 manuscript_rmarkdown/manuscript.log
 manuscript_rmarkdown/manuscript.html
+manuscript_rmarkdown/manuscript_files/
+manuscript_rmarkdown/manuscript_appendix_files/
 manuscript_rmarkdown/residual_plot.RDS
 manuscript_rmarkdown/ml_experiment/
 manuscript_rmarkdown/ml_experiment_offset/
