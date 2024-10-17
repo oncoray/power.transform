@@ -1339,10 +1339,697 @@ from Zenodo (https://doi.org/10.5281/zenodo.13736671).
 %% The Appendices part is started with the command \appendix;
 %% appendix sections are then done as normal sections
 \appendix
-\section{Example Appendix Section}
-\label{app1}
+\section{Log-likelihood functions for location and scale
+invariant power transformation}\label{appendix-a-log-likelihood-functions-for-location-and-scale-invariant-power-transformation}
 
-Appendix text.
+Location and scale-invariant Box-Cox and Yeo-Johnson transformations are
+parametrised using location \(x_0\) and scale \(s\) parameters, in
+addition to transformation parameter \(\lambda\). This leads to the
+following transformations. The location and scale-invariant Box-Cox
+transformation is:
+
+\begin{equation}
+\phi_{\text{BC}}^{\lambda, x_0, s} (x_i) = 
+\begin{cases}
+\left( \left(\frac{x_i - x_0}{s} \right)^\lambda - 1 \right) / \lambda & \text{if } \lambda \neq 0\\
+\log\left[\frac{x_i - x_0}{s}\right] & \text{if } \lambda = 0
+\end{cases}
+\end{equation}
+
+where \(x_i - x_0 > 0\). The location and scale-invariant Yeo-Johnson
+transformation is:
+
+\begin{equation}
+\phi_{\text{YJ}}^{\lambda, x_0, s} (x_i) = 
+\begin{cases}
+\left( \left( 1 + \frac{x_i - x_0}{s}\right)^\lambda - 1\right) / \lambda & \text{if } \lambda \neq 0 \text{ and } x_i - x_0 \geq 0\\
+\log\left[1 + \frac{x_i - x_0}{s}\right] & \text{if } \lambda = 0 \text{ and } x_i - x_0 \geq 0\\
+-\left( \left( 1 - \frac{x_i - x_0}{s}\right)^{2 - \lambda} - 1 \right) / \left(2 - \lambda \right) & \text{if } \lambda \neq 2 \text{ and } x_i - x_0 < 0\\
+-\log\left[1 - \frac{x_i - x_0}{s}\right] & \text{if } \lambda = 2 \text{ and } x_i - x_0 < 0
+\end{cases}
+\end{equation}
+
+The parameters of these power transformations can be optimised based by
+maximising the log-likelihood function, under the assumption that the
+transformed feature \(\phi^{\lambda, x_0, s} (\mathbf{X})\) follows a
+normal distribution. The log-likelihood functions for conventional
+Box-Cox and Yeo-Johnson transformations are well-known. However, the
+introduction of scaling parameter \(s\) prevents their direct use. Here,
+we first derive the general form of the log-likelihood functions, and
+then derive their power-transformation specific definitions.
+
+Let \(f(x_1, \ldots, x_n)\) be the probability density function of
+feature \(\mathbf{X} = \{ x_1, \ldots, x_n\}\), and
+\(f^{\lambda, x_0, s} (\phi^{\lambda, x_0, s}(x_1), \ldots, \phi^{\lambda, x_0, s}(x_n))\)
+be the probability density function of the transformed feature
+\(\phi^{\lambda, x_0, s} (\mathbf{X})\), that is assumed to follow a
+normal distribution.
+
+The two probability density functions are related as follows:
+
+\begin{equation}
+f^{\lambda, x_0, s}(x_1, \ldots, x_n) = f^{\lambda, x_0, s} (\phi^{\lambda, x_0, s}(x_1), \ldots, \phi^{\lambda, x_0, s}(x_n)) \left|\mathbf{J}\right|
+\end{equation}
+
+Where, \(\left|\mathbf{J}\right|\) is the determinant of Jacobian
+\(\mathbf{J}\). The Jacobian takes the following form, with off-diagonal
+elements \(0\):
+
+\begin{equation}
+\mathbf{J} =
+\begin{bmatrix}
+    \frac{\partial}{\partial x_1} \phi^{\lambda, x_0, s}(x_1) & 0 & \dots & 0 \\
+    0 & \frac{\partial}{\partial x_2} \phi^{\lambda, x_0, s}(x_2) & \dots & 0 \\
+    \vdots & \vdots  & \ddots &  \vdots \\
+    0  & 0 & 0 & \frac{\partial}{\partial x_n} \phi^{\lambda, x_0, s}(x_n)
+\end{bmatrix}
+\end{equation}
+
+Thus,
+\(\left| \mathbf{J} \right| = \prod_{i=1}^n \frac{\partial}{\partial x_i} \phi^{\lambda, x_0, s}(x_i)\).
+
+Since in our situation \(\{x_1, \ldots, x_n\}\) in
+\(f^{\lambda, x_0, s}(x_1, \ldots, x_n)\) are considered fixed (i.e.,
+known), \(f^{\lambda, x_0, s}(x_1, \ldots, x_n)\) may be considered a
+likelihood function. The log-likelihood function
+\(\mathcal{l}^{\lambda, x_0, s}\) is then:
+
+\begin{equation}
+\begin{split}
+\mathcal{l}^{\lambda, x_0, s} & = \log f^{\lambda, x_0, s}(x_1, \ldots, x_n) \\
+ & = \log \left[ f^{\lambda, x_0, s} (\phi^{\lambda, x_0, s}(x_1), \ldots, \phi^{\lambda, x_0, s}(x_n)) \right] + \log \left|\mathbf{J}\right| \\
+ & = \log \left[ f^{\lambda, x_0, s} (\phi^{\lambda, x_0, s}(x_1), \ldots, \phi^{\lambda, x_0, s}(x_n)) \right] + \log \prod_{i=1}^n \frac{\partial}{\partial x_i} \phi^{\lambda, x_0, s}(x_i) \\
+ & = -\frac{n}{2} \log \left[2 \pi \sigma^2 \right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 + \sum_{i=1}^n \log \left[ \frac{\partial}{\partial x_i} \phi^{\lambda, x_0, s}(x_i)\right]
+\end{split}
+\end{equation}
+
+With \(\mu\) the average of \(\phi^{\lambda, x_0, s}(\mathbf{X})\) and
+\(\sigma^2\) its variance. The first two terms derive directly from the
+log-likelihood function of a normal distribution, and are not specific
+to the type of power transformation used. However, the final term
+differs between Box-Cox and Yeo-Johnson transformations.
+
+\subsection{Location- and scale-invariant Box-Cox
+transformation}\label{location--and-scale-invariant-box-cox-transformation}
+
+For the location- and scale-invariant Box-Cox transformation the partial
+derivative is:
+
+\begin{equation}
+\begin{split}
+\frac{\partial}{\partial x_i} \phi_{\text{BC}}^{\lambda, x_0, s}(x_i) & = \frac{1}{s} \left(\frac{x_i - x_0}{s} \right)^{\lambda-1} \\
+ & = \frac{1} {s^\lambda} \left(x_i - x_0 \right)^{\lambda - 1}
+\end{split}
+\end{equation}
+
+Thus the final term in \(\mathcal{l}_{\text{BC}}^{\lambda, x_0, s}\) is:
+
+\begin{equation}
+\begin{split}
+\sum_{i=1}^n \log \frac{\partial}{\partial x_i} \phi_{\text{BC}}^{\lambda, x_0, s}(x_i) & = \sum_{i=1}^n \log \left[ s^{-\lambda} (x_i - x_0)^{\lambda - 1} \right] \\
+& = \sum_{i=1}^n \log \left[s^{-\lambda} \right] + \log \left[ (x_i - x_0)^{\lambda - 1} \right]\\
+& = -n \lambda \log s + \left( \lambda - 1 \right) \sum_{i=1}^n \log \left[ x_i - x_0 \right]
+\end{split}
+\end{equation}
+
+This leads to the following log-likelihood:
+
+\begin{equation}
+\begin{split}
+\mathcal{l}_{\text{BC}}^{\lambda, x_0, s} = & -\frac{n}{2} \log \left[2 \pi \sigma^2 \right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
+& -n \lambda \log s + \left( \lambda - 1 \right) \sum_{i=1}^n \log \left[ x_i - x_0 \right]
+\end{split}
+\end{equation}
+
+Similarly to Raymaekers and Rousseeuw (2024), sample weights \(w_i\) are
+introduced to facilitate robust power transformations. The weighted
+log-likelihood of the location- and scale-invariant Box-Cox
+transformation is:
+
+\begin{equation}
+\begin{split}
+\mathcal{l}_{\text{rBC}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
+& - \lambda \left( \sum_{i=1}^n w_i \right) \log s + \left( \lambda - 1 \right) \sum_{i=1}^n w_i \log \left[ x_i - x_0 \right]
+\end{split}
+\end{equation}
+
+where \(\mu_w\) and \(\sigma^2_w\) are the weighted mean and weighted
+variance of the Box-Cox transformed feature
+\(\phi_{\text{BC}}^{\lambda, x_0, s} (\mathbf{X})\), respectively:
+
+\begin{equation}
+\sigma_w^2 = \frac{\sum_{i=1}^n w_i \left(\phi_{\text{BC}}^{\lambda, x_0, s} (x_i) - \mu_w \right)^2}{\sum_{i=1}^n w_i} \quad \text{with } \mu_w = \frac{\sum_{i=1}^n \phi_{\text{BC}}^{\lambda, x_0, s} (x_i)} {\sum_{i=1}^n w_i}
+\end{equation}
+
+\subsection{Location- and scale-invariant Yeo-Johnson
+transformation}\label{location--and-scale-invariant-yeo-johnson-transformation}
+
+For the location- and scale-invariant Yeo-Johnson transformation, the
+partial derivative is:
+
+\begin{equation}
+\frac{\partial}{\partial x_i} \phi_{\text{YJ}}^{\lambda, x_0, s}(x_i) =
+\begin{cases}
+\frac{1}{s} \left(1 + \frac{x_i - x_0}{s}\right)^{\lambda - 1} & \text{if } x_i - x_0 \geq 0\\
+\frac{1}{s} \left(1 - \frac{x_i - x_0}{s}\right)^{1 - \lambda} & \text{if } x_i - x_0 < 0
+\end{cases}
+\end{equation}
+
+Thus the final term in \(\mathcal{l}_{\text{YJ}}^{\lambda, x_0, s}\) is:
+
+\begin{equation}
+\begin{split}
+\sum_{i=1}^n \log \frac{\partial}{\partial x_i} \phi_{\text{YJ}}^{\lambda, x_0, s}(x_i) & = - n \log s + (\lambda - 1) \sum_{i=1}^n \sgn(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
+\end{split}
+\end{equation}
+
+This leads to the following log-likelihood:
+
+\begin{equation}
+\begin{split}
+\mathcal{l}_{\text{YJ}}^{\lambda, x_0, s} = & -\frac{n}{2} \log\left[2 \pi \sigma^2\right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
+& - n \log s + (\lambda - 1) \sum_{i=1}^n \sgn(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
+\end{split}
+\end{equation}
+
+The weighted log-likelihood for location- and scale-invariant
+Yeo-Johnson transformation is:
+
+\begin{equation}
+\begin{split}
+\mathcal{l}_{\text{rYJ}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
+& - \left( \sum_{i=1}^n w_i \right) \log s + (\lambda - 1) \sum_{i=1}^n w_i \sgn(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
+\end{split}
+\end{equation}
+
+where \(\mu_w\) and \(\sigma^2_w\) are the weighted mean and weighted
+variance of the Yeo-Johnson transformed feature
+\(\phi_{\text{YJ}}^{\lambda, x_0, s} (\mathbf{X})\):
+
+\begin{equation}
+\sigma_w^2 = \frac{\sum_{i=1}^n w_i \left(\phi_{\text{YJ}}^{\lambda, x_0, s} (x_i) - \mu_w \right)^2}{\sum_{i=1}^n w_i} \quad \text{with } \mu_w = \frac{\sum_{i=1}^n \phi_{\text{YJ}}^{\lambda, x_0, s} (x_i)} {\sum_{i=1}^n w_i}
+\end{equation}
+
+\section{Optimisation of transformation parameters}\label{appendix-b-optimisation-of-transformation-parameters}
+
+Maximum likelihood estimation (MLE) is commonly used to optimise
+parameters for power transformation. Generally, optimisation requires
+minimisation or maximisation of a criterion. In MLE, the maximised
+criterion is the log-likelihood function of the normal distribution.
+Here, we investigate power transformation using optimisation criteria
+that are closely related to test statistics for normality tests.
+
+Let \(\mathbf{X}\) be a feature with ordered feature values, and
+\(\mathbf{Y}^\lambda =\phi^{\lambda} \left(\mathbf{X} \right)\) and
+\(\mathbf{Y}^{\lambda, x_0, s} =\phi^{\lambda, x_0, s} \left(\mathbf{X} \right)\)
+its transformed values using conventional and shift and scale invariant
+power transformations, respectively. Since power transformations are
+monotonic, \(\mathbf{Y}\) will likewise be ordered.
+
+Below we will focus on criteria based on the empirical density function
+and those based on skewness and kurtosis of the transformed featured.
+Other potential criteria, such as the Shapiro-Wilk test statistic
+(Shapiro and Wilk 1965) are not investigated here. In the case of the
+Shapiro-Wilk test statistic this is because of lack of scalability to
+features with many (\(> 5000\)) instances, and because adapting the test
+statistic to include weights is not straightforward.
+
+\subsection{Empirical density function-based
+criteria}\label{empirical-density-function-based-criteria}
+
+The first class of criteria is based on the empirical distribution
+function (EDF). Transformation parameters are then fit through
+minimisation of the distance between the empirical distribution function
+\(F_{\epsilon}\) and the cumulative density function (CDF) of the normal
+distribution \(F_{\mathcal{N}}\). Let
+\(F_{\epsilon}\left(x_i \right) = \frac{i - 1/3}{n + 1/3}\) be the
+empirical probability of instance \(i\). The normal distribution is
+parametrised by location parameter \(\mu\) and scale parameter
+\(\sigma\), both of which have to be estimated from the data. For
+non-robust power transformations, \(\mu\) and \(\sigma\) are sample mean
+and sample standard deviation, respectively. For robust power
+transformations, we estimate \(\mu\) and \(\sigma\) as Huber M-estimates
+of location and scale of the transformed feature
+\(\phi^{\lambda, x_0, s} (\mathbf{X})\) (Huber 1981).
+
+\subsubsection{Anderson-Darling
+criterion}\label{anderson-darling-criterion}
+
+The Anderson-Darling criterion is based on the empirical distribution
+function of \(\mathbf{X}\). We define this criterion as follows:
+
+\begin{equation}
+U_{\text{AD}} \left(\mathbf{X}, \lambda, x_0 \right) = \frac{1}{\sum_{i=1}^n w_i} \sum_{i=1}^n w_i \frac{\left( F_{\epsilon}\left(x_i \right) - F_{\mathcal{N}} \left(\phi^{\lambda, x_0, s} \left(x_i \right); \mu, \sigma \right) \right)^2} {F_{\mathcal{N}} \left(\phi^{\lambda, x_0, s} \left(x_i \right); \mu, \sigma \right) \left(1 - F_{\mathcal{N}} \left(\phi^{\lambda, x_0, s} \left(x_i \right); \mu, \sigma \right) \right) }
+\end{equation}
+
+Here \(w_i\) are weights, and \(\mu\) and \(\sigma\) are location and
+scale parameters. For non-robust power transformations, all \(w_i = 1\).
+Note that this criterion is not the same as the Anderson-Darling test
+statistic (Anderson and Darling 1952), which involves solving (or
+approximating) an integral function, contains an extra scalar
+multiplication term, and does not include weights. The Anderson-Darling
+criterion seeks to minimise the squared Euclidean distance between the
+EDF and the normal CDF, with differences at the upper and lower end of
+the normal CDF receiving more weight than those at the the centre of the
+CDF.
+
+\subsubsection{Cramér-von Mises
+criterion}\label{cramuxe9r-von-mises-criterion}
+
+The Cramér-von Mises criterion is also based on the empirical
+distribution function of \(\mathbf{X}\). We define the Cramér-von Mises
+criterion as follows:
+
+\begin{equation}
+U_{\text{CvM}} \left(\mathbf{X}, \lambda, x_0 \right) = \frac{1}{\sum_{i=1}^n w_i} \sum_{i=1}^n w_i \left( F_{\epsilon}\left(x_i \right) - F_{\mathcal{N}} \left(\phi^{\lambda, x_0, s} \left(x_i \right); \mu, \sigma \right) \right)^2
+\end{equation}
+
+Here \(w_i\) are weights, and \(\mu\) and \(\sigma\) are location and
+scale parameters. For non-robust power transformations, all \(w_i = 1\).
+The criterion is similar to the Cramér-von Mises test statistic Mises
+(1928), aside from a additive scalar value and the introduction of
+weights. This criterion, like the Anderson-Darling criterion, seeks to
+minimise the squared Euclidean distance between the EDF and the normal
+CDF. Unlike the Anderson-Darling criterion, this criterion weights all
+instances equally.
+
+For conventional power transformations with a fixed shift parameter, the
+transformation \(\phi^{\lambda, x_0, s} (\mathbf{X})\) may be
+substituted by \(\phi^{\lambda} (\mathbf{X})\) in the definition of the
+Cramér-von Mises criterion.
+
+\subsection{Skewness-kurtosis-based
+criteria}\label{skewness-kurtosis-based-criteria}
+
+The second class of criteria seeks to reduce skewness and (excess)
+kurtosis of the transformed feature \(\mathbf{Y}\). We will first define
+the location \(\mu\) and scale \(\sigma\) of the the transformed as
+these are required for computing skewness and kurtosis. Here, \(\mu\) is
+defined as:
+
+\begin{equation}
+\mu = \frac{\sum_{i=1}^n \phi^{\lambda, x_0, s} \left(x_i \right)} {\sum_{i=1}^n w_i}
+\end{equation}
+
+The location, or mean, is weighted using weights \(w_i\). For non-robust
+transformations, \(w_i = 1\). Then, \(\sigma^2\) is defined as:
+
+\begin{equation}
+\sigma^2 = \frac{\sum_{i=1}^n w_i \left(\phi^{\lambda, x_0, s} \left( x_i \right) - \mu \right)^2}{\sum_{i=1}^n w_i}
+\end{equation}
+
+Skewness is defined as:
+
+\begin{equation}
+s = \frac{\sum_{i=1}^n w_i \left(\phi^{\lambda, x_0, s} \left( x_i \right) - \mu \right)^3}{\sigma^3 \sum_{i=1}^n w_i}
+\end{equation}
+
+Kurtosis is defined as:
+
+\begin{equation}
+k = \frac{\sum_{i=1}^n w_i \left(\phi^{\lambda, x_0, s} \left( x_i \right) - \mu \right)^4}{\sigma^4 \sum_{i=1}^n w_i}
+\end{equation}
+
+\subsubsection{D'Agostino criterion}\label{dagostino-criterion}
+
+The D'Agostino criterion defined here follows the D'Agostino \(K^2\)
+test statistic (D'Agostino and Belanger 1990). This test statistic is
+composed of two separate test statistics, one of which is related to
+skewness, and the other to kurtosis. Both test statistics are computed
+in several steps. Let us first define \(\nu=\sum_{i=1}^n w_i\). Thus for
+non-robust power transformations, \(\nu = n\).
+
+For the skewness test statistic we first compute (D'Agostino and
+Belanger 1990):
+
+\begin{equation}
+\beta_1 = s \sqrt{ \frac{\left(\nu + 1\right) \left(\nu + 3\right)} {6 \left(\nu - 2\right)} }
+\end{equation}
+
+\begin{equation}
+\beta_2 = 3 \frac{\left(\nu^2 + 27\nu - 70\right) \left(\nu + 1\right) \left(\nu + 3\right)} {\left(\nu - 2\right) \left(\nu + 5\right) \left(\nu + 7\right) \left(\nu + 9\right)}
+\end{equation}
+
+\begin{equation}
+\alpha = \sqrt{\frac{2} {\sqrt{2 \beta_2 - 2} - 2}}
+\end{equation}
+
+\begin{equation}
+\delta = \frac{1}{\sqrt{\log \left[\sqrt{-1 + \sqrt{2 * \beta_2 - 2}} \right]}}
+\end{equation}
+
+The skewness test statistic is then:
+
+\begin{equation}
+Z_s = \delta \log\left[\frac{\beta_1}{\alpha} + \sqrt{\frac{\beta_1^2}{\alpha^2} + 1} \right]
+\end{equation}
+
+For the kurtosis test statistic we first compute (D'Agostino and
+Belanger 1990; Anscombe and Glynn 1983):
+
+\begin{equation}
+\beta_1 = 3 \frac{\nu - 1}{\nu + 1}
+\end{equation}
+
+\begin{equation}
+\beta_2 = 24 \nu \frac{\left(\nu - 2\right)\left(\nu - 3\right)}{\left(\nu + 1\right)^2 \left(\nu + 3\right) \left(\nu + 5\right)}
+\end{equation}
+
+\begin{equation}
+\beta_3 = 6 \frac{\nu^2 - 5 \nu + 2}{\left(\nu + 7\right) \left(\nu + 9\right)} \sqrt{6 \frac{\left(\nu + 3\right) \left(\nu + 5\right)}{\nu \left(\nu - 2\right) \left(\nu - 3 \right)}}
+\end{equation}
+
+\begin{equation}
+\alpha_1 = 6 + \frac{8}{\beta_3} \left[\frac{2}{\beta_3} + \sqrt{1 + \frac{4}{\beta_3^2}} \right]
+\end{equation}
+
+\begin{equation}
+\alpha_2 = \frac{k - \beta_1}{\sqrt{\beta_2}}
+\end{equation}
+
+The kurtosis test statistic is then:
+
+\begin{equation}
+Z_k = \sqrt{\frac{9 \alpha_1}{2}} \left[ 1 - \frac{2}{9 \alpha_1} - \left(\frac{1 - 2 / \alpha_1}{1 + \alpha_2 \sqrt{2 / \left(\alpha_1 - 4 \right)}} \right)^{1 / 3}  \right]
+\end{equation}
+
+The D'Agostino \(K^2\) test statistic and our criterion are the same,
+and are defined as:
+
+\begin{equation}
+U_{\text{DA}} \left(\mathbf{X}, \lambda, x_0 \right) = Z_s^2 + Z_k^2
+\end{equation}
+
+The main difference between the test statistic as originally formulated,
+and the criterion proposed here is the presence of weights for robust
+power transformation.
+
+\subsubsection{Jarque-Bera criterion}\label{jarque-bera-criterion}
+
+The second criterion based on skewness and kurtosis is the Jarque-Bera
+criterion. It is relatively simple to compute compared to the D'Agostino
+criterion:
+
+\begin{equation}
+U_{\text{JB}} \left(\mathbf{X}, \lambda, x_0 \right) = s^2 + \left(k - 3\right)^2 / 4
+\end{equation}
+
+The main difference between the above criterion and the Jarque-Bera test
+statistic (Jarque and Bera 1980) is that a scalar multiplication is
+absent.
+
+\subsection{Optimisation using non-MLE
+criteria}\label{optimisation-using-non-mle-criteria}
+
+Each of the above criteria can be used for optimisation, i.e.:
+
+\begin{equation}
+\left\{ \hat{\lambda}, \hat{x}_0, \hat{s}_0 \right\} = \argmin_{\lambda, x_0, s} U\left(\mathbf{X}, \lambda, x_0, s \right)
+\end{equation}
+
+For conventional power transformations with fixed location and scale
+parameters, the transformation \(\phi^{\lambda, x_0, s} (\mathbf{X})\)
+may be substituted by \(\phi^{\lambda} (\mathbf{X})\), or equivalently,
+\(x_0\) and \(s\) may be fixed:
+
+\begin{equation}
+\left\{ \hat{\lambda}\right\} = \argmin_{\lambda} U\left(\mathbf{X}, \lambda; x_0, s \right)
+\end{equation}
+
+\section{Simulations with other optimisation criteria}\label{appendix-c-simulations-with-other-optimisation-criteria}
+
+Invariance of location- and scale-invariant power transformations was
+assessed using the optimisation criteria in section
+\ref{appendix-b-optimisation-of-transformation-parameters}. This follows the simulation in the main manuscript, where MLE was
+used for optimization. In short, we first randomly drew \(10000\) values
+from a normal distribution:
+\(\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)\),
+or equivalently
+\(\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.5, 2\right)\).
+The second distribution was a right-skewed normal distribution
+\(\mathbf{X}_{\text{right}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.2, 2\right)\).
+The third distribution was a left-skewed normal distribution
+\(\mathbf{X}_{\text{left}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.8, 2\right)\).
+We then computed transformation parameter \(\lambda\) using the original
+definitions (equations \ref{eqn:box-cox-original} and
+\ref{eqn:yeo-johnson-original}) and the location- and scale-invariant
+definitions (equations \ref{eqn:box-cox-invariant} and
+\ref{eqn:yeo-johnson-invariant}) for each distribution using different
+optimisation criteria. To assess location invariance, a positive value
+\(d_{\text{shift}}\) was added to each distribution with
+\(d_{\text{shift}} \in [1, 10^6]\). Similarly, to assess scale
+invariance, each distribution was multiplied by a positive value
+\(d_{\text{scale}}\), where \(d_{\text{scale}} \in [1, 10^6]\).
+
+The results are shown in Figure
+\ref{fig:shifted-distributions-appendix}.
+
+\begin{figure}
+
+{\centering \includegraphics{figure_appendix_1} 
+
+}
+
+\caption{Invariant power transformation produces transformation parameters that are invariant to location and scale. Samples were drawn from normal, right-skewed and left-skewed distributions, respectively, which then underwent a shift $d_{\text{shift}}$ or multiplication by $d_{\text{scale}}$. Estimates of the transformation parameter $\lambda$ for the conventional power transformations show strong dependency on the overall location and scale of the distribution and the optimisation criterion, whereas estimates obtained for the location- and scale-invariant power transformations are constant. For location- and scale-invariant power transformations, the Anderson-Darling criterion leads to unstable estimates of $\lambda$ for skewed distributions, possibly due to large weights being assigned to samples at the upper and lower ends of the distribution.}\label{fig:shifted-distributions-appendix}
+\end{figure}
+
+\section{Experimental results using location- and scale-invariant Box-Cox transformation}
+\label{appendix-d-experimental-results-using-location--and-scale-invariant-box-cox-transformation}
+
+The effect of using location- and scale-invariant transformations was
+investigated using real-world datasets.
+
+\subsection{Invariance}\label{invariance}
+
+Results for Box-Cox transformations of features without outliers are
+shown in Figure \ref{fig:experimental-results-invariance-appendix}.
+
+\begin{figure}
+
+{\centering \includegraphics{figure_appendix_2} 
+
+}
+
+\caption{Quantile-quantile plots for several datasets: age of patients with lung cancer (top row); penguin body mass (middle row); and latitude coordinates of houses sold in Ames, Iowa (bottom row). Multiple quantile-quantile plots are shown: for the original feature (left column); the feature transformed using the conventional Box-Cox transformation and Raymaekers and Rousseeuw's robust adaptation (middle column); and the feature transformed using the non-robust and robust location- and-scale invariant Box-Cox transformations (right column).}\label{fig:experimental-results-invariance-appendix}
+\end{figure}
+
+\subsubsection{Age of patients with lung
+cancer}\label{age-of-patients-with-lung-cancer}
+
+Applying conventional and invariant Box-Cox transformations to age of
+patients with lung cancer (Loprinzi et al. 1994) yielded the following
+results: no transformation (sum of residuals with normal distribution
+\(\sum r_i = 16.5\)); conventional transformation (\(\lambda = 1.9\),
+\(\sum r_i = 11.5\), \(\mu_{BC} = 1.6 \cdot 10^3\),
+\(\sigma_{BC} = 0.4 \cdot 10^3\)); Raymaekers and Rousseeuw's robust
+adaptation (\(\lambda = 1.9\), \(\sum r_i = 11.5\),
+\(\mu_{BC} = 1.6 \cdot 10^3\), \(\sigma_{BC} = 0.4 \cdot 10^3\));
+location- and scale-invariant transformation (\(\lambda = 1.7\),
+\(\sum r_i = 11.6\), \(\mu_{BC} = 1.9\), \(\sigma_{BC} = 0.8\)); and
+robust location- and scale-invariant transformation (\(\lambda = 1.5\),
+\(\sum r_i = 11.6\), \(\mu_{BC} = 3.6\), \(\sigma_{BC} = 1.2\)).
+
+Compared to location- and scale-invariant Yeo-Johnson transformations,
+the Box-Cox transformations do not reduce residuals compared to
+conventional variants.
+
+\subsubsection{Penguin body mass}\label{penguin-body-mass}
+
+Applying conventional and invariant Box-Cox transformations to the body
+mass of penguins (Gorman, Williams, and Fraser 2014) yielded the
+following results: no transformation (residual sum \(\sum r_i = 48.0\));
+conventional transformation (\(\lambda = -0.5\), \(\sum r_i = 32.2\),
+\(\mu_{BC} = 2.1\), \(\sigma_{BC} = 4 \cdot 10^{-3}\)); Raymaekers and
+Rousseeuw's robust adaptation (\(\lambda = -0.5\), \(\sum r_i = 32.2\),
+\(\mu_{BC} = 2.1\), \(\sigma_{BC} = 4 \cdot 10^{-3}\)); location- and
+scale-invariant transformation (\(\lambda = 0.5\), \(\sum r_i = 27.3\),
+\(\mu_{BC} = 0.3\), \(\sigma_{BC} = 0.6\)); and robust location- and
+scale-invariant transformation (\(\lambda = 0.2\), \(\sum r_i = 25.2\),
+\(\mu_{BC} = 0.4\), \(\sigma_{BC} = 0.6\)).
+
+Just as for location- and scale-invariant Yeo-Johnson transformations,
+Box-Cox transformations produced a lower overall residual sum compared
+to their conventional counterparts. Similarly, conventional
+transformations led to low standard deviation \(\sigma_{YJ}\) of the
+body mass feature after transformation.
+
+\subsubsection{Latitude in the Ames housing
+dataset}\label{latitude-in-the-ames-housing-dataset}
+
+Applying conventional and invariant Box-Cox transformations to the
+latitude of houses in the Ames housing dataset (De Cock 2011) yielded
+the following results: no transformation (residual sum
+\(\sum r_i = 328\)); conventional transformation (\(\lambda = 62.1\),
+\(\sum r_i = 319\), \(\mu_{BC} = 1.1 \cdot 10^{99}\),
+\(\sigma_{BC} = 0.0 \cdot 10^{99}\)); Raymaekers and Rousseeuw's robust
+adaptation (\(\lambda = 96.0\), \(\sum r_i = 319\),
+\(\mu_{BC} = 6.2 \cdot 10^{153}\),
+\(\sigma_{BC} = 0.3 \cdot 10^{153}\)); location- and scale-invariant
+transformation (\(\lambda = 1.9\), \(\sum r_i = 312\),
+\(\mu_{BC} = 2.3\), \(\sigma_{BC} = 0.9\)); and robust location- and
+scale-invariant transformation (\(\lambda = 1.2\), \(\sum r_i = 316\),
+\(\mu_{BC} = 5.5\), \(\sigma_{BC} = 1.4\)).
+
+Similar to conventional Yeo-Johnson transformations (non-robust and
+robust), conventional Box-Cox transformations had high values for the
+\(\lambda\) parameter, which could lead to numerical issues. Location-
+and scale-invariant Box-Cox transformations did not suffer from this
+issue.
+
+\subsection{Robustness against
+outliers}\label{robustness-against-outliers}
+
+Results for Box-Cox transformations of features with outliers are shown
+in Figure \ref{fig:experimental-results-outlier-robustness-appendix}.
+
+\begin{figure}
+
+{\centering \includegraphics{figure_appendix_3} 
+
+}
+
+\caption{Quantile-quantile plots for two datasets with outliers: vehicle fuel consumption (top row), where outliers are related to highly fuel-efficient vehicles; and maximum arterial wall thickness in patients with ischemic stroke (bottom row). Multiple quantile-quantile plots are shown: for the original feature (left column); the feature transformed using the conventional Box-Cox transformation and Raymaekers and Rousseeuw's robust adaptation (middle column); and the feature transformed using the non-robust and robust location- and-scale invariant Box-Cox transformations (right column). Samples with observed quantiles below $-3.0$ or above $3.0$ are indicated by crosses.}\label{fig:experimental-results-outlier-robustness-appendix}
+\end{figure}
+
+\subsubsection{Fuel efficiency in the Top Gear
+dataset}\label{fuel-efficiency-in-the-top-gear-dataset}
+
+The Top Gear dataset contains data on 297 vehicles, with outliers
+related highly fuel-efficient vehicles (Alfons 2021). Applying
+conventional and invariant Box-Cox transformations to the fuel
+consumption feature yielded the following results: no transformation
+(residual sum \(\sum r_i = 54\), \(p=0.76\)); conventional
+transformation (\(\lambda = -0.1\), \(\sum r_i = 55\),
+\(\mu_{BC} = 3.0\), \(\sigma_{BC} = 0.3\), \(p=0.01\)); Raymaekers and
+Rousseeuw's robust adaptation (\(\lambda = 0.8\), \(\sum r_i = 48\),
+\(\mu_{BC} = 29\), \(\sigma_{BC} = 15\), \(p=0.55\)); location- and
+scale-invariant transformation (\(\lambda = -0.7\), \(\sum r_i = 44\),
+\(\mu_{BC} = 0.6\), \(\sigma_{BC} = 0.2\), \(p=0.02\)); and robust
+location- and scale-invariant transformation (\(\lambda = 1.1\),
+\(\sum r_i = 59\), \(\mu_{BC} = 2.4\), \(\sigma_{BC} = 1.8\),
+\(p=0.83\)).
+
+\subsubsection{Maximum arterial wall thickness in an ischemic stroke
+dataset}\label{maximum-arterial-wall-thickness-in-an-ischemic-stroke-dataset}
+
+The ischemic stroke dataset contains historic data from 126 patients
+with risk at ischemic stroke (Kuhn and Johnson 2019). Applying
+conventional and invariant Box-Cox transformations to the maximum
+arterial wall thickness feature yielded the following results: no
+transformation (residual sum \(\sum r_i = 110\), \(p=0.56\));
+conventional transformation (\(\lambda = -0.5\), \(\sum r_i = 33\),
+\(\mu_{BC} = 1.0\), \(\sigma_{BC} = 0.2\), \(p=0.01\)); Raymaekers and
+Rousseeuw's robust adaptation (\(\lambda = 1.1\), \(\sum r_i = 127\),
+\(\mu_{BC} = 5.5\), \(\sigma_{BC} = 12\), \(p=0.60\)); location- and
+scale-invariant transformation (\(\lambda = -1.0\), \(\sum r_i = 28\),
+\(\mu_{BC} = 0.7\), \(\sigma_{BC} = 0.1\), \(p=0.01\)); and robust
+location- and scale-invariant transformation (\(\lambda = 0.5\),
+\(\sum r_i = 56\), \(\mu_{BC} = 2.2\), \(\sigma_{BC} = 1.4\),
+\(p=0.35\)).
+
+\section{Empirical central normality test}\label{appendix-e-empirical-central-normality-test}
+
+The empirical central normality test was derived using data sampled from
+asymmetric generalised normal distributions, including outliers, to
+resemble more realistic datasets. Here we assess the type I error rate
+of two, less realistic, sets of data:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Data sampled from asymmetric generalised normal distributions without
+  outliers.
+\item
+  Data sampled from normal distributions without outliers, without any
+  power transformation applied.
+\end{enumerate}
+
+Other aspects of the experiment remained the same. Thus, we first drew
+\(m_d=10000\) random distributions. For asymmetric generalised normal
+distributions, each distribution was parametrised with a randomly chosen
+skewness parameter \(\alpha \sim U\left(0.01, 0.99\right)\) and shape
+parameter \(\beta \sim U\left(1.00, 5.00 \right)\). For fully normal
+distributions, skewness parameter \(\alpha = 0.5\) and shape parameter
+\(\beta = 2.0\) were fixed. Location and scale parameters were set as
+\(\mu = 0\) and \(\sigma = 1\), respectively.
+\(n = \lceil 10^\gamma \rceil\) values were then randomly drawn, with
+\(\gamma \sim U\left(1.47, 3.00\right)\), which led to between \(30\)
+and \(1000\) values being drawn to create \(\mathbf{X}_i\). Residuals
+were then computed after performing robust location- and scale-invariant
+transformations with the empirical tapered cosine weighting method for
+the dataset with asymmetric generalised normal distributions, and
+without any transformation for the dataset with only normal
+distributions.
+
+\begin{figure}
+
+{\centering \includegraphics{figure_appendix_4} 
+
+}
+
+\caption{Type I error rate as function of the test statistic $\tau_{\text{ecn}}$ for five datasets, with central portion $\kappa=0.80$. The type I error rate is computed from $m_d=10000$ randomly sampled features, These are sampled from asymmetric generalized normal distributions, with and without outliers (Box-Cox and Yeo-Johnson), or normal distributions with outliers (none). The test statistic is computed as the average residual of each feature after (Box-Cox and Yeo-Johnson) robust location- and shift-invariant power transformation, or before (none).}\label{fig:empirical-central-normality-test-appendix}
+\end{figure}
+
+\begin{table}
+\begin{center}
+\caption{Test statistic $\tau_{\text{ecn}}$ for empirical central normality at $\kappa = 0.80$ as a function of Type I error rate for several datasets.}
+\label{tab:empirical-central-normality-appendix}
+\begin{tabular}{l | c c c c c c c}
+
+\toprule
+type I error rate & 0.50 & 0.20 & 0.10 & 0.05 & 0.02 & 0.01 & 0.001 \\
+
+\midrule
+Box-Cox                  & 0.047 & 0.073 & 0.090 & 0.106 & 0.126 & 0.140 & 0.188 \\
+Box-Cox (no outlier)     & 0.043 & 0.065 & 0.079 & 0.092 & 0.106 & 0.116 & 0.155 \\
+Yeo-Johnson              & 0.041 & 0.062 & 0.075 & 0.088 & 0.103 & 0.115 & 0.154 \\
+Yeo-Johnson (no outlier) & 0.041 & 0.061 & 0.074 & 0.085 & 0.099 & 0.109 & 0.139 \\
+normal distr.            & 0.039 & 0.066 & 0.083 & 0.097 & 0.117 & 0.132 & 0.174 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+The results are shown in Figure
+\ref{fig:empirical-central-normality-test-appendix} and Table
+\ref {tab:empirical-central-normality-appendix}. These indicate that the
+test behaves similarly for the different datasets. For low type I error
+rates, the test statistic proposed in the main manuscript is more
+conservative than alternatives based on residuals after Box-Cox
+transformations of asymmetric generalised normally distributed features
+or on residuals from strictly normally distributed features.
+
+\section{Normalisation before transformation}\label{appendix-f-normalisation-before-transformation}
+
+An alternative to location- and scale-invariant transformations is
+normalising feature distributions prior to conventional transformations.
+Table \ref{tab:normalisation-before-transformation-appendix} shows
+residual errors, after transformation to normality, of the five features
+from real-world datasets presented previously section \ref{experimental-results}
+and \ref{appendix-d-experimental-results-using-location--and-scale-invariant-box-cox-transformation}.
+In these examples location- and scale-invariant
+transformations have similar or lower residual errors compared to errors
+resulting from normalisation prior to transformation.
+
+\begin{table}
+\begin{center}
+\caption{Residual errors for features from real-world datasets after Yeo-Johnson transformation to normality. conv.: conventional; norm.: normalisation; rob.: robust}
+\label{tab:normalisation-before-transformation-appendix}
+\begin{tabular}{l | c c c c c}
+
+\toprule
+feature & none & conventional & conv. (z-score norm.) & conv. (rob. scaling) & invariant \\
+
+\midrule
+age                     &  16.5 &  11.5 &  11.5 &  11.3 &   8.8 \\
+penguin body mass       &  48.0 &  32.2 &  33.3 &  32.2 &  26.8 \\
+latitude                & 328.1 & 319.0 & 326.2 & 324.5 & 326.4 \\
+fuel efficiency         &  54.5 &  55.3 &  49.0 &  53.3 &  44.0 \\
+arterial wall thickness & 110.1 &  30.0 &  19.3 &  31.8 &  12.2 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
 
 %% For citations use:
 %%       \citet{<label>} ==> Lamport (1994)
