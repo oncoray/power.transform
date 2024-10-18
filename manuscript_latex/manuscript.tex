@@ -359,7 +359,7 @@ parameter \(s\) is:
 For both invariant transformations, \(\lambda\), \(x_0\) and \(s\)
 parameters can be obtained by maximising the log-likelihood function,
 i.e.~using maximum likelihood estimation (MLE). A full derivation of the
-log-likelihood function for both transformations is shown in Appendix A.
+log-likelihood function for both transformations is shown in \ref{appendix-a-log-likelihood-functions-for-location-and-scale-invariant-power-transformation}.
 The location- and scale-invariant Box-Cox log-likelihood function is:
 
 \begin{equation}
@@ -910,7 +910,7 @@ produces the relationship shown in Figure
 similar, we fix the value of the central portion \(\kappa\) to 0.80. In
 the remaining we will use the empirical central normality test statistic
 values defined using robust location- and scale-invariant Yeo-Johnson
-transformations, as it is more conservative (see Appendix E). This leads
+transformations, as it is more conservative (see \ref{appendix-e-empirical-central-normality-test}). This leads
 to test statistic values listed in Table
 \ref{tab:empirical-central-normality}
 
@@ -966,7 +966,8 @@ centered near zero, or both. Earlier, we assessed these transformations
 using simulated data. In the following, they are evaluated using
 examples from real datasets. We focus on the Yeo-Johnson transformation
 because of its ability to handle features with negative values. Results
-for Box-Cox transformations are shown in Appendix D.
+for Box-Cox transformations are shown in 
+\ref{appendix-d-experimental-results-using-location--and-scale-invariant-box-cox-transformation}.
 
 \begin{figure}
 
@@ -1274,7 +1275,8 @@ effect in reducing sensitivity to the distribution's location and scale.
 While this alternative helps prevent these issues -- provided that
 normalisation does not lead to negative values for Box-Cox
 transformation -- location- and scale-invariant transformations seem to
-provide an overall better transformation to normality (Appendix F).
+provide an overall better transformation to normality 
+(\ref{appendix-f-normalisation-before-transformation}).
 
 We assessed several methods for robust power transformation. Methods
 that relied on the z-score of the transformed feature or the residual
@@ -1305,7 +1307,8 @@ where other tests may detect inconsequential deviations from normality.
 
 This work has the following limitations. Firstly, we did observe several
 numerical stability issues for optimisation criteria other than MLE
-(Appendix B). These appear in regions where transformation parameters
+(\ref{appendix-b-optimisation-of-transformation-parameters}).
+These appear in regions where transformation parameters
 would lead to very large or small numbers when using conventional power
 transformations. For MLE stability issues were not observed. Secondly,
 the empirical central normality test is based on simulations instead of
@@ -1759,8 +1762,8 @@ may be substituted by \(\phi^{\lambda} (\mathbf{X})\), or equivalently,
 \section{Simulations with other optimisation criteria}\label{appendix-c-simulations-with-other-optimisation-criteria}
 
 Invariance of location- and scale-invariant power transformations was
-assessed using the optimisation criteria in section
-\ref{appendix-b-optimisation-of-transformation-parameters}. This follows the simulation in the main manuscript, where MLE was
+assessed using the optimisation criteria in 
+\ref{appendix-b-optimisation-of-transformation-parameters}. This follows the simulation in section \ref{invariance-to-location-and-scale}, where MLE was
 used for optimization. In short, we first randomly drew \(10000\) values
 from a normal distribution:
 \(\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)\),
@@ -1994,7 +1997,7 @@ The results are shown in Figure
 \ref{fig:empirical-central-normality-test-appendix} and Table
 \ref {tab:empirical-central-normality-appendix}. These indicate that the
 test behaves similarly for the different datasets. For low type I error
-rates, the test statistic proposed in the main manuscript is more
+rates, the test statistic proposed in section \ref{empirical-central-normality-test-1} is more
 conservative than alternatives based on residuals after Box-Cox
 transformations of asymmetric generalised normally distributed features
 or on residuals from strictly normally distributed features.
