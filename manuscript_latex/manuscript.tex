@@ -169,7 +169,30 @@
 % ensure they are defined within your abstract at first mention.
 
 \begin{abstract}
+Power transformations are used to stabilize variance and achieve
+normality of features, especially in methods assuming normal 
+distributions such as ANOVA and linear discriminant analysis. 
+However, the commonly used Box-Cox and Yeo-Johnson power transformation 
+methods are sensitive to the location, scale, and presence of 
+outliers in the data.
 
+Here we present location- and scale-invariant Box-Cox and Yeo-Johnson
+transformations to mitigate these issues. We derive maximum likelihood
+estimation criteria for optimizing transformation parameters and propose
+robust adaptations that reduce the influence of outliers. 
+We also introduce an empirical test for assessing central normality
+of transformed features.
+
+In simulations and real-world datasets, robust location- and scale-invariant 
+transformations outperform conventional variants, resulting in better 
+transformations to central normality. In a machine learning experiment
+with 232 datasets with numerical features, integrating robust 
+ocation- and scale-invariant power transformations into an automated data 
+processing and machine learning pipeline did not result in a meaningful
+improvement or detriment in model performance compared to conventional variants.
+
+In conclusion, robust location- and scale-invariant power
+transformations can replace conventional variants.
 \end{abstract}
 
 %%Graphical abstract
@@ -189,8 +212,10 @@
 % Highlights should consist of 3 to 5 bullet points, each a maximum of 85 characters, including spaces.
 
 \begin{highlights}
-\item Research highlight 1
-\item Research highlight 2
+\item Location and scale of feature distributions may cause wrong power transformations.
+\item We derived location- and scale-invariant Box-Cox and Yeo-Johnson transformations.
+\item Robust power transformations succesfully reduced negative effects of outliers.
+\item New invariant robust power transformations can replace conventional variants.
 \end{highlights}
 
 %% Keywords
@@ -199,6 +224,7 @@
 % We recommend that you only use abbreviations in keywords if they are firmly established in the field.
 \begin{keyword}
 
+power transformation \sep invariant transformation \sep robust transformation \sep normality test
 %% keywords here, in the form: keyword \sep keyword
 
 %% PACS codes here, in the form: \PACS code \sep code
