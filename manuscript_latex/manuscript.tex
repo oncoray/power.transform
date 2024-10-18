@@ -957,7 +957,7 @@ decreases, as expected.
 
 \section{Experimental Results}\label{experimental-results}
 
-\subsection{Invariance}\label{invariance}
+\subsection{Invariance}\label{sec:invariance}
 
 Location- and scale-invariant power transformations are intended to
 yield improved transformations to normality in the presence of large
@@ -979,7 +979,7 @@ for Box-Cox transformations are shown in
 \end{figure}
 
 \subsubsection{Age of patients with lung
-cancer}\label{age-of-patients-with-lung-cancer}
+cancer}\label{sec:age-of-patients-with-lung-cancer}
 
 A common feature in health-related datasets is age. Here we use data on
 228 patients with lung cancer that was collected and published by
@@ -1009,7 +1009,7 @@ transformation. The empirical central normality test did not detect any
 statistically significant deviations from central normality for any
 transformation (all \(p \geq 0.78\)).
 
-\subsubsection{Penguin body mass}\label{penguin-body-mass}
+\subsubsection{Penguin body mass}\label{sec:penguin-body-mass}
 
 Gorman, Williams and Fraser recorded body mass (in grams) of 342
 penguins of three different species (Gorman, Williams, and Fraser 2014).
@@ -1036,7 +1036,7 @@ test did not detect any statistically significant deviations from
 central normality for any transformation (all \(p \geq 0.38\)).
 
 \subsubsection{Latitude in the Ames housing
-dataset}\label{latitude-in-the-ames-housing-dataset}
+dataset}\label{sec:latitude-in-the-ames-housing-dataset}
 
 Geospatial datasets usually contain coordinates. The Ames housing
 dataset contains data on 2930 properties that were sold between 2006 and
@@ -1064,7 +1064,7 @@ transformations had high values for the \(\lambda\) parameter, which
 could lead to numerical issues.
 
 \subsection{Robustness against
-outliers}\label{robustness-against-outliers}
+outliers}\label{sec:robustness-against-outliers}
 
 We previously simulated data to assess invariant power transformations
 and their robustness against outliers. Here, we assess invariant power
@@ -1080,7 +1080,7 @@ transformations in real data with outliers.
 \end{figure}
 
 \subsubsection{Fuel efficiency in the Top Gear
-dataset}\label{fuel-efficiency-in-the-top-gear-dataset}
+dataset}\label{sec:fuel-efficiency-in-the-top-gear-dataset}
 
 The Top Gear dataset contains data on 297 vehicles that appeared on the
 BBC television show \emph{Top Gear} (Alfons 2021). Within this dataset,
@@ -1107,7 +1107,7 @@ distributions that are centrally normal (empirical central normality
 test \(p > 0.05\)).
 
 \subsubsection{Maximum arterial wall thickness in an ischemic stroke
-dataset}\label{maximum-arterial-wall-thickness-in-an-ischemic-stroke-dataset}
+dataset}\label{sec:maximum-arterial-wall-thickness-in-an-ischemic-stroke-dataset}
 
 The ischemic stroke dataset contains historic data from 126 patients
 with risk at ischemic stroke (Kuhn and Johnson 2019). These patients
@@ -1802,7 +1802,7 @@ The results are shown in Figure
 The effect of using location- and scale-invariant transformations was
 investigated using real-world datasets.
 
-\subsection{Invariance}\label{invariance}
+\subsection{Invariance}\label{sec-app:invariance}
 
 Results for Box-Cox transformations of features without outliers are
 shown in Figure \ref{fig:experimental-results-invariance-appendix}.
@@ -1817,7 +1817,7 @@ shown in Figure \ref{fig:experimental-results-invariance-appendix}.
 \end{figure}
 
 \subsubsection{Age of patients with lung
-cancer}\label{age-of-patients-with-lung-cancer}
+cancer}\label{sec-app:age-of-patients-with-lung-cancer}
 
 Applying conventional and invariant Box-Cox transformations to age of
 patients with lung cancer (Loprinzi et al. 1994) yielded the following
@@ -1836,7 +1836,7 @@ Compared to location- and scale-invariant Yeo-Johnson transformations,
 the Box-Cox transformations do not reduce residuals compared to
 conventional variants.
 
-\subsubsection{Penguin body mass}\label{penguin-body-mass}
+\subsubsection{Penguin body mass}\label{sec-app:penguin-body-mass}
 
 Applying conventional and invariant Box-Cox transformations to the body
 mass of penguins (Gorman, Williams, and Fraser 2014) yielded the
@@ -1857,7 +1857,7 @@ transformations led to low standard deviation \(\sigma_{YJ}\) of the
 body mass feature after transformation.
 
 \subsubsection{Latitude in the Ames housing
-dataset}\label{latitude-in-the-ames-housing-dataset}
+dataset}\label{sec-app:latitude-in-the-ames-housing-dataset}
 
 Applying conventional and invariant Box-Cox transformations to the
 latitude of houses in the Ames housing dataset (De Cock 2011) yielded
@@ -1880,7 +1880,7 @@ and scale-invariant Box-Cox transformations did not suffer from this
 issue.
 
 \subsection{Robustness against
-outliers}\label{robustness-against-outliers}
+outliers}\label{sec-app:robustness-against-outliers}
 
 Results for Box-Cox transformations of features with outliers are shown
 in Figure \ref{fig:experimental-results-outlier-robustness-appendix}.
@@ -1895,7 +1895,7 @@ in Figure \ref{fig:experimental-results-outlier-robustness-appendix}.
 \end{figure}
 
 \subsubsection{Fuel efficiency in the Top Gear
-dataset}\label{fuel-efficiency-in-the-top-gear-dataset}
+dataset}\label{sec-app:fuel-efficiency-in-the-top-gear-dataset}
 
 The Top Gear dataset contains data on 297 vehicles, with outliers
 related highly fuel-efficient vehicles (Alfons 2021). Applying
@@ -1913,7 +1913,7 @@ location- and scale-invariant transformation (\(\lambda = 1.1\),
 \(p=0.83\)).
 
 \subsubsection{Maximum arterial wall thickness in an ischemic stroke
-dataset}\label{maximum-arterial-wall-thickness-in-an-ischemic-stroke-dataset}
+dataset}\label{sec-app:maximum-arterial-wall-thickness-in-an-ischemic-stroke-dataset}
 
 The ischemic stroke dataset contains historic data from 126 patients
 with risk at ischemic stroke (Kuhn and Johnson 2019). Applying
