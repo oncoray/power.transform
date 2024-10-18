@@ -1,0 +1,250 @@
+\begin{thebibliography}{29}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\href}[2]{#2}
+\providecommand{\path}[1]{#1}
+\providecommand{\DOIprefix}{doi:}
+\providecommand{\ArXivprefix}{arXiv:}
+\providecommand{\URLprefix}{URL: }
+\providecommand{\Pubmedprefix}{pmid:}
+\providecommand{\doi}[1]{\href{http://dx.doi.org/#1}{\path{#1}}}
+\providecommand{\Pubmed}[1]{\href{pmid:#1}{\path{#1}}}
+\providecommand{\bibinfo}[2]{#2}
+\ifx\xfnm\relax \def\xfnm[#1]{\unskip,\space#1}\fi
+%Type = Article
+\bibitem[{Alfons(2021)}]{Alfons2021-kc}
+\bibinfo{author}{Alfons, A.}, \bibinfo{year}{2021}.
+\newblock \bibinfo{title}{{robustHD}: An {R} package for robust regression with
+  high-dimensional data}.
+\newblock \bibinfo{journal}{J. Open Source Softw.} \bibinfo{volume}{6},
+  \bibinfo{pages}{3786}.
+\newblock \DOIprefix\doi{10.21105/joss.03786}.
+%Type = Article
+\bibitem[{Anderson and Darling(1952)}]{Anderson1952-gz}
+\bibinfo{author}{Anderson, T.W.}, \bibinfo{author}{Darling, D.A.},
+  \bibinfo{year}{1952}.
+\newblock \bibinfo{title}{Asymptotic theory of certain ``goodness of fit''
+  criteria based on stochastic processes}.
+\newblock \bibinfo{journal}{Annals of Mathematical Statistics}
+  \bibinfo{volume}{23}, \bibinfo{pages}{193--212}.
+\newblock \DOIprefix\doi{10.1214/aoms/1177729437}.
+%Type = Article
+\bibitem[{Anscombe and Glynn(1983)}]{Anscombe1983-nz}
+\bibinfo{author}{Anscombe, F.J.}, \bibinfo{author}{Glynn, W.J.},
+  \bibinfo{year}{1983}.
+\newblock \bibinfo{title}{Distribution of the kurtosis statistic b2 for normal
+  samples}.
+\newblock \bibinfo{journal}{Biometrika} \bibinfo{volume}{70},
+  \bibinfo{pages}{227--234}.
+\newblock \DOIprefix\doi{10.1093/biomet/70.1.227}.
+%Type = Article
+\bibitem[{Bartlett(1947)}]{Bartlett1947-rx}
+\bibinfo{author}{Bartlett, M.S.}, \bibinfo{year}{1947}.
+\newblock \bibinfo{title}{The use of transformations}.
+\newblock \bibinfo{journal}{Biometrics} \bibinfo{volume}{3},
+  \bibinfo{pages}{39--52}.
+\newblock \DOIprefix\doi{10.2307/3001536}.
+%Type = Article
+\bibitem[{Box and Cox(1964)}]{Box1964-mz}
+\bibinfo{author}{Box, G.E.P.}, \bibinfo{author}{Cox, D.R.},
+  \bibinfo{year}{1964}.
+\newblock \bibinfo{title}{An analysis of transformations}.
+\newblock \bibinfo{journal}{J. R. Stat. Soc. Series B Stat. Methodol.}
+  \bibinfo{volume}{26}, \bibinfo{pages}{211--252}.
+\newblock \DOIprefix\doi{10.1111/J.2517-6161.1964.TB00553.X}.
+%Type = Article
+\bibitem[{Cram{\'e}r(1928)}]{Cramer1928-rc}
+\bibinfo{author}{Cram{\'e}r, H.}, \bibinfo{year}{1928}.
+\newblock \bibinfo{title}{On the composition of elementary errors}.
+\newblock \bibinfo{journal}{Scand. Actuar. J.} \bibinfo{volume}{1928},
+  \bibinfo{pages}{13--74}.
+\newblock \DOIprefix\doi{10.1080/03461238.1928.10416862}.
+%Type = Article
+\bibitem[{D'Agostino and Belanger(1990)}]{DAgostino1990-kp}
+\bibinfo{author}{D'Agostino, R.B.}, \bibinfo{author}{Belanger, A.},
+  \bibinfo{year}{1990}.
+\newblock \bibinfo{title}{A suggestion for using powerful and informative tests
+  of normality}.
+\newblock \bibinfo{journal}{Am. Stat.} \bibinfo{volume}{44},
+  \bibinfo{pages}{316--321}.
+\newblock \DOIprefix\doi{10.2307/2684359}.
+%Type = Article
+\bibitem[{De~Cock(2011)}]{De-Cock2011-jf}
+\bibinfo{author}{De~Cock, D.}, \bibinfo{year}{2011}.
+\newblock \bibinfo{title}{Ames, iowa: Alternative to the boston housing data as
+  an end of semester regression project}.
+\newblock \bibinfo{journal}{J. Stat. Educ.} \bibinfo{volume}{19}.
+\newblock \DOIprefix\doi{10.1080/10691898.2011.11889627}.
+%Type = Inproceedings
+\bibitem[{Gijbels et~al.(2019)Gijbels, Karim and Verhasselt}]{Gijbels2019-te}
+\bibinfo{author}{Gijbels, I.}, \bibinfo{author}{Karim, R.},
+  \bibinfo{author}{Verhasselt, A.}, \bibinfo{year}{2019}.
+\newblock \bibinfo{title}{Quantile estimation in a generalized asymmetric
+  distributional setting}, in: \bibinfo{booktitle}{Stochastic Models,
+  Statistics and Their Applications}, \bibinfo{publisher}{Springer
+  International Publishing}. pp. \bibinfo{pages}{13--40}.
+\newblock \DOIprefix\doi{10.1007/978-3-030-28665-1\_2}.
+%Type = Article
+\bibitem[{Gorman et~al.(2014)Gorman, Williams and Fraser}]{Gorman2014-eo}
+\bibinfo{author}{Gorman, K.B.}, \bibinfo{author}{Williams, T.D.},
+  \bibinfo{author}{Fraser, W.R.}, \bibinfo{year}{2014}.
+\newblock \bibinfo{title}{Ecological sexual dimorphism and environmental
+  variability within a community of antarctic penguins (genus pygoscelis)}.
+\newblock \bibinfo{journal}{PLoS One} \bibinfo{volume}{9},
+  \bibinfo{pages}{e90081}.
+\newblock \DOIprefix\doi{10.1371/journal.pone.0090081}.
+%Type = Misc
+\bibitem[{Griffin(2018)}]{Griffin2018-bf}
+\bibinfo{author}{Griffin, M.}, \bibinfo{year}{2018}.
+\newblock \bibinfo{title}{gnorm: Generalized normal/exponential power
+  distribution}.
+\newblock \DOIprefix\doi{10.32614/cran.package.gnorm}.
+%Type = Book
+\bibitem[{Huber(1981)}]{Huber1981-su}
+\bibinfo{author}{Huber, P.J.}, \bibinfo{year}{1981}.
+\newblock \bibinfo{title}{Robust statistics}.
+\newblock \bibinfo{publisher}{John Wiley \& Sons}.
+\newblock \DOIprefix\doi{10.1002/0471725250}.
+%Type = Article
+\bibitem[{Jarque and Bera(1980)}]{Jarque1980-hw}
+\bibinfo{author}{Jarque, C.M.}, \bibinfo{author}{Bera, A.K.},
+  \bibinfo{year}{1980}.
+\newblock \bibinfo{title}{Efficient tests for normality, homoscedasticity and
+  serial independence of regression residuals}.
+\newblock \bibinfo{journal}{Econ. Lett.} \bibinfo{volume}{6},
+  \bibinfo{pages}{255--259}.
+\newblock \DOIprefix\doi{10.1016/0165-1765(80)90024-5}.
+%Type = Book
+\bibitem[{Kuhn and Johnson(2019)}]{Kuhn2019-kt}
+\bibinfo{author}{Kuhn, M.}, \bibinfo{author}{Johnson, K.},
+  \bibinfo{year}{2019}.
+\newblock \bibinfo{title}{Feature engineering and selection: A practical
+  approach for predictive models}.
+\newblock Chapman \& Hall/CRC Data Science Series, \bibinfo{publisher}{Chapman
+  and Hall/CRC}.
+\newblock \DOIprefix\doi{10.1201/9781315108230}.
+%Type = Article
+\bibitem[{Loprinzi et~al.(1994)Loprinzi, Laurie, Wieand, Krook, Novotny,
+  Kugler, Bartel, Law, Bateman and Klatt}]{Loprinzi1994-cd}
+\bibinfo{author}{Loprinzi, C.L.}, \bibinfo{author}{Laurie, J.A.},
+  \bibinfo{author}{Wieand, H.S.}, \bibinfo{author}{Krook, J.E.},
+  \bibinfo{author}{Novotny, P.J.}, \bibinfo{author}{Kugler, J.W.},
+  \bibinfo{author}{Bartel, J.}, \bibinfo{author}{Law, M.},
+  \bibinfo{author}{Bateman, M.}, \bibinfo{author}{Klatt, N.E.},
+  \bibinfo{year}{1994}.
+\newblock \bibinfo{title}{Prospective evaluation of prognostic variables from
+  patient-completed questionnaires. north central cancer treatment group}.
+\newblock \bibinfo{journal}{J. Clin. Oncol.} \bibinfo{volume}{12},
+  \bibinfo{pages}{601--607}.
+\newblock \DOIprefix\doi{10.1200/JCO.1994.12.3.601}.
+%Type = Book
+\bibitem[{von Mises(1928)}]{Von_Mises1928-ef}
+\bibinfo{author}{von Mises, R.}, \bibinfo{year}{1928}.
+\newblock \bibinfo{title}{Wahrscheinlichkeit Statistik und Wahrheit}.
+\newblock Schriften zur wissenschaftlichen Weltauffassung,
+  \bibinfo{publisher}{Springer-Verlag Berlin, Heidelberg}.
+\newblock \DOIprefix\doi{10.1007/978-3-662-36230-3}.
+%Type = Article
+\bibitem[{Nadarajah(2005)}]{Nadarajah2005-xe}
+\bibinfo{author}{Nadarajah, S.}, \bibinfo{year}{2005}.
+\newblock \bibinfo{title}{A generalized normal distribution}.
+\newblock \bibinfo{journal}{J. Appl. Stat.} \bibinfo{volume}{32},
+  \bibinfo{pages}{685--694}.
+\newblock \DOIprefix\doi{10.1080/02664760500079464}.
+%Type = Techreport
+\bibitem[{Powell(2009)}]{Powell2009-zb}
+\bibinfo{author}{Powell, M.J.D.}, \bibinfo{year}{2009}.
+\newblock \bibinfo{title}{The {BOBYQA} algorithm for bound constrained
+  optimization without derivatives}.
+\newblock \bibinfo{type}{Technical Report} \bibinfo{number}{Cambridge NA Report
+  NA2009/06}. University of Cambridge.
+%Type = Article
+\bibitem[{Raymaekers and Rousseeuw(2024)}]{Raymaekers2024-zf}
+\bibinfo{author}{Raymaekers, J.}, \bibinfo{author}{Rousseeuw, P.J.},
+  \bibinfo{year}{2024}.
+\newblock \bibinfo{title}{Transforming variables to central normality}.
+\newblock \bibinfo{journal}{Mach. Learn.} \bibinfo{volume}{113},
+  \bibinfo{pages}{4953--4975}.
+\newblock \DOIprefix\doi{10.1007/s10994-021-05960-5}.
+%Type = Article
+\bibitem[{Romano et~al.(2022)Romano, Le, La~Cava, Gregg, Goldberg, Chakraborty,
+  Ray, Himmelstein, Fu and Moore}]{Romano2022-gq}
+\bibinfo{author}{Romano, J.D.}, \bibinfo{author}{Le, T.T.},
+  \bibinfo{author}{La~Cava, W.}, \bibinfo{author}{Gregg, J.T.},
+  \bibinfo{author}{Goldberg, D.J.}, \bibinfo{author}{Chakraborty, P.},
+  \bibinfo{author}{Ray, N.L.}, \bibinfo{author}{Himmelstein, D.},
+  \bibinfo{author}{Fu, W.}, \bibinfo{author}{Moore, J.H.},
+  \bibinfo{year}{2022}.
+\newblock \bibinfo{title}{{PMLB} v1.0: an open-source dataset collection for
+  benchmarking machine learning methods}.
+\newblock \bibinfo{journal}{Bioinformatics} \bibinfo{volume}{38},
+  \bibinfo{pages}{878--880}.
+\newblock \DOIprefix\doi{10.1093/bioinformatics/btab727}.
+%Type = Article
+\bibitem[{Shapiro and Wilk(1965)}]{Shapiro1965-zd}
+\bibinfo{author}{Shapiro, S.S.}, \bibinfo{author}{Wilk, M.B.},
+  \bibinfo{year}{1965}.
+\newblock \bibinfo{title}{An analysis of variance test for normality (complete
+  samples)}.
+\newblock \bibinfo{journal}{Biometrika} \bibinfo{volume}{52},
+  \bibinfo{pages}{591--611}.
+\newblock \DOIprefix\doi{10.2307/2333709}.
+%Type = Article
+\bibitem[{Subbotin(1923)}]{Subbotin1923-qk}
+\bibinfo{author}{Subbotin, M.T.}, \bibinfo{year}{1923}.
+\newblock \bibinfo{title}{On the law of frequency of error}.
+\newblock \bibinfo{journal}{Mat. Sb.} \bibinfo{volume}{31},
+  \bibinfo{pages}{296--301}.
+%Type = Article
+\bibitem[{Tukey(1957)}]{Tukey1957-rt}
+\bibinfo{author}{Tukey, J.W.}, \bibinfo{year}{1957}.
+\newblock \bibinfo{title}{On the comparative anatomy of transformations}.
+\newblock \bibinfo{journal}{Ann. Math. Stat.} \bibinfo{volume}{28},
+  \bibinfo{pages}{602--632}.
+\newblock \DOIprefix\doi{10.1214/AOMS/1177706875}.
+%Type = Incollection
+\bibitem[{Tukey(1967)}]{Tukey1967-eb}
+\bibinfo{author}{Tukey, J.W.}, \bibinfo{year}{1967}.
+\newblock \bibinfo{title}{An introduction to the calculations of numerical
+  spectrum analysis}, in: \bibinfo{editor}{Harris, B.} (Ed.),
+  \bibinfo{booktitle}{Advanced Seminar on Spectral Analysis of Time Series}.
+  \bibinfo{publisher}{John Wiley and Sons, Inc.}, \bibinfo{address}{New York}.
+%Type = Book
+\bibitem[{Tukey(1977)}]{Tukey1977-xm}
+\bibinfo{author}{Tukey, J.W.}, \bibinfo{year}{1977}.
+\newblock \bibinfo{title}{Exploratory Data Analysis}.
+\newblock \bibinfo{publisher}{Addison-Wesley Publishing Company}.
+%Type = Article
+\bibitem[{Wright and Ziegler(2017)}]{Wright2017-rf}
+\bibinfo{author}{Wright, M.N.}, \bibinfo{author}{Ziegler, A.},
+  \bibinfo{year}{2017}.
+\newblock \bibinfo{title}{{ranger}: A fast implementation of random forests for
+  high dimensional data in {C++} and {R}}.
+\newblock \bibinfo{journal}{Journal of Statistical Software}
+  \bibinfo{volume}{77}, \bibinfo{pages}{1--17}.
+\newblock \DOIprefix\doi{10.18637/jss.v077.i01}.
+%Type = Article
+\bibitem[{Yeo and Johnson(2000)}]{Yeo2000-vw}
+\bibinfo{author}{Yeo, I.}, \bibinfo{author}{Johnson, R.A.},
+  \bibinfo{year}{2000}.
+\newblock \bibinfo{title}{A new family of power transformations to improve
+  normality or symmetry}.
+\newblock \bibinfo{journal}{Biometrika} \bibinfo{volume}{87},
+  \bibinfo{pages}{954--959}.
+\newblock \DOIprefix\doi{10.1093/biomet/87.4.954}.
+%Type = Misc
+\bibitem[{Zwanenburg and Löck(2024a)}]{Zwanenburg2021-so}
+\bibinfo{author}{Zwanenburg, A.}, \bibinfo{author}{Löck, S.},
+  \bibinfo{year}{2024}a.
+\newblock \bibinfo{title}{familiar: end-to-end automated machine learning and
+  model evaluation}.
+\newblock \DOIprefix\doi{10.32614/cran.package.familiar}.
+%Type = Misc
+\bibitem[{Zwanenburg and Löck(2024b)}]{Zwanenburg2024-kq}
+\bibinfo{author}{Zwanenburg, A.}, \bibinfo{author}{Löck, S.},
+  \bibinfo{year}{2024}b.
+\newblock \bibinfo{title}{power.transform: location and scale invariant power
+  transformations}.
+\newblock \DOIprefix\doi{10.32614/cran.package.power.transform}.
+
+\end{thebibliography}
