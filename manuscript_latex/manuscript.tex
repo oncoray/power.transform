@@ -189,7 +189,7 @@ transformations to central normality. In a machine learning experiment
 with 232 datasets with numerical features, integrating robust 
 location- and scale-invariant power transformations into an automated data 
 processing and machine learning pipeline did not result in a meaningful
-improvement or detriment in model performance compared to conventional variants.
+improvement or detriment to model performance compared to conventional variants.
 
 In conclusion, robust location- and scale-invariant power
 transformations can replace conventional variants.
@@ -387,7 +387,7 @@ The location- and scale-invariant Box-Cox log-likelihood function is:
 \begin{equation}
 \label{eqn:box-cox-invariant-log-likelihood}
 \begin{split}
-\mathcal{l}_{\text{BC}}^{\lambda, x_0, s} = & -\frac{n}{2} \log \left[2 \pi \sigma^2 \right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi_{BC}^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
+\mathcal{L}_{\text{BC}}^{\lambda, x_0, s} = & -\frac{n}{2} \log \left[2 \pi \sigma^2 \right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi_{BC}^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
 & -n \lambda \log s + \left( \lambda - 1 \right) \sum_{i=1}^n \log \left[ x_i - x_0 \right]
 \end{split}
 \end{equation}
@@ -401,7 +401,7 @@ function is:
 \begin{equation}
 \label{eqn:yeo-johnson-invariant-log-likelihood}
 \begin{split}
-\mathcal{l}_{\text{YJ}}^{\lambda, x_0, s} = & -\frac{n}{2} \log\left[2 \pi \sigma^2\right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi_{YJ}^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
+\mathcal{L}_{\text{YJ}}^{\lambda, x_0, s} = & -\frac{n}{2} \log\left[2 \pi \sigma^2\right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi_{YJ}^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
 & - n \log s + (\lambda - 1) \sum_{i=1}^n \sgn(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
 \end{split}
 \end{equation}
@@ -440,7 +440,7 @@ location- and scale-invariant Box-Cox log-likelihood function is:
 \begin{equation}
 \label{eqn:box-cox-weighted-invariant-log-likelihood}
 \begin{split}
-\mathcal{l}_{\text{rBC}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi_{\text{BC}}^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
+\mathcal{L}_{\text{rBC}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi_{\text{BC}}^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
 & - \lambda \left( \sum_{i=1}^n w_i \right) \log s + \left( \lambda - 1 \right) \sum_{i=1}^n w_i \log \left[ x_i - x_0 \right]
 \end{split}
 \end{equation}
@@ -459,7 +459,7 @@ log-likelihood function is:
 \begin{equation}
 \label{eqn:yeo-johnson-weighted-invariant-log-likelihood}
 \begin{split}
-\mathcal{l}_{\text{rYJ}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi_{\text{YJ}}^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
+\mathcal{L}_{\text{rYJ}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi_{\text{YJ}}^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
 & - \left( \sum_{i=1}^n w_i \right) \log s + (\lambda - 1) \sum_{i=1}^n w_i \sgn(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
 \end{split}
 \end{equation}
@@ -1439,11 +1439,11 @@ Since in our situation \(\{x_1, \ldots, x_n\}\) in
 \(f^{\lambda, x_0, s}(x_1, \ldots, x_n)\) are considered fixed (i.e.,
 known), \(f^{\lambda, x_0, s}(x_1, \ldots, x_n)\) may be considered a
 likelihood function. The log-likelihood function
-\(\mathcal{l}^{\lambda, x_0, s}\) is then:
+\(\mathcal{L}^{\lambda, x_0, s}\) is then:
 
 \begin{equation}
 \begin{split}
-\mathcal{l}^{\lambda, x_0, s} & = \log f^{\lambda, x_0, s}(x_1, \ldots, x_n) \\
+\mathcal{L}^{\lambda, x_0, s} & = \log f^{\lambda, x_0, s}(x_1, \ldots, x_n) \\
  & = \log \left[ f^{\lambda, x_0, s} (\phi^{\lambda, x_0, s}(x_1), \ldots, \phi^{\lambda, x_0, s}(x_n)) \right] + \log \left|\mathbf{J}\right| \\
  & = \log \left[ f^{\lambda, x_0, s} (\phi^{\lambda, x_0, s}(x_1), \ldots, \phi^{\lambda, x_0, s}(x_n)) \right] + \log \prod_{i=1}^n \frac{\partial}{\partial x_i} \phi^{\lambda, x_0, s}(x_i) \\
  & = -\frac{n}{2} \log \left[2 \pi \sigma^2 \right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 + \sum_{i=1}^n \log \left[ \frac{\partial}{\partial x_i} \phi^{\lambda, x_0, s}(x_i)\right]
@@ -1469,7 +1469,7 @@ derivative is:
 \end{split}
 \end{equation}
 
-Thus the final term in \(\mathcal{l}_{\text{BC}}^{\lambda, x_0, s}\) is:
+Thus the final term in \(\mathcal{L}_{\text{BC}}^{\lambda, x_0, s}\) is:
 
 \begin{equation}
 \begin{split}
@@ -1483,7 +1483,7 @@ This leads to the following log-likelihood:
 
 \begin{equation}
 \begin{split}
-\mathcal{l}_{\text{BC}}^{\lambda, x_0, s} = & -\frac{n}{2} \log \left[2 \pi \sigma^2 \right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
+\mathcal{L}_{\text{BC}}^{\lambda, x_0, s} = & -\frac{n}{2} \log \left[2 \pi \sigma^2 \right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
 & -n \lambda \log s + \left( \lambda - 1 \right) \sum_{i=1}^n \log \left[ x_i - x_0 \right]
 \end{split}
 \end{equation}
@@ -1495,7 +1495,7 @@ transformation is:
 
 \begin{equation}
 \begin{split}
-\mathcal{l}_{\text{rBC}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
+\mathcal{L}_{\text{rBC}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
 & - \lambda \left( \sum_{i=1}^n w_i \right) \log s + \left( \lambda - 1 \right) \sum_{i=1}^n w_i \log \left[ x_i - x_0 \right]
 \end{split}
 \end{equation}
@@ -1522,7 +1522,7 @@ partial derivative is:
 \end{cases}
 \end{equation}
 
-Thus the final term in \(\mathcal{l}_{\text{YJ}}^{\lambda, x_0, s}\) is:
+Thus the final term in \(\mathcal{L}_{\text{YJ}}^{\lambda, x_0, s}\) is:
 
 \begin{equation}
 \begin{split}
@@ -1534,7 +1534,7 @@ This leads to the following log-likelihood:
 
 \begin{equation}
 \begin{split}
-\mathcal{l}_{\text{YJ}}^{\lambda, x_0, s} = & -\frac{n}{2} \log\left[2 \pi \sigma^2\right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
+\mathcal{L}_{\text{YJ}}^{\lambda, x_0, s} = & -\frac{n}{2} \log\left[2 \pi \sigma^2\right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
 & - n \log s + (\lambda - 1) \sum_{i=1}^n \sgn(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
 \end{split}
 \end{equation}
@@ -1544,7 +1544,7 @@ Yeo-Johnson transformation is:
 
 \begin{equation}
 \begin{split}
-\mathcal{l}_{\text{rYJ}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
+\mathcal{L}_{\text{rYJ}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
 & - \left( \sum_{i=1}^n w_i \right) \log s + (\lambda - 1) \sum_{i=1}^n w_i \sgn(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
 \end{split}
 \end{equation}

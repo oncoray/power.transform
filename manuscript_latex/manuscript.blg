@@ -1,11 +1,9 @@
-This is BibTeX, Version 0.99d
+This is BibTeX, Version 0.99d (TeX Live 2024)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: manuscript.aux
-Reallocating 'name_of_file' (item size: 1) to 16 items.
 The style file: elsarticle-harv.bst
-Reallocating 'name_of_file' (item size: 1) to 5 items.
 Database file #1: refs.bib
-Reallocating 'singl_function' (item size: 4) to 100 items.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
 Warning--empty pages in Tukey1967-eb
 You've used 29 entries,
             2990 wiz_defined-function locations,
