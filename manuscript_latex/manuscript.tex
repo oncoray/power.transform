@@ -187,7 +187,7 @@ In simulations and real-world datasets, robust location- and scale-invariant
 transformations outperform conventional variants, resulting in better 
 transformations to central normality. In a machine learning experiment
 with 232 datasets with numerical features, integrating robust 
-ocation- and scale-invariant power transformations into an automated data 
+location- and scale-invariant power transformations into an automated data 
 processing and machine learning pipeline did not result in a meaningful
 improvement or detriment in model performance compared to conventional variants.
 
@@ -214,7 +214,7 @@ transformations can replace conventional variants.
 \begin{highlights}
 \item Location and scale of feature distributions may cause wrong power transformations.
 \item We derived location- and scale-invariant Box-Cox and Yeo-Johnson transformations.
-\item Robust power transformations succesfully reduced negative effects of outliers.
+\item Robust power transformations successfully reduced negative effects of outliers.
 \item New invariant robust power transformations can replace conventional variants.
 \end{highlights}
 
@@ -537,7 +537,7 @@ weighting function are shown in Figure \ref{fig:weighting-functions}.
 
 }
 
-\caption{Weighting functions investigated in this study to make power transformations more robust against outliers. In this example, the step function was parameterised with $\delta_1 = 0.60$. The triangle and tapered cosine functions were both parameterised with $\delta_1 = 0.30$ and $\delta_2 = 0.90$.}\label{fig:weighting-functions}
+\caption{Weighting functions investigated in this study to make power transformations more robust against outliers. In this example, the step function was parametrised with $\delta_1 = 0.60$. The triangle and tapered cosine functions were both parametrised with $\delta_1 = 0.30$ and $\delta_2 = 0.90$.}\label{fig:weighting-functions}
 \end{figure}
 
 Each weighting function has an argument \(\dot{x}\) that is related to
@@ -983,7 +983,7 @@ decreases, as expected.
 Location- and scale-invariant power transformations are intended to
 yield improved transformations to normality in the presence of large
 shifts in location, distributions that due to location and scale are not
-centered near zero, or both. Earlier, we assessed these transformations
+centred near zero, or both. Earlier, we assessed these transformations
 using simulated data. In the following, they are evaluated using
 examples from real datasets. We focus on the Yeo-Johnson transformation
 because of its ability to handle features with negative values. Results
@@ -1245,7 +1245,7 @@ of conventional Yeo-Johnson transformation.
 
 }
 
-\caption{Estimated marginal effect of learners, normalisation and transformation methods on ranked model performance scores in 18560 machine learning experiments on 232 datasets. The top-left panel shows the marginal effect of learners, i.e. random forests and generalised linear models (GLM). Random forests outperform GLM models for all task difficulties. The top-right panel shows the marginal effect of feature normalisation methods, i.e. no normalisation and z-standardisation. z-standardisation is generally beneficial, but the estimated effect is negligible. The bottom panel shows the marginal effects of different transformation methods, split by learner and normalisation method. There is no consistent behaviour, and estimated effects are negligible. Note that the ranges of the $x$-axes of the three main panels differ. ECNT: empirical central normality test.}\label{fig:marginal-effect-plot}
+\caption{Estimated marginal effect of learners, normalisation and transformation methods on ranked model performance scores in 18560 machine learning experiments on 232 datasets. The top-left panel shows the marginal effect of learners, i.e. random forests and generalised linear models (GLM). Random forests outperform GLMs for all task difficulties. The top-right panel shows the marginal effect of feature normalisation methods, i.e. no normalisation and z-standardisation. z-standardisation is generally beneficial, but the estimated effect is negligible. The bottom panel shows the marginal effects of different transformation methods, split by learner and normalisation method. There is no consistent behaviour, and estimated effects are negligible. Note that the ranges of the $x$-axes of the three main panels differ. ECNT: empirical central normality test.}\label{fig:marginal-effect-plot}
 \end{figure}
 
 \section{Discussion}\label{discussion}
