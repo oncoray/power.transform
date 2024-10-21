@@ -67,3 +67,5 @@ manuscript_rmarkdown/manuscript_appendix.log
 manuscript.spl
 manuscript.log
 manuscript.aux
+manuscript_latex/elsarticle.cls
+manuscript_latex/elsarticle.log
