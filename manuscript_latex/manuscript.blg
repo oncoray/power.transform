@@ -1,0 +1,60 @@
+This is BibTeX, Version 0.99d
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: manuscript.aux
+Reallocating 'name_of_file' (item size: 1) to 11 items.
+The style file: sn-apacite.bst
+Reallocating 'name_of_file' (item size: 1) to 5 items.
+Reallocating 'glb_str_end' (item size: 4) to 20 items.
+Reallocating 'glb_str_ptr' (item size: 4) to 20 items.
+Reallocating 'global_strs' (item size: 1) to 4000000 items.
+Reallocating 'singl_function' (item size: 4) to 100 items.
+Reallocating 'wiz_functions' (item size: 4) to 6000 items.
+Reallocating 'singl_function' (item size: 4) to 100 items.
+Reallocating 'singl_function' (item size: 4) to 100 items.
+Reallocating 'wiz_functions' (item size: 4) to 9000 items.
+Reallocating 'singl_function' (item size: 4) to 100 items.
+Database file #1: refs.bib
+apacite.bst [2013/07/21 v6.03 APA bibliography style]
+Warning--No address in Powell2009-zb
+You've used 29 entries,
+            7437 wiz_defined-function locations,
+            1590 strings with 16901 characters,
+and the built_in function-call counts, 55793 in all, are:
+= -- 6938
+> -- 426
+< -- 2647
++ -- 2736
+- -- 59
+* -- 3582
+:= -- 10303
+add.period$ -- 90
+call.type$ -- 29
+change.case$ -- 549
+chr.to.int$ -- 0
+cite$ -- 59
+duplicate$ -- 1430
+empty$ -- 2203
+format.name$ -- 653
+if$ -- 10601
+int.to.chr$ -- 0
+int.to.str$ -- 91
+missing$ -- 0
+newline$ -- 815
+num.names$ -- 234
+pop$ -- 1005
+preamble$ -- 1
+purify$ -- 154
+quote$ -- 0
+skip$ -- 3488
+stack$ -- 0
+substring$ -- 3085
+swap$ -- 831
+text.length$ -- 131
+text.prefix$ -- 0
+top$ -- 1
+type$ -- 2448
+warning$ -- 1
+while$ -- 253
+width$ -- 0
+write$ -- 950
+(There was 1 warning)

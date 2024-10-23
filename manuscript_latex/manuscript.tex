@@ -1,247 +1,185 @@
-%%
-%% Copyright 2007-2024 Elsevier Ltd
-%%
-%% This file is part of the 'Elsarticle Bundle'.
-%% ---------------------------------------------
-%%
-%% It may be distributed under the conditions of the LaTeX Project Public
-%% License, either version 1.3 of this license or (at your option) any
-%% later version.  The latest version of this license is in
-%%    http://www.latex-project.org/lppl.txt
-%% and version 1.3 or later is part of all distributions of LaTeX
-%% version 1999/12/01 or later.
-%%
-%% The list of all files belonging to the 'Elsarticle Bundle' is
-%% given in the file `manifest.txt'.
-%%
-%% Template article for Elsevier's document class `elsarticle'
-%% with harvard style bibliographic references
+%Version 3 October 2023
+% See section 11 of the User Manual for version history
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                                                 %%
+%% Please do not use \input{...} to include other tex files.       %%
+%% Submit your LaTeX manuscript as one .tex document.              %%
+%%                                                                 %%
+%% All additional figures and files should be attached             %%
+%% separately and not embedded in the \TeX\ document itself.       %%
+%%                                                                 %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\documentclass[preprint,12pt,authoryear]{elsarticle}
+%%\documentclass[referee,sn-basic]{sn-jnl}% referee option is meant for double line spacing
 
-%% Use the option review to obtain double line spacing
-%% \documentclass[authoryear,preprint,review,12pt]{elsarticle}
+%%=======================================================%%
+%% to print line numbers in the margin use lineno option %%
+%%=======================================================%%
 
-%% Use the options 1p,twocolumn; 3p; 3p,twocolumn; 5p; or 5p,twocolumn
-%% for a journal layout:
-%% \documentclass[final,1p,times,authoryear]{elsarticle}
-%% \documentclass[final,1p,times,twocolumn,authoryear]{elsarticle}
-%% \documentclass[final,3p,times,authoryear]{elsarticle}
-%% \documentclass[final,3p,times,twocolumn,authoryear]{elsarticle}
-%% \documentclass[final,5p,times,authoryear]{elsarticle}
-%% \documentclass[final,5p,times,twocolumn,authoryear]{elsarticle}
+%%\documentclass[lineno,sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
 
-%% For including figures, graphicx.sty has been loaded in
-%% elsarticle.cls. If you prefer to use the old commands
-%% please give \usepackage{epsfig}
+%%======================================================%%
+%% to compile with pdflatex/xelatex use pdflatex option %%
+%%======================================================%%
 
-%% The amssymb package provides various useful mathematical symbols
-\usepackage{amssymb}
-%% The amsmath package provides various useful equation environments.
-\usepackage{amsmath}
-%% The amsthm package provides extended theorem environments
-%% \usepackage{amsthm}
+%%\documentclass[pdflatex,sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
 
-%% The lineno packages adds line numbers. Start line numbering with
-%% \begin{linenumbers}, end it with \end{linenumbers}. Or switch it on
-%% for the whole article with \linenumbers.
-%% \usepackage{lineno}
 
-%% The booktabs package provides table makeup macros.
-\usepackage{booktabs}
+%%Note: the following reference styles support Namedate and Numbered referencing. By default the style follows the most common style. To switch between the options you can add or remove �Numbered� in the optional parenthesis. 
+%%The option is available for: sn-basic.bst, sn-vancouver.bst, sn-chicago.bst%  
+ 
+%%\documentclass[sn-nature]{sn-jnl}% Style for submissions to Nature Portfolio journals
+%%\documentclass[sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
+%%\documentclass[sn-mathphys-num]{sn-jnl}% Math and Physical Sciences Numbered Reference Style 
+%%\documentclass[sn-mathphys-ay]{sn-jnl}% Math and Physical Sciences Author Year Reference Style
+%%\documentclass[sn-aps]{sn-jnl}% American Physical Society (APS) Reference Style
+%%\documentclass[sn-vancouver,Numbered]{sn-jnl}% Vancouver Reference Style
+\documentclass[pdflatex,sn-apa]{sn-jnl}% APA Reference Style 
+%%\documentclass[sn-chicago]{sn-jnl}% Chicago-based Humanities Reference Style
 
-%% Custom math operators
+%%%% Standard Packages
+%%<additional latex packages if required can be included here>
+
+\usepackage{graphicx}%
+\usepackage{multirow}%
+\usepackage{amsmath,amssymb,amsfonts}%
+%% \usepackage{amsmath,amssymb,amsfonts}%
+%% \usepackage{amsthm}%
+\usepackage{mathrsfs}%
+\usepackage[title]{appendix}%
+\usepackage{xcolor}%
+\usepackage{textcomp}%
+\usepackage{manyfoot}%
+\usepackage{booktabs}%
+%% \usepackage{algorithm}%
+%% \usepackage{algorithmicx}%
+%% \usepackage{algpseudocode}%
+\usepackage{listings}%
+%%%%
+
 \DeclareMathOperator*{\argmax}{argmax}
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator{\sgn}{sgn}
 
-\journal{Computational Statistics and Data Analysis}
+
+%%%%%=============================================================================%%%%
+%%%%  Remarks: This template is provided to aid authors with the preparation
+%%%%  of original research articles intended for submission to journals published 
+%%%%  by Springer Nature. The guidance has been prepared in partnership with 
+%%%%  production teams to conform to Springer Nature technical requirements. 
+%%%%  Editorial and presentation requirements differ among journal portfolios and 
+%%%%  research disciplines. You may find sections in this template are irrelevant 
+%%%%  to your work and are empowered to omit any such section if allowed by the 
+%%%%  journal you intend to submit to. The submission guidelines and policies 
+%%%%  of the journal take precedence. A detailed User Manual is available in the 
+%%%%  template package for technical guidance.
+%%%%%=============================================================================%%%%
+
+%% as per the requirement new theorem styles can be included as shown below
+%%\theoremstyle{thmstyleone}%
+%%\newtheorem{theorem}{Theorem}%  meant for continuous numbers
+%%\newtheorem{theorem}{Theorem}[section]% meant for sectionwise numbers
+%% optional argument [theorem] produces theorem numbering sequence instead of independent numbers for Proposition
+%%\newtheorem{proposition}[theorem]{Proposition}% 
+%%\newtheorem{proposition}{Proposition}% to get separate numbers for theorem and proposition etc.
+
+%%\theoremstyle{thmstyletwo}%
+%%\newtheorem{example}{Example}%
+%%\newtheorem{remark}{Remark}%
+
+%%\theoremstyle{thmstylethree}%
+%%\newtheorem{definition}{Definition}%
+
+\raggedbottom
+%%\unnumbered% uncomment this for unnumbered level heads
 
 \begin{document}
 
-\begin{frontmatter}
+\title[Location and Scale-Invariant Power Transformations for Transforming Data to Normality]{Location and Scale-Invariant Power Transformations for Transforming Data to Normality}
 
-%% Title, authors and addresses
+%%=============================================================%%
+%% GivenName	-> \fnm{Joergen W.}
+%% Particle	-> \spfx{van der} -> surname prefix
+%% FamilyName	-> \sur{Ploeg}
+%% Suffix	-> \sfx{IV}
+%% \author*[1,2]{\fnm{Joergen W.} \spfx{van der} \sur{Ploeg} 
+%%  \sfx{IV}}\email{iauthor@gmail.com}
+%%=============================================================%%
 
-%% use the tnoteref command within \title for footnotes;
-%% use the tnotetext command for theassociated footnote;
-%% use the fnref command within \author or \affiliation for footnotes;
-%% use the fntext command for theassociated footnote;
-%% use the corref command within \author for corresponding author footnotes;
-%% use the cortext command for theassociated footnote;
-%% use the ead command for the email address,
-%% and the form \ead[url] for the home page:
-%% \title{Title\tnoteref{label1}}
-%% \tnotetext[label1]{}
-%% \author{Name\corref{cor1}\fnref{label2}}
-%% \ead{email address}
-%% \ead[url]{home page}
-%% \fntext[label2]{}
-%% \cortext[cor1]{}
-%% \affiliation{organization={},
-%%            addressline={},
-%%            city={},
-%%            postcode={},
-%%            state={},
-%%            country={}}
-%% \fntext[label3]{}
+\author*[1,2]{\fnm{Alex} \sur{Zwanenburg}}\email{alexander.zwanenburg@nct-dresden.de}
 
-\title{Location and Scale-Invariant Power Transformations for Transforming Data to Normality} %% Article title
+\author[2,3,4]{\fnm{Steffen} \sur{L{\"o}ck}}\email{steffen.loeck@oncoray.de}
 
-%% use optional labels to link authors explicitly to addresses:
-%% \author[label1,label2]{}
-%% \affiliation[label1]{organization={},
-%%             addressline={},
-%%             city={},
-%%             postcode={},
-%%             state={},
-%%             country={}}
-%%
-%% \affiliation[label2]{organization={},
-%%             addressline={},
-%%             city={},
-%%             postcode={},
-%%             state={},
-%%             country={}}
-
-
-%% Alex Zwanenburg
-\author[affil_1,affil_2]{Alex Zwanenburg\corref{cor_note}}
-\ead{alexander.zwanenburg@nct-dresden.de}
-\cortext[cor_note]{corresponding author}
-
-\affiliation[affil_1]{
-  organization={
-    National Center for Tumor Diseases Dresden (NCT/UCC):
-    German Cancer Research Center (DKFZ), Heidelberg, Germany;
-    Faculty of Medicine and University Hospital Carl Gustav Carus, TUD Dresden University of Technology, Dresden, Germany;
-    Helmholtz-Zentrum Dresden-Rossendorf (HZDR), Dresden, Germany},
-  addressline={Fetscherstraße 74/PF 64},
-  city={Dresden},
-  postcode={01307},
-  country={Germany}
+\affil*[1]{
+	\orgdiv{National Center for Tumor Diseases Dresden (NCT/UCC)},
+	\orgname{German Cancer Research Center (DKFZ), Faculty of Medicine and University Hospital Carl Gustav Carus, TUD Dresden University of Technology, Helmholtz-Zentrum Dresden-Rossendorf (HZDR)},
+	\orgaddress{\street{Fetscherstra{\ss}e 74/PF 64}, \city{Dresden}, \postcode{01307}, \country{Germany}}
 }
-\affiliation[affil_2]{
-  organization={
-    OncoRay – National Center for Radiation Research in Oncology,
-    Faculty of Medicine and University Hospital Carl Gustav Carus, TUD Dresden University of Technology,
+
+\affil[2]{
+	\orgdiv{OncoRay - National Center for Radiation Research in Oncology}
+	\orgname{Faculty of Medicine and University Hospital Carl Gustav Carus, TUD Dresden University of Technology,
     Helmholtz-Zentrum Dresden-Rossendorf},
-  addressline={Fetscherstraße 74/PF 41},
-  city={Dresden},
-  postcode={01307},
-  country={Germany}
+	\orgaddress{\street{Fetscherstra{\ss}e 74/PF 41}, \city{Dresden}, \postcode{01307}, \country{Germany}}
 }
 
-%% Steffen Löck
-\author[affil_2,affil_3,affil_4]{Steffen Löck}
-
-\affiliation[affil_3]{
-  organization={
-    Department of Radiotherapy and Radiation Oncology,
-    Faculty of Medicine and University Hospital Carl Gustav Carus, TUD Dresden University of Technology},
-  addressline={Fetscherstraße 74/PF 50},
-  city={Dresden},
-  postcode={01307},
-  country={Germany}
-}
-\affiliation[affil_4]{
-  organization={
-   German Cancer Consortium (DKTK), Partner Site Dresden,
-   and German Cancer Research Center (DKFZ)},
-  addressline={Im Neuenheimer Feld 280},
-  city={Heidelberg},
-  postcode={69192},
-  country={Germany}
+\affil[3]{
+	\orgdiv{Department of Radiotherapy and Radiation Oncology},
+	\orgname{Faculty of Medicine and University Hospital Carl Gustav Carus, TUD Dresden University of Technology},
+	\orgaddress{\street{Fetscherstra{\ss}e 74/PF 50}, \city{Dresden}, \postcode{01307}, \country{Germany}}
 }
 
+\affil[4]{
+	\orgdiv{German Cancer Consortium (DKTK), Partner Site Dresden},
+	\orgname{German Cancer Research Center (DKFZ)},
+	\orgaddress{\street{Im Neuenheimer Feld 280}, \city{Heidelberg}, \postcode{69192}, \country{Germany}}
+}
 
+%%==================================%%
+%% Sample for unstructured abstract %%
+%%==================================%%
 
-%% Abstract
-% You are required to provide a concise and factual abstract which does not exceed
-% 250 words. The abstract should briefly state the purpose of your research,
-% principal results and major conclusions. Some guidelines:
-%
-% Abstracts must be able to stand alone as abstracts are often presented separately from the article.
-%
-% Avoid references. If any are essential to include, ensure that you cite the author(s) and year(s).
-%
-% Avoid non-standard or uncommon abbreviations. If any are essential to include,
-% ensure they are defined within your abstract at first mention.
-
-\begin{abstract}
-Power transformations are used to stabilize variance and achieve
+\abstract{Power transformations are used to stabilize variance and achieve
 normality of features, especially in methods assuming normal 
 distributions such as ANOVA and linear discriminant analysis. 
 However, the commonly used Box-Cox and Yeo-Johnson power transformation 
 methods are sensitive to the location, scale, and presence of 
-outliers in the data.
-
-Here we present location- and scale-invariant Box-Cox and Yeo-Johnson
+outliers in the data. Here we present location- and scale-invariant Box-Cox and Yeo-Johnson
 transformations to mitigate these issues. We derive maximum likelihood
 estimation criteria for optimizing transformation parameters and propose
 robust adaptations that reduce the influence of outliers. 
 We also introduce an empirical test for assessing central normality
-of transformed features.
-
-In simulations and real-world datasets, robust location- and scale-invariant 
+of transformed features. In simulations and real-world datasets, robust location- and scale-invariant 
 transformations outperform conventional variants, resulting in better 
 transformations to central normality. In a machine learning experiment
 with 232 datasets with numerical features, integrating robust 
 location- and scale-invariant power transformations into an automated data 
 processing and machine learning pipeline did not result in a meaningful
 improvement or detriment to model performance compared to conventional variants.
-
 In conclusion, robust location- and scale-invariant power
-transformations can replace conventional variants.
-\end{abstract}
+transformations can replace conventional variants.}
 
-%%Graphical abstract
-% \begin{graphicalabstract}
-% \includegraphics{grabs}
-% \end{graphicalabstract}
+%%================================%%
+%% Sample for structured abstract %%
+%%================================%%
 
-%%Research highlights
-% Highlights are a short collection of bullet points that should capture the novel
-% results of your research as well as any new methods used during your study.
-% Highlights will help increase the discoverability of your article via search engines.
-% Some guidelines:
-%
-% Submit highlights as a separate editable file in the online submission system
-% with the word "highlights" included in the file name.
-%
-% Highlights should consist of 3 to 5 bullet points, each a maximum of 85 characters, including spaces.
+% \abstract{\textbf{Purpose:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.
+% 
+% \textbf{Methods:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.
+% 
+% \textbf{Results:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.
+% 
+% \textbf{Conclusion:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.}
 
-\begin{highlights}
-\item Location and scale of feature distributions may cause wrong power transformations.
-\item We derived location- and scale-invariant Box-Cox and Yeo-Johnson transformations.
-\item Robust power transformations successfully reduced negative effects of outliers.
-\item New invariant robust power transformations can replace conventional variants.
-\end{highlights}
+\keywords{Data preprocessing, Feature transformation, Outliers, Power transformation}
 
-%% Keywords
-% You are required to provide 1 to 7 keywords for indexing purposes. Keywords should be written in English.
-% Please try to avoid keywords consisting of multiple words (using "and" or "of").
-% We recommend that you only use abbreviations in keywords if they are firmly established in the field.
-\begin{keyword}
+%%\pacs[JEL Classification]{D8, H51}
 
-power transformation \sep invariant transformation \sep robust transformation \sep normality test
-%% keywords here, in the form: keyword \sep keyword
+%%\pacs[MSC Classification]{35A01, 65L10, 65L12, 65L20, 65L70}
 
-%% PACS codes here, in the form: \PACS code \sep code
+\maketitle
 
-%% MSC codes here, in the form: \MSC code \sep code
-%% or \MSC[2008] code \sep code (2000 is the default)
-
-\end{keyword}
-
-\end{frontmatter}
-
-%% Add \usepackage{lineno} before \begin{document} and uncomment
-%% following line to enable line numbers
-%% \linenumbers
-
-%% main text
-%%
 \section{Introduction}\label{introduction}
 
 Many statistical and some machine learning methods assume normality of
@@ -809,7 +747,6 @@ and scale-invariant Box-Cox and Yeo-Johnson transformations,
 respectively.
 
 \begin{table}
-\begin{center}
 \caption{Optimal weighting parameters and corresponding loss for location- and scale-invariant Box-Cox power transformations. $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values, and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column. The {optimal} column shows the optimal parameter values. The \textit{loss} column shows the loss achieved by each method, under optimised parameters. Lower loss indicates better robustness against outliers.}
 \label{tab:optimal-weighting-parameters-box-cox}
 \begin{tabular}{l r r r r r r r}
@@ -829,13 +766,12 @@ $z$ (tapered cosine)     & 1.28 & $(0, 10]$ & 1.21 & 1.96 & $(0, 10]$ & 4.92 & 1
 $r$ (step)               & 0.50 & $(0, 10]$ & 2.18 & ---  & ---       & ---  & 1839 \\
 $r$ (triangle)           & 0.50 & $(0, 10]$ & 1.29 & 1.00 & $(0, 10]$ & 1.47 & 1764 \\
 $r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.38 & 1.00 & $(0, 10]$ & 1.41 & 1583 \\
-\bottomrule
+\botrule
+
 \end{tabular}
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{Optimal weighting parameters and corresponding loss for location- and scale-invariant Yeo-Johnson power transformations. $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values, and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column. The {optimal} column shows the optimal parameter values. The \textit{loss} column shows the loss achieved by each method, under optimised parameters. Lower loss indicates better robustness against outliers.}
 \label{tab:optimal-weighting-parameters-yeo-johnson}
 \begin{tabular}{l r r r r r r r}
@@ -857,7 +793,6 @@ $r$ (triangle)           & 0.50 & $(0, 10]$ & 1.50 & 1.00 & $(0, 10]$ & 1.79 & 7
 $r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.51 & 1.00 & $(0, 10]$ & 1.57 & 612 \\
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 Figure \ref{fig:optimised-weighting-function-parameters} shows the
@@ -945,7 +880,6 @@ to test statistic values listed in Table
 \end{figure}
 
 \begin{table}
-\begin{center}
 \caption{Test statistic $\tau_{\text{ecn}}$ for empirical central normality at $\kappa = 0.80$ as a function of Type I error rate.}
 \label{tab:empirical-central-normality}
 \begin{tabular}{l | c c c c c c c}
@@ -957,7 +891,6 @@ type I error rate & 0.50 & 0.20 & 0.10 & 0.05 & 0.02 & 0.01 & 0.001 \\
 $\tau_{\text{ecn}}$ & 0.041 & 0.062 & 0.075 & 0.088 & 0.103 & 0.115 & 0.154 \\
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 In Figure \ref{fig:empirical-central-normality-examples} we apply the
@@ -1005,7 +938,7 @@ cancer}\label{sec:age-of-patients-with-lung-cancer}
 A common feature in health-related datasets is age. Here we use data on
 228 patients with lung cancer that was collected and published by
 Loprinzi et al. \citep{Loprinzi1994-cd}. The age in the cohort was
-\(62.4 \pm 9.1\) (mean ± standard deviation) years. Applying
+\(62.4 \pm 9.1\) (mean \(\pm\) standard deviation) years. Applying
 conventional and invariant Yeo-Johnson transformations to patient age
 yielded the following results, see Figure
 \ref{fig:experimental-results-invariance}: no transformation (sum of
@@ -1034,7 +967,7 @@ transformation (all \(p \geq 0.78\)).
 
 Gorman, Williams and Fraser recorded body mass (in grams) of 342
 penguins of three different species \citep{Gorman2014-eo}.
-The body mass was \((4.2 \pm 0.8) \cdot 10^3\) (mean ± standard
+The body mass was \((4.2 \pm 0.8) \cdot 10^3\) (mean \(\pm\) standard
 deviation) grams, and not centrally normal (\(p = 0.03\)). Applying
 conventional and invariant Yeo-Johnson transformations to body mass
 yielded the following results, see Figure
@@ -1062,7 +995,7 @@ dataset}\label{sec:latitude-in-the-ames-housing-dataset}
 Geospatial datasets usually contain coordinates. The Ames housing
 dataset contains data on 2930 properties that were sold between 2006 and
 2010 \citep{De-Cock2011-jf} including their geospatial coordinates. The
-latitude was \(42.03 \pm 0.02)\) (mean ± standard deviation). Applying
+latitude was \(42.03 \pm 0.02)\) (mean \(\pm\) standard deviation). Applying
 conventional and invariant Yeo-Johnson transformations to latitude
 yielded the following results, see Figure
 \ref{fig:experimental-results-invariance}: no transformation (residual
@@ -1348,24 +1281,29 @@ transformation of features to normal distributions. The combination of
 both facilitate the use of power transformations in automated data
 analysis workflows.
 
-\section{Data and code availability}\label{data-and-code-availability}
+\backmatter
 
-Location- and scale-invariant power transformations were implemented in
+\section*{Declarations}
+
+\begin{itemize}
+\item Funding: No funding was received for conducting this study.
+\item Competing interests: The authors have no relevant financial or non-financial interests to disclose.
+\item Ethics approval and consent to participate: Not applicable
+\item Consent for publication: Not applicable
+\item Data availability: Data and results for the machine learning experiment are available
+from Zenodo (https://doi.org/10.5281/zenodo.13736671). The manuscript was created using R Markdown with integrated code and is
+available from the \texttt{power.transform} GitHub repository, together with intermediate analysis results
+for computationally intensive experiments.
+\item Materials availability: Not applicable
+\item Code availability: Location- and scale-invariant power transformations were implemented in
 the \texttt{power.transform} package for R, which is available from
 GitHub (https://github.com/oncoray/power.transform) and the CRAN
-repository (https://cran.r-project.org/package=power.transform).
-The manuscript was created using R Markdown and is likewise
-available from the \texttt{power.transform} GitHub repository. Data and
-results for the machine learning experiment are separately available
-from Zenodo (https://doi.org/10.5281/zenodo.13736671).
+repository (https://cran.r-project.org/package=power.transform). The manuscript was created using R Markdown with integrated code, and is available from the \texttt{power.transform} GitHub repository.
+\item Author contribution: Conceptualization: Alex Zwanenburg, Steffen L{\"o}ck; Methodology: Alex Zwanenburg; Formal analysis and investigation: Alex Zwanenburg; Writing - original draft preparation: Alex Zwanenburg; Writing - review and editing: Alex Zwanenburg, Steffen L{\"o}ck; Resources: Alex Zwanenburg, Steffen L{\"o}ck; Supervision: Steffen L{\"o}ck.
+\end{itemize}
 
-\section{Acknowledgements}\label{sec:acknowledgments}
+\begin{appendices}
 
-This research did not receive any specific grant from funding agencies in the public, commercial, or not-for-profit sectors.
-
-%% The Appendices part is started with the command \appendix;
-%% appendix sections are then done as normal sections
-\appendix
 \section{Log-likelihood functions for location and scale
 invariant power transformation}\label{appendix-a-log-likelihood-functions-for-location-and-scale-invariant-power-transformation}
 
@@ -1620,11 +1558,11 @@ EDF and the normal CDF, with differences at the upper and lower end of
 the normal CDF receiving more weight than those at the the centre of the
 CDF.
 
-\subsubsection{Cramér-von Mises
-criterion}\label{cramuxe9r-von-mises-criterion}
+\subsubsection{Cram{\'e}r-von Mises
+criterion}\label{cramer-von-mises-criterion}
 
-The Cramér-von Mises criterion is also based on the empirical
-distribution function of \(\mathbf{X}\). We define the Cramér-von Mises
+The Cram{\'e}r-von Mises criterion is also based on the empirical
+distribution function of \(\mathbf{X}\). We define the Cram{\'e}r-von Mises
 criterion as follows:
 
 \begin{equation}
@@ -1633,7 +1571,7 @@ U_{\text{CvM}} \left(\mathbf{X}, \lambda, x_0 \right) = \frac{1}{\sum_{i=1}^n w_
 
 Here \(w_i\) are weights, and \(\mu\) and \(\sigma\) are location and
 scale parameters. For non-robust power transformations, all \(w_i = 1\).
-The criterion is similar to the Cramér-von Mises test statistic \citep{Cramer1928-rc, Von_Mises1928-ef},
+The criterion is similar to the Cram{\'e}r-von Mises test statistic \citep{Cramer1928-rc, Von_Mises1928-ef},
 aside from a additive scalar value and the introduction of
 weights. This criterion, like the Anderson-Darling criterion, seeks to
 minimise the squared Euclidean distance between the EDF and the normal
@@ -1643,7 +1581,7 @@ instances equally.
 For conventional power transformations with a fixed shift parameter, the
 transformation \(\phi^{\lambda, x_0, s} (\mathbf{X})\) may be
 substituted by \(\phi^{\lambda} (\mathbf{X})\) in the definition of the
-Cramér-von Mises criterion.
+Cram{\'e}r-von Mises criterion.
 
 \subsection{Skewness-kurtosis-based
 criteria}\label{skewness-kurtosis-based-criteria}
@@ -1995,7 +1933,6 @@ distributions.
 \end{figure}
 
 \begin{table}
-\begin{center}
 \caption{Test statistic $\tau_{\text{ecn}}$ for empirical central normality at $\kappa = 0.80$ as a function of Type I error rate for several datasets.}
 \label{tab:empirical-central-normality-appendix}
 \begin{tabular}{l | c c c c c c c}
@@ -2012,7 +1949,6 @@ normal distr.            & 0.039 & 0.066 & 0.083 & 0.097 & 0.117 & 0.132 & 0.174
 \bottomrule
 
 \end{tabular}
-\end{center}
 \end{table}
 
 The results are shown in Figure
@@ -2037,7 +1973,6 @@ transformations have similar or lower residual errors compared to errors
 resulting from normalisation prior to transformation.
 
 \begin{table}
-\begin{center}
 \caption{Residual errors for features from real-world datasets after Yeo-Johnson transformation to normality. conv.: conventional; norm.: normalisation; rob.: robust}
 \label{tab:normalisation-before-transformation-appendix}
 \begin{tabular}{l | c c c c c}
@@ -2053,28 +1988,20 @@ fuel efficiency         &  54.5 &  55.3 &  49.0 &  53.3 &  44.0 \\
 arterial wall thickness & 110.1 &  30.0 &  19.3 &  31.8 &  12.2 \\
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
-%% For citations use:
-%%       \citet{<label>} ==> Lamport (1994)
-%%       \citep{<label>} ==> (Lamport, 1994)
-%%
-%% Example citation, See \citet{lamport94}.
+\end{appendices}
 
-%% If you have bib database file and want bibtex to generate the
-%% bibitems, please use
-%%
-%%  \bibliographystyle{elsarticle-harv}
-%%  \bibliography{<your bibdatabase>}
+%%===========================================================================================%%
+%% If you are submitting to one of the Nature Portfolio journals, using the eJP submission   %%
+%% system, please include the references within the manuscript file itself. You may do this  %%
+%% by copying the reference list from your .bbl file, paste it into the main manuscript .tex %%
+%% file, and delete the associated \verb+\bibliography+ commands.                            %%
+%%===========================================================================================%%
 
-\bibliographystyle{elsarticle-harv}
-\bibliography{refs}
+\bibliography{refs}% common bib file
+%% if required, the content of .bbl file can be included here once bbl is generated
+%%\input sn-article.bbl
+
 
 \end{document}
-
-\endinput
-%%
-%% End of file `elsarticle-template-harv.tex'.
-
-
