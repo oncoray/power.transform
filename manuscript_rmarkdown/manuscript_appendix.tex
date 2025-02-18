@@ -107,7 +107,7 @@
 
 \title{Appendix}
 \author{Alex Zwanenburg, Steffen Löck}
-\date{2024-10-17}
+\date{2025-02-18}
 
 \begin{document}
 \maketitle
@@ -784,28 +784,111 @@ transformation}\label{appendix-f-normalisation-before-transformation}
 
 An alternative to location- and scale-invariant transformations is
 normalising feature distributions prior to conventional transformations.
+We assessed two normalisation methods were used: 1. z-standardisation,
+i.e.~\(x^{\prime}_{i} = \left(x_i - \mu \right) / \sigma\), with \(\mu\)
+and \(\sigma\) the mean and standard deviation of feature
+\(\mathbf{X}\); and 2. robust scaling,
+i.e.~\(x^{\prime}_{i} = \left(x_i - \text{median}\left(\mathbf{X}\right) \right) / \text{IQR}\left(\mathbf{X}\right)\),
+with \(\text{IQR}\) representing the interquartile range of feature
+\(\mathbf{X}\).
+
 Table \ref{tab:normalisation-before-transformation-appendix} shows
-residual errors, after transformation to normality, of the five features
+residual errors after transformation to normality of the five features
 from real-world datasets presented previously in Appendix D and the main
-manuscript. In these examples location- and scale-invariant
-transformations have similar or lower residual errors compared to errors
-resulting from normalisation prior to transformation.
+manuscript. Table
+\ref{tab:normalisation-before-transformation-lambda-appendix} shows the
+corresponding values for transformation parameter \(\lambda\),
+\ref{tab:normalisation-before-transformation-p-value-appendix} shows
+p-values of the empirical central normality test. Normalisation prior to
+transformation prevents unexpectedly high \(\lambda\) values in the
+presence of large location shifts, as can be observed for the latitude
+feature. Normalisation prior to transformation, however, does not
+consistently improve residual errors after transformation.
+Interestingly, use of normalisation prior to transformation with robust
+power transformation using the method by Raymaekers and Rousseeuw
+(Raymaekers and Rousseeuw 2024) led to higher residual errors for
+arterial wall thickness, fuel efficiency and latitude features. This is
+similar to observations by Raymaekers and Rousseeuw (2024), who observed
+that their method can emphasize values of outliers after transformation.
+Location- and scale-invariant transformations have similar or lower
+residual errors compared to errors resulting from normalisation prior to
+transformation. Not surprisingly, normalisation before transformation
+does not noticeably improve central normality, as assessed using the
+empirical central normality test.
 
 \begin{table}
 \begin{center}
-\caption{Residual errors for features from real-world datasets after Yeo-Johnson transformation to normality. conv.: conventional; norm.: normalisation; rob.: robust}
+\caption{Residual errors for features from real-world datasets after Yeo-Johnson transformation to normality. 
+Several transformation methods include normalisation before tranformation, indicated by z-score normalisation (norm.) or robust scaling. 
+AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
 \label{tab:normalisation-before-transformation-appendix}
 \begin{tabular}{l | c c c c c}
 
 \toprule
-feature & none & conventional & conv. (z-score norm.) & conv. (rob. scaling) & invariant \\
+feature & age & AWT & FE & latitude & PBM \\
 
 \midrule
-age                     &  16.5 &  11.5 &  11.5 &  11.3 &   8.8 \\
-penguin body mass       &  48.0 &  32.2 &  33.3 &  32.2 &  26.8 \\
-latitude                & 328.1 & 319.0 & 326.2 & 324.5 & 326.4 \\
-fuel efficiency         &  54.5 &  55.3 &  49.0 &  53.3 &  44.0 \\
-arterial wall thickness & 110.1 &  30.0 &  19.3 &  31.8 &  12.2 \\
+none & 16.5 & 110.1 & 54.5 & 328.4 & 48.0 \\
+conventional & 11.5 & 30.0 & 55.3 & 319.0 & 32.2 \\
+conventional (z-score norm.) & 11.5 & 19.3 & 49.0 & 326.2 & 33.3 \\
+conventional (robust scaling) & 11.3 & 31.8 & 53.3 & 324.5 & 32.2 \\
+Raymaekers-Rousseeuw & 11.5 & 136.7 & 47.7 & 315.1 & 32.2 \\
+Raymaekers-Rousseeuw (z-score norm.) & 13.2 & 214.5 & 57.4 & 326.2 & 33.3 \\
+Raymaekers-Rousseeuw (robust scaling) & 11.7 & 281.3 & 57.0 & 324.5 & 32.0 \\
+invariant & 8.8 & 12.2 & 44.0 & 326.4 & 26.8 \\
+robust invariant & 10.6 & 27.1 & 49.5 & 310.6 & 23.1 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}
+\begin{center}
+\caption{Transformation parameter $\lambda$ for features from real-world datasets after Yeo-Johnson transformation to normality. 
+Several transformation methods include normalisation before tranformation, indicated by z-score normalisation (norm.) or robust scaling. 
+AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
+\label{tab:normalisation-before-transformation-lambda-appendix}
+\begin{tabular}{l | c c c c c}
+
+\toprule
+feature & age & AWT & FE & latitude & PBM \\
+
+\midrule
+conventional & 2.0 & -0.7 & -0.1 & 62.1 & -0.5 \\
+conventional (z-score norm.) & 1.2 & -1.7 & -0.1 & 1.3 & 0.6 \\
+conventional (robust scaling) & 1.3 & 0.0 & 0.2 & 1.4 & 0.4 \\
+Raymaekers-Rousseeuw & 2.0 & 1.1 & 0.8 & 95.4 & -0.5 \\
+Raymaekers-Rousseeuw (z-score norm.) & 1.3 & 1.4 & 1.0 & 1.3 & 0.6 \\
+Raymaekers-Rousseeuw (robust scaling) & 1.4 & 1.3 & 1.0 & 1.4 & 0.4 \\
+invariant & 1.3 & 0.2 & -1.3 & 1.5 & 0.5 \\
+robust invariant & 1.4 & -0.6 & 0.9 & 1.4 & 0.4 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}
+\begin{center}
+\caption{
+p-values of empirical central normality tests for features from real-world datasets after Yeo-Johnson transformation to normality.
+Several transformation methods include normalisation before tranformation, indicated by z-score normalisation (norm.) or robust scaling. 
+AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
+\label{tab:normalisation-before-transformation-p-value-appendix}
+\begin{tabular}{l | c c c c c}
+
+\toprule
+feature & age & AWT & FE & latitude & PBM \\
+
+\midrule
+none & 0.685 & 0.558 & 0.764 & 0.354 & 0.030 \\
+conventional & 0.886 & 0.010 & 0.012 & 0.317 & 0.381 \\
+conventional (z-score norm.) & 0.842 & 0.036 & 0.011 & 0.075 & 0.378 \\
+conventional (robust scaling) & 0.855 & 0.002 & 0.007 & 0.077 & 0.416 \\
+Raymaekers-Rousseeuw & 0.886 & 0.610 & 0.553 & 0.296 & 0.381 \\
+Raymaekers-Rousseeuw (z-score norm.) & 0.685 & 0.632 & 0.812 & 0.075 & 0.378 \\
+Raymaekers-Rousseeuw (robust scaling) & 0.826 & 0.609 & 0.813 & 0.077 & 0.434 \\
+invariant & 0.907 & 0.134 & 0.026 & 0.049 & 0.549 \\
+robust invariant & 0.781 & 0.102 & 0.583 & 0.085 & 0.717 \\
 \bottomrule
 \end{tabular}
 \end{center}

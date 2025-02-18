@@ -641,27 +641,33 @@ We assessed two normalisation methods were used:
 and 2. robust scaling, i.e. $x^{\prime}_{i} = \left(x_i - \text{median}\left(\mathbf{X}\right) \right) / \text{IQR}\left(\mathbf{X}\right)$, with $\text{IQR}$ representing the interquartile range of feature $\mathbf{X}$.
 
 Table \ref{tab:normalisation-before-transformation-appendix} shows residual errors after transformation to normality of the five features from real-world datasets presented previously in Appendix D and the main manuscript.
-Table \ref{tab:normalisation-before-transformation-lambda-appendix} shows the corresponding values for transformation parameter $\lambda$.
+Table \ref{tab:normalisation-before-transformation-lambda-appendix} shows the corresponding values for transformation parameter $\lambda$, 
+\ref{tab:normalisation-before-transformation-p-value-appendix} shows p-values of the empirical central normality test.
 Normalisation prior to transformation prevents unexpectedly high $\lambda$ values in the presence of large location shifts, as can be observed for the latitude feature.
 Normalisation prior to transformation, however, does not consistently improve residual errors after transformation. 
 Interestingly, use of normalisation prior to transformation with robust power transformation using the method by Raymaekers and Rousseeuw [@Raymaekers2024-zf] led to higher residual errors for arterial wall thickness, fuel efficiency and latitude features.
 This is similar to observations by @Raymaekers2024-zf, who observed that their method can emphasize values of outliers after transformation.
 Location- and scale-invariant transformations have similar or lower residual errors compared to errors resulting from normalisation prior to transformation.
+Not surprisingly, normalisation before transformation does not noticeably improve central normality, as assessed using the empirical central normality test. 
 
 ```{r include = FALSE, eval = FALSE}
 
 data <- .assess_standardisation_before_transformation()
-data <- data[, mget(c("residuals", "lambda", "transformation", "dataset"))]
+data <- data[, mget(c("residuals", "lambda", "p_value", "transformation", "dataset"))]
 data[, "residuals" := round(residuals, digits = 1L)]
 data[, "lambda" := round(lambda, digits = 1L)]
+data[, "p_value" := round(p_value, digits = 3L)]
 data.table::dcast(data, transformation ~ dataset, value.var = "residuals")
 data.table::dcast(data, transformation ~ dataset, value.var = "lambda")
+data.table::dcast(data, transformation ~ dataset, value.var = "p_value")
 ```
 
 ```{=latex}
 \begin{table}
 \begin{center}
-\caption{Residual errors for features from real-world datasets after Yeo-Johnson transformation to normality. AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
+\caption{Residual errors for features from real-world datasets after Yeo-Johnson transformation to normality. 
+Several transformation methods include normalisation before tranformation, indicated by z-score normalisation (norm.) or robust scaling. 
+AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
 \label{tab:normalisation-before-transformation-appendix}
 \begin{tabular}{l | c c c c c}
 
@@ -687,7 +693,9 @@ robust invariant & 10.6 & 27.1 & 49.5 & 310.6 & 23.1 \\
 ```{=latex}
 \begin{table}
 \begin{center}
-\caption{Transformation parameter $\lambda$ for features from real-world datasets after Yeo-Johnson transformation to normality. AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
+\caption{Transformation parameter $\lambda$ for features from real-world datasets after Yeo-Johnson transformation to normality. 
+Several transformation methods include normalisation before tranformation, indicated by z-score normalisation (norm.) or robust scaling. 
+AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
 \label{tab:normalisation-before-transformation-lambda-appendix}
 \begin{tabular}{l | c c c c c}
 
@@ -703,6 +711,35 @@ Raymaekers-Rousseeuw (z-score norm.) & 1.3 & 1.4 & 1.0 & 1.3 & 0.6 \\
 Raymaekers-Rousseeuw (robust scaling) & 1.4 & 1.3 & 1.0 & 1.4 & 0.4 \\
 invariant & 1.3 & 0.2 & -1.3 & 1.5 & 0.5 \\
 robust invariant & 1.4 & -0.6 & 0.9 & 1.4 & 0.4 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+```
+
+```{=latex}
+\begin{table}
+\begin{center}
+\caption{
+p-values of empirical central normality tests for features from real-world datasets after Yeo-Johnson transformation to normality.
+Several transformation methods include normalisation before tranformation, indicated by z-score normalisation (norm.) or robust scaling. 
+AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
+\label{tab:normalisation-before-transformation-p-value-appendix}
+\begin{tabular}{l | c c c c c}
+
+\toprule
+feature & age & AWT & FE & latitude & PBM \\
+
+\midrule
+none & 0.685 & 0.558 & 0.764 & 0.354 & 0.030 \\
+conventional & 0.886 & 0.010 & 0.012 & 0.317 & 0.381 \\
+conventional (z-score norm.) & 0.842 & 0.036 & 0.011 & 0.075 & 0.378 \\
+conventional (robust scaling) & 0.855 & 0.002 & 0.007 & 0.077 & 0.416 \\
+Raymaekers-Rousseeuw & 0.886 & 0.610 & 0.553 & 0.296 & 0.381 \\
+Raymaekers-Rousseeuw (z-score norm.) & 0.685 & 0.632 & 0.812 & 0.075 & 0.378 \\
+Raymaekers-Rousseeuw (robust scaling) & 0.826 & 0.609 & 0.813 & 0.077 & 0.434 \\
+invariant & 0.907 & 0.134 & 0.026 & 0.049 & 0.549 \\
+robust invariant & 0.781 & 0.102 & 0.583 & 0.085 & 0.717 \\
 \bottomrule
 \end{tabular}
 \end{center}
