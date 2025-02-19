@@ -90,18 +90,3 @@ results <- familiar.experiment::run_experiment(
   n_repetitions = 5L,
   n_nodes = 18L
 )
-
-# Experiment with offset -------------------------------------------------------
-
-experiment_dir <- r"(C:\Users\alexz\Documents\GitHub\power.transform\manuscript\ml_experiment_offset)"
-
-results <- familiar.experiment::run_experiment(
-  experiment_dir = experiment_dir,
-  experiment_configs = configurations,
-  fixed_familiar_parameters = list(
-    "fs_method" = "mim"
-  ),
-  n_repetitions = 5L,
-  numeric_offset = 1E4,
-  n_nodes = 18L
-)
