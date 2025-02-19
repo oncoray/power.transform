@@ -605,7 +605,7 @@ We then consider the empirical probability of type I errors: the probability of 
 Under the assumption that the asymmetric generalised normal distributions are centrally normal after robust transformation, this produces the relationship shown in Figure \ref{fig:empirical-central-normality-type-1-error-rate}.
 Since for $\kappa \leq 0.80$ error curves for both transformation methods are similar, we fix the value of the central portion $\kappa$ to 0.80.
 In the remaining we will use the empirical central normality test statistic values defined using robust location- and scale-invariant Yeo-Johnson transformations, as it is more conservative (see Appendix E).
-This leads to test statistic values listed in Table \ref{tab:empirical-central-normality}
+This leads to test statistic values listed in Table \ref{tab:empirical-central-normality}.
 
 ```{r empirical-central-normality-type-1-error-rate, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=3.0}
 cap <- paste0(
