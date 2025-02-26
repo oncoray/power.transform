@@ -2010,6 +2010,8 @@
   # Strip details from experiment_parameters
   data[, "experiment_parameters" := sub(pattern = "_glm", replacement = "", x = experiment_parameters)]
   data[, "experiment_parameters" := sub(pattern = "_rf", replacement = "", x = experiment_parameters)]
+  data[, "experiment_parameters" := sub(pattern = "_xgboost", replacement = "", x = experiment_parameters)]
+  data[, "experiment_parameters" := sub(pattern = "_lasso", replacement = "", x = experiment_parameters)]
   data[, "experiment_parameters" := sub(pattern = "config_", replacement = "", x = experiment_parameters)]
 
   # Detail transformation method.
@@ -2055,17 +2057,17 @@
   data[, "value_rank" := (value_rank - min(value_rank)) / (max(value_rank) - min(value_rank)), by = c("dataset") ]
 
   # Select subset of data.
-  if (subset == "numeric") {
-    feature_data <- .get_ml_experiment_feature_statistics(manuscript_dir = manuscript_dir)
-    feature_data[, "dataset_real" := gsub(pattern = "_data.RDS", replacement = "", x = dataset, fixed = TRUE)]
-    data <- data[dataset %in% feature_data$dataset_real]
-
-  } else if (subset == "numeric_high_shift") {
-    feature_data <- .get_ml_experiment_feature_statistics(manuscript_dir = manuscript_dir)
-    feature_data <- feature_data[abs(mu) > 500.0]
-    feature_data[, "dataset_real" := gsub(pattern = "_data.RDS", replacement = "", x = dataset, fixed = TRUE)]
-    data <- data[dataset %in% feature_data$dataset_real]
-  }
+  # if (subset == "numeric") {
+  #   feature_data <- .get_ml_experiment_feature_statistics(manuscript_dir = manuscript_dir)
+  #   feature_data[, "dataset_real" := gsub(pattern = "_data.RDS", replacement = "", x = dataset, fixed = TRUE)]
+  #   data <- data[dataset %in% feature_data$dataset_real]
+  #
+  # } else if (subset == "numeric_high_shift") {
+  #   feature_data <- .get_ml_experiment_feature_statistics(manuscript_dir = manuscript_dir)
+  #   feature_data <- feature_data[abs(mu) > 500.0]
+  #   feature_data[, "dataset_real" := gsub(pattern = "_data.RDS", replacement = "", x = dataset, fixed = TRUE)]
+  #   data <- data[dataset %in% feature_data$dataset_real]
+  # }
 
   return(data)
 }
