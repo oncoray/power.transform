@@ -2426,6 +2426,10 @@ get_annotation_settings <- function(ggtheme = NULL) {
   # Get ML experiment data.
   data <- .get_ml_experiment_data(manuscript_dir = manuscript_dir, subset = subset)
 
+  # Drop single dataset classified as "unsolvable".
+  data <- data[task_difficulty != "unsolvable"]
+  data$task_difficulty <- droplevels(data$task_difficulty)
+
   # Build a random forest to create latent representations of the data.
   model_data <- data[, mget(c("learner", "transformation_method", "normalisation_method", "task_difficulty", "value_rank"))]
   model <- ranger::ranger(
@@ -2453,25 +2457,62 @@ get_annotation_settings <- function(ggtheme = NULL) {
     ordered=TRUE
   )
 
-  difficulty_levels <- c("all", "very_easy", "easy", "intermediate", "difficult", "very_difficult", "unsolvable")
-  difficulty_labels <- c("overall", "very easy", "easy", "intermediate", "difficult", "very difficult", "unsolvable")
+  # difficulty_levels <- c("all", "very_easy", "easy", "intermediate", "difficult", "very_difficult", "unsolvable")
+  # difficulty_labels <- c("overall", "very easy", "easy", "intermediate", "difficult", "very difficult", "unsolvable")
+  difficulty_levels <- c("all", "very_easy", "easy", "intermediate", "difficult", "very_difficult")
+  difficulty_labels <- c("overall", "very easy", "easy", "intermediate", "difficult", "very difficult")
 
   # Effect of learner ----------------------------------------------------------
   result_list <- list()
-  x <- predict(model, data = abstract_data[learner == "random_forest_ranger"])$predictions -
-    predict(model, data = abstract_data[learner == "glm"])$predictions
-  result_list <- c(result_list, list(data.table::data.table("value" = mean(x), "task_difficulty" = "all")))
+  learners <- levels(data$learner)
 
-  for (difficulty in levels(abstract_data$task_difficulty)) {
-    x <- predict(model, data = abstract_data[learner == "random_forest_ranger" & task_difficulty == difficulty])$predictions -
-      predict(model, data = abstract_data[learner == "glm" & task_difficulty == difficulty])$predictions
-    result_list <- c(result_list, list(data.table::data.table("value" = mean(x), "task_difficulty" = difficulty)))
+  for (learner_a in learners) {
+    for (learner_b in learners) {
+      if (learner_a == learner_b) next
+
+      x <- predict(model, data = abstract_data[learner == learner_a])$predictions -
+        predict(model, data = abstract_data[learner == learner_b])$predictions
+
+      result_list <- c(
+        result_list,
+        list(data.table::data.table(
+          "value" = mean(x),
+          "task_difficulty" = "all",
+          "learner_1" = learner_a,
+          "learner_2" = learner_b
+        ))
+      )
+
+      for (difficulty in levels(abstract_data$task_difficulty)) {
+        x <- predict(model, data = abstract_data[learner == learner_a & task_difficulty == difficulty])$predictions -
+          predict(model, data = abstract_data[learner == learner_b & task_difficulty == difficulty])$predictions
+
+        result_list <- c(
+          result_list,
+          list(data.table::data.table(
+            "value" = mean(x),
+            "task_difficulty" = difficulty,
+            "learner_1" = learner_a,
+            "learner_2" = learner_b
+          ))
+        )
+      }
+    }
   }
+
   data_1 <- data.table::rbindlist(result_list)
   data_1$task_difficulty <- factor(
     data_1$task_difficulty,
     levels = difficulty_levels,
     labels = difficulty_labels
+  )
+  data_1$learner_1 <- factor(
+    data_1$learner_1,
+    levels = learners
+  )
+  data_1$learner_2 <- factor(
+    data_1$learner_2,
+    levels = learners
   )
 
 

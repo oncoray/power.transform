@@ -817,29 +817,29 @@ Robust transformations produce distributions that are centrally normal (empirica
 
 ## Integration into end-to-end machine learning
 
-We used 285 datasets from the Penn Machine Learning Benchmarks collection [@Romano2022-gq].
-In this collection, 122 datasets correspond to regression tasks and 163 datasets
+We used 231 datasets containing at least one numeric feature from the Penn Machine Learning Benchmarks collection [@Romano2022-gq].
+In this collection, 114 datasets correspond to regression tasks and 117 datasets
 to classification tasks. Using the familiar auto-machine learning library [@Zwanenburg2021-so] (version 1.5.0),
-each dataset was used to train a model for each of 16 process configurations.
-Each process configuration specifies the learner (generalised linear model or
+each dataset was used to train a model for each of 32 process configurations.
+Each process configuration specifies the learner (generalised linear model, L1-regularised linear models (Lasso), gradient boosted linear model, or
 random forest), transformation method (none, conventional Yeo-Johnson, robust
 invariant Yeo-Johnson, robust invariant Yeo-Johnson with empirical central
 normality test (rejecting transformations with $p \leq 0.01$), and normalisation method (none,
-$z$-standardisation), yielding 16 distinct configurations.
+$z$-standardisation), yielding 32 distinct configurations.
 Before each experiment, each dataset was randomly split into a training (70%)
-and holdout test (30%) set five times. Thus, a total of 22800 models were
+and holdout test (30%) set five times. Thus, a total of 27720 models were
 created. Each model was then evaluated using the holdout test set using one of
 two metrics, i.e. the root relative squared error (RRSE) for regression tasks and the
 area under the receiver operating characteristic curve (AUC) for classification tasks.
 
 For the purpose of assessing the effect of the difficulty of the task, we computed the median performance score over all models for each dataset and assigned one the following categories:
 
-* very easy: $\text{AUC} \geq 0.90$ or $\text{RRSE} \leq 0.10$ (87 datasets)
-* easy: $0.90 > \text{AUC} \geq 0.80$ or $0.30 \geq \text{RRSE} > 0.10$ (46 datasets)
-* intermediate: $0.80 > \text{AUC} \geq 0.70$ or $0.60 \geq \text{RRSE} > 0.30$ (72 datasets)
-* difficult: $0.70 > \text{AUC} \geq 0.60$ or $0.80 \geq \text{RRSE} > 0.60$ (60 datasets)
-* very difficult: $0.60 > \text{AUC} \geq 0.50$ or $1.00 \geq \text{RRSE} > 0.80$ (12 datasets)
-* unsolvable: $\text{AUC} < 0.50$ or $\text{RRSE} > 1.00$ (8 datasets)
+* very easy: $\text{AUC} \geq 0.90$ or $\text{RRSE} \leq 0.10$ (59 datasets)
+* easy: $0.90 > \text{AUC} \geq 0.80$ or $0.30 \geq \text{RRSE} > 0.10$ (40 datasets)
+* intermediate: $0.80 > \text{AUC} \geq 0.70$ or $0.60 \geq \text{RRSE} > 0.30$ (50 datasets)
+* difficult: $0.70 > \text{AUC} \geq 0.60$ or $0.80 \geq \text{RRSE} > 0.60$ (32 datasets)
+* very difficult: $0.60 > \text{AUC} \geq 0.50$ or $1.00 \geq \text{RRSE} > 0.80$ (49 datasets)
+* unsolvable: $\text{AUC} < 0.50$ or $\text{RRSE} > 1.00$ (1 dataset)
 
 To remove the effect of the dataset, and allow for comparing metrics, we ranked all performance scores for each dataset so that a higher rank corresponds to better performance.
 Experiments yielding the same score received the same, average, rank.
@@ -867,19 +867,21 @@ Significant differences exist between process configurations (Friedman test: $p 
 data <- .get_ml_experiment_data(manuscript_dir = manuscript_dir)
 
 # Convert to data matrix. First aggregate within each experiment because the
-# Wilcoxon signed rank test is not for repeated measurements.
+# Friedman test is not for repeated measurements.
 data <- data.table::dcast(
   data,
   dataset ~ learner, value.var="value_rank",
   fun.aggregate = mean
 )
 
-h_learner <- stats::wilcox.test(
-    x = data[["random_forest_ranger"]],
-    y = data[["glm"]],
-    paired = TRUE,
-    alternative = "two.sided"
-)
+h_learner <- friedman.test(as.matrix(data[, "dataset" := NULL]))
+
+# h_learner <- stats::wilcox.test(
+#     x = data[["random_forest_ranger"]],
+#     y = data[["glm"]],
+#     paired = TRUE,
+#     alternative = "two.sided"
+# )
 ```
 
 ```{r include = FALSE, eval = TRUE}
@@ -917,8 +919,7 @@ data <- data.table::dcast(
 h_transformation <- friedman.test(as.matrix(data[, "dataset" := NULL]))
 ```
 
-Here we focus on the subset of 232 datasets that contain numeric features. 
-Considering single process parameters, the choice of learner (Wilcoxon signed rank test: $p < 10^{-8})$) and normalisation method (Wilcoxon signed rank test: $p = 0.007$) had a significant impact (at significance level $p = 0.050$), but transformation method (Friedman test: $p = 0.054$) did not.
+Considering single process parameters, the choice of learner (Friedman test: $p < 10^{-8})$), normalisation method (Wilcoxon signed rank test: $p < 10^{-5}$), and transformation method $p = 0.006$, all had a significant impact (at significance level $p = 0.05$).
 
 To estimate the marginal effects of process parameters, including transformation method, we first fit a regression random forest (ranger package [@Wright2017-rf] version 0.16.0): 2000 trees, minimum node size 2, other hyperparameters default) with process parameters and task difficulty as predictors and normalised rank as response variable.
 The estimated marginal effects are shown in Figure \ref{fig:marginal-effect-plot}.
