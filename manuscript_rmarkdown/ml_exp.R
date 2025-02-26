@@ -112,6 +112,44 @@ configurations <- list(
     "transformation_method" = "yeo_johnson_conventional",
     "learner" = "xgboost_lm",
     "normalisation_method" = "none"
+  ),
+  "config_no_transformation_lasso" = list(
+    "transformation_method" = "none",
+    "learner" = "lasso"
+  ),
+  "config_no_transformation_lasso_no_normalisation" = list(
+    "transformation_method" = "none",
+    "learner" = "lasso",
+    "normalisation_method" = "none"
+  ),
+  "config_invariant_robust_lasso" = list(
+    "transformation_method" = "yeo_johnson_robust",
+    "learner" = "lasso"
+  ),
+  "config_invariant_robust_lasso_no_normalisation" = list(
+    "transformation_method" = "yeo_johnson_robust",
+    "learner" = "lasso",
+    "normalisation_method" = "none"
+  ),
+  "config_invariant_robust_gof_lasso" = list(
+    "transformation_method" = "yeo_johnson_robust",
+    "transformation_gof_test_p_value" = 0.01,
+    "learner" = "lasso"
+  ),
+  "config_invariant_robust_gof_lasso_no_normalisation" = list(
+    "transformation_method" = "yeo_johnson_robust",
+    "transformation_gof_test_p_value" = 0.01,
+    "learner" = "lasso",
+    "normalisation_method" = "none"
+  ),
+  "config_conventional_lasso" = list(
+    "transformation_method" = "yeo_johnson_conventional",
+    "learner" = "lasso"
+  ),
+  "config_conventional_lasso_no_normalisation" = list(
+    "transformation_method" = "yeo_johnson_conventional",
+    "learner" = "lasso",
+    "normalisation_method" = "none"
   )
 )
 
