@@ -834,11 +834,11 @@ area under the receiver operating characteristic curve (AUC) for classification 
 
 For the purpose of assessing the effect of the difficulty of the task, we computed the median performance score over all models for each dataset and assigned one the following categories:
 
-* very easy: $\text{AUC} \geq 0.90$ or $\text{RRSE} \leq 0.10$ (59 datasets)
+* very easy: $\text{AUC} \geq 0.90$ or $\text{RRSE} \leq 0.10$ (57 datasets)
 * easy: $0.90 > \text{AUC} \geq 0.80$ or $0.30 \geq \text{RRSE} > 0.10$ (40 datasets)
-* intermediate: $0.80 > \text{AUC} \geq 0.70$ or $0.60 \geq \text{RRSE} > 0.30$ (50 datasets)
-* difficult: $0.70 > \text{AUC} \geq 0.60$ or $0.80 \geq \text{RRSE} > 0.60$ (32 datasets)
-* very difficult: $0.60 > \text{AUC} \geq 0.50$ or $1.00 \geq \text{RRSE} > 0.80$ (49 datasets)
+* intermediate: $0.80 > \text{AUC} \geq 0.70$ or $0.60 \geq \text{RRSE} > 0.30$ (52 datasets)
+* difficult: $0.70 > \text{AUC} \geq 0.60$ or $0.80 \geq \text{RRSE} > 0.60$ (33 datasets)
+* very difficult: $0.60 > \text{AUC} \geq 0.50$ or $1.00 \geq \text{RRSE} > 0.80$ (48 datasets)
 * unsolvable: $\text{AUC} < 0.50$ or $\text{RRSE} > 1.00$ (1 dataset)
 
 To remove the effect of the dataset, and allow for comparing metrics, we ranked all performance scores for each dataset so that a higher rank corresponds to better performance.
@@ -919,7 +919,7 @@ data <- data.table::dcast(
 h_transformation <- friedman.test(as.matrix(data[, "dataset" := NULL]))
 ```
 
-Considering single process parameters, the choice of learner (Friedman test: $p < 10^{-8})$), normalisation method (Wilcoxon signed rank test: $p < 10^{-5}$), and transformation method $p = 0.006$, all had a significant impact (at significance level $p = 0.05$).
+Considering single process parameters, the choice of learner (Friedman test: $p < 10^{-8})$), normalisation method (Wilcoxon signed rank test: $p < 10^{-8}$), and transformation method $p = 0.007$, all had a significant impact (at significance level $p = 0.05$).
 
 To estimate the marginal effects of process parameters, including transformation method, we first fit a regression random forest (ranger package [@Wright2017-rf] version 0.16.0): 2000 trees, minimum node size 2, other hyperparameters default) with process parameters and task difficulty as predictors and normalised rank as response variable.
 The estimated marginal effects are shown in Figure \ref{fig:marginal-effect-plot}.
@@ -1019,7 +1019,7 @@ The combination of both facilitate the use of power transformations in automated
 
 # Data and code availability
 
-Location- and scale-invariant power transformations were implemented in the `power.transform` package for R, which is available from [GitHub](https://github.com/oncoray/power.transform) and the [CRAN repository](https://cran.r-project.org/package=power.transform). The manuscript was created using R Markdown and is likewise available from the `power.transform` GitHub repository. Data and results for the machine learning experiment are separately available from [Zenodo](https://doi.org/10.5281/zenodo.13736671).
+Location- and scale-invariant power transformations were implemented in the `power.transform` package for R, which is available from [GitHub](https://github.com/oncoray/power.transform) and the [CRAN repository](https://cran.r-project.org/package=power.transform). The manuscript was created using R Markdown and is likewise available from the `power.transform` GitHub repository. Data and results for the machine learning experiment are separately available from [Zenodo](https://doi.org/10.5281/zenodo.14986689).
 
 
 # References
