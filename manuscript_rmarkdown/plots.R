@@ -2790,3 +2790,70 @@ get_annotation_settings <- function(ggtheme = NULL) {
   return(p)
 }
 
+
+.plot_test_dependency_sample_size <- function() {
+  n_rep <- 10L
+  k <- 0.10
+
+  # From 5 to 1000 in equal steps (log 10 scale)
+  n <- 10^(seq(from = 0.75, to = 3.0, by = 0.125))
+
+  set.seed(19L)
+
+  data <- list()
+  for (ii in seq_along(n)) {
+    # Repeat 1000 times.
+    for (jj in seq_len(n_rep)) {
+      x <- power.transform::ragn(floor(n[ii]), location = 0, scale = 1 / sqrt(2), alpha = 0.5, beta = 2)
+
+      # Compute upper and lower quartiles, and IQR.
+      q_lower <- stats::quantile(x, probs = 0.25, names = FALSE)
+      q_upper <- stats::quantile(x, probs = 0.75, names = FALSE)
+      interquartile_range <- stats::IQR(x)
+
+      # Set data where the outliers will be copied into.
+      x_outlier <- x
+
+      # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
+      # than Q3 + 1.5 IQR.
+      n_draw <- ceiling(k * length(x))
+      x_random <- stats::runif(n_draw, min = -2.0, max = 2.0)
+
+
+      outlier <- numeric(n_draw)
+      if (any(x_random < 0)) {
+        outlier[x_random < 0] <- q_lower - 1.5 * interquartile_range + x_random[x_random < 0] * interquartile_range
+      }
+
+      if (any(x_random >= 0)) {
+        outlier[x_random >= 0] <- q_upper + 1.5 * interquartile_range + x_random[x_random >= 0] * interquartile_range
+      }
+
+      # Randomly insert outlier values.
+      x_outlier[sample(seq_along(x), size = n_draw, replace = FALSE)] <- outlier
+
+      data[[jj + (ii - 1L) * n_rep]] <- data.table::data.table(
+        "n" = n[ii],
+        "p_ecn" = power.transform::assess_transformation(
+          x = x,
+          transformer = power.transform::find_transformation_parameters(
+            x = x,
+            method = "none"
+          ),
+          verbose = FALSE
+        ),
+        "p_shap_wilk" = shapiro.test(x)$p.value,
+        "p_ecn_outlier" = power.transform::assess_transformation(
+          x = x_outlier,
+          transformer = power.transform::find_transformation_parameters(
+            x = x_outlier,
+            method = "none"
+          ),
+          verbose = FALSE
+        ),
+        "p_shap_wilk_outlier" = shapiro.test(x_outlier)$p.value
+      )
+    }
+  }
+
+}
