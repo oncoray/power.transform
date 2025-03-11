@@ -2791,69 +2791,134 @@ get_annotation_settings <- function(ggtheme = NULL) {
 }
 
 
-.plot_test_dependency_sample_size <- function() {
-  n_rep <- 10L
+.plot_test_dependency_sample_size <- function(manuscript_dir, plot_theme) {
+  n_rep <- 1000L
   k <- 0.10
 
   # From 5 to 1000 in equal steps (log 10 scale)
   n <- 10^(seq(from = 0.75, to = 3.0, by = 0.125))
 
-  set.seed(19L)
+  if (!file.exists(file.path(manuscript_dir, "sample_size_dependency.RDS"))) {
+    set.seed(19L)
 
-  data <- list()
-  for (ii in seq_along(n)) {
-    # Repeat 1000 times.
-    for (jj in seq_len(n_rep)) {
-      x <- power.transform::ragn(floor(n[ii]), location = 0, scale = 1 / sqrt(2), alpha = 0.5, beta = 2)
+    data <- list()
+    for (ii in seq_along(n)) {
+      # Repeat 1000 times.
+      for (jj in seq_len(n_rep)) {
+        x <- power.transform::ragn(floor(n[ii]), location = 0, scale = 1 / sqrt(2), alpha = 0.5, beta = 2)
 
-      # Compute upper and lower quartiles, and IQR.
-      q_lower <- stats::quantile(x, probs = 0.25, names = FALSE)
-      q_upper <- stats::quantile(x, probs = 0.75, names = FALSE)
-      interquartile_range <- stats::IQR(x)
+        # Compute upper and lower quartiles, and IQR.
+        q_lower <- stats::quantile(x, probs = 0.25, names = FALSE)
+        q_upper <- stats::quantile(x, probs = 0.75, names = FALSE)
+        interquartile_range <- stats::IQR(x)
 
-      # Set data where the outliers will be copied into.
-      x_outlier <- x
+        # Set data where the outliers will be copied into.
+        x_outlier <- x
 
-      # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
-      # than Q3 + 1.5 IQR.
-      n_draw <- ceiling(k * length(x))
-      x_random <- stats::runif(n_draw, min = -2.0, max = 2.0)
+        # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
+        # than Q3 + 1.5 IQR.
+        n_draw <- ceiling(k * length(x))
+        x_random <- stats::runif(n_draw, min = -2.0, max = 2.0)
 
 
-      outlier <- numeric(n_draw)
-      if (any(x_random < 0)) {
-        outlier[x_random < 0] <- q_lower - 1.5 * interquartile_range + x_random[x_random < 0] * interquartile_range
-      }
+        outlier <- numeric(n_draw)
+        if (any(x_random < 0)) {
+          outlier[x_random < 0] <- q_lower - 1.5 * interquartile_range + x_random[x_random < 0] * interquartile_range
+        }
 
-      if (any(x_random >= 0)) {
-        outlier[x_random >= 0] <- q_upper + 1.5 * interquartile_range + x_random[x_random >= 0] * interquartile_range
-      }
+        if (any(x_random >= 0)) {
+          outlier[x_random >= 0] <- q_upper + 1.5 * interquartile_range + x_random[x_random >= 0] * interquartile_range
+        }
 
-      # Randomly insert outlier values.
-      x_outlier[sample(seq_along(x), size = n_draw, replace = FALSE)] <- outlier
+        # Randomly insert outlier values.
+        x_outlier[sample(seq_along(x), size = n_draw, replace = FALSE)] <- outlier
 
-      data[[jj + (ii - 1L) * n_rep]] <- data.table::data.table(
-        "n" = n[ii],
-        "p_ecn" = power.transform::assess_transformation(
-          x = x,
-          transformer = power.transform::find_transformation_parameters(
-            x = x,
-            method = "none"
+        data[[jj + (ii - 1L) * n_rep]] <- data.table::data.table(
+          "n" = n[ii],
+          "p_value" = c(
+            power.transform::assess_transformation(
+              x = x,
+              transformer = power.transform::find_transformation_parameters(
+                x = x,
+                method = "none"
+              ),
+              verbose = FALSE
+            ),
+            power.transform::assess_transformation(
+              x = x_outlier,
+              transformer = power.transform::find_transformation_parameters(
+                x = x_outlier,
+                method = "none"
+              ),
+              verbose = FALSE
+            ),
+            shapiro.test(x)$p.value,
+            shapiro.test(x_outlier)$p.value
           ),
-          verbose = FALSE
-        ),
-        "p_shap_wilk" = shapiro.test(x)$p.value,
-        "p_ecn_outlier" = power.transform::assess_transformation(
-          x = x_outlier,
-          transformer = power.transform::find_transformation_parameters(
-            x = x_outlier,
-            method = "none"
-          ),
-          verbose = FALSE
-        ),
-        "p_shap_wilk_outlier" = shapiro.test(x_outlier)$p.value
-      )
+          "outlier" = c(FALSE, TRUE, FALSE, TRUE),
+          "test" = factor(c("ECN", "ECN", "SW", "SW"), levels = c("SW", "ECN"))
+        )
+      }
     }
+
+    # Aggregate to single table.
+    data <- data.table::rbindlist(data)
+
+  } else {
+    data <- readRDS(file.path(manuscript_dir, "sample_size_dependency.RDS"))
   }
 
+  # Compute type I error rate (i.e. fraction of distributions that are centrally
+  # normal are rejected by the test).
+  data[, "rejected" := p_value <= 0.05]
+  data <- data[, list("type_1_error_rate" = sum(rejected) / .N), by = c("n", "outlier", "test")]
+
+  p <- ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = .data$n,
+      y = .data$type_1_error_rate,
+      colour = .data$test
+    )
+  )
+  p <- p + plot_theme
+  p <- p + ggplot2::geom_hline(
+    yintercept = 0.05,
+    linetype = "longdash",
+    colour = "grey40"
+  )
+  p <- p + ggplot2::scale_x_log10(name = "n")
+  p <- p + ggplot2::scale_y_sqrt(
+    name = "Type I error rate",
+    limits = c(0.0, 1.0)
+  )
+  p <- p + ggplot2::scale_colour_discrete(
+    name = "central normality test",
+    type = c(
+      "ECN" = "#4E79A7",
+      "SW" = "#F28E2B"
+    ),
+    breaks = c("ECN", "SW"),
+    labels = c("ECN test", "Shapiro-Wilk test")
+  )
+
+
+  # W/O outliers ---------------------------------------------------------------
+  p_no_outliers <- p + ggplot2::geom_line(
+    data = data[outlier == FALSE])
+  p_no_outliers <- p_no_outliers + ggplot2::ggtitle("without outliers")
+
+  # W outliers -----------------------------------------------------------------
+  p_outliers <- p + ggplot2::geom_line(data = data[outlier == TRUE])
+  p_outliers <- p_outliers + ggplot2::ggtitle("with outliers")
+  p_outliers <- p_outliers + ggplot2::theme(
+    axis.text.y = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank()
+  )
+
+  # Patch all the plots together.
+  p <- p_no_outliers + p_outliers + patchwork::plot_layout(
+    ncol = 2,
+    guides = "collect"
+  )
 }
