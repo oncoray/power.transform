@@ -190,7 +190,7 @@ setMethod(
 
 
 
-.interpolate_2d <- function(data, x_interp, limited = TRUE) {
+.interpolate_2d <- function(x_interp, data, limited = TRUE) {
   # Bi-linear interpolation. data: data.table with three columns that is
   # organised as a 3D grid. x_interp: named list with two elements of length 1.
   # limited: whether values outside the grid should be limited to the extremes
