@@ -187,3 +187,75 @@ setMethod(
       "p_observed" = (seq_along(x) - 1 / 3) / (length(x) + 1 / 3)))
   }
 )
+
+
+
+.interpolate_2d <- function(data, x_interp, limited = TRUE) {
+  # Bi-linear interpolation. data: data.table with three columns that is
+  # organised as a 3D grid. x_interp: named list with two elements of length 1.
+  # limited: whether values outside the grid should be limited to the extremes
+  # of the grid.
+
+  # Get names corresponding to x and y variables.
+  x_name <- names(x_interp)[1L]
+  y_name <- names(x_interp)[2L]
+  z_name <- setdiff(colnames(data), c(x_name, y_name))
+
+  # Get interpolation position.
+  x_0 <- x_interp[[x_name]][1L]
+  y_0 <- x_interp[[y_name]][1L]
+
+  # Find nearest points to interpolation position..
+  x <- unique(sort(data[[x_name]]))
+  y <- unique(sort(data[[y_name]]))
+
+  # Lower and upper values of x.
+  x_l <- tail(x[x < x_0], n = 1L)
+  x_u <- head(x[x >= x_0], n = 1L)
+
+  if (length(x_l) == 0L) {
+    if (!limited && x_u != x_0) return(NA_real_)
+    x_l <- x_u
+  }
+  if (length(x_u) == 0L) {
+    if (!limited) return(NA_real_)
+    x_u <- x_l
+  }
+
+  # Lower and upper values of y.
+  y_l <- tail(y[y < y_0], n = 1L)
+  y_u <- head(y[y >= y_0], n = 1L)
+
+  if (length(y_l) == 0L) {
+    if (!limited && y_u != y_0) return(NA_real_)
+    y_l <- y_u
+  }
+  if (length(y_u) == 0L) {
+    if (!limited) return(NA_real_)
+    y_u <- y_l
+  }
+
+  # Find values.
+  z_ll <- data[get(x_name) == x_l & get(y_name) == y_l, get(z_name)][1L]
+  z_ul <- data[get(x_name) == x_u & get(y_name) == y_l, get(z_name)][1L]
+  z_lu <- data[get(x_name) == x_l & get(y_name) == y_u, get(z_name)][1L]
+  z_uu <- data[get(x_name) == x_u & get(y_name) == y_u, get(z_name)][1L]
+
+  if (x_l == x_u) {
+    z_0l <- z_ll
+    z_0u <- z_uu
+
+  } else {
+    z_0l <- (x_u - x_0) / (x_u - x_l) * z_ll + (x_0 - x_l) / (x_u - x_l) * z_ul
+    z_0u <- (x_u - x_0) / (x_u - x_l) * z_lu + (x_0 - x_l) / (x_u - x_l) * z_uu
+  }
+
+  if (y_l == y_u) {
+    z_00 <- z_0l
+
+  } else {
+    z_00 <- (y_u - y_0) / (y_u - y_l) * z_0l + (y_0 - y_l) / (y_u - y_l) * z_0u
+  }
+
+  return(z_00)
+}
