@@ -37,35 +37,71 @@ assess_transformation <- function(
     verbose = TRUE,
     ...) {
 
+  # Perform test.
+  h <- ecn.test(x = x, transformer = transformer)
+
+  if (is.na(h$p_value)) {
+    message("p-value could not be determined.")
+  } else if (h$p_value == 0.0 && verbose) {
+    message("p-value is smaller than 10^-4")
+  }
+
+  return(h$p_value)
+}
+
+
+
+#' Empirical central normality test
+#'
+#' Assesses empirical central normality of input data
+#'
+#' @param x vector of input data, of at least length 5.
+#' @param transformer A transformer object created using
+#'   `find_transformation_parameters`. Optional, if present residuals are
+#'   determined from x after transformation.
+#'
+#' @return list with mean absolute error (`tau`) and p-value (`p_value`) for
+#'   empirical central normality test.
+#' @export
+ecn.test <- function(x, transformer = NULL) {
+
   # Prevent CRAN NOTE due to non-standard use of variables by data.table.
   p_observed <- alpha <- NULL
 
-  # Compute fit data.
-  residual_data <- get_residuals(
-    x = x,
-    transformer = transformer)
-
-  # The test uses a central portion kappa = 0.80.
-  residual_data <- residual_data[p_observed >= 0.10 & p_observed <= 0.90]
-
-  test_statistic_value <- mean(abs(residual_data$residual))
-
-  if (test_statistic_value < min(gof_lookup_table$test_statistic)) return(1.0)
-  if (test_statistic_value > gof_lookup_table[alpha == 0.0001]$test_statistic) {
-
-    if (verbose) message("p-value is smaller than 10^-4")
-
-    return(0.0)
+  # To use get_residuals we need to have a transformer. We just obfuscate this
+  # by creating a dud transformer.
+  if (is.null(transformer)) {
+    transformer <- find_transformation_parameters(x = x, method = "none")
   }
 
-  p_value <- stats::spline(
-    x = gof_lookup_table$test_statistic,
-    y = gof_lookup_table$alpha,
-    method = "hyman",
-    xout = test_statistic_value
-  )$y
+  # Compute residual data.
+  residual_data <- get_residuals(
+    x = x,
+    transformer = transformer
+  )
 
-  return(p_value)
+  # The test uses a central portion kappa = 0.70.
+  residual_data <- residual_data[p_observed >= 0.15 & p_observed <= 0.85]
+
+  # Compute mean residual error for the central portion.
+  test_statistic_value <- mean(abs(residual_data$residual))
+
+  if (test_statistic_value < min(gof_lookup_table$test_statistic)) {
+    p_value <- 1.0
+
+  } else if (test_statistic_value > gof_lookup_table[alpha == 0.0001]$test_statistic) {
+    p_value <- 0.0
+
+  } else {
+    p_value <- stats::spline(
+      x = gof_lookup_table$test_statistic,
+      y = gof_lookup_table$alpha,
+      method = "hyman",
+      xout = test_statistic_value
+    )$y
+  }
+
+  return(list("tau" = test_statistic_value, "p_value" = p_value))
 }
 
 
