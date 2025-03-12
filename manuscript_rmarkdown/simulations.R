@@ -2856,15 +2856,10 @@
   # Compute alpha
   data[, "alpha" := 1.0 - seq_len(.N)/.N, by = c("n")]
 
-  # Cast wide
-  y <- unique(data$n)
-  Z <- data.table::dcast(data, "alpha ~ n", value.var = "mean_residual_error")
-  x <- data.table::copy(Z$alpha)
-  Z[, "alpha" := NULL]
-  Z <- as.matrix(Z)
-
-  pracma::interp2()
-
+  # Define all combinations.
+  interp_list <- apply(expand.grid(list("alpha" = alpha_levels, "n" = n)), function(ii) as.list(ii), MARGIN = 1L, simplify = FALSE)
+  tau <- lapply(interp_list, power.transform:::.interpolate_2d, data = data)
 
 
 }
+
