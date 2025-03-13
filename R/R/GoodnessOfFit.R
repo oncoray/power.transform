@@ -12,6 +12,8 @@ NULL
 #' distributed. The null-hypothesis is that the transformed distribution is
 #' centrally normal.
 #'
+#' This function is a wrapper around `ecn.test`.
+#'
 #' @param transformer A transformer object created using
 #'   `find_transformation_parameters`.
 #' @param verbose Sets verbosity of the fubction.
@@ -205,9 +207,10 @@ setMethod(
   x_0 <- x_interp[[x_name]][1L]
   y_0 <- x_interp[[y_name]][1L]
 
-  # Find nearest points to interpolation position..
-  x <- unique(sort(data[[x_name]]))
-  y <- unique(sort(data[[y_name]]))
+  # Find nearest points to interpolation position. Using native data.table
+  # routines is faster.
+  x <- unique(data[, mget(x_name)][order(get(x_name))])[[x_name]]
+  y <- unique(data[, mget(y_name)][order(get(y_name))])[[y_name]]
 
   # Lower and upper values of x.
   x_l <- tail(x[x < x_0], n = 1L)

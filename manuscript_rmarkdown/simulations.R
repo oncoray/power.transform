@@ -2846,20 +2846,46 @@
 
 
 
-.get_test_statistic_lookup_table <- function(manuscript_dir, k = 0.70) {
-  alpha_levels <- c(0.10, 0.20, 0.50, 0.80, 0.90, 0.95, 0.975, 0.99, 0.999)
-  n <- c(5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000)
+.get_test_statistic_lookup_table <- function(manuscript_dir, k = 0.70, for_manuscript = TRUE) {
+  if (for_manuscript) {
+    alpha_levels <- c(0.10, 0.20, 0.50, 0.80, 0.90, 0.95, 0.975, 0.99, 0.999)
+    n <- c(5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000)
+  } else {
+    alpha_levels <- c(
+      0.01, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55,
+      0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.91, 0.92, 0.93, 0.94, 0.95,
+      0.96, 0.97, 0.975, 0.98, 0.9825, 0.985, 0.9875, 0.99,
+      0.991, 0.992, 0.993, 0.994, 0.995, 0.996, 0.997, 0.998, 0.999)
+    n <- c(
+      5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 180, 200,
+      225, 250, 275, 300, 340, 380, 420, 460, 500,
+      560, 620, 680, 740, 800, 900, 1000, 1100, 1200, 1500,
+      2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000)
+  }
+
 
   data <- .get_test_statistics_data(manuscript_dir)
   data <- data[kappa == k]
+  data[, "kappa" := NULL]
 
   # Compute alpha
   data[, "alpha" := 1.0 - seq_len(.N)/.N, by = c("n")]
 
   # Define all combinations.
-  interp_list <- apply(expand.grid(list("alpha" = alpha_levels, "n" = n)), function(ii) as.list(ii), MARGIN = 1L, simplify = FALSE)
-  tau <- lapply(interp_list, power.transform:::.interpolate_2d, data = data)
+  new_data <- data.table::as.data.table(expand.grid(list("alpha" = alpha_levels, "n" = n)))
+  interp_list <- apply(new_data, function(ii) as.list(ii), MARGIN = 1L, simplify = FALSE)
 
+  # Interpolate critical statistic values.
+  interp_tau <- sapply(interp_list, power.transform:::.interpolate_2d, data = data)
+  new_data[, "tau" := interp_tau]
 
+  if (for_manuscript) {
+    # Represent as 10^-2 for better interpretability.
+    new_data[, "tau" := round(tau * 100.0, 2L)]
+    return(data.table::dcast(data = new_data, formula = n ~ alpha, value.var = "tau"))
+
+  } else {
+    return(new_data)
+  }
 }
 
