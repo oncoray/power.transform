@@ -614,9 +614,9 @@ $\sum_{r_j \in \mathbf{R}_{\text{c}}} r_j = 0$
 In practice, a finite sequence sampled from a normal distribution $\mathcal{N}(\mu, \sigma)$ will have a non-zero sum of residual errors.
 
 \begin{definition}[Empirical central normality test]
-$\mathcal{H}_0: \sum_{r_j \in \mathbf{R}_{\text{c}}}r_j = 0$
+The null-hypothesis is defined as: $\mathcal{H}_0: \sum_{r_j \in \mathbf{R}_{\text{c}}}r_j = 0$
 
-$\mathcal{H}_1: \sum_{r_j \in \mathbf{R}_{\text{c}}}r_j > 0$
+THe alternative hypothesis is defined as: $\mathcal{H}_1: \sum_{r_j \in \mathbf{R}_{\text{c}}}r_j > 0$
 \end{definition}
 
 The null-hypothesis $\mathcal{H}_0$ is that the central portion of sequence $\mathbf{X}$
@@ -667,9 +667,9 @@ usethis::use_data(
 ```{=latex}
 \begin{table}
 \begin{center}
-\caption{Critical values of test statistic $\tau_{\text{ecn},\alpha, n}$ for
+\caption{Critical values of test statistic $\tau_{\text{ecn},\alpha, n, \kappa = 0.70}$ for
 empirical central normality at $\kappa = 0.70$, as a function of significance 
-level $\alpha$ and number of instances $n$. The presented values should be divided by $100$.}
+level $\alpha$ and number of instances $n$. The values shown must be divided by $100$.}
 \label{tab:empirical-central-normality-critical-statistic}
 \begin{tabular}{l | r r r r r r r r r}
 

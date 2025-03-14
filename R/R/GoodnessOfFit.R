@@ -75,7 +75,7 @@ ecn.test <- function(x, transformer = NULL) {
   if (is.null(transformer)) {
     transformer <- find_transformation_parameters(x = x, method = "none")
   }
-  browser()
+
   # Compute residual data.
   residual_data <- get_residuals(
     x = x,
@@ -96,9 +96,9 @@ ecn.test <- function(x, transformer = NULL) {
 
   # Lookup p-value.
   p_value <- 1.0 - .interpolate_alpha(
-    list("n" = length(x), "tau" = test_statistic_value),
-    data = gof_lookup_table,
-    limited = TRUE
+    n_lookup = length(x),
+    tau_lookup = test_statistic_value,
+    data = gof_lookup_table
   )
 
   if (length(x) < 5L) {
@@ -203,7 +203,7 @@ setMethod(
   # organised as a 3D grid. x_interp: named list with two elements of length 1.
   # limited: whether values outside the grid should be limited to the extremes
   # of the grid.
-browser()
+
   # Get names corresponding to x and y variables.
   x_name <- names(x_interp)[1L]
   y_name <- names(x_interp)[2L]
@@ -271,11 +271,37 @@ browser()
 
 
 
-.interpolate_alpha <- function() {
+.interpolate_alpha <- function(n_lookup, tau_lookup, data) {
   # Specific interpolation for alpha values based on n and tau. Since tau is not
   # on a grid (it's the surface), we need to interpolate tau (in the
   # lookup-table) for n and every alpha in the lookup-table first. Then we need
   # to interpolate alpha for the provided tau.
 
+  # Interpolate tau for n_lookup.
+  data <- data[
+    ,
+    list(
+      "tau" = stats::spline(
+        x = n,
+        y = tau,
+        method = "fmm",
+        xout = n_lookup
+      )$y
+    ),
+    by = c("alpha")
+  ]
 
+  # Interpolate alpha for tau_lookup
+  alpha <- stats::spline(
+    x = data$tau,
+    y = data$alpha,
+    method = "fmm",
+    xout = tau_lookup
+  )$y
+
+  # Limit alpha to (0, 1) range.
+  if (alpha < 0.0) alpha <- 0.0
+  if (alpha > 1.0) alpha <- 1.0
+
+  return(alpha)
 }
