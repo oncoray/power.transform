@@ -44,8 +44,8 @@ assess_transformation <- function(
 
   if (is.na(h$p_value)) {
     message("p-value could not be determined.")
-  } else if (h$p_value == 0.0 && verbose) {
-    message("p-value is smaller than 10^-4")
+  } else if (h$p_value > 0.0001 && verbose) {
+    message("p-value is smaller than 0.0001")
   }
 
   return(h$p_value)
@@ -75,7 +75,7 @@ ecn.test <- function(x, transformer = NULL) {
   if (is.null(transformer)) {
     transformer <- find_transformation_parameters(x = x, method = "none")
   }
-
+  browser()
   # Compute residual data.
   residual_data <- get_residuals(
     x = x,
@@ -88,22 +88,28 @@ ecn.test <- function(x, transformer = NULL) {
   # Compute mean residual error for the central portion.
   test_statistic_value <- mean(abs(residual_data$residual))
 
-  if (test_statistic_value < min(gof_lookup_table$test_statistic)) {
-    p_value <- 1.0
+  # Lookup critical tau at alpha = 0.95.
+  test_statistic_critical <- .interpolate_2d(
+    list("n" = length(x), "alpha" = 0.95),
+    data = gof_lookup_table
+  )
 
-  } else if (test_statistic_value > gof_lookup_table[alpha == 0.0001]$test_statistic) {
-    p_value <- 0.0
+  # Lookup p-value.
+  p_value <- 1.0 - .interpolate_alpha(
+    list("n" = length(x), "tau" = test_statistic_value),
+    data = gof_lookup_table,
+    limited = TRUE
+  )
 
-  } else {
-    p_value <- stats::spline(
-      x = gof_lookup_table$test_statistic,
-      y = gof_lookup_table$alpha,
-      method = "hyman",
-      xout = test_statistic_value
-    )$y
+  if (length(x) < 5L) {
+    p_value <- NA_real_
   }
 
-  return(list("tau" = test_statistic_value, "p_value" = p_value))
+  return(list(
+    "tau" = test_statistic_value,
+    "tau_critical" = test_statistic_critical,
+    "p_value" = p_value
+  ))
 }
 
 
@@ -197,7 +203,7 @@ setMethod(
   # organised as a 3D grid. x_interp: named list with two elements of length 1.
   # limited: whether values outside the grid should be limited to the extremes
   # of the grid.
-
+browser()
   # Get names corresponding to x and y variables.
   x_name <- names(x_interp)[1L]
   y_name <- names(x_interp)[2L]
@@ -261,4 +267,15 @@ setMethod(
   }
 
   return(z_00)
+}
+
+
+
+.interpolate_alpha <- function() {
+  # Specific interpolation for alpha values based on n and tau. Since tau is not
+  # on a grid (it's the surface), we need to interpolate tau (in the
+  # lookup-table) for n and every alpha in the lookup-table first. Then we need
+  # to interpolate alpha for the provided tau.
+
+
 }

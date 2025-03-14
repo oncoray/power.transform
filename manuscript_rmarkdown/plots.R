@@ -2793,8 +2793,12 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 
 .plot_test_statistic_centrality <- function(manuscript_dir, plot_theme) {
+  # Plots data that allows us to select the fitting centrality parameter kappa.
 
-  data <- .get_test_statistics_data(manuscript_dir = manuscript_dir)
+  data <- .get_test_statistics_data(
+    manuscript_dir = manuscript_dir,
+    with_outliers = TRUE
+  )
 
   # Compute alpha
   data[, "alpha" := 1.0 - seq_len(.N)/.N, by = c("n", "kappa")]
@@ -2822,13 +2826,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     )
   )
   p <- p + plot_theme
-  p <- p + ggplot2::geom_hline(
-    yintercept = 0.05,
-    linetype = "longdash",
-    colour = "grey40"
-  )
   p <- p + ggplot2::scale_x_log10(name = "n")
-  p <- p + ggplot2::ylab(latex2exp::TeX("test statistic $\\tau_{ecn, n, 0.95}$"))
+  p <- p + ggplot2::ylab(latex2exp::TeX("test statistic $\\tau_{ecn, n, \\alpha = 0.95, \\kappa}$"))
   p <- p + ggplot2::scale_colour_discrete(
     name = "central portion κ",
     type = c(
@@ -2848,7 +2847,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 
 .plot_test_statistic_tau <- function(manuscript_dir, plot_theme, k = 0.70) {
-  data <- .get_test_statistics_data(manuscript_dir = manuscript_dir)
+  # Plots critical tau for several alpha levels.
+
+  data <- .get_test_statistics_data(manuscript_dir = manuscript_dir, with_outliers = FALSE)
   data <- data[kappa == k]
 
   alpha_levels <- c(0.80, 0.90, 0.95, 0.975, 0.99, 0.999)
@@ -2884,13 +2885,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     )
   )
   p <- p + plot_theme
-  p <- p + ggplot2::geom_hline(
-    yintercept = 0.05,
-    linetype = "longdash",
-    colour = "grey40"
-  )
   p <- p + ggplot2::scale_x_log10(name = "n")
-  p <- p + ggplot2::ylab(latex2exp::TeX("test statistic $\\tau_{ecn, n, \\alpha}$"))
+  p <- p + ggplot2::ylab(latex2exp::TeX("test statistic $\\tau_{ecn, n, \\alpha, \\kappa = 0.70}$"))
   p <- p + ggplot2::scale_colour_discrete(
     name = "significance level",
     type = c(
@@ -2903,6 +2899,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     )
   )
   p <- p + ggplot2::geom_line(data = data)
+
+  return(p)
 }
 
 

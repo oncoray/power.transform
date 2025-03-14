@@ -1672,332 +1672,332 @@
 
 
 
-.get_test_statistics_data <- function(manuscript_dir, as_table = TRUE, reduce = FALSE) {
-  # Non-standard evaluation in data.table.
-  residual <- p <- n <- test_statistic <- method <- alpha <- NULL
-
-  ..down_sample_data <- function(x, alpha, upper, lower, n) {
-    # Find the x-values.
-    alpha_out <- mapply(
-      function(upper, lower, n) {
-        # Linear placement of interpolation points. The starting point (upper)
-        # is not included.
-        x <- rev(seq(from = lower, to = upper, length.out = n + 1L))
-        return(tail(x, n = n))
-      },
-      upper = upper,
-      lower = lower,
-      n = n,
-      SIMPLIFY = FALSE,
-      USE.NAMES = FALSE
-    )
-
-    alpha_out <- unlist(alpha_out, use.names = FALSE)
-
-    # Find the corresponding
-    x_out <- stats::spline(
-      x = alpha,
-      y = x,
-      method = "hyman",
-      xout = alpha_out
-    )$y
-
-    # Add start and end points.
-    x_out <- c(min(x), x_out, max(x))
-    alpha_out <- c(1.0, alpha_out, 0.0)
-
-    return(list("alpha" = alpha_out, "test_statistic" = x_out))
-  }
-
-  # Compute test statistic values.
-  data <- .get_goodness_of_fit_data(manuscript_dir = manuscript_dir)
-
-  central_width <- 0.80
-
-  significance_values <- c(0.50, 0.20, 0.10, 0.05, 0.02, 0.01, 0.001)
-
-  p_lower <- 0.50 - central_width / 2
-  p_upper <- 0.50 + central_width / 2
-
-  # Clip empirical probabilities to the center.
-  data <- data[p >= p_lower & p <= p_upper]
-
-  # Compute mean absolute residual error per feature.
-  data <- data[, list("test_statistic" = mean(residual)), by = c("distribution_id", "outlier_id", "method")]
-  data <- data[, list("n" = .N), by = c("test_statistic", "method")][order(test_statistic, method)]
-  data[, "alpha" := 1.0 - cumsum(n) / sum(n), by = "method"]
-
-  if (reduce) {
-    # Reduce complexity of the data to save storage size.
-
-    # 5 points between 1.00 and 0.95
-    # 10 points between 0.95 and 0.75
-    # 10 points between 0.75 and 0.25
-    # 10 points between 0.25 and 0.10
-    # 10 points between 0.10 and 0.05
-    # 10 points between 0.05 and 0.01
-    # 10 points between 0.01 and 0.005
-    # 10 points between 0.005 and 0.001
-    # 10 points between 0.001 and 0.0001
-    upper <- c(1.00, 0.95, 0.75, 0.25, 0.10, 0.05, 0.010, 0.005, 0.0010)
-    lower <- c(0.95, 0.75, 0.25, 0.10, 0.05, 0.01, 0.005, 0.001, 0.0001)
-    n_int <- c(5, 10, 10, 10, 10, 10, 10, 10, 10)
-
-    data <- data[, ..down_sample_data(
-      x = test_statistic,
-      alpha = alpha,
-      upper = upper,
-      lower = lower,
-      n = n_int
-    ),
-    by = "method"
-    ]
-  } else {
-    data <- rbind(
-      data.table::data.table(
-        "test_statistic" = c(0.0, 0.0),
-        "method" = c("Box-Cox", "Yeo-Johnson"),
-        "n" = 0L,
-        "alpha" = 1.0
-      ),
-      data
-    )
-  }
-
-  # Use Yeo-Johnson for test statistics.
-  data <- data[method == "Yeo-Johnson"]
-
-  if (as_table) {
-    # Find thresholds.
-    data <- data[, list(
-      "test_statistic" = stats::spline(
-        x = alpha,
-        y = test_statistic,
-        method = "hyman",
-        xout = significance_values
-      )$y,
-      "alpha" = significance_values
-    ),
-    by = "method"
-    ]
-  }
-
-  return(data)
-}
-
-
-.get_test_statistics_data_appendix <- function(manuscript_dir) {
-  # Prevent warnings due to non-standard evaluation.
-  residual <- p <- n <- mare <- method <- method_tag <- NULL
-
-  .compute_residuals <- function(x) {
-    ..compute_residuals <- function(x,
-                                    method,
-                                    shift,
-                                    robust,
-                                    estimation_method,
-                                    weighting_function,
-                                    method_tag,
-                                    n_sample = 200L) {
-      # Set interpolation points.
-      p_sample <- (seq_len(n_sample) - 1 / 3) / (n_sample + 1 / 3)
-
-      transformer <- suppressWarnings(power.transform::find_transformation_parameters(
-        x = x$x,
-        method = method,
-        shift = shift,
-        robust = robust,
-        estimation_method = estimation_method,
-        weighting_function = weighting_function
-      ))
-
-      residual_data <- power.transform::get_residuals(
-        x = x$x,
-        transformer = transformer
-      )
-
-      residual <- stats::approx(
-        x = residual_data$p,
-        y = abs(residual_data$residual),
-        xout = p_sample,
-        rule = 2,
-        ties = max
-      )$y
-
-      return(data.table::data.table(
-        "distribution_id" = x$parameter$ii,
-        "outlier_id" = x$parameters$jj,
-        "p" = seq_along(p_sample),
-        "residual" = residual,
-        "method" = method,
-        "method_tag" = method_tag
-      ))
-    }
-
-    # Determine residuals for robust, shift-sensitive transformations.
-    residual_bc_robust_shift_mle <- ..compute_residuals(
-      x = x,
-      method = "box_cox",
-      shift = TRUE,
-      robust = TRUE,
-      estimation_method = "mle",
-      weighting_function = "empirical_probability_cosine",
-      method_tag = "robust_shift_mle"
-    )
-
-    residual_yj_robust_shift_mle <- ..compute_residuals(
-      x = x,
-      method = "yeo_johnson",
-      shift = TRUE,
-      robust = TRUE,
-      estimation_method = "mle",
-      weighting_function = "empirical_probability_cosine",
-      method_tag = "robust_shift_mle"
-    )
-
-    # Determine residuals for normal transformations.
-    if (x$parameters$jj == 1L) {
-      residual_bc_mle <- ..compute_residuals(
-        x = x,
-        method = "box_cox",
-        shift = FALSE,
-        robust = FALSE,
-        estimation_method = "mle",
-        weighting_function = "none",
-        method_tag = "conventional_mle"
-      )
-
-      residual_yj_mle <- ..compute_residuals(
-        x = x,
-        method = "yeo_johnson",
-        shift = FALSE,
-        robust = FALSE,
-        estimation_method = "mle",
-        weighting_function = "none",
-        method_tag = "conventional_mle"
-      )
-    } else {
-      residual_bc_mle <- residual_yj_mle <- NULL
-    }
-
-    # Determine residuals for shift-sensitive robust cramér-von Mises
-    # transformations.
-    residual_bc_robust_shift_cm <- ..compute_residuals(
-      x = x,
-      method = "box_cox",
-      shift = TRUE,
-      robust = TRUE,
-      estimation_method = "cramer_von_mises",
-      weighting_function = "empirical_probability_cosine",
-      method_tag = "robust_shift_cm"
-    )
-
-    residual_yj_robust_shift_cm <- ..compute_residuals(
-      x = x,
-      method = "yeo_johnson",
-      shift = TRUE,
-      robust = TRUE,
-      estimation_method = "cramer_von_mises",
-      weighting_function = "empirical_probability_cosine",
-      method_tag = "robust_shift_cm"
-    )
-
-    # Determine residuals for normal transformations.
-    if (x$parameters$jj == 1L) {
-      residual_bc_cm <- ..compute_residuals(
-        x = x,
-        method = "box_cox",
-        shift = FALSE,
-        robust = FALSE,
-        estimation_method = "cramer_von_mises",
-        weighting_function = "none",
-        method_tag = "conventional_cm"
-      )
-
-      residual_yj_cm <- ..compute_residuals(
-        x = x,
-        method = "yeo_johnson",
-        shift = FALSE,
-        robust = FALSE,
-        estimation_method = "cramer_von_mises",
-        weighting_function = "none",
-        method_tag = "conventional_cm"
-      )
-    } else {
-      residual_bc_cm <- residual_yj_cm <- NULL
-    }
-
-    data <- data.table::rbindlist(list(
-      residual_bc_robust_shift_mle,
-      residual_yj_robust_shift_mle,
-      residual_bc_mle,
-      residual_yj_mle,
-      residual_bc_robust_shift_cm,
-      residual_yj_robust_shift_cm,
-      residual_bc_cm,
-      residual_yj_cm
-    ))
-
-    data$method <- factor(
-      x = data$method,
-      levels = c("box_cox", "yeo_johnson"),
-      labels = c("Box-Cox", "Yeo-Johnson")
-    )
-
-    data$method_tag <- factor(
-      x = data$method_tag,
-      levels = c("robust_shift_mle", "conventional_mle", "robust_shift_cm", "conventional_cm"),
-      labels = c("robust, shift sens. (MLE)", "conventional (MLE)", "robust, shift sens. (C-vM)", "conventional (C-vM)")
-    )
-
-    return(data)
-  }
-
-  # computations ---------------------------------------------------------------
-
-  if (!file.exists(file.path(manuscript_dir, "residual_plot_appendix.RDS"))) {
-    data <- .get_goodness_of_fit_data(
-      manuscript_dir = manuscript_dir,
-      residual_fun = .compute_residuals,
-      n_distributions = 10000L,
-      parallel = TRUE
-    )
-
-    central_width <- c(0.60, 0.70, 0.80, 0.90, 0.95, 1.00)
-
-    mare_data <- list()
-
-    for (ii in seq_along(central_width)) {
-      p_lower <- 0.50 - central_width[ii] / 2
-      p_upper <- 0.50 + central_width[ii] / 2
-
-      x <- data.table::copy(data)
-
-      # Clip empirical probabilities to centre.
-      x <- x[p >= p_lower & p <= p_upper]
-
-      # Compute mean absolute residual error per feature.
-      x <- x[, list("mare" = mean(residual)), by = c("distribution_id", "outlier_id", "method", "method_tag")]
-      x <- x[, list("n" = .N), by = c("mare", "method", "method_tag")][order(mare, method, method_tag)]
-      x[, "rejected" := 1.0 - cumsum(n) / sum(n), by = c("method", "method_tag")]
-
-      x[, "kappa" := central_width[ii]]
-
-      mare_data[[ii]] <- x
-    }
-
-    data <- data.table::rbindlist(mare_data)
-
-    saveRDS(
-      object = data,
-      file = file.path(manuscript_dir, "residual_plot_appendix.RDS")
-    )
-  } else {
-    data <- readRDS(file.path(manuscript_dir, "residual_plot_appendix.RDS"))
-  }
-
-  return(data)
-}
+# .get_test_statistics_data <- function(manuscript_dir, as_table = TRUE, reduce = FALSE) {
+#   # Non-standard evaluation in data.table.
+#   residual <- p <- n <- test_statistic <- method <- alpha <- NULL
+#
+#   ..down_sample_data <- function(x, alpha, upper, lower, n) {
+#     # Find the x-values.
+#     alpha_out <- mapply(
+#       function(upper, lower, n) {
+#         # Linear placement of interpolation points. The starting point (upper)
+#         # is not included.
+#         x <- rev(seq(from = lower, to = upper, length.out = n + 1L))
+#         return(tail(x, n = n))
+#       },
+#       upper = upper,
+#       lower = lower,
+#       n = n,
+#       SIMPLIFY = FALSE,
+#       USE.NAMES = FALSE
+#     )
+#
+#     alpha_out <- unlist(alpha_out, use.names = FALSE)
+#
+#     # Find the corresponding
+#     x_out <- stats::spline(
+#       x = alpha,
+#       y = x,
+#       method = "hyman",
+#       xout = alpha_out
+#     )$y
+#
+#     # Add start and end points.
+#     x_out <- c(min(x), x_out, max(x))
+#     alpha_out <- c(1.0, alpha_out, 0.0)
+#
+#     return(list("alpha" = alpha_out, "test_statistic" = x_out))
+#   }
+#
+#   # Compute test statistic values.
+#   data <- .get_goodness_of_fit_data(manuscript_dir = manuscript_dir)
+#
+#   central_width <- 0.80
+#
+#   significance_values <- c(0.50, 0.20, 0.10, 0.05, 0.02, 0.01, 0.001)
+#
+#   p_lower <- 0.50 - central_width / 2
+#   p_upper <- 0.50 + central_width / 2
+#
+#   # Clip empirical probabilities to the center.
+#   data <- data[p >= p_lower & p <= p_upper]
+#
+#   # Compute mean absolute residual error per feature.
+#   data <- data[, list("test_statistic" = mean(residual)), by = c("distribution_id", "outlier_id", "method")]
+#   data <- data[, list("n" = .N), by = c("test_statistic", "method")][order(test_statistic, method)]
+#   data[, "alpha" := 1.0 - cumsum(n) / sum(n), by = "method"]
+#
+#   if (reduce) {
+#     # Reduce complexity of the data to save storage size.
+#
+#     # 5 points between 1.00 and 0.95
+#     # 10 points between 0.95 and 0.75
+#     # 10 points between 0.75 and 0.25
+#     # 10 points between 0.25 and 0.10
+#     # 10 points between 0.10 and 0.05
+#     # 10 points between 0.05 and 0.01
+#     # 10 points between 0.01 and 0.005
+#     # 10 points between 0.005 and 0.001
+#     # 10 points between 0.001 and 0.0001
+#     upper <- c(1.00, 0.95, 0.75, 0.25, 0.10, 0.05, 0.010, 0.005, 0.0010)
+#     lower <- c(0.95, 0.75, 0.25, 0.10, 0.05, 0.01, 0.005, 0.001, 0.0001)
+#     n_int <- c(5, 10, 10, 10, 10, 10, 10, 10, 10)
+#
+#     data <- data[, ..down_sample_data(
+#       x = test_statistic,
+#       alpha = alpha,
+#       upper = upper,
+#       lower = lower,
+#       n = n_int
+#     ),
+#     by = "method"
+#     ]
+#   } else {
+#     data <- rbind(
+#       data.table::data.table(
+#         "test_statistic" = c(0.0, 0.0),
+#         "method" = c("Box-Cox", "Yeo-Johnson"),
+#         "n" = 0L,
+#         "alpha" = 1.0
+#       ),
+#       data
+#     )
+#   }
+#
+#   # Use Yeo-Johnson for test statistics.
+#   data <- data[method == "Yeo-Johnson"]
+#
+#   if (as_table) {
+#     # Find thresholds.
+#     data <- data[, list(
+#       "test_statistic" = stats::spline(
+#         x = alpha,
+#         y = test_statistic,
+#         method = "hyman",
+#         xout = significance_values
+#       )$y,
+#       "alpha" = significance_values
+#     ),
+#     by = "method"
+#     ]
+#   }
+#
+#   return(data)
+# }
+#
+#
+# .get_test_statistics_data_appendix <- function(manuscript_dir) {
+#   # Prevent warnings due to non-standard evaluation.
+#   residual <- p <- n <- mare <- method <- method_tag <- NULL
+#
+#   .compute_residuals <- function(x) {
+#     ..compute_residuals <- function(x,
+#                                     method,
+#                                     shift,
+#                                     robust,
+#                                     estimation_method,
+#                                     weighting_function,
+#                                     method_tag,
+#                                     n_sample = 200L) {
+#       # Set interpolation points.
+#       p_sample <- (seq_len(n_sample) - 1 / 3) / (n_sample + 1 / 3)
+#
+#       transformer <- suppressWarnings(power.transform::find_transformation_parameters(
+#         x = x$x,
+#         method = method,
+#         shift = shift,
+#         robust = robust,
+#         estimation_method = estimation_method,
+#         weighting_function = weighting_function
+#       ))
+#
+#       residual_data <- power.transform::get_residuals(
+#         x = x$x,
+#         transformer = transformer
+#       )
+#
+#       residual <- stats::approx(
+#         x = residual_data$p,
+#         y = abs(residual_data$residual),
+#         xout = p_sample,
+#         rule = 2,
+#         ties = max
+#       )$y
+#
+#       return(data.table::data.table(
+#         "distribution_id" = x$parameter$ii,
+#         "outlier_id" = x$parameters$jj,
+#         "p" = seq_along(p_sample),
+#         "residual" = residual,
+#         "method" = method,
+#         "method_tag" = method_tag
+#       ))
+#     }
+#
+#     # Determine residuals for robust, shift-sensitive transformations.
+#     residual_bc_robust_shift_mle <- ..compute_residuals(
+#       x = x,
+#       method = "box_cox",
+#       shift = TRUE,
+#       robust = TRUE,
+#       estimation_method = "mle",
+#       weighting_function = "empirical_probability_cosine",
+#       method_tag = "robust_shift_mle"
+#     )
+#
+#     residual_yj_robust_shift_mle <- ..compute_residuals(
+#       x = x,
+#       method = "yeo_johnson",
+#       shift = TRUE,
+#       robust = TRUE,
+#       estimation_method = "mle",
+#       weighting_function = "empirical_probability_cosine",
+#       method_tag = "robust_shift_mle"
+#     )
+#
+#     # Determine residuals for normal transformations.
+#     if (x$parameters$jj == 1L) {
+#       residual_bc_mle <- ..compute_residuals(
+#         x = x,
+#         method = "box_cox",
+#         shift = FALSE,
+#         robust = FALSE,
+#         estimation_method = "mle",
+#         weighting_function = "none",
+#         method_tag = "conventional_mle"
+#       )
+#
+#       residual_yj_mle <- ..compute_residuals(
+#         x = x,
+#         method = "yeo_johnson",
+#         shift = FALSE,
+#         robust = FALSE,
+#         estimation_method = "mle",
+#         weighting_function = "none",
+#         method_tag = "conventional_mle"
+#       )
+#     } else {
+#       residual_bc_mle <- residual_yj_mle <- NULL
+#     }
+#
+#     # Determine residuals for shift-sensitive robust cramér-von Mises
+#     # transformations.
+#     residual_bc_robust_shift_cm <- ..compute_residuals(
+#       x = x,
+#       method = "box_cox",
+#       shift = TRUE,
+#       robust = TRUE,
+#       estimation_method = "cramer_von_mises",
+#       weighting_function = "empirical_probability_cosine",
+#       method_tag = "robust_shift_cm"
+#     )
+#
+#     residual_yj_robust_shift_cm <- ..compute_residuals(
+#       x = x,
+#       method = "yeo_johnson",
+#       shift = TRUE,
+#       robust = TRUE,
+#       estimation_method = "cramer_von_mises",
+#       weighting_function = "empirical_probability_cosine",
+#       method_tag = "robust_shift_cm"
+#     )
+#
+#     # Determine residuals for normal transformations.
+#     if (x$parameters$jj == 1L) {
+#       residual_bc_cm <- ..compute_residuals(
+#         x = x,
+#         method = "box_cox",
+#         shift = FALSE,
+#         robust = FALSE,
+#         estimation_method = "cramer_von_mises",
+#         weighting_function = "none",
+#         method_tag = "conventional_cm"
+#       )
+#
+#       residual_yj_cm <- ..compute_residuals(
+#         x = x,
+#         method = "yeo_johnson",
+#         shift = FALSE,
+#         robust = FALSE,
+#         estimation_method = "cramer_von_mises",
+#         weighting_function = "none",
+#         method_tag = "conventional_cm"
+#       )
+#     } else {
+#       residual_bc_cm <- residual_yj_cm <- NULL
+#     }
+#
+#     data <- data.table::rbindlist(list(
+#       residual_bc_robust_shift_mle,
+#       residual_yj_robust_shift_mle,
+#       residual_bc_mle,
+#       residual_yj_mle,
+#       residual_bc_robust_shift_cm,
+#       residual_yj_robust_shift_cm,
+#       residual_bc_cm,
+#       residual_yj_cm
+#     ))
+#
+#     data$method <- factor(
+#       x = data$method,
+#       levels = c("box_cox", "yeo_johnson"),
+#       labels = c("Box-Cox", "Yeo-Johnson")
+#     )
+#
+#     data$method_tag <- factor(
+#       x = data$method_tag,
+#       levels = c("robust_shift_mle", "conventional_mle", "robust_shift_cm", "conventional_cm"),
+#       labels = c("robust, shift sens. (MLE)", "conventional (MLE)", "robust, shift sens. (C-vM)", "conventional (C-vM)")
+#     )
+#
+#     return(data)
+#   }
+#
+#   # computations ---------------------------------------------------------------
+#
+#   if (!file.exists(file.path(manuscript_dir, "residual_plot_appendix.RDS"))) {
+#     data <- .get_goodness_of_fit_data(
+#       manuscript_dir = manuscript_dir,
+#       residual_fun = .compute_residuals,
+#       n_distributions = 10000L,
+#       parallel = TRUE
+#     )
+#
+#     central_width <- c(0.60, 0.70, 0.80, 0.90, 0.95, 1.00)
+#
+#     mare_data <- list()
+#
+#     for (ii in seq_along(central_width)) {
+#       p_lower <- 0.50 - central_width[ii] / 2
+#       p_upper <- 0.50 + central_width[ii] / 2
+#
+#       x <- data.table::copy(data)
+#
+#       # Clip empirical probabilities to centre.
+#       x <- x[p >= p_lower & p <= p_upper]
+#
+#       # Compute mean absolute residual error per feature.
+#       x <- x[, list("mare" = mean(residual)), by = c("distribution_id", "outlier_id", "method", "method_tag")]
+#       x <- x[, list("n" = .N), by = c("mare", "method", "method_tag")][order(mare, method, method_tag)]
+#       x[, "rejected" := 1.0 - cumsum(n) / sum(n), by = c("method", "method_tag")]
+#
+#       x[, "kappa" := central_width[ii]]
+#
+#       mare_data[[ii]] <- x
+#     }
+#
+#     data <- data.table::rbindlist(mare_data)
+#
+#     saveRDS(
+#       object = data,
+#       file = file.path(manuscript_dir, "residual_plot_appendix.RDS")
+#     )
+#   } else {
+#     data <- readRDS(file.path(manuscript_dir, "residual_plot_appendix.RDS"))
+#   }
+#
+#   return(data)
+# }
 
 
 
@@ -2729,15 +2729,20 @@
 
 
 
-.get_test_statistics_data <- function(manuscript_dir) {
-  n_rep <- 30001L  # number of distributions drawn.
+.get_test_statistics_data <- function(manuscript_dir, with_outliers = FALSE) {
+  n_rep <- 30000L  # number of distributions drawn.
   k <- 0.10  # outlier fraction
   kappa <- c(0.60, 0.70, 0.80, 0.90, 0.95, 1.00)  # central portion of distribution.
 
   # From 5 to 10000 in equal steps (log 10 scale)
   n <- unique(floor(10^(seq(from = 0.75, to = 4.0, by = 0.0625))))
 
-  file_name <- file.path(manuscript_dir, "raw_ecn_statistics.RDS")
+  if (with_outliers) {
+    file_name <- file.path(manuscript_dir, "raw_ecn_statistics_w_outlier.RDS")
+  } else {
+    file_name <- file.path(manuscript_dir, "raw_ecn_statistics.RDS")
+  }
+
   if (!file.exists(file_name)) {
 
     cl <- parallel::makeCluster(18L)
@@ -2750,7 +2755,8 @@
       n = n,
       n_rep = n_rep,
       k = k,
-      kappa = kappa
+      kappa = kappa,
+      with_outliers = with_outliers
     )
 
     # Aggregate to single table.
@@ -2768,7 +2774,7 @@
 }
 
 
-..get_test_statistics_data <- function(ii, n, n_rep, k, kappa) {
+..get_test_statistics_data <- function(ii, n, n_rep, k, kappa, with_outliers = FALSE) {
   set.seed(19L + ii)
 
   data <- list()
@@ -2781,26 +2787,32 @@
     q_upper <- stats::quantile(x, probs = 0.75, names = FALSE)
     interquartile_range <- stats::IQR(x)
 
-    # Set data where the outliers will be copied into.
-    x_outlier <- x
+    if (with_outliers) {
+      # Set data where the outliers will be copied into.
+      x_outlier <- x
 
-    # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
-    # than Q3 + 1.5 IQR.
-    n_draw <- ceiling(k * length(x))
-    x_random <- stats::runif(n_draw, min = -2.0, max = 2.0)
+      # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
+      # than Q3 + 1.5 IQR.
+      n_draw <- ceiling(k * length(x))
+      x_random <- stats::runif(n_draw, min = -2.0, max = 2.0)
 
-    outlier <- numeric(n_draw)
-    if (any(x_random < 0)) {
-      outlier[x_random < 0] <- q_lower - 1.5 * interquartile_range + x_random[x_random < 0] * interquartile_range
+      outlier <- numeric(n_draw)
+      if (any(x_random < 0)) {
+        outlier[x_random < 0] <- q_lower - 1.5 * interquartile_range + x_random[x_random < 0] * interquartile_range
+      }
+
+      if (any(x_random >= 0)) {
+        outlier[x_random >= 0] <- q_upper + 1.5 * interquartile_range + x_random[x_random >= 0] * interquartile_range
+      }
+
+      # Randomly insert outlier values.
+      x_outlier[sample(seq_along(x), size = n_draw, replace = FALSE)] <- outlier
+      x_outlier <- sort(x_outlier)
+
+    } else {
+      # Use data without outlier.
+      x_outlier <- sort(x)
     }
-
-    if (any(x_random >= 0)) {
-      outlier[x_random >= 0] <- q_upper + 1.5 * interquartile_range + x_random[x_random >= 0] * interquartile_range
-    }
-
-    # Randomly insert outlier values.
-    x_outlier[sample(seq_along(x), size = n_draw, replace = FALSE)] <- outlier
-    x_outlier <- sort(x_outlier)
 
     # Compute the expected z-score.
     z_expected <- power.transform:::compute_expected_z(x = x_outlier)
@@ -2852,10 +2864,10 @@
     n <- c(5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000)
   } else {
     alpha_levels <- c(
-      0.01, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55,
+      0.00, 0.01, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55,
       0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.91, 0.92, 0.93, 0.94, 0.95,
       0.96, 0.97, 0.975, 0.98, 0.9825, 0.985, 0.9875, 0.99,
-      0.991, 0.992, 0.993, 0.994, 0.995, 0.996, 0.997, 0.998, 0.999)
+      0.991, 0.992, 0.993, 0.994, 0.995, 0.996, 0.997, 0.998, 0.999, 0.9995)
     n <- c(
       5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 180, 200,
       225, 250, 275, 300, 340, 380, 420, 460, 500,
