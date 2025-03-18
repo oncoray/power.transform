@@ -40,7 +40,7 @@ assess_transformation <- function(
     ...) {
 
   # Perform test.
-  h <- ecn.test(x = x, transformer = transformer)
+  h <- cn.test(x = x, transformer = transformer)
 
   if (is.na(h$p_value)) {
     message("p-value could not be determined.")
@@ -53,19 +53,23 @@ assess_transformation <- function(
 
 
 
-#' Empirical central normality test
+#' Central normality test
 #'
-#' Assesses empirical central normality of input data
+#' Assesses central normality of input data.
 #'
 #' @param x vector of input data, of at least length 5.
 #' @param transformer A transformer object created using
 #'   `find_transformation_parameters`. Optional, if present residuals are
 #'   determined from x after transformation.
+#' @param robust Determines the use of the strict test for central normality
+#'   (`FALSE`) or the more robust version where test statistics where determined
+#'   from normally distributed data with 10% outliers (`TRUE`).
 #'
-#' @return list with mean absolute error (`tau`) and p-value (`p_value`) for
-#'   empirical central normality test.
+#' @return list with mean absolute error (`tau`), critical value (at
+#'   significance level = 0.95) of the test statistic (`tau_critical`) and
+#'   p-value (`p_value`) for (empirical) central normality test.
 #' @export
-ecn.test <- function(x, transformer = NULL) {
+cn.test <- function(x, transformer = NULL, robust = TRUE) {
 
   # Prevent CRAN NOTE due to non-standard use of variables by data.table.
   p_observed <- alpha <- NULL
@@ -82,6 +86,14 @@ ecn.test <- function(x, transformer = NULL) {
     transformer = transformer
   )
 
+  # Select look-up table.
+  if (!robust) {
+    lookup_table <- central_normality_lookup_table
+
+  } else {
+    lookup_table <- empirical_central_normality_lookup_table
+  }
+
   # The test uses a central portion kappa = 0.70.
   residual_data <- residual_data[p_observed >= 0.15 & p_observed <= 0.85]
 
@@ -91,14 +103,14 @@ ecn.test <- function(x, transformer = NULL) {
   # Lookup critical tau at alpha = 0.95.
   test_statistic_critical <- .interpolate_2d(
     list("n" = length(x), "alpha" = 0.95),
-    data = gof_lookup_table
+    data = lookup_table
   )
 
   # Lookup p-value.
   p_value <- 1.0 - .interpolate_alpha(
     n_lookup = length(x),
     tau_lookup = test_statistic_value,
-    data = gof_lookup_table
+    data = lookup_table
   )
 
   if (length(x) < 5L) {
