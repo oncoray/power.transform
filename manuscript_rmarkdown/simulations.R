@@ -2858,7 +2858,12 @@
 
 
 
-.get_test_statistic_lookup_table <- function(manuscript_dir, k = 0.70, for_manuscript = TRUE) {
+.get_test_statistic_lookup_table <- function(
+    manuscript_dir,
+    k = 0.70,
+    for_manuscript = TRUE,
+    with_outliers = FALSE
+) {
   if (for_manuscript) {
     alpha_levels <- c(0.10, 0.20, 0.50, 0.80, 0.90, 0.95, 0.975, 0.99, 0.999)
     n <- c(5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000)
@@ -2875,13 +2880,12 @@
       2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000)
   }
 
-
-  data <- .get_test_statistics_data(manuscript_dir)
+  data <- .get_test_statistics_data(manuscript_dir, with_outliers = with_outliers)
   data <- data[kappa == k]
   data[, "kappa" := NULL]
 
-  # Compute alpha
-  data[, "alpha" := 1.0 - seq_len(.N)/.N, by = c("n")]
+  # Compute alpha. Higher alpha yields higher tau (with n constant).
+  data[, "alpha" := (seq_len(.N) - 1L) / (.N - 1L), by = c("n")]
 
   # Define all combinations.
   new_data <- data.table::as.data.table(expand.grid(list("alpha" = alpha_levels, "n" = n)))

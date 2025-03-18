@@ -2801,7 +2801,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
 
   # Compute alpha
-  data[, "alpha" := 1.0 - seq_len(.N)/.N, by = c("n", "kappa")]
+  data[, "alpha" := (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa")]
 
   # Compute alpha = 0.95
   data <- data[, list("tau" = stats::spline(
@@ -2855,7 +2855,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   alpha_levels <- c(0.80, 0.90, 0.95, 0.975, 0.99, 0.999)
 
   # Compute alpha
-  data[, "alpha" := 1.0 - seq_len(.N)/.N, by = c("n", "kappa")]
+  data[, "alpha" := (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa")]
 
   # Compute alpha = 0.95
   data <- data[
