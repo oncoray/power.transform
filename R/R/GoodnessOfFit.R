@@ -299,6 +299,10 @@ setMethod(
     xout = tau_lookup
   )$y
 
+  # Check if lookup is outside the domain of tau.
+  if(tau_lookup > max(data$tau)) alpha <- 1.0
+  if(tau_lookup < min(data$tau)) alpha <- 0.0
+
   # Limit alpha to (0, 1) range.
   if (alpha < 0.0) alpha <- 0.0
   if (alpha > 1.0) alpha <- 1.0
