@@ -2912,7 +2912,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
   # From 5 to 1000 in equal steps (log 10 scale)
   n <- 10^(seq(from = 0.75, to = 3.0, by = 0.125))
 
-  if (!file.exists(file.path(manuscript_dir, "sample_size_dependency.RDS"))) {
+  file_name <- file.path(manuscript_dir, "sample_size_dependency.RDS")
+  if (!file.exists(file_name)) {
     set.seed(19L)
 
     data <- list()
@@ -2950,27 +2951,15 @@ get_annotation_settings <- function(ggtheme = NULL) {
         data[[jj + (ii - 1L) * n_rep]] <- data.table::data.table(
           "n" = n[ii],
           "p_value" = c(
-            power.transform::assess_transformation(
-              x = x,
-              transformer = power.transform::find_transformation_parameters(
-                x = x,
-                method = "none"
-              ),
-              verbose = FALSE
-            ),
-            power.transform::assess_transformation(
-              x = x_outlier,
-              transformer = power.transform::find_transformation_parameters(
-                x = x_outlier,
-                method = "none"
-              ),
-              verbose = FALSE
-            ),
+            power.transform::cn.test(x = x, robust = FALSE)$p_value,
+            power.transform::cn.test(x = x_outlier, robust = FALSE)$p_value,
+            power.transform::cn.test(x = x, robust = TRUE)$p_value,
+            power.transform::cn.test(x = x_outlier, robust = TRUE)$p_value,
             shapiro.test(x)$p.value,
             shapiro.test(x_outlier)$p.value
           ),
-          "outlier" = c(FALSE, TRUE, FALSE, TRUE),
-          "test" = factor(c("ECN", "ECN", "SW", "SW"), levels = c("SW", "ECN"))
+          "outlier" = c(FALSE, TRUE, FALSE, TRUE, FALSE, TRUE),
+          "test" = factor(c("CN", "CN", "ECN", "ECN", "SW", "SW"), levels = c("SW", "CN", "ECN"))
         )
       }
     }
@@ -2978,8 +2967,10 @@ get_annotation_settings <- function(ggtheme = NULL) {
     # Aggregate to single table.
     data <- data.table::rbindlist(data)
 
+    saveRDS(data, file_name)
+
   } else {
-    data <- readRDS(file.path(manuscript_dir, "sample_size_dependency.RDS"))
+    data <- readRDS(file_name)
   }
 
   # Compute type I error rate (i.e. fraction of distributions that are centrally
@@ -3008,11 +2999,12 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p <- p + ggplot2::scale_colour_discrete(
     name = "central normality test",
     type = c(
+      "CN" = "#A0CBE8",
       "ECN" = "#4E79A7",
       "SW" = "#F28E2B"
     ),
-    breaks = c("ECN", "SW"),
-    labels = c("ECN test", "Shapiro-Wilk test")
+    breaks = c("ECN", "CN", "SW"),
+    labels = c("ECN test", "CN test", "Shapiro-Wilk test")
   )
 
 
@@ -3035,4 +3027,6 @@ get_annotation_settings <- function(ggtheme = NULL) {
     ncol = 2,
     guides = "collect"
   )
+
+  return(p)
 }
