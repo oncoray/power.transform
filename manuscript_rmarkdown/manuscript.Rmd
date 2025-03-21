@@ -634,13 +634,12 @@ statistic $\tau_{\text{ecn}}$. We will first define the central portion
 $\kappa$.
 
 For each number of samples $n \in \left\{\lfloor 10^\nu \rfloor | \nu \in \left\{0.7500, 0.8125, \ldots, 4.0000 \right \} \right\}$
-we randomly draw $m_d = 30000$ ordered sequences $\mathbf{X}$ from $\mathcal{N}(0,1)$.
-This dataset is used to compute the critical test statistic values for the central normality test.
-Additionally, we add $10 \%$ outliers by randomly replacing elements of each ordered sequence.
-The dataset with outliers is used to compute the critical test statistic values for the empirical variant of the central normality test.
-For each sequence we then compute $\tau_{n, \kappa}$ for $\kappa \in \left\{0.60, 0.70, 0.80, 0.90, 0.95, 1.00\right\}$.
+we randomly drew $m_d = 30000$ ordered sequences $\mathbf{X}$ from $\mathcal{N}(0,1)$.
+This dataset was used to compute the critical test statistic values for the central normality test.
+Additionally, we added $10 \%$ outliers by randomly replacing elements of each ordered sequence.
+The dataset with outliers was used to compute the critical test statistic values for the empirical variant of the central normality test.
+For each sequence we then computed $\tau_{n, \kappa}$ for $\kappa \in \left\{0.60, 0.70, 0.80, 0.90, 0.95, 1.00\right\}$.
 
-The dataset with outliers is used to select a suitable value for $\kappa$.
 Figure \ref{empirical-central-normality-kappa} shows $\tau_{\alpha = 0.95, n, \kappa}$
 as a function of $n$ for different values of $\kappa$. With decreasing
 $\kappa$, the test statistic curve decreases. The curves
@@ -649,7 +648,7 @@ $\kappa \geq 0.90$ are affected by outliers, as can be observed by comparing cur
 of the central normality test with those of the empirical variant.
 
 Since the (empirical) central normality tests assesses whether the central part of a sequence is normally distributed,
-we use $\kappa = 0.70$. Lookup tables and curves for critical statistic values for central normality and empirical central
+we used $\kappa = 0.70$. Lookup tables and curves for critical statistic values for central normality and empirical central
 normality tests are shown in Appendix E.
 
 ```{r empirical-central-normality-kappa, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
@@ -669,6 +668,30 @@ cap <- paste0(
 
 ```
 
+To assess type I error rates for the (empirical) central normality test and compare
+these to the Shapiro-Wilk test for normality, we randomly drew another 1000 sequences from a
+standard normal distribution ($\mathcal{N}(0,1)$ for each 
+$n \in \left\{\lfloor 10^\nu \rfloor | \nu \in \left\{0.7500, 0.8125, \ldots, 3.0000 \right \} \right\}$.
+A second dataset was created by replacing elements with randomly drawn outliers, as described above.
+For each sequence, the p-value for the respective test was used to reject the null
+hypothesis that the sequence is (centrally) normal. The null hypothesis was rejected if $p \leq 0.05$.
+The type I error rate was determined by computing the fraction of centrally normal sequences rejected this way.
+Figure \ref{empirical-central-normality-error_rate} shows that the empirical central normality test had the expected type I error rate for
+centrally normal data (with tails of the distribution not being normally distributed),
+whereas the central normality test and Shapiro-Wilk test overestimated type I error rates.
+
+```{r empirical-central-normality-error_rate, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
+cap <- paste0(
+  "Observed type I error rates for (central) normality tests in the presence of data derived from normal distributions with and without outliers. ",
+  "ECN: empirical central normality; CN: central normality"
+)
+
+.plot_test_dependency_sample_size(
+  plot_theme = plot_theme,
+  manuscript_dir = manuscript_dir
+)
+
+```
 
 In Figure \ref{fig:empirical-central-normality-examples} we apply the empirical
 central normality test to assess central normality of features that are composed
