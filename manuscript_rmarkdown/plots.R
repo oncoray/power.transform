@@ -2810,14 +2810,14 @@ get_annotation_settings <- function(ggtheme = NULL) {
   data <- rbind(data_w_outliers, data_wo_outliers)
 
   # Compute alpha
-  data[, "alpha" := (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa", "outlier")]
+  data[, "alpha" := 1.0 - (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa", "outlier")]
 
   # Compute alpha = 0.95
   data <- data[, list("tau" = stats::spline(
     x = alpha,
     y = mean_residual_error,
     method = "fmm",
-    xout = 0.95
+    xout = 0.05
   )$y),
   by = c("n", "kappa", "outlier")]
 
@@ -2836,7 +2836,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
   p <- p + plot_theme
   p <- p + ggplot2::scale_x_log10(name = "n")
-  p <- p + ggplot2::ylab(latex2exp::TeX("test statistic $\\tau_{\\alpha = 0.95, n, \\kappa}$"))
+  p <- p + ggplot2::ylab(latex2exp::TeX("test statistic $\\tau_{\\alpha = 0.05, n, \\kappa}$"))
   p <- p + ggplot2::scale_colour_discrete(
     name = "central portion κ",
     type = c(
@@ -2890,12 +2890,12 @@ get_annotation_settings <- function(ggtheme = NULL) {
   data <- rbind(data_w_outliers, data_wo_outliers)
   data <- data[kappa == k]
 
-  alpha_levels <- c(0.80, 0.90, 0.95, 0.975, 0.99, 0.999)
+  alpha_levels <- 1.0 - c(0.80, 0.90, 0.95, 0.975, 0.99, 0.999)
 
   # Compute alpha
-  data[, "alpha" := (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa", "outlier")]
+  data[, "alpha" := 1.0 - (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa", "outlier")]
 
-  # Compute alpha = 0.95
+  # Compute tau at the specified confidence levels.
   data <- data[
     ,
     list(
@@ -2912,7 +2912,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   data$alpha <- factor(
     x = data$alpha,
     levels = alpha_levels,
-    labels = c("80.0 %", "90.0 %", "95.0 %", "97.5 %", "99.0 %", "99.9 %")
+    labels = c("20.0 %", "10.0 %", "5.0 %", "2.5 %", "1.0 %", "0.1 %")
   )
 
   p <- ggplot2::ggplot(
@@ -2928,12 +2928,12 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p <- p + ggplot2::scale_colour_discrete(
     name = "significance level",
     type = c(
-      "80.0 %" = "#bacbde",
-      "90.0 %" = "#537dac",
-      "95.0 %" = "#324b67",
-      "97.5 %" = "#f9c59f",
-      "99.0 %" = "#f06d0f",
-      "99.9 %" = "#904109"
+      "20.0 %" = "#bacbde",
+      "10.0 %" = "#537dac",
+      "5.0 %" = "#324b67",
+      "2.5 %" = "#f9c59f",
+      "1.0 %" = "#f06d0f",
+      "0.1 %" = "#904109"
     )
   )
 

@@ -102,12 +102,12 @@ cn.test <- function(x, transformer = NULL, robust = TRUE) {
 
   # Lookup critical tau at alpha = 0.95.
   test_statistic_critical <- .interpolate_2d(
-    list("n" = length(x), "alpha" = 0.95),
+    list("n" = length(x), "alpha" = 0.05),
     data = lookup_table
   )
 
   # Lookup p-value.
-  p_value <- 1.0 - .interpolate_alpha(
+  p_value <- .interpolate_alpha(
     n_lookup = length(x),
     tau_lookup = test_statistic_value,
     data = lookup_table
@@ -312,8 +312,8 @@ setMethod(
   )$y
 
   # Check if lookup is outside the domain of tau.
-  if(tau_lookup > max(data$tau)) alpha <- 1.0
-  if(tau_lookup < min(data$tau)) alpha <- 0.0
+  if(tau_lookup > max(data$tau)) alpha <- 0.0
+  if(tau_lookup < min(data$tau)) alpha <- 1.0
 
   # Limit alpha to (0, 1) range.
   if (alpha < 0.0) alpha <- 0.0

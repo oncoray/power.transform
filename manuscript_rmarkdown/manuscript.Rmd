@@ -927,9 +927,15 @@ data <- data.table::dcast(
 h_transformation <- friedman.test(as.matrix(data[, "dataset" := NULL]))
 ```
 
-Considering single process parameters, the choice of learner (Friedman test: $p < 10^{-8})$), normalisation method (Wilcoxon signed rank test: $p < 10^{-8}$), and transformation method $p = 0.007$, all had a significant impact (at significance level $p = 0.05$).
+Considering single process parameters, 
+the choice of learner (Friedman test: $p < 10^{-8})$),
+normalisation method (Wilcoxon signed rank test: $p = 4 \cdot 10^{-8}$), 
+and transformation method (Friedman test:$p = 0.007$,
+all had a significant impact (at $p = 0.05$).
 
-To estimate the marginal effects of process parameters, including transformation method, we first fit a regression random forest (ranger package [@Wright2017-rf] version 0.16.0): 2000 trees, minimum node size 2, other hyperparameters default) with process parameters and task difficulty as predictors and normalised rank as response variable.
+To estimate the marginal effects of process parameters, including transformation method, 
+we first fit a regression random forest (ranger package [@Wright2017-rf] version 0.16.0): 2000 trees, 
+node size 2, other hyperparameters default) with process parameters and task difficulty as predictors and normalised rank as response variable.
 The estimated marginal effects are shown in Figure \ref{fig:marginal-effect-plot}.
 On the scale of normalised ranks ($[0.0, 1.0]$), the overall estimated marginal effect of using a random forest instead of generalised linear model was $0.272$.
 The overall marginal effect of using z-standardisation to normalise features was $0.008$.
