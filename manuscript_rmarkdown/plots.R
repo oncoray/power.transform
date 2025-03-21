@@ -1542,7 +1542,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
     # Normal distribution.
     x_1 <- power.transform::ragn(
-      10000L,
+      100L,
       location = -location_shift / 2,
       scale = 1 / sqrt(2),
       alpha = 0.5,

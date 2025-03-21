@@ -492,17 +492,17 @@ cap <- paste0(
 )
 
 data <- .plot_experimental_invariance(plot_theme = plot_theme, method = "box_cox")
-data$p
+data$plot
 ```
 
 ### Age of patients with lung cancer
 
 Applying conventional and invariant Box-Cox transformations to age of patients with lung cancer [@Loprinzi1994-cd] yielded the following results:
-no transformation (sum of residuals with normal distribution $\sum r_i = 16.5$);
-conventional transformation ($\lambda = 1.9$, $\sum r_i = 11.5$, $\mu_{BC} = 1.6 \cdot 10^3$, $\sigma_{BC} = 0.4 \cdot 10^3$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = 1.9$, $\sum r_i = 11.5$, $\mu_{BC} = 1.6 \cdot 10^3$, $\sigma_{BC} = 0.4 \cdot 10^3$);
-location- and scale-invariant transformation ($\lambda = 1.7$, $\sum r_i = 11.6$, $\mu_{BC} = 1.9$, $\sigma_{BC} = 0.8$);
-and robust location- and scale-invariant transformation ($\lambda = 1.5$, $\sum r_i = 11.6$, $\mu_{BC} = 3.6$, $\sigma_{BC} = 1.2$).
+no transformation (sum of residuals with normal distribution $\sum r_i = 16.5$, $p = 0.71$);
+conventional transformation ($\lambda = 1.9$, $\sum r_i = 11.5$, $\mu_{BC} = 1.6 \cdot 10^3$, $\sigma_{BC} = 0.4 \cdot 10^3$, $p = 0.94$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 1.9$, $\sum r_i = 11.5$, $\mu_{BC} = 1.6 \cdot 10^3$, $\sigma_{BC} = 0.4 \cdot 10^3$, $p = 0.94$);
+location- and scale-invariant transformation ($\lambda = 1.7$, $\sum r_i = 11.6$, $\mu_{BC} = 1.9$, $\sigma_{BC} = 0.8$, $p = 0.94$);
+and robust location- and scale-invariant transformation ($\lambda = 1.5$, $\sum r_i = 11.6$, $\mu_{BC} = 3.6$, $\sigma_{BC} = 1.2$, $p = 0.93$).
 
 Compared to location- and scale-invariant Yeo-Johnson transformations, the Box-Cox transformations do not reduce residuals compared to conventional variants.
 
@@ -510,11 +510,11 @@ Compared to location- and scale-invariant Yeo-Johnson transformations, the Box-C
 ### Penguin body mass
 
 Applying conventional and invariant Box-Cox transformations to the body mass of penguins [@Gorman2014-eo] yielded the following results:
-no transformation (residual sum $\sum r_i = 48.0$);
-conventional transformation ($\lambda = -0.5$, $\sum r_i = 32.2$, $\mu_{BC} = 2.1$, $\sigma_{BC} = 4 \cdot 10^{-3}$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = -0.5$, $\sum r_i = 32.2$, $\mu_{BC} = 2.1$, $\sigma_{BC} = 4 \cdot 10^{-3}$);
-location- and scale-invariant transformation ($\lambda = 0.5$, $\sum r_i = 27.3$, $\mu_{BC} = 0.3$, $\sigma_{BC} = 0.6$);
-and robust location- and scale-invariant transformation ($\lambda = 0.2$, $\sum r_i = 25.2$, $\mu_{BC} = 0.4$, $\sigma_{BC} = 0.6$).
+no transformation (residual sum $\sum r_i = 48.0$, $p < 0.001$);
+conventional transformation ($\lambda = -0.5$, $\sum r_i = 32.2$, $\mu_{BC} = 2.1$, $\sigma_{BC} = 4 \cdot 10^{-3}$, $p = 0.06$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = -0.5$, $\sum r_i = 32.2$, $\mu_{BC} = 2.1$, $\sigma_{BC} = 4 \cdot 10^{-3}$, $p = 0.06$);
+location- and scale-invariant transformation ($\lambda = 0.5$, $\sum r_i = 27.3$, $\mu_{BC} = 0.3$, $\sigma_{BC} = 0.6$, $p = 0.10$);
+and robust location- and scale-invariant transformation ($\lambda = 0.2$, $\sum r_i = 25.2$, $\mu_{BC} = 0.4$, $\sigma_{BC} = 0.6$, $p = 0.44$).
 
 Just as for location- and scale-invariant Yeo-Johnson transformations, Box-Cox transformations produced a lower overall residual sum compared to their conventional counterparts.
 Similarly, conventional transformations led to low standard deviation $\sigma_{YJ}$ of the body mass feature after transformation.
@@ -523,11 +523,11 @@ Similarly, conventional transformations led to low standard deviation $\sigma_{Y
 ### Latitude in the Ames housing dataset
 
 Applying conventional and invariant Box-Cox transformations to the latitude of houses in the Ames housing dataset [@De-Cock2011-jf] yielded the following results:
-no transformation (residual sum $\sum r_i = 328$);
-conventional transformation ($\lambda = 62.1$, $\sum r_i = 319$, $\mu_{BC} = 1.1 \cdot 10^{99}$, $\sigma_{BC} = 0.0 \cdot 10^{99}$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = 96.0$, $\sum r_i = 319$, $\mu_{BC} = 6.2 \cdot 10^{153}$, $\sigma_{BC} = 0.3 \cdot 10^{153}$);
-location- and scale-invariant transformation ($\lambda = 1.9$, $\sum r_i = 312$, $\mu_{BC} = 2.3$, $\sigma_{BC} = 0.9$);
-and robust location- and scale-invariant transformation ($\lambda = 1.2$, $\sum r_i = 316$, $\mu_{BC} = 5.5$, $\sigma_{BC} = 1.4$).
+no transformation (residual sum $\sum r_i = 328$, $p < 0.001$);
+conventional transformation ($\lambda = 62.1$, $\sum r_i = 319$, $\mu_{BC} = 1.1 \cdot 10^{99}$, $\sigma_{BC} = 0.0 \cdot 10^{99}$, $p < 0.001$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 96.0$, $\sum r_i = 319$, $\mu_{BC} = 6.2 \cdot 10^{153}$, $\sigma_{BC} = 0.3 \cdot 10^{153}$, $p < 0.001$);
+location- and scale-invariant transformation ($\lambda = 1.9$, $\sum r_i = 312$, $\mu_{BC} = 2.3$, $\sigma_{BC} = 0.9$, $p < 0.001$);
+and robust location- and scale-invariant transformation ($\lambda = 1.2$, $\sum r_i = 316$, $\mu_{BC} = 5.5$, $\sigma_{BC} = 1.4$, $p < 0.001$).
 
 Similar to conventional Yeo-Johnson transformations (non-robust and robust), conventional Box-Cox transformations had high values for the $\lambda$ parameter, which could lead to numerical issues.
 Location- and scale-invariant Box-Cox transformations did not suffer from this issue.
@@ -551,103 +551,35 @@ cap <- paste0(
 )
 
 data <- .plot_experimental_outlier_robustness(plot_theme = plot_theme, method = "box_cox")
-data$p
+data$plot
 ```
 
 ### Fuel efficiency in the Top Gear dataset
 
 The Top Gear dataset contains data on 297 vehicles, with outliers related highly fuel-efficient vehicles [@Alfons2021-kc].
 Applying conventional and invariant Box-Cox transformations to the fuel consumption feature yielded the following results:
-no transformation (residual sum $\sum r_i = 54$, $p=0.76$);
-conventional transformation ($\lambda = -0.1$, $\sum r_i = 55$, $\mu_{BC} = 3.0$, $\sigma_{BC} = 0.3$, $p=0.01$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = 0.8$, $\sum r_i = 48$, $\mu_{BC} = 29$, $\sigma_{BC} = 15$, $p=0.55$);
-location- and scale-invariant transformation ($\lambda = -0.7$, $\sum r_i = 44$, $\mu_{BC} = 0.6$, $\sigma_{BC} = 0.2$, $p=0.02$);
-and robust location- and scale-invariant transformation ($\lambda = 1.1$, $\sum r_i = 59$, $\mu_{BC} = 2.4$, $\sigma_{BC} = 1.8$, $p=0.83$).
+no transformation (residual sum $\sum r_i = 54$, $p=0.58$);
+conventional transformation ($\lambda = -0.1$, $\sum r_i = 55$, $\mu_{BC} = 3.0$, $\sigma_{BC} = 0.3$, $p < 0.001$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 0.8$, $\sum r_i = 48$, $\mu_{BC} = 29$, $\sigma_{BC} = 15$, $p=0.32$);
+location- and scale-invariant transformation ($\lambda = -0.7$, $\sum r_i = 44$, $\mu_{BC} = 0.6$, $\sigma_{BC} = 0.2$, $p < 0.001$);
+and robust location- and scale-invariant transformation ($\lambda = 1.1$, $\sum r_i = 59$, $\mu_{BC} = 2.4$, $\sigma_{BC} = 1.8$, $p=0.67$).
 
 
 ### Maximum arterial wall thickness in an ischemic stroke dataset
 
 The ischemic stroke dataset contains historic data from 126 patients with risk at ischemic stroke [@Kuhn2019-kt].
 Applying conventional and invariant Box-Cox transformations to the maximum arterial wall thickness feature yielded the following results:
-no transformation (residual sum $\sum r_i = 110$, $p=0.56$);
+no transformation (residual sum $\sum r_i = 110$, $p=0.86$);
 conventional transformation ($\lambda = -0.5$, $\sum r_i = 33$, $\mu_{BC} = 1.0$, $\sigma_{BC} = 0.2$, $p=0.01$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = 1.1$, $\sum r_i = 127$, $\mu_{BC} = 5.5$, $\sigma_{BC} = 12$, $p=0.60$);
-location- and scale-invariant transformation ($\lambda = -1.0$, $\sum r_i = 28$, $\mu_{BC} = 0.7$, $\sigma_{BC} = 0.1$, $p=0.01$);
-and robust location- and scale-invariant transformation ($\lambda = 0.5$, $\sum r_i = 56$, $\mu_{BC} = 2.2$, $\sigma_{BC} = 1.4$, $p=0.35$).
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 1.1$, $\sum r_i = 127$, $\mu_{BC} = 5.5$, $\sigma_{BC} = 12$, $p=0.90$);
+location- and scale-invariant transformation ($\lambda = -1.0$, $\sum r_i = 28$, $\mu_{BC} = 0.7$, $\sigma_{BC} = 0.1$, $p=0.02$);
+and robust location- and scale-invariant transformation ($\lambda = 0.5$, $\sum r_i = 56$, $\mu_{BC} = 2.2$, $\sigma_{BC} = 1.4$, $p=0.60$).
 
 # Appendix E: Empirical central normality test
 
-\begin{definition}[central portion of a sequence]
-Let $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i \in \mathbb{R}\right\}$ be a finite sequence of length $n > 0$,
-ordered so that $x_1 \leq x_2 \leq \ldots \leq x_n$.
-Let $p_i = \frac{i - 1/3}{n + 1/3}$, with $i = 1, 2, \ldots n$ be the percentile value
-corresponding to each element in $\mathbf{X}$. For elements with tied values in $\mathbf{X}$,
-percentile values are replaced by the average in their group, i.e.
-if $x_j = x_{j+1} = \ldots = x_{j+m}$, then 
-$p_j' = p_{j+1}' = \ldots = p_{j+m}' = 1/(m+1)\sum_j^{j+m}p_j$.
-Furthermore, let central portion $\kappa \in (0,1)$.
-
-Then the central portion of $\mathbf{X}$ is 
-$\mathbf{X}_{\text{c}} = \left\{x_i \in \mathbf{X} \, | \,  \frac{1-\kappa}{2} \leq  p_i \leq \frac{1 + \kappa}{2}\right\}$.
-
-\end{definition}
-
-\begin{definition}[Residual errors of the central portion of a sequence]
-
-Let the residual error for each element of $\mathbf{X}$ be $r_i =\left| \frac{x_i - \mu_M}{\sigma_M} - F^{-1}_{\mathcal{N}}(p_i) \right|$, 
-with $\mu_M$ and $\sigma_M$ robust Huber M-estimates of location and scale of $\mathbf{X}$ [@Huber1981-su], 
-and $F^{-1}_{\mathcal{N}}$ the quantile function of the normal distribution $\mathcal{N}(0, 1)$.
-
-Then, the set of residual errors of the central portion of $\mathbf{X}$ (i.e. $\mathbf{X}_{\text{c}}$) is
-$\mathbf{R}_{\text{c}} = \left\{ r_i \in \left\{ r_1, r_2, \ldots, r_n\right\} \, | \,  \frac{1-\kappa}{2} \leq  p_i \leq \frac{1 + \kappa}{2}\right\}$.
-
-\end{definition}
-
-\begin{definition}[Central normality of a sequence]
-
-The central portion of a sequence is normally distributed if the sum of residual
-errors is equal to zero:
-$\sum_{r_j \in \mathbf{R}_{\text{c}}} r_j = 0$
-
-\end{definition}
-
-In practice, a finite sequence sampled from a normal distribution $\mathcal{N}(\mu, \sigma)$ will have a non-zero sum of residual errors.
-
-\begin{definition}[Central normality test]
-The null-hypothesis is defined as: $\mathcal{H}_0: \sum_{r_j \in \mathbf{R}_{\text{c}}}r_j = 0$
-
-THe alternative hypothesis is defined as: $\mathcal{H}_1: \sum_{r_j \in \mathbf{R}_{\text{c}}}r_j > 0$
-\end{definition}
-
-The null-hypothesis $\mathcal{H}_0$ is that the central portion of sequence $\mathbf{X}$
-is normally distributed, with the alternative hypothesis $\mathcal{H}_1$ that it
-is not normally distributed. To test this hypothesis, a test statistic is computed
-and compared against a critical value.
-
-\begin{definition}[Central normality test statistic]
-Let $\alpha$ be the significance level for the central normality test.
-Let $m$ be the number of elements of $\mathbf{R}_{\text{c}}$
-
-The test statistic is then $\tau_{\alpha, n, \kappa} = \frac{1}{m}\sum_{r_j \in \mathbf{R}_{\text{c}}}r_j$.
-
-\end{definition}
-
-Critical values for the test statistic of the central normality test 
-are found in Table \ref{tab:central-normality-critical-statistic}. These are 
-determined by repeatedly and randomly sampling data (i.e. $\mathbf{X}$) from
-a normal distribution $\mathcal{N}(0,1)$. The null-hypothesis should be rejected
-at significance level $\alpha$ if 
-$\tau_{\alpha, n, \kappa} \geq \tau_{\alpha, n, \kappa, \text{critical}}$.
-
-The empirical central normality test is a central normality test, in the
-definition provided above. However, critical values of the test statistic are
-not determined directly from data drawn randomly from $\mathcal{N}(0,1)$.
-Rather, after $\mathbf{X}$ is drawn, 10% of the values are randomly replaced by
-random outlier values. The resulting distribution is centrally normal, but
-not fully normal.
-
-Critical values for the empirical variant of the central normality test are
-found in Table \ref{tab:empirical-central-normality-critical-statistic}.
+Critical values for the central normality test and its empirical variant are
+found in Table \ref{tab:central-normality-critical-statistic} and Table 
+\ref{tab:empirical-central-normality-critical-statistic}, respectively.
 
 ```{r include = FALSE, eval = FALSE}
 # This writes the lookup table for critical test statistic.
@@ -755,6 +687,22 @@ $n$ \textbackslash $\alpha$ & 0.1 & 0.2 & 0.5 & 0.8 & 0.9 & 0.95 & 0.975 & 0.99 
 \end{table}
 ```
 
+```{r empirical-central-normality-critical-statistics, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
+cap <- paste0(
+  "Critical test statistic $\\tau_{\\alpha, n, \\kappa = 0.70}$ of the (empirical) ",
+  "central normality test as function of $n$ for several values of significance level $\\alpha$. ",
+  "The critical test statistics for central normality test are determined using fully normal data, ",
+  "whereas the statistics for the empirical variant are determined using centrally normal data, ",
+  "i.e. with fully normal data where 10% of elements are replaced by outliers. ",
+  "emp: empirical"
+)
+
+.plot_test_statistic_tau(
+  plot_theme = plot_theme,
+  manuscript_dir = manuscript_dir
+)
+
+```
 
 # Appendix F: Normalisation before transformation
 
@@ -792,7 +740,7 @@ data.table::dcast(data, transformation ~ dataset, value.var = "p_value")
 Several transformation methods include normalisation before tranformation, indicated by z-score normalisation (norm.) or robust scaling. 
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
 \label{tab:normalisation-before-transformation-appendix}
-\begin{tabular}{l | c c c c c}
+\begin{tabular}{l | r r r r r}
 
 \toprule
 feature & age & AWT & FE & latitude & PBM \\
@@ -820,7 +768,7 @@ robust invariant & 10.6 & 27.1 & 49.5 & 310.6 & 23.1 \\
 Several transformation methods include normalisation before tranformation, indicated by z-score normalisation (norm.) or robust scaling. 
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
 \label{tab:normalisation-before-transformation-lambda-appendix}
-\begin{tabular}{l | c c c c c}
+\begin{tabular}{l | r r r r r}
 
 \toprule
 feature & age & AWT & FE & latitude & PBM \\
@@ -848,21 +796,21 @@ p-values of empirical central normality tests for features from real-world datas
 Several transformation methods include normalisation before tranformation, indicated by z-score normalisation (norm.) or robust scaling. 
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
 \label{tab:normalisation-before-transformation-p-value-appendix}
-\begin{tabular}{l | c c c c c}
+\begin{tabular}{l | r r r r r}
 
 \toprule
 feature & age & AWT & FE & latitude & PBM \\
 
 \midrule
-none & 0.685 & 0.558 & 0.764 & 0.354 & 0.030 \\
-conventional & 0.886 & 0.010 & 0.012 & 0.317 & 0.381 \\
-conventional (z-score norm.) & 0.842 & 0.036 & 0.011 & 0.075 & 0.378 \\
-conventional (robust scaling) & 0.855 & 0.002 & 0.007 & 0.077 & 0.416 \\
-Raymaekers-Rousseeuw & 0.886 & 0.610 & 0.553 & 0.296 & 0.381 \\
-Raymaekers-Rousseeuw (z-score norm.) & 0.685 & 0.632 & 0.812 & 0.075 & 0.378 \\
-Raymaekers-Rousseeuw (robust scaling) & 0.826 & 0.609 & 0.813 & 0.077 & 0.434 \\
-invariant & 0.907 & 0.134 & 0.026 & 0.049 & 0.549 \\
-robust invariant & 0.781 & 0.102 & 0.583 & 0.085 & 0.717 \\
+none                                  & 0.712 & 0.864 & 0.577     & $< 0.001$ & $< 0.001$ \\
+conventional                          & 0.936 & 0.017 & $< 0.001$ & $< 0.001$ & 0.058 \\
+conventional (z-score norm.)          & 0.860 & 0.058 & $< 0.001$ & $< 0.001$ & 0.054 \\
+conventional (robust scaling)         & 0.881 & 0.001 & $< 0.001$ & $< 0.001$ & 0.076 \\
+Raymaekers-Rousseeuw                  & 0.936 & 0.905 & 0.320     & $< 0.001$ & 0.058 \\
+Raymaekers-Rousseeuw (z-score norm.)  & 0.605 & 0.922 & 0.635     & $< 0.001$ & 0.054 \\
+Raymaekers-Rousseeuw (robust scaling) & 0.830 & 0.948 & 0.637     & $< 0.001$ & 0.085 \\
+invariant                             & 0.948 & 0.231 & $< 0.001$ & $< 0.001$ & 0.184 \\
+robust invariant                      & 0.797 & 0.182 & 0.352     & $< 0.001$ & 0.397 \\
 \bottomrule
 \end{tabular}
 \end{center}
