@@ -2795,13 +2795,22 @@ get_annotation_settings <- function(ggtheme = NULL) {
 .plot_test_statistic_centrality <- function(manuscript_dir, plot_theme) {
   # Plots data that allows us to select the fitting centrality parameter kappa.
 
-  data <- .get_test_statistics_data(
+  data_w_outliers <- .get_test_statistics_data(
     manuscript_dir = manuscript_dir,
     with_outliers = TRUE
   )
+  data_w_outliers[, "outlier" := TRUE]
+
+  data_wo_outliers <- .get_test_statistics_data(
+    manuscript_dir = manuscript_dir,
+    with_outliers = FALSE
+  )
+  data_wo_outliers[, "outlier" := FALSE]
+
+  data <- rbind(data_w_outliers, data_wo_outliers)
 
   # Compute alpha
-  data[, "alpha" := (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa")]
+  data[, "alpha" := (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa", "outlier")]
 
   # Compute alpha = 0.95
   data <- data[, list("tau" = stats::spline(
@@ -2810,7 +2819,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     method = "fmm",
     xout = 0.95
   )$y),
-  by = c("n", "kappa")]
+  by = c("n", "kappa", "outlier")]
 
   data$kappa <- factor(
     x = data$kappa,
@@ -2827,7 +2836,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
   p <- p + plot_theme
   p <- p + ggplot2::scale_x_log10(name = "n")
-  p <- p + ggplot2::ylab(latex2exp::TeX("test statistic $\\tau_{ecn, n, \\alpha = 0.95, \\kappa}$"))
+  p <- p + ggplot2::ylab(latex2exp::TeX("test statistic $\\tau_{\\alpha = 0.95, n, \\kappa}$"))
   p <- p + ggplot2::scale_colour_discrete(
     name = "central portion κ",
     type = c(
@@ -2839,7 +2848,24 @@ get_annotation_settings <- function(ggtheme = NULL) {
       "100 %" = "#904109"
     )
   )
-  p <- p + ggplot2::geom_line(data = data)
+
+  p_no_outliers <- p + ggplot2::geom_line(
+    data = data[outlier == FALSE])
+  p_no_outliers <- p_no_outliers + ggplot2::ggtitle("central normality test")
+
+    p_outliers <- p + ggplot2::geom_line(data = data[outlier == TRUE])
+  p_outliers <- p_outliers + ggplot2::ggtitle("emp. central normality test")
+  p_outliers <- p_outliers + ggplot2::theme(
+    axis.text.y = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank()
+  )
+
+  # Patch all the plots together.
+  p <- p_no_outliers + p_outliers + patchwork::plot_layout(
+    ncol = 2,
+    guides = "collect"
+  )
 
   return(p)
 }
@@ -2849,13 +2875,25 @@ get_annotation_settings <- function(ggtheme = NULL) {
 .plot_test_statistic_tau <- function(manuscript_dir, plot_theme, k = 0.70) {
   # Plots critical tau for several alpha levels.
 
-  data <- .get_test_statistics_data(manuscript_dir = manuscript_dir, with_outliers = FALSE)
+  data_w_outliers <- .get_test_statistics_data(
+    manuscript_dir = manuscript_dir,
+    with_outliers = TRUE
+  )
+  data_w_outliers[, "outlier" := TRUE]
+
+  data_wo_outliers <- .get_test_statistics_data(
+    manuscript_dir = manuscript_dir,
+    with_outliers = FALSE
+  )
+  data_wo_outliers[, "outlier" := FALSE]
+
+  data <- rbind(data_w_outliers, data_wo_outliers)
   data <- data[kappa == k]
 
   alpha_levels <- c(0.80, 0.90, 0.95, 0.975, 0.99, 0.999)
 
   # Compute alpha
-  data[, "alpha" := (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa")]
+  data[, "alpha" := (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa", "outlier")]
 
   # Compute alpha = 0.95
   data <- data[
@@ -2868,7 +2906,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
         xout = alpha_levels)$y,
       "alpha" = alpha_levels
     ),
-    by = c("n")
+    by = c("n", "outlier")
   ]
 
   data$alpha <- factor(
@@ -2886,7 +2924,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
   p <- p + plot_theme
   p <- p + ggplot2::scale_x_log10(name = "n")
-  p <- p + ggplot2::ylab(latex2exp::TeX("test statistic $\\tau_{ecn, n, \\alpha, \\kappa = 0.70}$"))
+  p <- p + ggplot2::ylab(latex2exp::TeX("test statistic $\\tau_{\\alpha, n, \\kappa = 0.70}$"))
   p <- p + ggplot2::scale_colour_discrete(
     name = "significance level",
     type = c(
@@ -2898,7 +2936,24 @@ get_annotation_settings <- function(ggtheme = NULL) {
       "99.9 %" = "#904109"
     )
   )
-  p <- p + ggplot2::geom_line(data = data)
+
+  p_no_outliers <- p + ggplot2::geom_line(
+    data = data[outlier == FALSE])
+  p_no_outliers <- p_no_outliers + ggplot2::ggtitle("central normality test")
+
+  p_outliers <- p + ggplot2::geom_line(data = data[outlier == TRUE])
+  p_outliers <- p_outliers + ggplot2::ggtitle("emp. central normality test")
+  p_outliers <- p_outliers + ggplot2::theme(
+    axis.text.y = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank()
+  )
+
+  # Patch all the plots together.
+  p <- p_no_outliers + p_outliers + patchwork::plot_layout(
+    ncol = 2,
+    guides = "collect"
+  )
 
   return(p)
 }
