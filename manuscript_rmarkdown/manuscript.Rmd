@@ -716,6 +716,21 @@ cap <- paste0(
 )
 
 ```
+## Simulated data
+
+[Generated data: clean, n = 30, n = 100, n = 1000, lambda = -1.00, 1.00, 3.00]
+
+```{r include = FALSE, eval = FALSE}
+
+data <- .assess_standardisation_before_transformation_simulation(lambda_limit = c(-4.0, 6.0))
+data <- data[, mget(c("residuals", "lambda", "p_value", "transformation", "dataset"))]
+data[, "residuals" := round(residuals, digits = 1L)]
+data[, "lambda" := round(lambda, digits = 1L)]
+data[, "p_value" := round(p_value, digits = 3L)]
+data.table::dcast(data, transformation ~ dataset, value.var = "residuals")
+data.table::dcast(data, transformation ~ dataset, value.var = "lambda")
+data.table::dcast(data, transformation ~ dataset, value.var = "p_value")
+```
 
 # Experimental Results
 

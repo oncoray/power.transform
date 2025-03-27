@@ -12,6 +12,7 @@ header-includes:
 - \usepackage{amsmath}
 - \usepackage{amsthm}
 - \usepackage{booktabs}
+- \usepackage{multirow}
 - \newtheorem{definition}{Definition}
 - \DeclareMathOperator*{\argmax}{argmax}
 - \DeclareMathOperator*{\argmin}{argmin}
@@ -471,6 +472,127 @@ cap <- paste0(
 .plot_shifted_distributions_appendix(manuscript_dir = manuscript_dir, plot_theme = plot_theme)
 ```
 
+# Appendix D: Simulations on clean data
+
+Robust transformations are hypothesised to have a cost in efficiency for data
+without outliers, i.e. clean data. Here we randomly draw data from a standard normal
+distribution $\mathcal{N}(0,1)$. Subsequently, we perform an inverse transformation
+$\left(\phi_{\text{YJ}}^{\lambda, 0, 1}\right)^{-1}$, with $\lambda \in \left(0, 2\right)$.
+
+An alternative to location- and scale-invariant transformations is normalising feature distributions prior to conventional transformations.
+We assessed two normalisation methods were used:
+1. z-standardisation, i.e. $x^{\prime}_{i} = \left(x_i - \mu \right) / \sigma$, with $\mu$ and $\sigma$ the mean and standard deviation of feature $\mathbf{X}$; 
+and 2. robust scaling, i.e. $x^{\prime}_{i} = \left(x_i - \text{median}\left(\mathbf{X}\right) \right) / \text{IQR}\left(\mathbf{X}\right)$, with $\text{IQR}$ representing the interquartile range of feature $\mathbf{X}$.
+
+[Generated data: clean, n = 30, n = 100, n = 1000, lambda = 0.1, 1.0, 1.9]
+
+```{r include = FALSE, eval = FALSE}
+
+data <- .assess_standardisation_before_transformation_simulation(lambda_limit = c(-4.0, 6.0))
+data <- data[, mget(c("residuals", "lambda", "p_value", "transformation", "dataset"))]
+data[, "residuals" := round(residuals, digits = 1L)]
+data[, "lambda" := round(lambda, digits = 1L)]
+data[, "p_value" := round(p_value, digits = 3L)]
+data.table::dcast(data, transformation ~ dataset, value.var = "residuals")
+data.table::dcast(data, transformation ~ dataset, value.var = "lambda")
+data.table::dcast(data, transformation ~ dataset, value.var = "p_value")
+```
+
+
+```{=latex}
+\begin{table}
+\begin{center}
+\caption{Residual errors for features from simulated clean data without outliers after Yeo-Johnson transformation to normality.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
+\label{tab:clean-transformation-residuals-appendix}
+\small{
+\begin{tabular}{l | l r r r r r r r r r}
+
+\toprule
+& n: & \multicolumn{3}{c}{30} & \multicolumn{3}{c}{100} & \multicolumn{3}{c}{500} \\
+transformation & $\lambda$: & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 \\
+
+\midrule
+
+none                                  & & 4.0 & 3.4 & 4.6 & 40.1 & 8.9 & 20.8 & 184.6 & 10.1 & 191.8 \\
+conventional                          & & 2.7 & 3.3 & 3.6 &  6.5 & 8.1 &  5.6 &  14.2 & 10.1 &  16.1 \\
+conventional (z-score norm.)          & & 2.5 & 3.3 & 3.7 &  9.8 & 8.1 &  5.6 &  24.1 & 10.1 &  15.9 \\
+conventional (robust scaling)         & & 2.6 & 3.3 & 3.7 &  7.4 & 8.2 &  5.6 &  15.5 & 10.1 &  14.0 \\
+Raymaekers-Rousseeuw                  & & 3.8 & 3.3 & 3.6 &  6.5 & 8.5 &  5.6 &  14.4 & 11.0 &  17.6 \\
+Raymaekers-Rousseeuw (z-score norm.)  & & 2.6 & 3.3 & 3.7 &  9.8 & 8.5 &  5.6 &  24.1 & 11.1 &  15.9 \\
+Raymaekers-Rousseeuw (robust scaling) & & 2.6 & 3.3 & 3.7 &  7.4 & 8.6 &  5.6 &  15.4 & 11.1 &  15.1 \\
+invariant                             & & 3.0 & 3.5 & 3.6 &  5.0 & 8.1 &  5.6 &  13.1 & 10.9 &  17.8 \\
+robust invariant                      & & 3.0 & 3.3 & 3.6 &  5.2 & 8.3 &  5.9 &  19.9 & 13.6 &  32.9 \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+\end{table}
+```
+
+```{=latex}
+\begin{table}
+\begin{center}
+\caption{Transformation parameter $\lambda$ for features from simulated clean data without outliers after Yeo-Johnson transformation to normality.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
+\label{tab:clean-transformation-lambda-appendix}
+\small{
+\begin{tabular}{l | l r r r r r r r r r}
+
+\toprule
+& n: & \multicolumn{3}{c}{30} & \multicolumn{3}{c}{100} & \multicolumn{3}{c}{500} \\
+transformation & $\lambda$: & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 \\
+
+\midrule
+
+conventional                          & & 0.6 & 1.2 & 1.5 &  0.0 & 0.9 & 1.6 &  0.1 & 1.0 & 1.9 \\
+conventional (z-score norm.)          & & 0.5 & 1.2 & 1.5 & -0.2 & 0.9 & 1.7 & -0.2 & 1.0 & 2.2 \\
+conventional (robust scaling)         & & 0.5 & 1.3 & 1.6 & -0.3 & 0.9 & 1.7 & -0.2 & 1.0 & 2.1 \\
+Raymaekers-Rousseeuw                  & & 1.0 & 1.2 & 1.5 &  0.0 & 0.7 & 1.6 &  0.1 & 1.0 & 1.9 \\
+Raymaekers-Rousseeuw (z-score norm.)  & & 0.7 & 1.2 & 1.5 & -0.2 & 0.7 & 1.7 & -0.2 & 1.0 & 2.2 \\
+Raymaekers-Rousseeuw (robust scaling) & & 0.6 & 1.3 & 1.6 & -0.3 & 0.6 & 1.7 & -0.2 & 1.0 & 2.1 \\
+invariant                             & & 0.4 & 1.4 & 1.7 &  0.1 & 0.9 & 1.8 &  0.1 & 1.1 & 3.0 \\
+robust invariant                      & & 0.4 & 1.3 & 1.5 &  0.0 & 0.8 & 1.7 &  0.0 & 1.1 & 2.0 \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+\end{table}
+```
+
+```{=latex}
+\begin{table}
+\begin{center}
+\caption{
+p-values of empirical central normality tests for features from simulated clean data without outliers after Yeo-Johnson transformation to normality.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
+\label{tab:clean-transformation-p-value-appendix}
+\small{
+\begin{tabular}{p{3.5cm} | l r r r r r r r r r}
+
+\toprule
+& n: & \multicolumn{3}{c}{30} & \multicolumn{3}{c}{100} & \multicolumn{3}{c}{500} \\
+transformation & $\lambda$: & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 \\
+
+\midrule
+
+none                                  & & 0.986 & 0.614 & 0.323 & $<0.001$ & 0.063 & 0.016 & $<0.001$ & 0.997 & $<0.001$ \\
+conventional                          & & 0.986 & 0.464 & 0.488 &   0.675  & 0.139 & 0.620 &   0.902  & 0.999 &   0.698 \\
+conventional (z-score norm.)          & & 0.979 & 0.440 & 0.477 &   0.200  & 0.141 & 0.770 &   0.419  & 0.999 &   0.723 \\
+conventional (robust scaling)         & & 0.982 & 0.439 & 0.484 &   0.487  & 0.130 & 0.683 &   0.883  & 0.999 &   0.817 \\
+Raymaekers-Rousseeuw                  & & 0.989 & 0.464 & 0.488 &   0.675  & 0.446 & 0.620 &   0.876  & 0.992 &   0.821 \\
+Raymaekers-Rousseeuw (z-score norm.)  & & 0.992 & 0.440 & 0.477 &   0.200  & 0.448 & 0.770 &   0.460  & 0.991 &   0.719 \\
+Raymaekers-Rousseeuw (robust scaling) & & 0.993 & 0.439 & 0.484 &   0.487  & 0.422 & 0.683 &   0.887  & 0.991 &   0.848 \\
+invariant                             & & 0.993 & 0.355 & 0.461 &   0.720  & 0.153 & 0.490 &   0.910  & 0.999 &   0.682 \\
+robust invariant                      & & 0.994 & 0.407 & 0.484 &   0.642  & 0.291 & 0.489 &   0.848  & 0.996 &   0.628 \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+\end{table}
+```
+
+
 # Appendix D: Experimental results using location- and scale-invariant Box-Cox transformation
 
 The effect of using location- and scale-invariant transformations was investigated using real-world datasets.
@@ -737,7 +859,7 @@ data.table::dcast(data, transformation ~ dataset, value.var = "p_value")
 \begin{table}
 \begin{center}
 \caption{Residual errors for features from real-world datasets after Yeo-Johnson transformation to normality. 
-Several transformation methods include normalisation before tranformation, indicated by z-score normalisation (norm.) or robust scaling. 
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
 \label{tab:normalisation-before-transformation-appendix}
 \begin{tabular}{l | r r r r r}
@@ -765,7 +887,7 @@ robust invariant & 10.6 & 27.1 & 49.5 & 310.6 & 23.1 \\
 \begin{table}
 \begin{center}
 \caption{Transformation parameter $\lambda$ for features from real-world datasets after Yeo-Johnson transformation to normality. 
-Several transformation methods include normalisation before tranformation, indicated by z-score normalisation (norm.) or robust scaling. 
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
 \label{tab:normalisation-before-transformation-lambda-appendix}
 \begin{tabular}{l | r r r r r}
@@ -793,7 +915,7 @@ robust invariant & 1.4 & -0.6 & 0.9 & 1.4 & 0.4 \\
 \begin{center}
 \caption{
 p-values of empirical central normality tests for features from real-world datasets after Yeo-Johnson transformation to normality.
-Several transformation methods include normalisation before tranformation, indicated by z-score normalisation (norm.) or robust scaling. 
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
 \label{tab:normalisation-before-transformation-p-value-appendix}
 \begin{tabular}{l | r r r r r}

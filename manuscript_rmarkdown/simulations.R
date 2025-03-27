@@ -2124,6 +2124,58 @@
 
 
 
+.assess_standardisation_before_transformation_simulation <- function(
+    lambda_limit = NULL,
+    method = "yeo_johnson"
+) {
+  data <- list()
+
+  n <- c(30L, 100L, 500L)
+  lambda <- c(0.1, 1.0, 1.9)
+  dataset_names <- character(length(n) * length(lambda))
+
+  for (ii in seq_along(n)) {
+    for (jj in seq_along(lambda)) {
+      current_iteration <- (ii - 1L) * length(lambda) + jj
+
+      set.seed(current_iteration)
+
+      # Generate base, clean data.
+      x <- stats::rnorm(
+        n = n[ii],
+        mean = 0.0,
+        sd = 1.0
+      )
+
+      # Perform inverse transform.
+      transformer <- power.transform::create_transformer_skeleton(
+        method = method,
+        lambda = lambda[jj]
+      )
+      x <- power.transform::revert_power_transform(
+        y = x,
+        transformer = transformer
+      )
+
+      dataset_names[current_iteration] <- paste0("n: ", n[ii], "; $\\lambda$:", lambda[jj])
+
+      data[[current_iteration]] <- ..standardisation_before_transformation(
+        x = x,
+        data_name = dataset_names[current_iteration],
+        lambda_limit = lambda_limit,
+        method = method
+      )
+    }
+  }
+
+  data <- rbindlist(data, use.names = TRUE)
+  data$dataset <- factor(data$dataset, levels = dataset_names)
+
+  return(data)
+}
+
+
+
 .assess_standardisation_before_transformation <- function(
     lambda_limit = NULL,
     method = "yeo_johnson"

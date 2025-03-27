@@ -1665,11 +1665,10 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p_2 <- .create_density_and_qq_plot(location_shift = 2.0, plot_theme = plot_theme)
   p_3 <- .create_density_and_qq_plot(location_shift = 3.0, plot_theme = plot_theme)
   p_4 <- .create_density_and_qq_plot(location_shift = 4.0, plot_theme = plot_theme)
-  p_5 <- .create_density_and_qq_plot(location_shift = 5.0, plot_theme = plot_theme)
 
-  p <- p_1$density + p_2$density + p_3$density + p_4$density + p_5$density +
-    p_1$qq + p_2$qq + p_3$qq + p_4$qq + p_5$qq +
-    patchwork::plot_layout(ncol = 5, heights = c(1.3, 1))
+  p <- p_1$density + p_2$density + p_3$density + p_4$density +
+    p_1$qq + p_2$qq + p_3$qq + p_4$qq +
+    patchwork::plot_layout(ncol = 4, heights = c(1.3, 1))
 
   return(p)
 }
