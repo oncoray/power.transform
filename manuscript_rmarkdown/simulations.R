@@ -2124,6 +2124,190 @@
 
 
 
+.assess_simulated_data <- function(
+    manuscript_dir,
+    method = "yeo_johnson",
+    data_type = "clean",
+    k = 0.10
+) {
+  file_name <- paste0(
+    "simulated_data_",
+    data_type,
+    "_", method, ".RDS"
+  )
+  file_name <- file.path(manuscript_dir, file_name)
+
+  set.seed(95L)
+
+  if (file.exists(file_name)) return(readRDS(file_name))
+
+  # Generate distributions to assess.
+  n_distributions <- 10000L
+
+  # Generate alpha, beta and n.
+  n <- stats::runif(n = n_distributions, min = 1.0, max = 4.0)
+  n <- ceiling(10^n)
+
+  # Parameters for asymmetric generalised normal distributions.
+  alpha <- stats::runif(n = n_distributions, min = 0.01, max = 0.99)
+  beta <- stats::runif(n = n_distributions, min = 1.00, max = 5.00)
+
+  # Parameters for normal distributed data that is inversely transformed.
+  # Note that Yeo-Johnson is only directly invertible for lambda between 0 and
+  # 2, and Box-Cox only if lambda > 0.
+  lambda <- stats::runif(n = n_distributions, min = 0.00, max = 2.00)
+
+  ..compute <- function(
+    ii,
+    n,
+    alpha,
+    beta,
+    conf_lambda,
+    data_type,
+    method,
+    k
+  ) {
+    set.seed(ii)
+    if (data_type == "clean") {
+      # Clean data is produced by first inverting the power transformation (with
+      # known lambda) for normally distributed data. This means that the
+      # transformation parameters can be exactly determined - aside from sampling
+      # effects.
+
+      x <- stats::rnorm(
+        n = n,
+        mean = 0.0,
+        sd = 1.0
+      )
+
+      # Ensure that x is entirely positive
+      if (method == "box_cox") x <- x + 1E-4 - min(x)
+
+      # Perform inverse transform.
+      x <- power.transform::revert_power_transform(
+        y = x,
+        transformer = power.transform::create_transformer_skeleton(
+          method = method,
+          lambda = conf_lambda
+        )
+      )
+
+    } else if (data_type == "dirty") {
+      # Dirty data are produced from asymmetric generalised normal distributions.
+      # These are dirty in the sense that the parameters of the power
+      # transformation cannot be directly derived from the distribution.
+      x <- power.transform::ragn(
+        n,
+        location = 0,
+        scale = 1 / sqrt(2),
+        alpha = alpha,
+        beta = beta
+      )
+
+      # Ensure that x is entirely positive
+      if (method == "box_cox") x <- x + 1E-4 - min(x)
+
+    } else if (data_type == "dirty_shifted") {
+      # Dirty data that is shifted and scaled to be far from 0.0.
+      x <- power.transform::ragn(
+        n,
+        location = 100.0,
+        scale = 0.001 * 1 / sqrt(2),
+        alpha = alpha,
+        beta = beta
+      )
+
+    } else {
+      stop(paste0("data_type was not recognised: ", data_type))
+    }
+
+    # Compute upper and lower quartiles, and IQR.
+    q_lower <- stats::quantile(x, probs = 0.25, names = FALSE)
+    q_upper <- stats::quantile(x, probs = 0.75, names = FALSE)
+    interquartile_range <- stats::IQR(x)
+
+    # Set data where the outliers will be copied into.
+    x_outlier <- x
+
+    # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
+    # than Q3 + 1.5 IQR.
+    n_draw <- ceiling(k * length(x))
+    x_random <- stats::runif(n_draw, min = -2.0, max = 2.0)
+
+    outlier <- numeric(n_draw)
+    if (any(x_random < 0)) {
+      outlier[x_random < 0] <- q_lower - 1.5 * interquartile_range + x_random[x_random < 0] * interquartile_range
+    }
+
+    if (any(x_random >= 0)) {
+      outlier[x_random >= 0] <- q_upper + 1.5 * interquartile_range + x_random[x_random >= 0] * interquartile_range
+    }
+
+    # Randomly insert outlier values.
+    x_outlier[sample(seq_along(x), size = n_draw, replace = FALSE)] <- outlier
+
+    data_wo_outlier <- suppressWarnings(
+      ..standardisation_before_transformation(
+        x = x,
+        data_name = data_type,
+        method = method
+      )
+    )
+    data_wo_outlier[, "outlier" := FALSE]
+    data_w_outlier <- suppressWarnings(
+      ..standardisation_before_transformation(
+        x = x_outlier,
+        data_name = data_type,
+        method = method
+      )
+    )
+    data_w_outlier[, "outlier" := TRUE]
+
+    data <- rbind(data_wo_outlier, data_w_outlier)
+
+    # Add data concerning the experiment.
+    data[, "experiment_id" := ii]
+    data[, "n_samples" := n]
+    if (data_type == "clean") {
+      data[, "conf_lambda" := conf_lambda]
+    } else {
+      data[, ":="("conf_alpha" = alpha, "conf_beta" = beta)]
+    }
+
+    return(data)
+  }
+
+  cl <- parallel::makeCluster(18L)
+  on.exit(parallel::stopCluster(cl))
+
+  parallel::clusterExport(cl = cl, "..standardisation_before_transformation")
+
+  data <- parallel::clusterMap(
+    cl = cl,
+    fun = ..compute,
+    ii = seq_len(n_distributions),
+    n = n,
+    alpha = alpha,
+    beta = beta,
+    conf_lambda = lambda,
+    MoreArgs = list(
+      "data_type" = data_type,
+      "method" = method,
+      "k" = k
+    ),
+    SIMPLIFY = FALSE,
+    USE.NAMES = FALSE
+  )
+  data <- data.table::rbindlist(data)
+
+  # Cache data.
+  saveRDS(data, file_name)
+
+  return(data)
+}
+
+
+
 .assess_standardisation_before_transformation_simulation <- function(
     lambda_limit = NULL,
     method = "yeo_johnson"
@@ -2317,6 +2501,7 @@
 
     summary_data <- data.table::data.table(
       "residuals" = sum(abs(residual_data$residual)),
+      "residuals_central" = sum(abs(residual_data[p_observed >= 0.15 & p_observed <= 0.85]$residual)),
       "mu" = mean(transformed_data),
       "sigma" = sd(transformed_data),
       "lambda" = power.transform::get_lambda(transformer),
@@ -2355,429 +2540,429 @@
 
 
 
-.get_transformation_parameters_special_cases <- function(
-    manuscript_dir,
-    data_generator
-) {
-  file_name <- file.path(
-    manuscript_dir,
-    paste0("robustness_comparison_special_cases_", data_generator, ".RDS")
-  )
-
-  # transformer generator ------------------------------------------------------
-  experiment_args <- coro::generator(
-    function(
-      transformation_methods = c("box_cox", "yeo_johnson")
-    ) {
-      for (transformation_method in transformation_methods) {
-        # Conventional transformation.
-        fun_args <- list(
-          "method" = transformation_method,
-          "estimation_method" = "mle",
-          "robust" = FALSE,
-          "invariant" = FALSE,
-        )
-
-        coro::yield(list(
-          "name" = "conventional",
-          "method" = transformation_method,
-          "estimation_method" = "mle",
-          "fun_args" = fun_args
-        ))
-
-        # Invariant transformation.
-        fun_args <- list(
-          "method" = transformation_method,
-          "estimation_method" = "mle",
-          "robust" = FALSE,
-          "invariant" = TRUE
-        )
-
-        coro::yield(list(
-          "name" = "non-robust",
-          "method" = transformation_method,
-          "estimation_method" = "mle",
-          "fun_args" = fun_args
-        ))
-
-        # Robust invariant transformation.
-        fun_args <- list(
-          "method" = transformation_method,
-          "estimation_method" = "mle",
-          "robust" = TRUE,
-          "invariant" = TRUE,
-        )
-
-        coro::yield(list(
-          "name" = "robust",
-          "method" = transformation_method,
-          "estimation_method" = "mle",
-          "fun_args" = fun_args
-        ))
-      }
-    }
-  )
-
-
-  data_generator <- coro::generator(
-    function(
-      name,
-      transformation_method,
-      generating_function = "ragn",
-      mu = NULL,
-      sigma = NULL,
-      n_samples = NULL,
-      alpha = NULL,
-      beta = NULL,
-      lambda = NULL,
-      n_distrs = 100L,
-      n_outliers = 10L,
-      side = "both"
-    ) {
-      if (is.null(mu)) {
-        mu <- (10^stats::runif(n_distrs, min = 0.0, max = 4.0) - 1.0) *
-          sample(c(-1.0, 1.0), size = n_distrs, replace = TRUE)
-      } else {
-        mu <- rep.int(mu, n_distrs)
-      }
-
-      if (is.null(sigma)) {
-        sigma <- (10^stats::runif(n_distrs, min = -4.0, max = 4.0))
-      } else {
-        sigma <- rep.int(sigma, n_distrs)
-      }
-
-      if (is.null(n_samples)) {
-        n_samples <- ceiling(10^stats::runif(n = n_distrs, min = 2, max = 4))
-      } else {
-        n_samples <- rep.int(n_samples, n_distrs)
-      }
-
-      if (generating_function == "ragn") {
-        if (is.null(alpha)) {
-          alpha <- stats::runif(n = n_distrs, min = 0.01, max = 0.99)
-        } else {
-          alpha <- rep.int(alpha, n_distrs)
-        }
-
-        if (is.null(beta)) {
-          beta <- stats::runif(n = n_distrs, min = 1.00, max = 5.00)
-        } else {
-          beta <- rep.int(beta, n_distrs)
-        }
-
-      } else if (generating_function == "inv_transform") {
-        if (is.null(lambda)) {
-          lambda <- stats::runif(n = n_distrs, min = -4.0, max = 6.0)
-        } else {
-          lambda <- rep.int(lambda, n_distrs)
-        }
-
-      } else {
-        stop(paste0("Did not recognise function for generating data: ", generating_function))
-      }
-
-      outlier_fraction <- (seq_len(n_outliers) - 1)^2 / ((n_outliers - 1)^2 * 10)
-      if (n_outliers == 0L) outlier_fraction <- 0.0
-      if (n_outliers == 1L) outlier_fraction <- c(0.0, 1.0)
-
-      # Iterate over distributions.
-      for (ii in seq_len(n_distrs)) {
-
-        # Generate data.
-        if (generating_function == "ragn") {
-          x <- power.transform::ragn(
-            n = n_samples[ii],
-            location = mu[ii],
-            scale = sigma[ii],
-            alpha = alpha[ii],
-            beta = beta[ii]
-          )
-
-          if (transformation_method == "box_cox" && any(x <= 0.0)) {
-            x <- x - min(x) + 1E-3
-          }
-
-          transformer <- suppressWarnings(
-            power.transform::find_transformation_parameters(
-              x = x,
-              method = transformation_method,
-              estimation_method = "mle",
-              robust = FALSE,
-              invariant = TRUE
-            )
-          )
-
-          target_lambda <- transformer@lambda
-
-        } else if (generating_function == "inv_transform") {
-          x <- stats::rnorm(
-            n = n_samples[ii],
-            mean = mu[ii],
-            sd = sigma[ii]
-          )
-
-          transformer <- power.transform::create_transformer_skeleton(
-            method = transformation_method,
-            lambda = lambda[ii]
-          )
-
-          x <- power.transform::revert_power_transform(
-            y = x,
-            transformer = transformer
-          )
-
-          target_lambda <- lambda[ii]
-        }
-
-        interquartile_range <- stats::IQR(x)
-
-        # Compute upper and lower quartiles.
-        q_lower <- stats::quantile(x, probs = 0.25, names = FALSE)
-        q_upper <- stats::quantile(x, probs = 0.75, names = FALSE)
-
-        for (k in outlier_fraction) {
-
-          # Set data where the outliers will be copied into.
-          x_outlier <- x
-
-          if (k != 0.0) {
-            n_draw <- ceiling(k * length(x))
-
-            # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
-            # than Q3 + 1.5 IQR.
-            if (side == "both") {
-              x_random <- stats::runif(n_draw, min = -2.0, max = 2.0)
-            } else if (side == "right") {
-              x_random <- stats::runif(n_draw, min = 0.0, max = 2.0)
-            } else if (side == "left") {
-              x_random <- stats::runif(n_draw, min = -2.0, max = 0.0)
-            } else {
-              stop(paste0("side was not recognised: ", side))
-            }
-
-            outlier <- numeric(n_draw)
-            if (any(x_random < 0)) {
-              outlier[x_random < 0] <- q_lower - 1.5 * interquartile_range + x_random[x_random < 0] * interquartile_range
-            }
-
-            if (any(x_random >= 0)) {
-              outlier[x_random >= 0] <- q_upper + 1.5 * interquartile_range + x_random[x_random >= 0] * interquartile_range
-            }
-
-            # Randomly insert outlier values.
-            x_outlier[sample(seq_along(x), size = n_draw, replace = FALSE)] <- outlier
-          }
-
-          coro::yield(list(
-            "name" = name,
-            "data" = x_outlier,
-            "transformation_method" = transformation_method,
-            "generating_function" = generating_function,
-            "target_lambda" = target_lambda,
-            "outlier_fraction" = k,
-            "mu" = mu[ii],
-            "sigma" = sigma[ii],
-            "n_samples" = n_samples[ii],
-            "alpha" = ifelse(is.null(alpha), NULL, alpha[ii]),
-            "beta" = ifelse(is.null(beta), NULL, alpha[ii]),
-            "n_samples" = n_samples[ii]
-          ))
-        }
-      }
-    }
-  )
-
-  .compute_lambda <- function(
-    params
-  ) {
-    # Collect experiments
-    experiments <- coro::collect(experiment_args(
-      transformation_method = params$transformation_method
-    ))
-
-    ..compute_lambda <- function(
-      exp_args,
-      params
-    ) {
-      # Create transformer.
-      transformer <- suppressWarnings(do.call(
-        power.transform::find_transformation_parameters,
-        args = c(
-          list("x" = params$data),
-          exp_args
-        )
-      ))
-
-      residuals <- power.transform::get_residuals(
-        x = params$data,
-        transformer = transformer
-      )
-
-      output <- c(
-        params,
-        list(
-          "lambda" = power.transform::get_lambda(transformer),
-          "shift" = power.transform::get_shift(transformer),
-          "scale" = power.transform::get_scale(transformer),
-          "residuals" = sum(residuals)
-        )
-      )
-
-      # Remove data
-      output$data <- NULL
-
-      return(output)
-    }
-
-    output <- lapply()
-  }
-
-
-  if (!file.exists(file_name)) {
-
-
-
-
-    # Helper function for computing transformer parameters under optimisation
-    # constraints.
-    .compute_robust_lambda <- function(
-      experiment,
-      data
-    ) {
-
-      # Custom parser.
-      ..outlier_parser <- function(
-        x,
-        fun_args
-      ) {
-        # Create transformer.
-        transformer <- suppressWarnings(do.call(
-          power.transform::find_transformation_parameters,
-          args = c(
-            list("x" = x$x),
-            fun_args
-          )
-        ))
-
-        # Prevent warnings.
-        method <- estimation_method <- NULL
-
-        target_lambda <- x$parameters$target_lambda[
-          method == fun_args$method & estimation_method == fun_args$estimation_method
-        ]$lambda
-
-        parameter_data <- data.table::data.table(
-          "method" = fun_args$method,
-          "estimation_method" = fun_args$estimation_method,
-          "robust" = fun_args$robust,
-          "invariant" = fun_args$invariant,
-          "lambda" = transformer@lambda,
-          "target_lambda" = target_lambda,
-          "shift" = transformer@shift,
-          "scale" = transformer@scale,
-          "k" = x$parameters$k,
-          "ii" = x$parameters$ii
-        )
-
-        return(parameter_data)
-      }
-
-      parameter_data <- lapply(
-        data,
-        ..outlier_parser,
-        fun_args = experiment$fun_args
-      )
-
-      parameter_data <- data.table::rbindlist(
-        parameter_data,
-        fill = TRUE
-      )
-
-      return(parameter_data)
-    }
-
-    # computations -------------------------------------------------------------
-    set.seed(95)
-
-    # Generate table of asymmetric generalised normal distribution parameters.
-    n_distributions <- 100L
-
-    # Generate alpha, beta and n.
-    n <- stats::runif(n = n_distributions, min = 2, max = 4)
-    n <- ceiling(10^n)
-
-    alpha <- stats::runif(n = n_distributions, min = 0.01, max = 0.99)
-    beta <- stats::runif(n = n_distributions, min = 1.00, max = 5.00)
-
-    # Generate corresponding distributions.
-    x <- mapply(
-      power.transform::ragn,
-      n = n,
-      alpha = alpha,
-      beta = beta
-    )
-
-    # Compute lambda values without weighting.
-    target_lambda <- lapply(x, .compute_target_lambda)
-
-    # Add outliers, between 0.00 and 0.10.
-    n_outliers <- 10
-    outlier_fraction <- (seq_len(n_outliers) - 1)^2 / ((n_outliers - 1)^2 * 10)
-
-    # Generate outliers in the data.
-    x <- mapply(
-      FUN = .populate_outliers,
-      x = x,
-      n = n,
-      alpha = alpha,
-      beta = beta,
-      target_lambda = target_lambda,
-      ii = seq_along(x),
-      MoreArgs = list(
-        "outlier_fraction" = outlier_fraction
-      ),
-      SIMPLIFY = FALSE,
-      USE.NAMES = FALSE
-    )
-
-    x <- unlist(x, recursive = FALSE)
-
-    experiments <- coro::collect(experiment_args())
-
-    cl <- parallel::makeCluster(18L)
-
-    data <- parallel::parLapplyLB(
-      cl = cl,
-      X = experiments,
-      fun = .compute_robust_lambda,
-      data = x,
-      chunk.size = 1L
-    )
-
-    # Stop cluster.
-    parallel::stopCluster(cl)
-
-    # Merge to data.table.
-    data <- data.table::rbindlist(
-      data,
-      fill = TRUE
-    )
-
-    saveRDS(data, file = file_name)
-
-  } else {
-    data <- readRDS(data, file = file_name)
-  }
-
-  data$method <- factor(
-    x = data$method,
-    levels = c("box_cox", "yeo_johnson"),
-    labels = c("Box-Cox", "Yeo-Johnson")
-  )
-
-  return(data)
-}
+# .get_transformation_parameters_special_cases <- function(
+#     manuscript_dir,
+#     data_generator
+# ) {
+#   file_name <- file.path(
+#     manuscript_dir,
+#     paste0("robustness_comparison_special_cases_", data_generator, ".RDS")
+#   )
+#
+#   # transformer generator ------------------------------------------------------
+#   experiment_args <- coro::generator(
+#     function(
+#       transformation_methods = c("box_cox", "yeo_johnson")
+#     ) {
+#       for (transformation_method in transformation_methods) {
+#         # Conventional transformation.
+#         fun_args <- list(
+#           "method" = transformation_method,
+#           "estimation_method" = "mle",
+#           "robust" = FALSE,
+#           "invariant" = FALSE,
+#         )
+#
+#         coro::yield(list(
+#           "name" = "conventional",
+#           "method" = transformation_method,
+#           "estimation_method" = "mle",
+#           "fun_args" = fun_args
+#         ))
+#
+#         # Invariant transformation.
+#         fun_args <- list(
+#           "method" = transformation_method,
+#           "estimation_method" = "mle",
+#           "robust" = FALSE,
+#           "invariant" = TRUE
+#         )
+#
+#         coro::yield(list(
+#           "name" = "non-robust",
+#           "method" = transformation_method,
+#           "estimation_method" = "mle",
+#           "fun_args" = fun_args
+#         ))
+#
+#         # Robust invariant transformation.
+#         fun_args <- list(
+#           "method" = transformation_method,
+#           "estimation_method" = "mle",
+#           "robust" = TRUE,
+#           "invariant" = TRUE,
+#         )
+#
+#         coro::yield(list(
+#           "name" = "robust",
+#           "method" = transformation_method,
+#           "estimation_method" = "mle",
+#           "fun_args" = fun_args
+#         ))
+#       }
+#     }
+#   )
+#
+#
+#   data_generator <- coro::generator(
+#     function(
+#       name,
+#       transformation_method,
+#       generating_function = "ragn",
+#       mu = NULL,
+#       sigma = NULL,
+#       n_samples = NULL,
+#       alpha = NULL,
+#       beta = NULL,
+#       lambda = NULL,
+#       n_distrs = 100L,
+#       n_outliers = 10L,
+#       side = "both"
+#     ) {
+#       if (is.null(mu)) {
+#         mu <- (10^stats::runif(n_distrs, min = 0.0, max = 4.0) - 1.0) *
+#           sample(c(-1.0, 1.0), size = n_distrs, replace = TRUE)
+#       } else {
+#         mu <- rep.int(mu, n_distrs)
+#       }
+#
+#       if (is.null(sigma)) {
+#         sigma <- (10^stats::runif(n_distrs, min = -4.0, max = 4.0))
+#       } else {
+#         sigma <- rep.int(sigma, n_distrs)
+#       }
+#
+#       if (is.null(n_samples)) {
+#         n_samples <- ceiling(10^stats::runif(n = n_distrs, min = 2, max = 4))
+#       } else {
+#         n_samples <- rep.int(n_samples, n_distrs)
+#       }
+#
+#       if (generating_function == "ragn") {
+#         if (is.null(alpha)) {
+#           alpha <- stats::runif(n = n_distrs, min = 0.01, max = 0.99)
+#         } else {
+#           alpha <- rep.int(alpha, n_distrs)
+#         }
+#
+#         if (is.null(beta)) {
+#           beta <- stats::runif(n = n_distrs, min = 1.00, max = 5.00)
+#         } else {
+#           beta <- rep.int(beta, n_distrs)
+#         }
+#
+#       } else if (generating_function == "inv_transform") {
+#         if (is.null(lambda)) {
+#           lambda <- stats::runif(n = n_distrs, min = -4.0, max = 6.0)
+#         } else {
+#           lambda <- rep.int(lambda, n_distrs)
+#         }
+#
+#       } else {
+#         stop(paste0("Did not recognise function for generating data: ", generating_function))
+#       }
+#
+#       outlier_fraction <- (seq_len(n_outliers) - 1)^2 / ((n_outliers - 1)^2 * 10)
+#       if (n_outliers == 0L) outlier_fraction <- 0.0
+#       if (n_outliers == 1L) outlier_fraction <- c(0.0, 1.0)
+#
+#       # Iterate over distributions.
+#       for (ii in seq_len(n_distrs)) {
+#
+#         # Generate data.
+#         if (generating_function == "ragn") {
+#           x <- power.transform::ragn(
+#             n = n_samples[ii],
+#             location = mu[ii],
+#             scale = sigma[ii],
+#             alpha = alpha[ii],
+#             beta = beta[ii]
+#           )
+#
+#           if (transformation_method == "box_cox" && any(x <= 0.0)) {
+#             x <- x - min(x) + 1E-3
+#           }
+#
+#           transformer <- suppressWarnings(
+#             power.transform::find_transformation_parameters(
+#               x = x,
+#               method = transformation_method,
+#               estimation_method = "mle",
+#               robust = FALSE,
+#               invariant = TRUE
+#             )
+#           )
+#
+#           target_lambda <- transformer@lambda
+#
+#         } else if (generating_function == "inv_transform") {
+#           x <- stats::rnorm(
+#             n = n_samples[ii],
+#             mean = mu[ii],
+#             sd = sigma[ii]
+#           )
+#
+#           transformer <- power.transform::create_transformer_skeleton(
+#             method = transformation_method,
+#             lambda = lambda[ii]
+#           )
+#
+#           x <- power.transform::revert_power_transform(
+#             y = x,
+#             transformer = transformer
+#           )
+#
+#           target_lambda <- lambda[ii]
+#         }
+#
+#         interquartile_range <- stats::IQR(x)
+#
+#         # Compute upper and lower quartiles.
+#         q_lower <- stats::quantile(x, probs = 0.25, names = FALSE)
+#         q_upper <- stats::quantile(x, probs = 0.75, names = FALSE)
+#
+#         for (k in outlier_fraction) {
+#
+#           # Set data where the outliers will be copied into.
+#           x_outlier <- x
+#
+#           if (k != 0.0) {
+#             n_draw <- ceiling(k * length(x))
+#
+#             # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
+#             # than Q3 + 1.5 IQR.
+#             if (side == "both") {
+#               x_random <- stats::runif(n_draw, min = -2.0, max = 2.0)
+#             } else if (side == "right") {
+#               x_random <- stats::runif(n_draw, min = 0.0, max = 2.0)
+#             } else if (side == "left") {
+#               x_random <- stats::runif(n_draw, min = -2.0, max = 0.0)
+#             } else {
+#               stop(paste0("side was not recognised: ", side))
+#             }
+#
+#             outlier <- numeric(n_draw)
+#             if (any(x_random < 0)) {
+#               outlier[x_random < 0] <- q_lower - 1.5 * interquartile_range + x_random[x_random < 0] * interquartile_range
+#             }
+#
+#             if (any(x_random >= 0)) {
+#               outlier[x_random >= 0] <- q_upper + 1.5 * interquartile_range + x_random[x_random >= 0] * interquartile_range
+#             }
+#
+#             # Randomly insert outlier values.
+#             x_outlier[sample(seq_along(x), size = n_draw, replace = FALSE)] <- outlier
+#           }
+#
+#           coro::yield(list(
+#             "name" = name,
+#             "data" = x_outlier,
+#             "transformation_method" = transformation_method,
+#             "generating_function" = generating_function,
+#             "target_lambda" = target_lambda,
+#             "outlier_fraction" = k,
+#             "mu" = mu[ii],
+#             "sigma" = sigma[ii],
+#             "n_samples" = n_samples[ii],
+#             "alpha" = ifelse(is.null(alpha), NULL, alpha[ii]),
+#             "beta" = ifelse(is.null(beta), NULL, alpha[ii]),
+#             "n_samples" = n_samples[ii]
+#           ))
+#         }
+#       }
+#     }
+#   )
+#
+#   .compute_lambda <- function(
+#     params
+#   ) {
+#     # Collect experiments
+#     experiments <- coro::collect(experiment_args(
+#       transformation_method = params$transformation_method
+#     ))
+#
+#     ..compute_lambda <- function(
+#       exp_args,
+#       params
+#     ) {
+#       # Create transformer.
+#       transformer <- suppressWarnings(do.call(
+#         power.transform::find_transformation_parameters,
+#         args = c(
+#           list("x" = params$data),
+#           exp_args
+#         )
+#       ))
+#
+#       residuals <- power.transform::get_residuals(
+#         x = params$data,
+#         transformer = transformer
+#       )
+#
+#       output <- c(
+#         params,
+#         list(
+#           "lambda" = power.transform::get_lambda(transformer),
+#           "shift" = power.transform::get_shift(transformer),
+#           "scale" = power.transform::get_scale(transformer),
+#           "residuals" = sum(residuals)
+#         )
+#       )
+#
+#       # Remove data
+#       output$data <- NULL
+#
+#       return(output)
+#     }
+#
+#     output <- lapply()
+#   }
+#
+#
+#   if (!file.exists(file_name)) {
+#
+#
+#
+#
+#     # Helper function for computing transformer parameters under optimisation
+#     # constraints.
+#     .compute_robust_lambda <- function(
+#       experiment,
+#       data
+#     ) {
+#
+#       # Custom parser.
+#       ..outlier_parser <- function(
+#         x,
+#         fun_args
+#       ) {
+#         # Create transformer.
+#         transformer <- suppressWarnings(do.call(
+#           power.transform::find_transformation_parameters,
+#           args = c(
+#             list("x" = x$x),
+#             fun_args
+#           )
+#         ))
+#
+#         # Prevent warnings.
+#         method <- estimation_method <- NULL
+#
+#         target_lambda <- x$parameters$target_lambda[
+#           method == fun_args$method & estimation_method == fun_args$estimation_method
+#         ]$lambda
+#
+#         parameter_data <- data.table::data.table(
+#           "method" = fun_args$method,
+#           "estimation_method" = fun_args$estimation_method,
+#           "robust" = fun_args$robust,
+#           "invariant" = fun_args$invariant,
+#           "lambda" = transformer@lambda,
+#           "target_lambda" = target_lambda,
+#           "shift" = transformer@shift,
+#           "scale" = transformer@scale,
+#           "k" = x$parameters$k,
+#           "ii" = x$parameters$ii
+#         )
+#
+#         return(parameter_data)
+#       }
+#
+#       parameter_data <- lapply(
+#         data,
+#         ..outlier_parser,
+#         fun_args = experiment$fun_args
+#       )
+#
+#       parameter_data <- data.table::rbindlist(
+#         parameter_data,
+#         fill = TRUE
+#       )
+#
+#       return(parameter_data)
+#     }
+#
+#     # computations -------------------------------------------------------------
+#     set.seed(95)
+#
+#     # Generate table of asymmetric generalised normal distribution parameters.
+#     n_distributions <- 100L
+#
+#     # Generate alpha, beta and n.
+#     n <- stats::runif(n = n_distributions, min = 2, max = 4)
+#     n <- ceiling(10^n)
+#
+#     alpha <- stats::runif(n = n_distributions, min = 0.01, max = 0.99)
+#     beta <- stats::runif(n = n_distributions, min = 1.00, max = 5.00)
+#
+#     # Generate corresponding distributions.
+#     x <- mapply(
+#       power.transform::ragn,
+#       n = n,
+#       alpha = alpha,
+#       beta = beta
+#     )
+#
+#     # Compute lambda values without weighting.
+#     target_lambda <- lapply(x, .compute_target_lambda)
+#
+#     # Add outliers, between 0.00 and 0.10.
+#     n_outliers <- 10
+#     outlier_fraction <- (seq_len(n_outliers) - 1)^2 / ((n_outliers - 1)^2 * 10)
+#
+#     # Generate outliers in the data.
+#     x <- mapply(
+#       FUN = .populate_outliers,
+#       x = x,
+#       n = n,
+#       alpha = alpha,
+#       beta = beta,
+#       target_lambda = target_lambda,
+#       ii = seq_along(x),
+#       MoreArgs = list(
+#         "outlier_fraction" = outlier_fraction
+#       ),
+#       SIMPLIFY = FALSE,
+#       USE.NAMES = FALSE
+#     )
+#
+#     x <- unlist(x, recursive = FALSE)
+#
+#     experiments <- coro::collect(experiment_args())
+#
+#     cl <- parallel::makeCluster(18L)
+#
+#     data <- parallel::parLapplyLB(
+#       cl = cl,
+#       X = experiments,
+#       fun = .compute_robust_lambda,
+#       data = x,
+#       chunk.size = 1L
+#     )
+#
+#     # Stop cluster.
+#     parallel::stopCluster(cl)
+#
+#     # Merge to data.table.
+#     data <- data.table::rbindlist(
+#       data,
+#       fill = TRUE
+#     )
+#
+#     saveRDS(data, file = file_name)
+#
+#   } else {
+#     data <- readRDS(data, file = file_name)
+#   }
+#
+#   data$method <- factor(
+#     x = data$method,
+#     levels = c("box_cox", "yeo_johnson"),
+#     labels = c("Box-Cox", "Yeo-Johnson")
+#   )
+#
+#   return(data)
+# }
 
 
 
