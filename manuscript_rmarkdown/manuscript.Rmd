@@ -731,32 +731,6 @@ $r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.51 & 1.00 & $(0, 10]$ & 1.57 & 6
 \end{table}
 ```
 
-Figure \ref{fig:optimised-weighting-function-parameters} shows the distribution of errors $\left| \lambda_r - \lambda_0 \right|$ for non-robust and robust transformations using the optimal weighting function parameters.
-In the presence of outliers, the Yeo-Johnson transformation yielded smaller errors than the Box-Cox transformation.
-For both transformations, weighting based on empirical probabilities yielded the most consistent $\lambda$ parameter estimates in the presence of outliers.
-Other methods did not outperform the non-robust transformation method.
-
-```{r optimised-weighting-function-parameters, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=3.5}
-cap <- paste0(
-  "Robustness of power transformations after optimising weighting function parameters. ",
-  "The distribution of errors, i.e. the difference between robustly fitted $\\lambda^r$ ",
-  "and expected $\\lambda_{0}$ found in the absence of outliers, is shown for 1000 randomly ",
-  "parametrised asymmetric generalised normal distributions with up to 10% outliers on either side ",
-  "of the distribution. The top and bottom panel show errors for the location- and scale-invariant Box-Cox ",
-  "and Yeo-Johnson transformations, respectively. ",
-  "In each panel, the error distribution for the non-robust transformation is shown to the left ",
-  "for comparison with different weighting methods. ",
-  "Note that a square root transformation was applied along the $y$-axis for display purposes. ",
-  "Median errors are shown above each distribution."
-)
-
-.plot_optimised_weighting_function_parameters(
-  plot_theme = plot_theme,
-  manuscript_dir = manuscript_dir
-)
-```
-
-
 
 ## Simulated data
 
