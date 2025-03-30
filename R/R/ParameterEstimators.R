@@ -366,7 +366,7 @@ setMethod(
   function(transformer, estimator, ...) {
 
     if (transformer@robust) {
-      return("empirical_probability_triangle")
+      return("empirical_probability_cosine")
 
     } else {
       return("none")

@@ -338,17 +338,38 @@ Each weighting function has an argument $\dot{x}$ that is related to the (transf
 
 ## Asymmetric generalised normal distributions
 
-Modifications intended to make power transformations invariant to location and scale of a feature and methods to improve their robustness against outliers need to be assessed using data drawn from a range of different distributions. Since the power transformations are intended for use with unimodal distributions, the generalised normal distribution [@Subbotin1923-qk; @Nadarajah2005-xe] is a suitable option for simulating realistic feature distributions. This distribution has the following probability density function $f_{\beta}$ for a value $x \in \mathbb{R}$:
+Modifications intended to make power transformations invariant to location and 
+scale of a feature and methods to improve their robustness against outliers need 
+to be assessed using data drawn from a range of different distributions. 
+Since the power transformations are intended for use with unimodal distributions, 
+the generalised normal distribution [@Subbotin1923-qk; @Nadarajah2005-xe] is a suitable option for simulating realistic feature distributions.
+This distribution has the following probability density function $f_{\beta}$ for a value $x \in \mathbb{R}$:
 
-```{=latex}
+\begin{definition}[Standard generalised normal distribution probability density function]
+Let $x \in \mathcal{R}$.
+Let $\beta > 0$ be a shape parameter.
+Let $\Gamma$ be the gamma function.
+
+Then the standard generalised normal distribution probability density function, without scale and location parameters, is:
 \begin{equation}
 f_{\beta}(x) = \frac{\beta}{2\Gamma\left(1 / \beta \right)} e^{-\left| x \right|^\beta}
 \end{equation}
-```
-Here, $\Gamma$ is the gamma function, and $\beta$ is a strictly positive shape parameter. For $\beta = 1$, the probability density function describes a Laplace distribution. A normal distribution is found for $\beta=2$, and for large $\beta$, the distribution approaches a uniform distribution. We will refrain from introducing scale and location parameters here directly.
+\end{definition}
 
-Realistic feature distributions may be skewed. Gijbels et al. describe a recipe for introducing skewness into the otherwise symmetric generalised normal distribution [@Gijbels2019-te], leading to the following probability density function:
+For $\beta = 1$, the probability density function describes a Laplace distribution.
+A normal distribution is found for $\beta=2$, and for large $\beta$,
+the distribution approaches a uniform distribution. 
 
+Realistic feature distributions may be skewed. 
+Gijbels et al. describe a recipe for introducing skewness into the otherwise symmetric generalised normal distribution [@Gijbels2019-te], 
+leading to the following probability density function:
+
+\begin{definion}[Asymmetric generalised normal distribution probability density function]
+Let $\alpha \in (0,1)$ be a skewness parameter.
+Let $\mu \in \mathcal{R}$ be a location parameter.
+Let $\sigma > 0$ be a shape parameter.
+
+Then the probability density function of the asymmetric generalised normal distribution is:
 \begin{equation}
 f_{\alpha}(x; \mu, \sigma, \beta) = \frac{2 \alpha \left(1 - \alpha\right)}{\sigma}
 \begin{cases}
@@ -356,11 +377,27 @@ f_{\beta}\left( \left(1 - \alpha \right) \frac{\left| x - \mu \right|}{\sigma} \
 f_{\beta}\left( \alpha \frac{\left| x - \mu \right|}{\sigma} \right) & \text{, } x > \mu
 \end{cases}
 \end{equation}
+\end{definition}
 
-Here, $\alpha \in (0,1)$ is a skewness parameter. $\alpha > 0.5$ creates a distribution with a negative skew, i.e. a left-skewed distribution. A right-skewed distribution is created for $\alpha < 0.5$. $\mu \in \mathcal{R}$ and $\sigma \in (0, \infty)$ are location and scale parameters, respectively. $f_{\alpha}$ thus describes the probability density function of an asymmetric generalised normal distribution, which we will refer to here and parametrise as $\mathcal{AGN}\left(\mu, \sigma, \alpha, \beta \right)$.
+$\alpha > 0.5$ creates a distribution with a negative skew, i.e. a left-skewed distribution.
+A right-skewed distribution is created for $\alpha < 0.5$.
+$f_{\alpha}$ thus describes the probability density function of an asymmetric generalised normal distribution,
+which we will refer to here and parametrise as $\mathcal{AGN}\left(\mu, \sigma, \alpha, \beta \right)$.
 
-We require a quantile function (or an approximation thereof) to draw random values from an asymmetric generalised normal distribution using inverse transform sampling. Gijbels et al. derived the following quantile function $F_{\alpha}^{-1}(p)$:
+We require a quantile function (or an approximation thereof) to draw random values
+from an asymmetric generalised normal distribution using inverse transform sampling.
+Gijbels et al. derived the quantile function $F_{\alpha}^{-1}(p)$, which incorporates
+the quantile function of the symmetric generalised normal distribution derived by Griffin [@Griffin2018-bf]:
 
+\begin{definition}[Asymmetric generalised normal distribution quantile function]
+Let $p \in \left[0, 1\right]$ be a probability.
+Let  $F_{\Gamma}^{-1}$ is the quantile function of the gamma distribution with shape $1 / \beta$, which can be numerically approximated. 
+Let $F_{\beta}^{-1}$ be the quantile function of the generalised normal distribution:
+\begin{equation}
+F_{\beta}^{-1}(p) = \sgn\left(p - 0.5 \right) F_{\Gamma}^{-1}\left(2 \left|p - 0.5 \right|; 1 / \beta \right)
+\end{equation}
+
+Then the quantile function of the asymmetric generalised normal distribution is:
 \begin{equation}
 F_{\alpha}^{-1}(p; \mu, \sigma, \beta) =
 \begin{cases}
@@ -368,14 +405,8 @@ F_{\alpha}^{-1}(p; \mu, \sigma, \beta) =
 \mu + \frac{\sigma}{\alpha} F_{\beta}^{-1} \left( \frac{1 + p - 2 \alpha}{2 \left(1 - \alpha \right)} \right) & \text{, } p > \alpha
 \end{cases}
 \end{equation}
+\end{definition}
 
-The quantile function for the asymmetric generalised normal distribution $F_{\alpha}^{-1}$ thus incorporates the quantile function $F_{\beta}^{-1}$ of the symmetric generalised normal distribution. $F_{\beta}^{-1}$ was derived by Griffin to be [@Griffin2018-bf]:
-
-\begin{equation}
-F_{\beta}^{-1}(p) = \sgn\left(p - 0.5 \right) F_{\Gamma}^{-1}\left(2 \left|p - 0.5 \right|; 1 / \beta \right)
-\end{equation}
-
-Here, $F_{\Gamma}^{-1}$ is the quantile function of the gamma distribution with shape $1 / \beta$, which can be numerically approximated. 
 
 ## Central normality test
 
@@ -424,7 +455,7 @@ In practice, a finite sequence sampled from a normal distribution $\mathcal{N}(\
 \begin{definition}[Central normality test]
 The null-hypothesis is defined as: $\mathcal{H}_0: \sum_{r_j \in \mathbf{R}_{\text{c}}}r_j = 0$
 
-THe alternative hypothesis is defined as: $\mathcal{H}_1: \sum_{r_j \in \mathbf{R}_{\text{c}}}r_j > 0$
+The alternative hypothesis is defined as: $\mathcal{H}_1: \sum_{r_j \in \mathbf{R}_{\text{c}}}r_j > 0$
 \end{definition}
 
 The null-hypothesis $\mathcal{H}_0$ is that the central portion of sequence $\mathbf{X}$
@@ -433,7 +464,6 @@ is not normally distributed. To test this hypothesis, a test statistic is comput
 and compared against a critical value.
 
 \begin{definition}[Central normality test statistic]
-Let $\alpha$ be the significance level for the central normality test.
 Let $m$ be the number of elements of $\mathbf{R}_{\text{c}}$
 
 The test statistic is then $\tau_{n, \kappa} = \frac{1}{m}\sum_{r_j \in \mathbf{R}_{\text{c}}}r_j$.
@@ -449,18 +479,27 @@ We will do so in the [Simulation](#simulation) section.
 
 # Simulation
 
-We used simulated data to assess invariance to location and scale of the proposed power transformations, weighting for robust transformations, and to develop the empirical central normality test.
-The $\lambda$ parameter for conventional power transformations (Eqn. \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}), as well as $\lambda$, $x_0$ and $s$ parameters for location- and scale-invariant power transformations (Eqn. \ref{eqn:box-cox-invariant} and \ref{eqn:yeo-johnson-invariant}) were estimated using the BOBYQA algorithm for derivative-free bound constraint optimisation [@Powell2009-zb] through maximum likelihood estimation.
-The required algorithms were implemented in the `power.transform` R software package [@Zwanenburg2024-kq] (version 1.0.0).
+We used simulated data to assess invariance to location and scale of the proposed power transformations,
+to develop the empirical central normality test, and to determine weighting for robust transformations.
+The $\lambda$ parameter for conventional power transformations (Eqn. \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}),
+as well as $\lambda$, $x_0$ and $s$ parameters for location- and scale-invariant power transformations 
+(Eqn. \ref{eqn:box-cox-invariant} and \ref{eqn:yeo-johnson-invariant}) were estimated using the BOBYQA algorithm 
+for derivative-free bound constraint optimisation [@Powell2009-zb] through maximum likelihood estimation.
+The required algorithms were implemented in the `power.transform` R software package [@Zwanenburg2024-kq] (version 1.0.1).
 Of note, the `power.transform` package shifts feature values into the positive domain if negative or zero values are present for Box-Cox power transformations.
 
 
 ## Invariance to location and scale
 
-To assess whether the proposed power transformations lead to values of $\lambda$ that are invariant to location and scale of the distribution, we simulated three different distributions.
-We first randomly drew $10000$ values from a normal distribution: $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)$, or equivalently $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.5, 2\right)$.
-The second distribution was a right-skewed generalised normal distribution $\mathbf{X}_{\text{right}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.2, 2\right)$.
-The third distribution was a left-skewed generalised normal distribution $\mathbf{X}_{\text{left}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.8, 2\right)$.
+To assess whether the proposed power transformations lead to values of $\lambda$ 
+that are invariant to location and scale of the distribution, we simulated three different sequences
+We first randomly drew $10000$ values from a normal distribution: 
+$\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)$, 
+or equivalently $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.5, 2\right)$.
+The second distribution was a right-skewed generalised normal distribution 
+$\mathbf{X}_{\text{right}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.2, 2\right)$.
+The third distribution was a left-skewed generalised normal distribution 
+$\mathbf{X}_{\text{left}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.8, 2\right)$.
 We then computed transformation parameter $\lambda$ using the original definitions (Eqn. \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}) and the location- and scale-invariant definitions (Eqn. \ref{eqn:box-cox-invariant} and \ref{eqn:yeo-johnson-invariant}) for each distribution.
 To assess location invariance, a positive value $d_{\text{shift}}$ was added to each distribution with $d_{\text{shift}} \in [1, 10^6]$.
 Similarly, to assess scale invariance, each distribution was multiplied by a positive value $d_{\text{scale}}$, where $d_{\text{scale}} \in [1, 10^6]$.
@@ -479,6 +518,99 @@ cap <- paste0(
 The result is shown in Figure \ref{fig:shifted-distributions}.
 For each distribution, transformation parameter $\lambda$ varied with $d_{\text{shift}}$ and $d_{\text{scale}}$ when estimated for conventional transformations.
 In contrast, estimation of $\lambda$ for invariant power transformations was invariant to both $d_{\text{shift}}$ and $d_{\text{scale}}$.
+
+
+## Central normality and empirical central normality test
+
+To develop a test for central normality we need to consider two
+parameters: the central portion $\kappa$ as a fixed parameter, and test
+statistic $\tau_{\text{ecn}}$. We will first define the central portion
+$\kappa$.
+
+For each number of samples $n \in \left\{\lfloor 10^\nu \rfloor | \nu \in \left\{0.7500, 0.8125, \ldots, 4.0000 \right \} \right\}$
+we randomly drew $m_d = 30000$ ordered sequences $\mathbf{X}$ from $\mathcal{N}(0,1)$.
+This dataset was used to compute the critical test statistic values for the central normality test.
+Additionally, we added $10 \%$ outliers by randomly replacing elements of each ordered sequence.
+The dataset with outliers was used to compute the critical test statistic values for the empirical variant of the central normality test.
+For each sequence we then computed $\tau_{n, \kappa}$ for $\kappa \in \left\{0.60, 0.70, 0.80, 0.90, 0.95, 1.00\right\}$.
+
+Figure \ref{empirical-central-normality-kappa} shows $\tau_{\alpha = 0.95, n, \kappa}$
+as a function of $n$ for different values of $\kappa$. With decreasing
+$\kappa$, the test statistic curve decreases. The curves
+for $\kappa = 0.60$ and $\kappa = 0.70$ are similar, whereas curves for 
+$\kappa \geq 0.90$ are affected by outliers, as can be observed by comparing curves
+of the central normality test with those of the empirical variant.
+
+Since the (empirical) central normality tests assesses whether the central part of a sequence is normally distributed,
+we used $\kappa = 0.70$. Lookup tables and curves for critical statistic values for central normality and empirical central
+normality tests are shown in Appendix E.
+
+```{r empirical-central-normality-kappa, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
+cap <- paste0(
+  "Critical test statistic $\\tau_{\\alpha = 0.95, n, \\kappa}$ of the (empirical) ",
+  "central normality test as function of $n$ for several values of central portion $\\kappa$. ",
+  "The critical test statistics for central normality test are determined using fully normal data, ",
+  "whereas the statistics for the empirical variant are determined using centrally normal data, ",
+  "i.e. with fully normal data where 10% of elements are replaced by outliers. ",
+  "emp: empirical"
+)
+
+.plot_test_statistic_centrality(
+  plot_theme = plot_theme,
+  manuscript_dir = manuscript_dir
+)
+
+```
+
+To assess type I error rates for the (empirical) central normality test and compare
+these to the Shapiro-Wilk test for normality, we randomly drew another 1000 sequences from a
+standard normal distribution ($\mathcal{N}(0,1)$ for each 
+$n \in \left\{\lfloor 10^\nu \rfloor | \nu \in \left\{0.7500, 0.8125, \ldots, 3.0000 \right \} \right\}$.
+A second dataset was created by replacing elements with randomly drawn outliers, as described above.
+For each sequence, the p-value for the respective test was used to reject the null
+hypothesis that the sequence is (centrally) normal. The null hypothesis was rejected if $p \leq 0.05$.
+The type I error rate was determined by computing the fraction of centrally normal sequences rejected this way.
+Figure \ref{empirical-central-normality-error_rate} shows that the empirical central normality test had the expected type I error rate for
+centrally normal data (with tails of the distribution not being normally distributed),
+whereas the central normality test and Shapiro-Wilk test overestimated type I error rates.
+
+```{r empirical-central-normality-error_rate, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
+cap <- paste0(
+  "Observed type I error rates for (central) normality tests in the presence of data derived from normal distributions with and without outliers. ",
+  "ECN: empirical central normality; CN: central normality"
+)
+
+.plot_test_dependency_sample_size(
+  plot_theme = plot_theme,
+  manuscript_dir = manuscript_dir
+)
+
+```
+
+In Figure \ref{fig:empirical-central-normality-examples} we apply the empirical
+central normality test to assess central normality of features that are composed
+of a mixture of samples drawn from two normal distributions ($n = 100$ each).
+With increased separation of the underlying normal distributions, the probability of the
+feature being centrally normal decreases, as expected.
+
+```{r empirical-central-normality-examples, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
+cap <- paste0(
+  "Bi-modal distributions and empirical central normality test results. ",
+  "The feature (black) is a mixture of two identical sample sets (blue and orange, $n = 100$) ",
+  "drawn from normal distributions that are offset by a distance $d$. ",
+  "We use the empirical centrally normality test to compute the probability for the hypothesis that ",
+  "the distribution is centrally normal. As may be observed, with increasing offset $d$ ",
+  "the probability that the feature is centrally normal decreases. ",
+  "Quantile-quantile plots are drawn below each distribution."
+)
+
+.plot_bimodal_distribution_test(
+  plot_theme = plot_theme,
+  manuscript_dir = manuscript_dir
+)
+
+```
+
 
 ## Robust transformations
 
@@ -530,8 +662,7 @@ The resulting weighting function parameters for weighted MLE are shown in Tables
 load(file = "./R/sysdata.rda")
 
 two_sided_function_parameters <- .get_optimised_weighting_function_parameters(
-  manuscript_dir = manuscript_dir,
-  side = "both"
+  manuscript_dir = manuscript_dir
 )
 
 usethis::use_data(
@@ -626,96 +757,7 @@ cap <- paste0(
 ```
 
 
-## Central normality and empirical central normality test
 
-To develop a test for central normality we need to consider two
-parameters: the central portion $\kappa$ as a fixed parameter, and test
-statistic $\tau_{\text{ecn}}$. We will first define the central portion
-$\kappa$.
-
-For each number of samples $n \in \left\{\lfloor 10^\nu \rfloor | \nu \in \left\{0.7500, 0.8125, \ldots, 4.0000 \right \} \right\}$
-we randomly drew $m_d = 30000$ ordered sequences $\mathbf{X}$ from $\mathcal{N}(0,1)$.
-This dataset was used to compute the critical test statistic values for the central normality test.
-Additionally, we added $10 \%$ outliers by randomly replacing elements of each ordered sequence.
-The dataset with outliers was used to compute the critical test statistic values for the empirical variant of the central normality test.
-For each sequence we then computed $\tau_{n, \kappa}$ for $\kappa \in \left\{0.60, 0.70, 0.80, 0.90, 0.95, 1.00\right\}$.
-
-Figure \ref{empirical-central-normality-kappa} shows $\tau_{\alpha = 0.95, n, \kappa}$
-as a function of $n$ for different values of $\kappa$. With decreasing
-$\kappa$, the test statistic curve decreases. The curves
-for $\kappa = 0.60$ and $\kappa = 0.70$ are similar, whereas curves for 
-$\kappa \geq 0.90$ are affected by outliers, as can be observed by comparing curves
-of the central normality test with those of the empirical variant.
-
-Since the (empirical) central normality tests assesses whether the central part of a sequence is normally distributed,
-we used $\kappa = 0.70$. Lookup tables and curves for critical statistic values for central normality and empirical central
-normality tests are shown in Appendix E.
-
-```{r empirical-central-normality-kappa, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
-cap <- paste0(
-  "Critical test statistic $\\tau_{\\alpha = 0.95, n, \\kappa}$ of the (empirical) ",
-  "central normality test as function of $n$ for several values of central portion $\\kappa$. ",
-  "The critical test statistics for central normality test are determined using fully normal data, ",
-  "whereas the statistics for the empirical variant are determined using centrally normal data, ",
-  "i.e. with fully normal data where 10% of elements are replaced by outliers. ",
-  "emp: empirical"
-)
-
-.plot_test_statistic_centrality(
-  plot_theme = plot_theme,
-  manuscript_dir = manuscript_dir
-)
-
-```
-
-To assess type I error rates for the (empirical) central normality test and compare
-these to the Shapiro-Wilk test for normality, we randomly drew another 1000 sequences from a
-standard normal distribution ($\mathcal{N}(0,1)$ for each 
-$n \in \left\{\lfloor 10^\nu \rfloor | \nu \in \left\{0.7500, 0.8125, \ldots, 3.0000 \right \} \right\}$.
-A second dataset was created by replacing elements with randomly drawn outliers, as described above.
-For each sequence, the p-value for the respective test was used to reject the null
-hypothesis that the sequence is (centrally) normal. The null hypothesis was rejected if $p \leq 0.05$.
-The type I error rate was determined by computing the fraction of centrally normal sequences rejected this way.
-Figure \ref{empirical-central-normality-error_rate} shows that the empirical central normality test had the expected type I error rate for
-centrally normal data (with tails of the distribution not being normally distributed),
-whereas the central normality test and Shapiro-Wilk test overestimated type I error rates.
-
-```{r empirical-central-normality-error_rate, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
-cap <- paste0(
-  "Observed type I error rates for (central) normality tests in the presence of data derived from normal distributions with and without outliers. ",
-  "ECN: empirical central normality; CN: central normality"
-)
-
-.plot_test_dependency_sample_size(
-  plot_theme = plot_theme,
-  manuscript_dir = manuscript_dir
-)
-
-```
-
-In Figure \ref{fig:empirical-central-normality-examples} we apply the empirical
-central normality test to assess central normality of features that are composed
-of a mixture of samples drawn from two normal distributions ($n = 100$ each).
-With increased separation of the underlying normal distributions, the probability of the
-feature being centrally normal decreases, as expected.
-
-```{r empirical-central-normality-examples, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
-cap <- paste0(
-  "Bi-modal distributions and empirical central normality test results. ",
-  "The feature (black) is a mixture of two identical sample sets (blue and orange, $n = 100$) ",
-  "drawn from normal distributions that are offset by a distance $d$. ",
-  "We use the empirical centrally normality test to compute the probability for the hypothesis that ",
-  "the distribution is centrally normal. As may be observed, with increasing offset $d$ ",
-  "the probability that the feature is centrally normal decreases. ",
-  "Quantile-quantile plots are drawn below each distribution."
-)
-
-.plot_bimodal_distribution_test(
-  plot_theme = plot_theme,
-  manuscript_dir = manuscript_dir
-)
-
-```
 ## Simulated data
 
 [Generated data: clean, n = 30, n = 100, n = 1000, lambda = -1.00, 1.00, 3.00]

@@ -474,6 +474,8 @@ cap <- paste0(
 
 # Appendix D: Simulations on clean data
 
+
+
 Robust transformations are hypothesised to have a cost in efficiency for data
 without outliers, i.e. clean data. Here we randomly draw data from a standard normal
 distribution $\mathcal{N}(0,1)$. Subsequently, we perform an inverse transformation
@@ -605,8 +607,16 @@ shifted_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_typ
 data <- rbind(clean_data, dirty_data, shifted_data, fill = TRUE)
 data$dataset <- factor(data$dataset, levels = c("clean", "dirty", "dirty_shifted"))
 
+# data[outlier == FALSE, "error" := residuals]
+# data[outlier == TRUE, "error" := residuals_central]
+# data_baseline <- data[transformation == "conventional"][, mget(c("dataset", "outlier", "experiment_id", "error"))]
+# data.table::setnames(data_baseline, "error", "reference_error")
+# data <- data[data_baseline, on = c("dataset", "outlier", "experiment_id")]
+# data[, "fractional_error" := error / reference_error]
+
 # Add rank based on residual error for central normality.
-data[, "method_rank" := rank(residuals), by = c("experiment_id", "outlier", "dataset")]
+data[outlier == FALSE, "method_rank" := rank(residuals), by = c("experiment_id", "outlier", "dataset")]
+data[outlier == TRUE, "method_rank" := rank(residuals_central), by = c("experiment_id", "outlier", "dataset")]
 
 table_data <- data[
   ,
@@ -622,11 +632,18 @@ table_data <- data[
 data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.var = "avg.")
 
 ```
+
 ```{=latex}
 \begin{table}
 \begin{center}
 \caption{
-Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
+Comparison of average rank between transformation methods based on either residual error (without outliers) or residual error of the central portion
+(with outliers; $\kappa = 0.70$) over 3 datasets with 10000 sequences each. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
+A rank of 1 is the best and a rank of 9 the worst.
+}
 \label{tab:comparison_methods_simulations}
 \begin{tabular}{l | l r r r r r r}
 
@@ -636,15 +653,15 @@ transformation & outliers: & no & yes & no & yes & no & yes \\
 
 \midrule
 
-none                                  & & 8.51          & 6.33          & 7.31          & 5.55          & 7.42          & 6.39 \\
-conventional                          & & 3.72          & 3.78          & 3.83          & 4.74          & 6.47          & 5.47 \\
-conventional (z-score norm.)          & & 4.72          & 2.89          & 6.37          & 3.43          & 5.42          & 3.50 \\
-conventional (robust scaling)         & & 4.07          & 4.31          & 5.36          & 4.23          & 4.41          & 4.32 \\
-Raymaekers-Rousseeuw                  & & 4.50          & 7.03          & 3.97          & 8.12          & 6.25          & 5.57 \\
-Raymaekers-Rousseeuw (z-score norm.)  & & 5.26          & 6.36          & 6.22          & 6.42          & 5.26          & 6.92 \\
-Raymaekers-Rousseeuw (robust scaling) & & 4.71          & 7.84          & 5.31          & 7.06          & 4.35          & 7.58 \\
-invariant                             & & \textbf{3.15} & 3.72          & \textbf{3.27} & 3.14          & \textbf{2.69} & 3.05 \\
-robust invariant                      & & 6.37          & \textbf{2.73} & 3.36          & \textbf{2.30} & 2.72          & \textbf{2.20} \\
+none                                  & &         8.45  &         7.52  &         7.29  &         5.99  &         7.39  &         6.39 \\
+conventional                          & &         3.64  &         5.57  &         3.78  &         7.04  &         6.45  &         5.79 \\
+conventional (z-score norm.)          & &         4.68  &         5.78  &         6.29  &         5.10  &         5.34  &         5.08 \\
+conventional (robust scaling)         & &         4.00  &         6.74  &         5.28  &         5.78  &         4.32  &         5.79 \\
+Raymaekers-Rousseeuw                  & &         4.41  &         3.66  &         3.92  &         4.40  &         6.23  &         5.50 \\
+Raymaekers-Rousseeuw (z-score norm.)  & &         5.21  &         3.16  &         6.13  &         4.24  &         5.18  &         4.15 \\
+Raymaekers-Rousseeuw (robust scaling) & &         4.62  &         3.42  &         5.22  &         4.38  &         4.26  &         4.30 \\
+invariant                             & & \textbf{3.05} &         6.95  & \textbf{3.03} &         6.16  & \textbf{2.45} &         6.13 \\
+robust invariant                      & &         6.95  & \textbf{2.20} &         4.07  & \textbf{1.90} &         3.38  & \textbf{1.87} \\
 
 \bottomrule
 \end{tabular}
