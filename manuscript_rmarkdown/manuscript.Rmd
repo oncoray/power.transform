@@ -649,7 +649,7 @@ $Q_1$, $Q_3$ and $\text{IQR}$ are the first quartile, third quartile and interqu
 Outlier values randomly replaced elements in $\mathbf{X}_i$.
 
 To find the optimal values for the weighting function parameters $\delta_1$ and $\delta_2$ (if applicable),
-we minimised $\sum_{i=1}^{m_d = 100}\tau_{n, \kappa = 0.70, i}$, i.e. the mean of residual 
+we minimised $\sum_{i=1}^{m_d = 100}\tau_{n_i, \kappa = 0.70, i}$, i.e. the mean of residual 
 errors of the central 70% of elements of each sequence $\mathbf{X}_i$, summed over all sequences.
 
 Minimisation was conducted using the BOBYQA algorithm for derivative-free bound constraint optimisation [@Powell2009-zb].
@@ -745,6 +745,71 @@ $r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.07 & 1.00 & $(0, 10]$ & 1.08 & 5
 ## Simulated data
 
 [Generated data: clean, n = 30, n = 100, n = 1000, lambda = -1.00, 1.00, 3.00]
+
+```{r include = FALSE, eval = FALSE}
+
+# Yeo-Johnson on clean and dirty data.
+clean_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "clean")
+dirty_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "dirty")
+shifted_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "dirty_shifted")
+
+data <- rbind(clean_data, dirty_data, shifted_data, fill = TRUE)
+data$dataset <- factor(data$dataset, levels = c("clean", "dirty", "dirty_shifted"))
+
+# Add rank based on residual error for central normality.
+data[outlier == FALSE, "method_rank" := rank(residuals), by = c("experiment_id", "outlier", "dataset")]
+data[outlier == TRUE, "method_rank" := rank(residuals_central), by = c("experiment_id", "outlier", "dataset")]
+
+table_data <- data[
+  ,
+  list(
+    "avg." = round(mean(method_rank), digits = 2L),
+    "10%" = quantile(method_rank, 0.10),
+    "50%" = quantile(method_rank, 0.50),
+    "90%" = quantile(method_rank, 0.90)
+  ),
+  by = c("transformation", "outlier", "dataset")
+]
+
+data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.var = "avg.")
+
+```
+
+
+\begin{table}
+\begin{center}
+\caption{
+Comparison of average rank between transformation methods based on either residual error (without outliers) or residual error of the central portion
+(with outliers; $\kappa = 0.70$) over 3 datasets with 10000 sequences each. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
+A rank of 1 is the best and a rank of 9 the worst. For each dataset, the best ranking transformation is marked in bold.
+}
+\label{tab:comparison_methods_simulations}
+\begin{tabular}{l | l r r r r r r}
+
+\toprule
+& dataset: & \multicolumn{2}{c}{clean} & \multicolumn{2}{c}{dirty} & \multicolumn{2}{c}{shifted} \\
+transformation & outliers: & no & yes & no & yes & no & yes \\
+
+\midrule
+
+none                                  & &         8.45  &         7.52  &         7.29  &         5.99  &         7.39  &         6.39 \\
+conventional                          & &         3.64  &         5.57  &         3.78  &         7.04  &         6.45  &         5.79 \\
+conventional (z-score norm.)          & &         4.68  &         5.78  &         6.29  &         5.10  &         5.34  &         5.08 \\
+conventional (robust scaling)         & &         4.00  &         6.74  &         5.28  &         5.78  &         4.32  &         5.79 \\
+Raymaekers-Rousseeuw                  & &         4.41  &         3.66  &         3.92  &         4.40  &         6.23  &         5.50 \\
+Raymaekers-Rousseeuw (z-score norm.)  & &         5.21  &         3.16  &         6.13  &         4.24  &         5.18  &         4.15 \\
+Raymaekers-Rousseeuw (robust scaling) & &         4.62  &         3.42  &         5.22  &         4.38  &         4.26  &         4.30 \\
+invariant                             & & \textbf{3.05} &         6.95  & \textbf{3.03} &         6.16  & \textbf{2.45} &         6.13 \\
+robust invariant                      & &         6.95  & \textbf{2.20} &         4.07  & \textbf{1.90} &         3.38  & \textbf{1.87} \\
+
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
 
 ```{r include = FALSE, eval = FALSE}
 
