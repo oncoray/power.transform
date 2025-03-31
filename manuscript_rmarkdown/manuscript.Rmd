@@ -615,23 +615,28 @@ cap <- paste0(
 ## Robust transformations
 
 Outliers may be present in data and affect estimation of transformation parameters.
-The log-likelihood function can be weighted to assign less weight to outlier instances, see equations \ref{eqn:box-cox-weighted-invariant-log-likelihood} and \ref{eqn:yeo-johnson-weighted-invariant-log-likelihood}.
+The log-likelihood function can be weighted to assign less weight to outlier instances,
+see equations \ref{eqn:box-cox-weighted-invariant-log-likelihood} and \ref{eqn:yeo-johnson-weighted-invariant-log-likelihood}.
 We proposed three weighting function: step, triangle and tapered cosine, that have one, two and two parameters, respectively.
-Each weighting function then takes one of three values as input: probabilities of the empirical distribution of the original feature, the z-score of the transformed feature values, or the residual error between the z-score of the transformed feature values and their expected z-score based on the normal distribution.
+Each weighting function then takes one of three values as input:
+probabilities of the empirical distribution of the original feature,
+the z-score of the transformed feature values,
+or the residual error between the z-score of the transformed feature values and their expected z-score based on the normal distribution.
 
-To determine the weighting function parameters for each of the nine combinations, $m_d=100$ asymmetric generalised normal distributions were drawn.
-Each distribution was parametrised with a randomly chosen skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$.
+To determine the weighting function parameters for each of the nine combinations,
+$m_d=100$ sequences $\mathbf{X}_i$ ($i \in \{1, 2, \ldots, m_d\}$) were randomly 
+drawn from randomly parametrised asymmetric generalised normal distributions.
+Each distribution was parametrised with a randomly chosen skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ 
+and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$.
 Location and scale parameters were set as $\mu = 0$ and $\sigma = 1$, respectively.
-$n = \lceil 10^\gamma \rceil$ instances were then randomly drawn, with $\gamma \sim U\left(2, 4\right)$, i.e., between $100$ and $10000$ values are drawn to create $\mathbf{X}_i$. 
+To form each sequence $\mathbf{X}_i$, $n = \lceil 10^\gamma \rceil$ instances were then randomly drawn, 
+with $\gamma \sim U\left(2, 4\right)$, resulting in a set of sequences with between $100$ and $10000$ elements. 
 
-Outlier values were then drawn to randomly replace a fraction of the values of $\mathbf{X}_i$.
-This was repeated $m_{\text{out}} = 10$ times, with outlier fractions regularly spaced in $[0.00, 0.10]$.
-Thus up to 10 percent of the values could be replaced by outliers.
+Outlier values were then drawn to randomly replace 10 percent of the elements of $\mathbf{X}_i$.
 Outlier values were set according to @Tukey1977-xm, as follows.
 Let $x^{*} \sim U\left(-2, 2\right)$.
 Then the corresponding outlier value was:
 
-```{=latex}
 \begin{equation}
 x_{out} =
 \begin{cases}
@@ -639,22 +644,18 @@ Q_1 - \left(1.5 - x^{*} \right) \text{IQR} & \text{if } x^{*} < 0 \\
 Q_3 + \left(1.5 + x^{*} \right) \text{IQR} & \text{if } x^{*} \geq 0
 \end{cases}
 \end{equation}
-```
 
 $Q_1$, $Q_3$ and $\text{IQR}$ are the first quartile, third quartile and interquartile range of $\mathbf{X}_i$, respectively.
-Outlier values randomly replaced values in $\mathbf{X}_i$ to create $\mathbf{X}_{i,j}$, with $j \in \left\{ 1, \ldots, m_{\text{out}} \right\}$
+Outlier values randomly replaced elements in $\mathbf{X}_i$.
 
-To find the optimal values for the weighting function parameters $\delta_1$ and $\delta_2$ (if applicable), we minimised the absolute difference between the $\lambda_{r}$ parameter obtained for robust transformation in the presence of outliers, and the $\lambda_0$ parameter obtained using the non-robust transformations in absence of outliers:
-
-```{=latex}
-\begin{equation}
-\label{eqn:minimisation-weighting}
-\left\{ \hat{\delta}_1, \hat{\delta}_2 \right\} = \argmin_{\delta_1, \delta_2} \sum_{i=1}^{m_d} \sum_{j=1}^{m_{\text{out}}} \left| \lambda_r \left(\mathbf{X}_{i, j}; \delta_1, \delta_2 \right) - \lambda_0 \left(\mathbf{X}_i \right) \right|
-\end{equation}
-```
+To find the optimal values for the weighting function parameters $\delta_1$ and $\delta_2$ (if applicable),
+we minimised $\sum_{i=1}^{m_d = 100}\tau_{n, \kappa = 0.70, i}$, i.e. the mean of residual 
+errors of the central 70% of elements of each sequence $\mathbf{X}_i$, summed over all sequences.
 
 Minimisation was conducted using the BOBYQA algorithm for derivative-free bound constraint optimisation [@Powell2009-zb].
-The resulting weighting function parameters for weighted MLE are shown in Tables \ref{tab:optimal-weighting-parameters-box-cox} and \ref{tab:optimal-weighting-parameters-yeo-johnson} for robust location- and scale-invariant Box-Cox and Yeo-Johnson transformations, respectively.
+The resulting weighting function parameters for weighted MLE are shown in Tables
+\ref{tab:optimal-weighting-parameters-box-cox} and \ref{tab:optimal-weighting-parameters-yeo-johnson} 
+for robust location- and scale-invariant Box-Cox and Yeo-Johnson transformations, respectively.
 
 ```{r include = FALSE, eval = FALSE}
 # This writes the lookup table for two-sided weighting parameters.
@@ -674,10 +675,15 @@ usethis::use_data(
 )
 ```
 
-```{=latex}
 \begin{table}
 \begin{center}
-\caption{Optimal weighting parameters and corresponding loss for location- and scale-invariant Box-Cox power transformations. $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values, and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column. The {optimal} column shows the optimal parameter values. The \textit{loss} column shows the loss achieved by each method, under optimised parameters. Lower loss indicates better robustness against outliers.}
+\caption{Optimal weighting parameters and corresponding loss for location- and scale-invariant Box-Cox power transformations.
+$p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values,
+and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. 
+The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column. 
+The \textit{optimal} column shows the optimal parameter values.
+The \textit{loss} column shows the loss achieved by each method, under optimised parameters.
+Lower loss indicates better transformation to central normality in the presence of outliers.}
 \label{tab:optimal-weighting-parameters-box-cox}
 \begin{tabular}{l r r r r r r r}
 
@@ -686,27 +692,32 @@ method & \multicolumn{3}{c}{$\delta_1$} & \multicolumn{3}{c}{$\delta_2$} & loss 
 & initial & limits & optimal & initial & limits & optimal & \\
 
 \midrule
-non-robust               & ---  & ---       & ---  & ---  & ---       & ---  & 771 \\
-$p^{*}$ (step)           & 0.80 & $(0, 1]$  & 0.86 & ---  & ---       & ---  & 561 \\
-$p^{*}$ (triangle)       & 0.80 & $(0, 1]$  & 0.83 & 0.95 & $(0, 1]$  & 0.92 & 564 \\
-$p^{*}$ (tapered cosine) & 0.80 & $(0, 1]$  & 0.76 & 0.95 & $(0, 1]$  & 0.95 & 560 \\
-$z$ (step)               & 1.28 & $(0, 10]$ & 1.12 & ---  & ---       & ---  & 1153 \\
-$z$ (triangle)           & 1.28 & $(0, 10]$ & 0.38 & 1.96 & $(0, 10]$ & 4.48 & 1178 \\
-$z$ (tapered cosine)     & 1.28 & $(0, 10]$ & 1.21 & 1.96 & $(0, 10]$ & 4.92 & 1135 \\
-$r$ (step)               & 0.50 & $(0, 10]$ & 2.18 & ---  & ---       & ---  & 1839 \\
-$r$ (triangle)           & 0.50 & $(0, 10]$ & 1.29 & 1.00 & $(0, 10]$ & 1.47 & 1764 \\
-$r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.38 & 1.00 & $(0, 10]$ & 1.41 & 1583 \\
+non-robust               & ---  & ---       & ---  & ---  & ---       & ---  & 4.98 \\
+$p^{*}$ (step)           & 0.80 & $(0, 1]$  & 0.75 & ---  & ---       & ---  & 2.83 \\
+$p^{*}$ (triangle)       & 0.80 & $(0, 1]$  & 0.00 & 0.95 & $(0, 1]$  & 0.82 & 2.63 \\
+$p^{*}$ (tapered cosine) & 0.80 & $(0, 1]$  & 0.00 & 0.95 & $(0, 1]$  & 0.89 & 2.63 \\
+$z$ (step)               & 1.28 & $(0, 10]$ & 2.33 & ---  & ---       & ---  & 5.04 \\
+$z$ (triangle)           & 1.28 & $(0, 10]$ & 0.20 & 1.96 & $(0, 10]$ & 4.90 & 4.96 \\
+$z$ (tapered cosine)     & 1.28 & $(0, 10]$ & 1.22 & 1.96 & $(0, 10]$ & 5.12 & 5.23 \\
+$r$ (step)               & 0.50 & $(0, 10]$ & 0.75 & ---  & ---       & ---  & 5.07 \\
+$r$ (triangle)           & 0.50 & $(0, 10]$ & 0.83 & 1.00 & $(0, 10]$ & 0.84 & 5.18 \\
+$r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 0.75 & 1.00 & $(0, 10]$ & 0.76 & 5.11 \\
 \bottomrule
 \end{tabular}
 \end{center}
 \end{table}
-```
 
 
-```{=latex}
+
 \begin{table}
 \begin{center}
-\caption{Optimal weighting parameters and corresponding loss for location- and scale-invariant Yeo-Johnson power transformations. $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values, and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column. The {optimal} column shows the optimal parameter values. The \textit{loss} column shows the loss achieved by each method, under optimised parameters. Lower loss indicates better robustness against outliers.}
+\caption{Optimal weighting parameters and corresponding loss for location- and scale-invariant Yeo-Johnson power transformations.
+$p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values,
+and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. 
+The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column.
+The \textit{optimal} column shows the optimal parameter values. 
+The \textit{loss} column shows the loss achieved by each method, under optimised parameters.
+Lower loss indicates better transformation to central normality in the presence of outliers.}
 \label{tab:optimal-weighting-parameters-yeo-johnson}
 \begin{tabular}{l r r r r r r r}
 
@@ -715,21 +726,20 @@ method & \multicolumn{3}{c}{$\delta_1$} & \multicolumn{3}{c}{$\delta_2$} & loss 
 & initial & limits & optimal & initial & limits & optimal & \\
 
 \midrule
-non-robust               & ---  & ---       & ---  & ---  & ---       & ---  & 364 \\
-$p^{*}$ (step)           & 0.80 & $(0, 1]$  & 0.95 & ---  & ---       & ---  & 224 \\
-$p^{*}$ (triangle)       & 0.80 & $(0, 1]$  & 0.88 & 0.95 & $(0, 1]$  & 0.97 & 212 \\
-$p^{*}$ (tapered cosine) & 0.80 & $(0, 1]$  & 0.94 & 0.95 & $(0, 1]$  & 0.95 & 218 \\
-$z$ (step)               & 1.28 & $(0, 10]$ & 1.09 & ---  & ---       & ---  & 392 \\
-$z$ (triangle)           & 1.28 & $(0, 10]$ & 0.24 & 1.96 & $(0, 10]$ & 4.62 & 396 \\
-$z$ (tapered cosine)     & 1.28 & $(0, 10]$ & 0.15 & 1.96 & $(0, 10]$ & 6.05 & 413 \\
-$r$ (step)               & 0.50 & $(0, 10]$ & 1.63 & ---  & ---       & ---  & 746 \\
-$r$ (triangle)           & 0.50 & $(0, 10]$ & 1.50 & 1.00 & $(0, 10]$ & 1.79 & 731 \\
-$r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.51 & 1.00 & $(0, 10]$ & 1.57 & 612 \\
+non-robust               & ---  & ---       & ---  & ---  & ---       & ---  & 5.09 \\
+$p^{*}$ (step)           & 0.80 & $(0, 1]$  & 0.81 & ---  & ---       & ---  & 2.85 \\
+$p^{*}$ (triangle)       & 0.80 & $(0, 1]$  & 0.00 & 0.95 & $(0, 1]$  & 0.83 & 2.46 \\
+$p^{*}$ (tapered cosine) & 0.80 & $(0, 1]$  & 0.04 & 0.95 & $(0, 1]$  & 0.88 & 2.45 \\
+$z$ (step)               & 1.28 & $(0, 10]$ & 3.32 & ---  & ---       & ---  & 4.50 \\
+$z$ (triangle)           & 1.28 & $(0, 10]$ & 0.42 & 1.96 & $(0, 10]$ & 4.35 & 4.08 \\
+$z$ (tapered cosine)     & 1.28 & $(0, 10]$ & 0.53 & 1.96 & $(0, 10]$ & 5.08 & 4.18 \\
+$r$ (step)               & 0.50 & $(0, 10]$ & 1.05 & ---  & ---       & ---  & 5.79 \\
+$r$ (triangle)           & 0.50 & $(0, 10]$ & 1.04 & 1.00 & $(0, 10]$ & 1.09 & 5.89 \\
+$r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.07 & 1.00 & $(0, 10]$ & 1.08 & 5.81 \\
 \bottomrule
 \end{tabular}
 \end{center}
 \end{table}
-```
 
 
 ## Simulated data
