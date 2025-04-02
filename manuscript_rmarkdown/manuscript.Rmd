@@ -626,7 +626,7 @@ or the residual error between the z-score of the transformed feature values and 
 To determine the weighting function parameters for each of the nine combinations,
 $m_d=100$ sequences $\mathbf{X}_i$ ($i \in \{1, 2, \ldots, m_d\}$) were randomly 
 drawn from randomly parametrised asymmetric generalised normal distributions.
-Each distribution was parametrised with a randomly chosen skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ 
+Each distribution was parametrised with a random skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ 
 and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$.
 Location and scale parameters were set as $\mu = 0$ and $\sigma = 1$, respectively.
 To form each sequence $\mathbf{X}_i$, $n = \lceil 10^\gamma \rceil$ instances were then randomly drawn, 
@@ -742,9 +742,50 @@ $r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.07 & 1.00 & $(0, 10]$ & 1.08 & 5
 \end{table}
 
 
-## Simulated data
+## Assessing transformation using simulated data
 
-[Generated data: clean, n = 30, n = 100, n = 1000, lambda = -1.00, 1.00, 3.00]
+Three datasets with 10000 sequences each were created to assess transformation
+to normality. For each sequence $\mathbf{X}_i$, $n = \lceil 10^\gamma \rceil$
+elements were randomly drawn, with $\gamma \sim U\left(1, 4\right)$, 
+resulting in sequences with between $10$ and $10000$ elements. 
+
+- A \textit{clean} dataset with each sequence drawn from $\mathcal{N}(0, 1)$ and
+  transformed using an inverse power transformation with randomly drawn 
+  transformation parameter $\lambda \sim U\left(0.00, 2.00 \right)$. 
+  $\left(\phi_{\text{BC}}^\lambda\right)^{-1}$ and $\left(\phi_{\text{YJ}}^\lambda\right)^{-1}$
+  were used as inverse transformations for assessing Box-Cox and Yeo-Johnson transformations,
+  respectively. Prior to inverse transformation, sequences for Box-Cox transformations
+  were shifted into the positive domain, with minimum value $1 \cdot 10^{-4}$.
+  
+- A \textit{dirty} dataset with each sequence drawn from $\mathcal{AGN}\left(\mu = 0, \sigma = 1/\sqrt{2}, \alpha, \beta \right)$,
+  with randomly drawn skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ 
+  and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$.
+  
+- A \textit{shifted} dataset with each sequence drawn from $\mathcal{AGN}\left(\mu = 100, \sigma = 10^{-3} \cdot 1/\sqrt{2} , \alpha, \beta \right)$,
+  with randomly drawn skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ 
+  and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$.
+
+A dataset with outliers was created for each of the above datasets by replacing
+10 percent of elements in each sequence, as described earlier.
+  
+In addition to no power transformation and location and scale-invariant power transformations,
+conventional and Raymaekers and Rousseeuw's robust adaptation [@Raymaekers2024-zf] were assessed.
+For the latter two methods, normalisation before standardisation using was additionally assessed using
+the following two methods:
+
+1. z-standardisation: $x^{\prime}_{i} = \left(x_i - \mu \right) / \sigma$, with $\mu$ and $\sigma$ the mean and standard deviation of sequence $\mathbf{X}$.
+
+2. robust scaling: $x^{\prime}_{i} = \left(x_i - \text{median}\left(\mathbf{X}\right) \right) / \text{IQR}\left(\mathbf{X}\right)$,
+   with $\text{IQR}$ representing the interquartile range of $\mathbf{X}$.
+
+This results in nine types of power transformation. Transformation parameters
+were optimised for each sequence. Subsequently the sum of residual errors 
+and sum of residual errors of the central portion ($\kappa = 0.70$) were computed
+for each sequence after transformation. Then, each method was ranked according 
+to the sum of residual errors (data without outliers) or the sum of residual
+errors of the central portion (data with outliers). The average rank of each
+transformation method was computed over all 10000 sequences in each dataset.
+For Yeo-Johnson transformations average ranks are shown in Table \ref{tab:comparison_methods_simulation_yeo_johnson}.
 
 ```{r include = FALSE, eval = FALSE}
 
@@ -779,14 +820,14 @@ data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.v
 \begin{table}
 \begin{center}
 \caption{
-Comparison of average rank between transformation methods based on either residual error (without outliers) or residual error of the central portion
+Comparison of average rank between Yeo-Johnson transformation methods based on either residual error (without outliers) or residual error of the central portion
 (with outliers; $\kappa = 0.70$) over 3 datasets with 10000 sequences each. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
 of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
 The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 A rank of 1 is the best and a rank of 9 the worst. For each dataset, the best ranking transformation is marked in bold.
 }
-\label{tab:comparison_methods_simulations}
+\label{tab:comparison_methods_simulations_yeo_johnson}
 \begin{tabular}{l | l r r r r r r}
 
 \toprule
