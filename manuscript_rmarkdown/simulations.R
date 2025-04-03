@@ -1208,6 +1208,7 @@
     method = "yeo_johnson"
 ) {
   data <- list()
+  set.seed(1L)
 
   n <- c(30L, 100L, 500L)
   lambda <- c(0.1, 1.0, 1.9)
