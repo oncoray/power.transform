@@ -2545,10 +2545,10 @@ get_annotation_settings <- function(ggtheme = NULL) {
         data[[jj + (ii - 1L) * n_rep]] <- data.table::data.table(
           "n" = n[ii],
           "p_value" = c(
-            power.transform::cn.test(x = x, robust = FALSE)$p_value,
-            power.transform::cn.test(x = x_outlier, robust = FALSE)$p_value,
-            power.transform::cn.test(x = x, robust = TRUE)$p_value,
-            power.transform::cn.test(x = x_outlier, robust = TRUE)$p_value,
+            power.transform::cn.test(x = x)$p_value,
+            power.transform::cn.test(x = x_outlier)$p_value,
+            power.transform::ecn.test(x = x)$p_value,
+            power.transform::ecn.test(x = x_outlier)$p_value,
             shapiro.test(x)$p.value,
             shapiro.test(x_outlier)$p.value
           ),

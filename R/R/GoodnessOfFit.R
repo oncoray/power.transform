@@ -40,7 +40,7 @@ assess_transformation <- function(
     ...) {
 
   # Perform test.
-  h <- cn.test(x = x, transformer = transformer)
+  h <- ecn.test(x = x, transformer = transformer)
 
   if (is.na(h$p_value)) {
     message("p-value could not be determined.")
@@ -50,6 +50,31 @@ assess_transformation <- function(
 
   return(h$p_value)
 }
+
+
+
+
+
+
+
+
+#' Empirical central normality test
+#'
+#' Assesses central normality of input data using an empirical test.
+#'
+#' @param x vector of input data, of at least length 5.
+#' @param transformer A transformer object created using
+#'   `find_transformation_parameters`. Optional, if present residuals are
+#'   determined from x after transformation.
+#'
+#' @return list with mean absolute error (`tau`), critical value (at
+#'   significance level = 0.95) of the test statistic (`tau_critical`) and
+#'   p-value (`p_value`) for the empirical central normality test.
+#' @export
+ecn.test <- function(x, transformer = NULL) {
+  return(cn.test(x = x, transformer = transformer, robust = TRUE))
+}
+
 
 
 
@@ -69,7 +94,7 @@ assess_transformation <- function(
 #'   significance level = 0.95) of the test statistic (`tau_critical`) and
 #'   p-value (`p_value`) for (empirical) central normality test.
 #' @export
-cn.test <- function(x, transformer = NULL, robust = TRUE) {
+cn.test <- function(x, transformer = NULL, robust = FALSE) {
 
   # Prevent CRAN NOTE due to non-standard use of variables by data.table.
   p_observed <- alpha <- NULL
