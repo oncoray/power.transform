@@ -537,12 +537,12 @@ For each sequence we then computed $\tau_{n, \kappa}$ for $\kappa \in \left\{0.6
 Figure \ref{empirical-central-normality-kappa} shows $\tau_{\alpha = 0.95, n, \kappa}$
 as a function of $n$ for different values of $\kappa$. With decreasing
 $\kappa$, the test statistic curve decreases. The curves
-for $\kappa = 0.60$ and $\kappa = 0.70$ are similar, whereas curves for 
+for $\kappa = 0.60$, $\kappa = 0.70$ and $\kappa = 0.80$ are similar, whereas curves for 
 $\kappa \geq 0.90$ are affected by outliers, as can be observed by comparing curves
 of the central normality test with those of the empirical variant.
 
 Since the (empirical) central normality tests assesses whether the central part of a sequence is normally distributed,
-we used $\kappa = 0.70$. Lookup tables and curves for critical statistic values for central normality and empirical central
+we used $\kappa = 0.80$. Lookup tables and curves for critical statistic values for central normality and empirical central
 normality tests are shown in Appendix E.
 
 ```{r empirical-central-normality-kappa, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
@@ -577,7 +577,7 @@ whereas the central normality test and Shapiro-Wilk test overestimated type I er
 ```{r empirical-central-normality-error_rate, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
 cap <- paste0(
   "Observed type I error rates for (central) normality tests in the presence of data derived from normal distributions with and without outliers. ",
-  "ECN: empirical central normality; CN: central normality"
+  "The empirical central normality (ECN) test uses $\\kappa = 0.80$. CN: central normality"
 )
 
 .plot_test_dependency_sample_size(
@@ -649,8 +649,8 @@ $Q_1$, $Q_3$ and $\text{IQR}$ are the first quartile, third quartile and interqu
 Outlier values randomly replaced elements in $\mathbf{X}_i$.
 
 To find the optimal values for the weighting function parameters $\delta_1$ and $\delta_2$ (if applicable),
-we minimised $\sum_{i=1}^{m_d = 100}\tau_{n_i, \kappa = 0.70, i}$, i.e. the mean of residual 
-errors of the central 70% of elements of each sequence $\mathbf{X}_i$, summed over all sequences.
+we minimised $\sum_{i=1}^{m_d = 100}\tau_{n_i, \kappa = 0.80, i}$, i.e. the mean of residual 
+errors of the central 80% of elements of each sequence $\mathbf{X}_i$, summed over all sequences.
 
 Minimisation was conducted using the BOBYQA algorithm for derivative-free bound constraint optimisation [@Powell2009-zb].
 The resulting weighting function parameters for weighted MLE are shown in Tables

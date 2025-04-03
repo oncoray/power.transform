@@ -743,13 +743,13 @@ load(file = "./R/sysdata.rda")
 
 central_normality_lookup_table <- .get_test_statistic_lookup_table(
   manuscript_dir = manuscript_dir,
-  k = 0.70,
+  k = 0.80,
   for_manuscript = FALSE
 )
 
 empirical_central_normality_lookup_table <- .get_test_statistic_lookup_table(
   manuscript_dir = manuscript_dir,
-  k = 0.70,
+  k = 0.80,
   for_manuscript = FALSE,
   with_outliers = TRUE
 )
@@ -766,7 +766,7 @@ usethis::use_data(
 # This generates the table shown below.
 .get_test_statistic_lookup_table(
   manuscript_dir = manuscript_dir,
-  k = 0.70,
+  k = 0.80,
   for_manuscript = TRUE
 )
 
@@ -880,11 +880,11 @@ Not surprisingly, normalisation before transformation does not noticeably improv
 ```{r include = FALSE, eval = FALSE}
 
 data <- .assess_standardisation_before_transformation()
-data <- data[, mget(c("residuals", "lambda", "p_value", "transformation", "dataset"))]
-data[, "residuals" := round(residuals, digits = 1L)]
+data <- data[, mget(c("residuals_central", "lambda", "p_value", "transformation", "dataset"))]
+data[, "residuals_central" := round(residuals_central, digits = 1L)]
 data[, "lambda" := round(lambda, digits = 1L)]
 data[, "p_value" := round(p_value, digits = 3L)]
-data.table::dcast(data, transformation ~ dataset, value.var = "residuals")
+data.table::dcast(data, transformation ~ dataset, value.var = "residuals_central")
 data.table::dcast(data, transformation ~ dataset, value.var = "lambda")
 data.table::dcast(data, transformation ~ dataset, value.var = "p_value")
 ```

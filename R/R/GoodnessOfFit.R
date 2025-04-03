@@ -94,8 +94,8 @@ cn.test <- function(x, transformer = NULL, robust = TRUE) {
     lookup_table <- empirical_central_normality_lookup_table
   }
 
-  # The test uses a central portion kappa = 0.70.
-  residual_data <- residual_data[p_observed >= 0.15 & p_observed <= 0.85]
+  # The test uses a central portion kappa = 0.80.
+  residual_data <- residual_data[p_observed >= 0.1 & p_observed <= 0.9]
 
   # Compute mean residual error for the central portion.
   test_statistic_value <- mean(abs(residual_data$residual))
