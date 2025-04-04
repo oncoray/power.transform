@@ -618,8 +618,42 @@
           x_outlier[sample(seq_along(x), size = n_draw, replace = FALSE)] <- outlier
         }
 
+        # Determine transformation parameter lambda for clean data.
+        clean_lambda_yeo_johnson <- power.transform::get_lambda(
+          power.transform::find_transformation_parameters(
+            x = x,
+            method = "yeo_johnson",
+            robust = FALSE,
+            invariant = TRUE
+          )
+        )
+
+        # For Box-Cox, shift all data to positive.
+        if (any(x_outlier <= 0.0)) {
+          x_min <- min(x_outlier)
+          x_outlier_bc <- x_outlier - x_min + 1.0
+          x_bc <- x - x_min + 1.0
+        } else {
+          x_outlier_bc <- x_outlier_bc
+          x_bc <- x
+        }
+
+        # Determine transformation parameter lambda for clean data.
+        clean_lambda_box_cox <- power.transform::get_lambda(
+          power.transform::find_transformation_parameters(
+            x = x_bc,
+            method = "box_cox",
+            robust = FALSE,
+            invariant = TRUE
+          )
+        )
+
+
         return(list(
-          "x" = x_outlier,
+          "x_bc" = x_outlier_bc,
+          "x_yj" = x_outlier,
+          "lambda_clean_bc" = clean_lambda_box_cox,
+          "lambda_clean_yj" = clean_lambda_yeo_johnson,
           "parameters" = parameters
         ))
       },
@@ -633,7 +667,7 @@
 
   # Helper function for computing transformer parameters under optimisation
   # constraints.
-  .compute_robust_error <- function(
+  .compute_loss <- function(
     x,
     fun_args,
     opt_args
@@ -647,11 +681,17 @@
       # Prevent notes
       method <- estimation_method <- NULL
 
+      if (fun_args$method == "box_cox") {
+        data <- x$x_bc
+      } else {
+        data <- x$x_yj
+      }
+
       # Create transformer.
       transformer <- suppressWarnings(do.call(
         power.transform::find_transformation_parameters,
         args = c(
-          list("x" = x$x),
+          list("x" = data),
           list("weighting_function_parameters" = opt_args),
           fun_args
         )
@@ -660,21 +700,36 @@
       # Transform data
       transformed_data <- tryCatch(
         power.transform::power_transform(
-          x = x$x,
+          x = data,
           transformer = transformer
         ),
         error = identity
       )
 
+      # Compute residual error at 80%
       if (inherits(transformed_data, "simpleError")) {
         residual_error <- NA_real_
       } else {
         residual_data <- power.transform::get_residuals(
-          x = x$x,
+          x = data,
           transformer = transformer
         )
 
-        residual_error <- mean(abs(residual_data[p_observed >= 0.1 & p_observed <= 0.90]$residual))
+        residual_error <- mean(abs(residual_data[p_observed >= 0.10 & p_observed <= 0.90]$residual))
+      }
+
+      # Compute lambda error compared to clean data.
+      lambda <- power.transform::get_lambda(transformer)
+      clean_lambda <- ifelse(fun_args$method == "box_cox", x$lambda_clean_bc, x$lambda_clean_yj)
+
+      if (!is.finite(lambda)) {
+        lambda_error <- NA_real_
+      } else if (fun_args$method == "yeo_johnson") {
+        # Allow for tolerance of 0.30
+        lambda_error <- max(c(0.0, abs(lambda - clean_lambda) - 0.3))
+      } else {
+        # Allow for tolerance of 0.50
+        lambda_error <- max(c(0.0, abs(lambda - clean_lambda) - 0.5))
       }
 
       parameter_data <- c(
@@ -686,7 +741,8 @@
           "lambda" = transformer@lambda,
           "shift" = transformer@shift,
           "scale" = transformer@scale,
-          "residual_error" = residual_error
+          "residual_error" = residual_error,
+          "lambda_error" = lambda_error
         )
       )
 
@@ -734,7 +790,7 @@
         fn = .optimisation_inner,
         lower = lower,
         upper = upper,
-        control = list("xtol_rel" = 1e-2, "maxeval" = 50),
+        control = list("xtol_rel" = 1e-2, "maxeval" = 40),
         x = data,
         fun_args = experiment$fun_args,
         verbose = verbose
@@ -771,23 +827,36 @@
     if (length(opt_param) >= 1) opt_args <- c(opt_args, list("k1" = opt_param[1]))
     if (length(opt_param) >= 2) opt_args <- c(opt_args, list("k2" = opt_param[2]))
 
-    parameter_data <- .compute_robust_error(
+    parameter_data <- .compute_loss(
       x = x,
       fun_args = fun_args,
       opt_args = opt_args
     )
 
-    errors <- sapply(parameter_data, function(x) (x$residual_error))
+    residual_errors <- sapply(parameter_data, function(x) (x$residual_error))
+    lambda_errors <- sapply(parameter_data, function(x) (x$lambda_error))
+    # lambda_errors <- 0.0
+
+    if (fun_args$method == "box_cox") {
+      loss <- sum(residual_errors) + 0.1 * sum(lambda_errors)
+    } else {
+      loss <- sum(residual_errors) + 0.1 * sum(lambda_errors)
+    }
+
 
     if (verbose) {
-      message <- paste0("target: ", sum(errors))
-      if (length(opt_args) > 0) message <- c(message, paste0("k1: ", opt_param[1]))
-      if (length(opt_args) > 1) message <- c(message, paste0("k2: ", opt_param[2]))
+      message <- paste0(
+        "loss: ", loss,
+        "; residual error: ", sum(residual_errors),
+        "; lambda error: ", sum(lambda_errors)
+      )
+      if (length(opt_args) > 0L) message <- c(message, paste0("k1: ", opt_param[1]))
+      if (length(opt_args) > 1L) message <- c(message, paste0("k2: ", opt_param[2]))
       cat(paste0(message, collapse = "; "))
       cat("\n")
     }
 
-    return(sum(errors))
+    return(sum(residual_errors) + 0.1 * sum(lambda_errors))
   }
 
   # computations ---------------------------------------------------------------
@@ -810,10 +879,10 @@
     set.seed(95)
 
     # Generate table of asymmetric generalised normal distribution parameters.
-    n_distributions <- 100L
+    n_distributions <- 500L
 
     # Generate alpha, beta and n.
-    n <- stats::runif(n = n_distributions, min = 2, max = 4)
+    n <- stats::runif(n = n_distributions, min = 1.69896, max = 3)
     n <- ceiling(10^n)
 
     alpha <- stats::runif(n = n_distributions, min = 0.01, max = 0.99)
@@ -855,7 +924,7 @@
 
     parallel::clusterExport(
       cl = cl,
-      varlist = c(".compute_robust_error", ".optimisation_inner"),
+      varlist = c(".compute_loss", ".optimisation_inner"),
       envir = environment()
     )
 
@@ -1248,7 +1317,7 @@
     }
   }
 
-  data <- rbindlist(data, use.names = TRUE)
+  data <- data.table::rbindlist(data, use.names = TRUE)
   data$dataset <- factor(data$dataset, levels = dataset_names)
 
   return(data)
@@ -1308,7 +1377,7 @@
     method = method
   )
 
-  data <- rbindlist(data, use.names = TRUE)
+  data <- data.table::rbindlist(data, use.names = TRUE)
   return(data)
 }
 

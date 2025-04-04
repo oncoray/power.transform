@@ -493,11 +493,13 @@ and 2. robust scaling, i.e. $x^{\prime}_{i} = \left(x_i - \text{median}\left(\ma
 ```{r include = FALSE, eval = FALSE}
 
 data <- .assess_standardisation_before_transformation_simulation(lambda_limit = c(-4.0, 6.0))
-data <- data[, mget(c("residuals", "lambda", "p_value", "transformation", "dataset"))]
+data <- data[, mget(c("residuals", "residuals_central", "lambda", "p_value", "transformation", "dataset"))]
 data[, "residuals" := round(residuals, digits = 1L)]
+data[, "residuals_central" := round(residuals_central, digits = 1L)]
 data[, "lambda" := round(lambda, digits = 1L)]
 data[, "p_value" := round(p_value, digits = 3L)]
 data.table::dcast(data, transformation ~ dataset, value.var = "residuals")
+data.table::dcast(data, transformation ~ dataset, value.var = "residuals_central")
 data.table::dcast(data, transformation ~ dataset, value.var = "lambda")
 data.table::dcast(data, transformation ~ dataset, value.var = "p_value")
 ```
@@ -600,7 +602,7 @@ robust invariant                      & & 0.994 & 0.407 & 0.484 &   0.642  & 0.2
 
 ```{r include = FALSE, eval = FALSE}
 
-# Yeo-Johnson on clean and dirty data.
+# Box-Cox on clean and dirty data.
 clean_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "clean", method = "box_cox")
 dirty_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "dirty", method = "box_cox")
 shifted_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "dirty_shifted", method = "box_cox")
@@ -609,7 +611,8 @@ data <- rbind(clean_data, dirty_data, shifted_data, fill = TRUE)
 data$dataset <- factor(data$dataset, levels = c("clean", "dirty", "dirty_shifted"))
 
 # Add rank based on residual error for central normality.
-data[, "method_rank" := rank(residuals), by = c("experiment_id", "outlier", "dataset")]
+data[outlier == FALSE, "method_rank" := rank(residuals), by = c("experiment_id", "outlier", "dataset")]
+data[outlier == TRUE, "method_rank" := rank(residuals_central), by = c("experiment_id", "outlier", "dataset")]
 
 table_data <- data[
   ,
@@ -626,6 +629,19 @@ data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.v
 
 ```
 
+```{r include = FALSE, eval = FALSE}
+
+data <- .assess_standardisation_before_transformation_simulation(lambda_limit = c(-4.0, 6.0), method = "box_cox")
+data <- data[, mget(c("residuals", "residuals_central", "lambda", "p_value", "transformation", "dataset"))]
+data[, "residuals" := round(residuals, digits = 1L)]
+data[, "residuals_central" := round(residuals, digits = 1L)]
+data[, "lambda" := round(lambda, digits = 1L)]
+data[, "p_value" := round(p_value, digits = 3L)]
+data.table::dcast(data, transformation ~ dataset, value.var = "residuals")
+data.table::dcast(data, transformation ~ dataset, value.var = "residuals_central")
+data.table::dcast(data, transformation ~ dataset, value.var = "lambda")
+data.table::dcast(data, transformation ~ dataset, value.var = "p_value")
+```
 
 # Appendix D: Experimental results using location- and scale-invariant Box-Cox transformation
 
