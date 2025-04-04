@@ -1136,7 +1136,7 @@
         sd = 1.0
       )
 
-      if (method == "box_cox" && any(x <= -1.0 / conf_lambda)) x <- x + 1E-4 - min(x) - 1.0 / conf_lambda
+      if (method == "box_cox" && any(x <= -1.0 / conf_lambda)) x <- x + 1 - min(x) - 1.0 / conf_lambda
 
       # Perform inverse transform.
       x <- power.transform::revert_power_transform(
@@ -1159,7 +1159,7 @@
         beta = beta
       )
 
-      if (method == "box_cox" && any(x <= 0.0)) x <- x + 1E-4 - min(x)
+      if (method == "box_cox" && any(x <= 0.0)) x <- x + 1 - min(x)
 
     } else if (data_type == "dirty_shifted") {
       # Dirty data that is shifted and scaled to be far from 0.0.
@@ -1171,7 +1171,7 @@
         beta = beta
       )
 
-      if (method == "box_cox" && any(x <= 0.0)) x <- x + 1E-4 - min(x)
+      if (method == "box_cox" && any(x <= 0.0)) x <- x + 1 - min(x)
 
     } else {
       stop(paste0("data_type was not recognised: ", data_type))
