@@ -788,109 +788,140 @@ data.table::dcast(data, transformation ~ dataset, value.var = "lambda")
 data.table::dcast(data, transformation ~ dataset, value.var = "p_value")
 ```
 
-# Appendix D: Experimental results using location- and scale-invariant Box-Cox transformation
+# Appendix D: Experimental results
 
-The effect of using location- and scale-invariant transformations was investigated using real-world datasets.
+The effect of using location- and scale-invariant transformations was investigated
+using real-world datasets, as described in the main manuscript.
 
-## Invariance
+## Yeo-Johnson transformation
 
-Results for Box-Cox transformations of features without outliers are shown in Figure \ref{fig:experimental-results-invariance-appendix}.
+Additional results for Yeo-Johnson transformations are shown in Tables
+\ref{tab:experimental-results-appendix-residuals}, 
+\ref{tab:experimental-results-appendix-lambda},
+\ref{tab:experimental-results-appendix-p-value}.
 
-```{r experimental-results-invariance-appendix, warning=FALSE, message=FALSE, fig.cap=cap}
-cap <- paste0(
-  "Quantile-quantile plots for several datasets: age of patients with lung cancer (top row); ",
-  "penguin body mass (middle row); ",
-  "and latitude coordinates of houses sold in Ames, Iowa (bottom row). ",
-  "Multiple quantile-quantile plots are shown: for the original feature (left column); ",
-  "the feature transformed using the conventional Box-Cox transformation ",
-  "and Raymaekers and Rousseeuw's robust adaptation (middle column); ",
-  "and the feature transformed using the non-robust and robust location- and-scale ",
-  "invariant Box-Cox transformations (right column)."
-)
 
-data <- .plot_experimental_invariance(plot_theme = plot_theme, method = "box_cox")
-data$plot
+```{r include = FALSE, eval = FALSE}
+
+data <- .assess_standardisation_before_transformation()
+data <- data[, mget(c("residuals", "residuals_central", "lambda", "p_value", "transformation", "dataset"))]
+data[, "residuals" := round(residuals, digits = 1L)]
+data[, "residuals_central" := round(residuals_central, digits = 1L)]
+data[, "lambda" := round(lambda, digits = 1L)]
+data[, "p_value" := round(p_value, digits = 3L)]
+
+data.table::dcast(data, transformation ~ dataset, value.var = "residuals")
+data.table::dcast(data, transformation ~ dataset, value.var = "residuals_central")
+data.table::dcast(data, transformation ~ dataset, value.var = "lambda")
+data.table::dcast(data, transformation ~ dataset, value.var = "p_value")
 ```
 
-### Age of patients with lung cancer
+\begin{table}
+\begin{center}
+\caption{Residual errors for features from real-world datasets after Yeo-Johnson transformation to normality. 
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
+AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
+\label{tab:experimental-results-appendix-residuals}
+\begin{tabular}{l | r r r r r}
 
-Applying conventional and invariant Box-Cox transformations to age of patients with lung cancer [@Loprinzi1994-cd] yielded the following results:
-no transformation (sum of residuals with normal distribution $\sum r_i = 16.5$, $p = 0.71$);
-conventional transformation ($\lambda = 1.9$, $\sum r_i = 11.5$, $\mu_{BC} = 1.6 \cdot 10^3$, $\sigma_{BC} = 0.4 \cdot 10^3$, $p = 0.94$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = 1.9$, $\sum r_i = 11.5$, $\mu_{BC} = 1.6 \cdot 10^3$, $\sigma_{BC} = 0.4 \cdot 10^3$, $p = 0.94$);
-location- and scale-invariant transformation ($\lambda = 1.7$, $\sum r_i = 11.6$, $\mu_{BC} = 1.9$, $\sigma_{BC} = 0.8$, $p = 0.94$);
-and robust location- and scale-invariant transformation ($\lambda = 1.5$, $\sum r_i = 11.6$, $\mu_{BC} = 3.6$, $\sigma_{BC} = 1.2$, $p = 0.93$).
+\toprule
+feature & age & AWT & FE & latitude & PBM \\
 
-Compared to location- and scale-invariant Yeo-Johnson transformations, the Box-Cox transformations do not reduce residuals compared to conventional variants.
+\midrule
+none                                  & 16.5 & 110.1 & 54.5 & 328.4 & 48.0 \\
+conventional                          & 11.5 &  30.0 & 55.3 & 319.0 & 32.2 \\
+conventional (z-score norm.)          & 11.5 &  19.3 & 49.0 & 326.2 & 33.3 \\
+conventional (robust scaling)         & 11.3 &  31.8 & 53.3 & 324.5 & 32.2 \\
+Raymaekers-Rousseeuw                  & 11.5 & 136.7 & 47.7 & 315.1 & 32.2 \\
+Raymaekers-Rousseeuw (z-score norm.)  & 13.2 & 214.5 & 57.4 & 326.2 & 33.3 \\
+Raymaekers-Rousseeuw (robust scaling) & 11.7 & 281.3 & 57.0 & 324.5 & 32.0 \\
+invariant                             &  8.8 &  12.2 & 44.0 & 326.4 & 26.8 \\
+robust invariant                      &  9.3 &  30.2 & 55.8 & 308.1 & 22.0 \\
 
-
-### Penguin body mass
-
-Applying conventional and invariant Box-Cox transformations to the body mass of penguins [@Gorman2014-eo] yielded the following results:
-no transformation (residual sum $\sum r_i = 48.0$, $p < 0.001$);
-conventional transformation ($\lambda = -0.5$, $\sum r_i = 32.2$, $\mu_{BC} = 2.1$, $\sigma_{BC} = 4 \cdot 10^{-3}$, $p = 0.06$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = -0.5$, $\sum r_i = 32.2$, $\mu_{BC} = 2.1$, $\sigma_{BC} = 4 \cdot 10^{-3}$, $p = 0.06$);
-location- and scale-invariant transformation ($\lambda = 0.5$, $\sum r_i = 27.3$, $\mu_{BC} = 0.3$, $\sigma_{BC} = 0.6$, $p = 0.10$);
-and robust location- and scale-invariant transformation ($\lambda = 0.2$, $\sum r_i = 25.2$, $\mu_{BC} = 0.4$, $\sigma_{BC} = 0.6$, $p = 0.44$).
-
-Just as for location- and scale-invariant Yeo-Johnson transformations, Box-Cox transformations produced a lower overall residual sum compared to their conventional counterparts.
-Similarly, conventional transformations led to low standard deviation $\sigma_{YJ}$ of the body mass feature after transformation.
-
-
-### Latitude in the Ames housing dataset
-
-Applying conventional and invariant Box-Cox transformations to the latitude of houses in the Ames housing dataset [@De-Cock2011-jf] yielded the following results:
-no transformation (residual sum $\sum r_i = 328$, $p < 0.001$);
-conventional transformation ($\lambda = 62.1$, $\sum r_i = 319$, $\mu_{BC} = 1.1 \cdot 10^{99}$, $\sigma_{BC} = 0.0 \cdot 10^{99}$, $p < 0.001$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = 96.0$, $\sum r_i = 319$, $\mu_{BC} = 6.2 \cdot 10^{153}$, $\sigma_{BC} = 0.3 \cdot 10^{153}$, $p < 0.001$);
-location- and scale-invariant transformation ($\lambda = 1.9$, $\sum r_i = 312$, $\mu_{BC} = 2.3$, $\sigma_{BC} = 0.9$, $p < 0.001$);
-and robust location- and scale-invariant transformation ($\lambda = 1.2$, $\sum r_i = 316$, $\mu_{BC} = 5.5$, $\sigma_{BC} = 1.4$, $p < 0.001$).
-
-Similar to conventional Yeo-Johnson transformations (non-robust and robust), conventional Box-Cox transformations had high values for the $\lambda$ parameter, which could lead to numerical issues.
-Location- and scale-invariant Box-Cox transformations did not suffer from this issue.
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
 
 
-## Robustness against outliers
 
-Results for Box-Cox transformations of features with outliers are shown in Figure \ref{fig:experimental-results-outlier-robustness-appendix}.
+\begin{table}
+\begin{center}
+\caption{Transformation parameter $\lambda$ for features from real-world datasets after Yeo-Johnson transformation to normality. 
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
+AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
+\label{tab:experimental-results-appendix-lambda}
+\begin{tabular}{l | r r r r r}
 
-```{r experimental-results-outlier-robustness-appendix, warning=FALSE, message=FALSE, fig.cap=cap}
-cap <- paste0(
-  "Quantile-quantile plots for two datasets with outliers: vehicle fuel consumption ",
-  "(top row), where outliers are related to highly fuel-efficient vehicles; ",
-  "and maximum arterial wall thickness in patients with ischemic stroke (bottom row). ",
-  "Multiple quantile-quantile plots are shown: for the original feature (left column); ",
-  "the feature transformed using the conventional Box-Cox transformation ",
-  "and Raymaekers and Rousseeuw's robust adaptation (middle column); ",
-  "and the feature transformed using the non-robust and robust location- and-scale ",
-  "invariant Box-Cox transformations (right column). ",
-  "Samples with observed quantiles below $-3.0$ or above $3.0$ are indicated by crosses."
-)
+\toprule
+feature & age & AWT & FE & latitude & PBM \\
 
-data <- .plot_experimental_outlier_robustness(plot_theme = plot_theme, method = "box_cox")
-data$plot
+\midrule
+conventional                          & 2.0 & -0.7 & -0.1 & 62.1 & -0.5 \\
+conventional (z-score norm.)          & 1.2 & -1.7 & -0.1 &  1.3 &  0.6 \\
+conventional (robust scaling)         & 1.3 &  0.0 &  0.2 &  1.4 &  0.4 \\
+Raymaekers-Rousseeuw                  & 2.0 &  1.1 &  0.8 & 95.4 & -0.5 \\
+Raymaekers-Rousseeuw (z-score norm.)  & 1.3 &  1.4 &  1.0 &  1.3 &  0.6 \\
+Raymaekers-Rousseeuw (robust scaling) & 1.4 &  1.3 &  1.0 &  1.4 &  0.4 \\
+invariant                             & 1.3 &  0.2 & -1.3 &  1.5 &  0.5 \\
+robust invariant                      & 1.3 & -0.3 &  1.0 &  1.1 &  0.3 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+
+
+\begin{table}
+\begin{center}
+\caption{
+p-values of empirical central normality tests for features from real-world datasets after Yeo-Johnson transformation to normality.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
+AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
+\label{tab:experimental-results-appendix-p-value}
+\begin{tabular}{l | r r r r r}
+
+\toprule
+feature & age & AWT & FE & latitude & PBM \\
+
+\midrule
+
+none                                  & 0.694 & 0.832     & 0.727     & $< 0.001$ & $< 0.001$ \\
+conventional                          & 0.961 & 0.003     & $< 0.001$ & $< 0.001$ & 0.101 \\
+conventional (z-score norm.)          & 0.919 & 0.021     & $< 0.001$ & $< 0.001$ & 0.099 \\
+conventional (robust scaling)         & 0.933 & $< 0.001$ & $< 0.001$ & $< 0.001$ & 0.129 \\
+Raymaekers-Rousseeuw                  & 0.961 & 0.881     & 0.373     & $< 0.001$ & 0.101 \\
+Raymaekers-Rousseeuw (z-score norm.)  & 0.694 & 0.899     & 0.809     & $< 0.001$ & 0.099 \\
+Raymaekers-Rousseeuw (robust scaling) & 0.900 & 0.880     & 0.811     & $< 0.001$ & 0.144 \\
+invariant                             & 0.976 & 0.147     & $< 0.001$ & $< 0.001$ & 0.276 \\
+robust invariant                      & 0.933 & 0.178     & 0.759     & $< 0.001$ & 0.688 \\
+
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+## Box-Cox transformation
+
+Results for Box-Cox transformations are shown in Tables
+
+
+```{r include = FALSE, eval = FALSE}
+
+data <- .assess_standardisation_before_transformation(method = "box_cox")
+data <- data[, mget(c("residuals", "residuals_central", "lambda", "p_value", "transformation", "dataset"))]
+data[, "residuals" := round(residuals, digits = 1L)]
+data[, "residuals_central" := round(residuals_central, digits = 1L)]
+data[, "lambda" := round(lambda, digits = 1L)]
+data[, "p_value" := round(p_value, digits = 3L)]
+
+data.table::dcast(data, transformation ~ dataset, value.var = "residuals")
+data.table::dcast(data, transformation ~ dataset, value.var = "residuals_central")
+data.table::dcast(data, transformation ~ dataset, value.var = "lambda")
+data.table::dcast(data, transformation ~ dataset, value.var = "p_value")
 ```
 
-### Fuel efficiency in the Top Gear dataset
 
-The Top Gear dataset contains data on 297 vehicles, with outliers related highly fuel-efficient vehicles [@Alfons2021-kc].
-Applying conventional and invariant Box-Cox transformations to the fuel consumption feature yielded the following results:
-no transformation (residual sum $\sum r_i = 54$, $p=0.58$);
-conventional transformation ($\lambda = -0.1$, $\sum r_i = 55$, $\mu_{BC} = 3.0$, $\sigma_{BC} = 0.3$, $p < 0.001$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = 0.8$, $\sum r_i = 48$, $\mu_{BC} = 29$, $\sigma_{BC} = 15$, $p=0.32$);
-location- and scale-invariant transformation ($\lambda = -0.7$, $\sum r_i = 44$, $\mu_{BC} = 0.6$, $\sigma_{BC} = 0.2$, $p < 0.001$);
-and robust location- and scale-invariant transformation ($\lambda = 1.1$, $\sum r_i = 59$, $\mu_{BC} = 2.4$, $\sigma_{BC} = 1.8$, $p=0.67$).
-
-
-### Maximum arterial wall thickness in an ischemic stroke dataset
-
-The ischemic stroke dataset contains historic data from 126 patients with risk at ischemic stroke [@Kuhn2019-kt].
-Applying conventional and invariant Box-Cox transformations to the maximum arterial wall thickness feature yielded the following results:
-no transformation (residual sum $\sum r_i = 110$, $p=0.86$);
-conventional transformation ($\lambda = -0.5$, $\sum r_i = 33$, $\mu_{BC} = 1.0$, $\sigma_{BC} = 0.2$, $p=0.01$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = 1.1$, $\sum r_i = 127$, $\mu_{BC} = 5.5$, $\sigma_{BC} = 12$, $p=0.90$);
-location- and scale-invariant transformation ($\lambda = -1.0$, $\sum r_i = 28$, $\mu_{BC} = 0.7$, $\sigma_{BC} = 0.1$, $p=0.02$);
-and robust location- and scale-invariant transformation ($\lambda = 0.5$, $\sum r_i = 56$, $\mu_{BC} = 2.2$, $\sigma_{BC} = 1.4$, $p=0.60$).
 
 
 
@@ -923,88 +954,6 @@ data.table::dcast(data, transformation ~ dataset, value.var = "lambda")
 data.table::dcast(data, transformation ~ dataset, value.var = "p_value")
 ```
 
-```{=latex}
-\begin{table}
-\begin{center}
-\caption{Residual errors for features from real-world datasets after Yeo-Johnson transformation to normality. 
-Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
-AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
-\label{tab:normalisation-before-transformation-appendix}
-\begin{tabular}{l | r r r r r}
 
-\toprule
-feature & age & AWT & FE & latitude & PBM \\
-
-\midrule
-none & 16.5 & 110.1	& 54.5 & 328.4 & 48.0 \\
-conventional & 11.5 & 30.0 & 55.3 & 319.0 & 32.2 \\
-conventional (z-score norm.) & 11.5 & 19.3 & 49.0 & 326.2 & 33.3 \\
-conventional (robust scaling) & 11.3 & 31.8 & 53.3 & 324.5 & 32.2 \\
-Raymaekers-Rousseeuw & 11.5 & 136.7 & 47.7 & 315.1 & 32.2 \\
-Raymaekers-Rousseeuw (z-score norm.) & 13.2 & 214.5 & 57.4 & 326.2 & 33.3 \\
-Raymaekers-Rousseeuw (robust scaling) & 11.7 & 281.3 & 57.0 & 324.5 & 32.0 \\
-invariant & 8.8 & 12.2 & 44.0 & 326.4 & 26.8 \\
-robust invariant & 10.6 & 27.1 & 49.5 & 310.6 & 23.1 \\
-\bottomrule
-\end{tabular}
-\end{center}
-\end{table}
-```
-
-```{=latex}
-\begin{table}
-\begin{center}
-\caption{Transformation parameter $\lambda$ for features from real-world datasets after Yeo-Johnson transformation to normality. 
-Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
-AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
-\label{tab:normalisation-before-transformation-lambda-appendix}
-\begin{tabular}{l | r r r r r}
-
-\toprule
-feature & age & AWT & FE & latitude & PBM \\
-
-\midrule
-conventional & 2.0 & -0.7 & -0.1 & 62.1 & -0.5 \\
-conventional (z-score norm.) & 1.2 & -1.7 & -0.1 & 1.3 & 0.6 \\
-conventional (robust scaling) & 1.3 & 0.0 & 0.2 & 1.4 & 0.4 \\
-Raymaekers-Rousseeuw & 2.0 & 1.1 & 0.8 & 95.4 & -0.5 \\
-Raymaekers-Rousseeuw (z-score norm.) & 1.3 & 1.4 & 1.0 & 1.3 & 0.6 \\
-Raymaekers-Rousseeuw (robust scaling) & 1.4 & 1.3 & 1.0 & 1.4 & 0.4 \\
-invariant & 1.3 & 0.2 & -1.3 & 1.5 & 0.5 \\
-robust invariant & 1.4 & -0.6 & 0.9 & 1.4 & 0.4 \\
-\bottomrule
-\end{tabular}
-\end{center}
-\end{table}
-```
-
-```{=latex}
-\begin{table}
-\begin{center}
-\caption{
-p-values of empirical central normality tests for features from real-world datasets after Yeo-Johnson transformation to normality.
-Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
-AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
-\label{tab:normalisation-before-transformation-p-value-appendix}
-\begin{tabular}{l | r r r r r}
-
-\toprule
-feature & age & AWT & FE & latitude & PBM \\
-
-\midrule
-none                                  & 0.712 & 0.864 & 0.577     & $< 0.001$ & $< 0.001$ \\
-conventional                          & 0.936 & 0.017 & $< 0.001$ & $< 0.001$ & 0.058 \\
-conventional (z-score norm.)          & 0.860 & 0.058 & $< 0.001$ & $< 0.001$ & 0.054 \\
-conventional (robust scaling)         & 0.881 & 0.001 & $< 0.001$ & $< 0.001$ & 0.076 \\
-Raymaekers-Rousseeuw                  & 0.936 & 0.905 & 0.320     & $< 0.001$ & 0.058 \\
-Raymaekers-Rousseeuw (z-score norm.)  & 0.605 & 0.922 & 0.635     & $< 0.001$ & 0.054 \\
-Raymaekers-Rousseeuw (robust scaling) & 0.830 & 0.948 & 0.637     & $< 0.001$ & 0.085 \\
-invariant                             & 0.948 & 0.231 & $< 0.001$ & $< 0.001$ & 0.184 \\
-robust invariant                      & 0.797 & 0.182 & 0.352     & $< 0.001$ & 0.397 \\
-\bottomrule
-\end{tabular}
-\end{center}
-\end{table}
-```
 
 # References
