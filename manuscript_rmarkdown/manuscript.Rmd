@@ -534,6 +534,32 @@ Additionally, we added $10 \%$ outliers by randomly replacing elements of each o
 The dataset with outliers was used to compute the critical test statistic values for the empirical variant of the central normality test.
 For each sequence we then computed $\tau_{n, \kappa}$ for $\kappa \in \left\{0.60, 0.70, 0.80, 0.90, 0.95, 1.00\right\}$.
 
+```{r include = FALSE, eval = FALSE}
+# This creates and sets the lookup table for critical test statistic.
+load(file = "./R/sysdata.rda")
+
+central_normality_lookup_table <- .get_test_statistic_lookup_table(
+  manuscript_dir = manuscript_dir,
+  k = 0.80,
+  for_manuscript = FALSE
+)
+
+empirical_central_normality_lookup_table <- .get_test_statistic_lookup_table(
+  manuscript_dir = manuscript_dir,
+  k = 0.80,
+  for_manuscript = FALSE,
+  with_outliers = TRUE
+)
+
+usethis::use_data(
+  central_normality_lookup_table,
+  empirical_central_normality_lookup_table,
+  two_sided_function_parameters, 
+  internal = TRUE, 
+  overwrite = TRUE
+)
+```
+
 Figure \ref{empirical-central-normality-kappa} shows $\tau_{\alpha = 0.95, n, \kappa}$
 as a function of $n$ for different values of $\kappa$. With decreasing
 $\kappa$, the test statistic curve decreases. The curves
@@ -542,12 +568,13 @@ $\kappa \geq 0.90$ are affected by outliers, as can be observed by comparing cur
 of the central normality test with those of the empirical variant.
 
 Since the (empirical) central normality tests assesses whether the central part of a sequence is normally distributed,
-we used $\kappa = 0.80$. Lookup tables and curves for critical statistic values for central normality and empirical central
-normality tests are shown in Appendix E.
+we used $\kappa = 0.80$. Critical statistic values for central normality and empirical central
+normality tests are shown are shown in Table \ref{tab:central-normality-critical-statistic} and Table 
+\ref{tab:empirical-central-normality-critical-statistic}, respectively.
 
 ```{r empirical-central-normality-kappa, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
 cap <- paste0(
-  "Critical test statistic $\\tau_{\\alpha = 0.95, n, \\kappa}$ of the (empirical) ",
+  "Critical test statistic $\\tau_{\\alpha = 0.05, n, \\kappa}$ of the (empirical) ",
   "central normality test as function of $n$ for several values of central portion $\\kappa$. ",
   "The critical test statistics for central normality test are determined using fully normal data, ",
   "whereas the statistics for the empirical variant are determined using centrally normal data, ",
@@ -624,13 +651,13 @@ the z-score of the transformed feature values,
 or the residual error between the z-score of the transformed feature values and their expected z-score based on the normal distribution.
 
 To determine the weighting function parameters for each of the nine combinations,
-$m_d=100$ sequences $\mathbf{X}_i$ ($i \in \{1, 2, \ldots, m_d\}$) were randomly 
+$m_d=500$ sequences $\mathbf{X}_i$ ($i \in \{1, 2, \ldots, m_d\}$) were randomly 
 drawn from randomly parametrised asymmetric generalised normal distributions.
 Each distribution was parametrised with a random skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ 
 and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$.
 Location and scale parameters were set as $\mu = 0$ and $\sigma = 1$, respectively.
 To form each sequence $\mathbf{X}_i$, $n = \lceil 10^\gamma \rceil$ instances were then randomly drawn, 
-with $\gamma \sim U\left(2, 4\right)$, resulting in a set of sequences with between $100$ and $10000$ elements. 
+with $\gamma \sim U\left(\log_{10}50, 3\right)$, resulting in a set of sequences with between $50$ and $1000$ elements each.
 
 Outlier values were then drawn to randomly replace 10 percent of the elements of $\mathbf{X}_i$.
 Outlier values were set according to @Tukey1977-xm, as follows.
@@ -649,8 +676,15 @@ $Q_1$, $Q_3$ and $\text{IQR}$ are the first quartile, third quartile and interqu
 Outlier values randomly replaced elements in $\mathbf{X}_i$.
 
 To find the optimal values for the weighting function parameters $\delta_1$ and $\delta_2$ (if applicable),
-we minimised $\sum_{i=1}^{m_d = 100}\tau_{n_i, \kappa = 0.80, i}$, i.e. the mean of residual 
-errors of the central 80% of elements of each sequence $\mathbf{X}_i$, summed over all sequences.
+we minimised a composite loss $L = \sum_{i=1}^{m_d} L_{\text{cn},i} + 0.1 \sum_{i=1}^{m_d} L_{\lambda,i}$.
+The composite loss consisted of two components: a loss term $L_{\text{cn},i} = \tau_{n_i, \kappa = 0.80,i}$, i.e. the mean of residual 
+errors of the central 80% of elements of each sequence $\mathbf{X}_i$, which aimed at optimising central normality; 
+and a loss term $L_{\lambda,i} = \max\left(0.0,|\lambda_{0,i} - \lambda_{i}| - \xi \right)$,
+with $\lambda_{0,i}$ and $\lambda_{i}$ transformation parameters found
+for sequence $\mathbf{X}_i$ prior to and after adding outliers, respectively, 
+and tolerance parameter $\xi = 0.5$ for Box-Cox and $\xi = 0.3$ for Yeo-Johnson power transformations.
+This second term aimed to prevent solutions that provide small improvements in central normality
+at the cost of a poor fit of the tails of sequences.
 
 Minimisation was conducted using the BOBYQA algorithm for derivative-free bound constraint optimisation [@Powell2009-zb].
 The resulting weighting function parameters for weighted MLE are shown in Tables
@@ -682,8 +716,7 @@ $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z
 and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. 
 The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column. 
 The \textit{optimal} column shows the optimal parameter values.
-The \textit{loss} column shows the loss achieved by each method, under optimised parameters.
-Lower loss indicates better transformation to central normality in the presence of outliers.}
+The \textit{loss} column shows the loss achieved by each method, under optimised parameters.}
 \label{tab:optimal-weighting-parameters-box-cox}
 \begin{tabular}{l r r r r r r r}
 
@@ -692,16 +725,16 @@ method & \multicolumn{3}{c}{$\delta_1$} & \multicolumn{3}{c}{$\delta_2$} & loss 
 & initial & limits & optimal & initial & limits & optimal & \\
 
 \midrule
-non-robust               & ---  & ---       & ---  & ---  & ---       & ---  & 6.06 \\
-$p^{*}$ (step)           & 0.80 & $(0, 1]$  & 0.81 & ---  & ---       & ---  & 3.16 \\
-$p^{*}$ (triangle)       & 0.80 & $(0, 1]$  & 0.00 & 0.95 & $(0, 1]$  & 0.86 & 2.93 \\
-$p^{*}$ (tapered cosine) & 0.80 & $(0, 1]$  & 0.00 & 0.95 & $(0, 1]$  & 0.90 & 2.96 \\
-$z$ (step)               & 1.28 & $(0, 10]$ & 2.33 & ---  & ---       & ---  & 6.21 \\
-$z$ (triangle)           & 1.28 & $(0, 10]$ & 0.09 & 1.96 & $(0, 10]$ & 4.92 & 6.15 \\
-$z$ (tapered cosine)     & 1.28 & $(0, 10]$ & 1.88 & 1.96 & $(0, 10]$ & 3.43 & 6.68 \\
-$r$ (step)               & 0.50 & $(0, 10]$ & 0.75 & ---  & ---       & ---  & 6.25 \\
-$r$ (triangle)           & 0.50 & $(0, 10]$ & 0.83 & 1.00 & $(0, 10]$ & 0.84 & 6.47 \\
-$r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 0.75 & 1.00 & $(0, 10]$ & 0.76 & 6.28 \\
+non-robust               & ---  & ---       & ---  & ---  & ---       & ---  & 49.6 \\
+$p^{*}$ (step)           & 0.80 & $(0, 1]$  & 0.80 & ---  & ---       & ---  & 38.5 \\
+$p^{*}$ (triangle)       & 0.80 & $(0, 1]$  & 0.01 & 1.00 & $(0, 1]$  & 0.86 & 43.7 \\
+$p^{*}$ (tapered cosine) & 0.80 & $(0, 1]$  & 0.00 & 1.00 & $(0, 1]$  & 0.90 & 42.7 \\
+$z$ (step)               & 1.28 & $(0, 10]$ & 2.39 & ---  & ---       & ---  & 52.2 \\
+$z$ (triangle)           & 1.28 & $(0, 10]$ & 2.39 & 2.40 & $(0, 10]$ & 4.92 & 52.7 \\
+$z$ (tapered cosine)     & 1.28 & $(0, 10]$ & 1.07 & 3.63 & $(0, 10]$ & 3.43 & 57.4 \\
+$r$ (step)               & 0.50 & $(0, 10]$ & 0.83 & ---  & ---       & ---  & 53.1 \\
+$r$ (triangle)           & 0.50 & $(0, 10]$ & 0.80 & 0.81 & $(0, 10]$ & 0.84 & 54.4 \\
+$r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 0.76 & 0.77 & $(0, 10]$ & 0.76 & 53.2 \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -716,8 +749,7 @@ $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z
 and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. 
 The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column.
 The \textit{optimal} column shows the optimal parameter values. 
-The \textit{loss} column shows the loss achieved by each method, under optimised parameters.
-Lower loss indicates better transformation to central normality in the presence of outliers.}
+The \textit{loss} column shows the loss achieved by each method, under optimised parameters.}
 \label{tab:optimal-weighting-parameters-yeo-johnson}
 \begin{tabular}{l r r r r r r r}
 
@@ -726,23 +758,23 @@ method & \multicolumn{3}{c}{$\delta_1$} & \multicolumn{3}{c}{$\delta_2$} & loss 
 & initial & limits & optimal & initial & limits & optimal & \\
 
 \midrule
-non-robust               & ---  & ---       & ---  & ---  & ---       & ---  & 6.19 \\
-$p^{*}$ (step)           & 0.80 & $(0, 1]$  & 0.81 & ---  & ---       & ---  & 3.13 \\
-$p^{*}$ (triangle)       & 0.80 & $(0, 1]$  & 0.00 & 0.95 & $(0, 1]$  & 0.87 & 2.73 \\
-$p^{*}$ (tapered cosine) & 0.80 & $(0, 1]$  & 0.14 & 0.95 & $(0, 1]$  & 0.91 & 2.80 \\
-$z$ (step)               & 1.28 & $(0, 10]$ & 3.32 & ---  & ---       & ---  & 5.50 \\
-$z$ (triangle)           & 1.28 & $(0, 10]$ & 0.30 & 1.96 & $(0, 10]$ & 5.91 & 5.78 \\
-$z$ (tapered cosine)     & 1.28 & $(0, 10]$ & 0.53 & 1.96 & $(0, 10]$ & 5.08 & 5.16 \\
-$r$ (step)               & 0.50 & $(0, 10]$ & 1.05 & ---  & ---       & ---  & 7.51 \\
-$r$ (triangle)           & 0.50 & $(0, 10]$ & 1.04 & 1.00 & $(0, 10]$ & 1.08 & 7.61 \\
-$r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.17 & 1.00 & $(0, 10]$ & 1.54 & 8.80 \\
+non-robust               & ---  & ---       & ---  & ---  & ---       & ---  & 42.1 \\
+$p^{*}$ (step)           & 0.80 & $(0, 1]$  & 0.78 & ---  & ---       & ---  & 35.1 \\
+$p^{*}$ (triangle)       & 0.80 & $(0, 1]$  & 0.20 & 0.95 & $(0, 1]$  & 1.00 & 34.0 \\
+$p^{*}$ (tapered cosine) & 0.80 & $(0, 1]$  & 0.54 & 0.95 & $(0, 1]$  & 1.00 & 32.6 \\
+$z$ (step)               & 1.28 & $(0, 10]$ & 2.32 & ---  & ---       & ---  & 43.0 \\
+$z$ (triangle)           & 1.28 & $(0, 10]$ & 1.28 & 1.96 & $(0, 10]$ & 3.43 & 49.7 \\
+$z$ (tapered cosine)     & 1.28 & $(0, 10]$ & 0.41 & 1.96 & $(0, 10]$ & 3.75 & 51.3 \\
+$r$ (step)               & 0.50 & $(0, 10]$ & 0.92 & ---  & ---       & ---  & 65.4 \\
+$r$ (triangle)           & 0.50 & $(0, 10]$ & 0.87 & 1.00 & $(0, 10]$ & 0.87 & 66.0 \\
+$r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.06 & 1.00 & $(0, 10]$ & 1.07 & 67.1 \\
 \bottomrule
 \end{tabular}
 \end{center}
 \end{table}
 
 
-## Assessing transformation using simulated data
+## Assessing transformations using simulated data
 
 Three datasets with 10000 sequences each were created to assess transformation
 to normality. For each sequence $\mathbf{X}_i$, $n = \lceil 10^\gamma \rceil$
@@ -755,7 +787,7 @@ resulting in sequences with between $10$ and $10000$ elements.
   $\left(\phi_{\text{BC}}^\lambda\right)^{-1}$ and $\left(\phi_{\text{YJ}}^\lambda\right)^{-1}$
   were used as inverse transformations for assessing Box-Cox and Yeo-Johnson transformations,
   respectively. Prior to inverse transformation, sequences for Box-Cox transformations
-  were shifted into the positive domain, with minimum value $1 \cdot 10^{-4}$.
+  were shifted into the positive domain, with minimum value $1$.
   
 - A \textit{dirty} dataset with each sequence drawn from $\mathcal{AGN}\left(\mu = 0, \sigma = 1/\sqrt{2}, \alpha, \beta \right)$,
   with randomly drawn skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ 
@@ -780,12 +812,17 @@ the following two methods:
 
 This results in nine types of power transformation. Transformation parameters
 were optimised for each sequence. Subsequently the sum of residual errors 
-and sum of residual errors of the central portion ($\kappa = 0.70$) were computed
+and sum of residual errors of the central portion ($\kappa = 0.80$) were computed
 for each sequence after transformation. Then, each method was ranked according 
 to the sum of residual errors (data without outliers) or the sum of residual
 errors of the central portion (data with outliers). The average rank of each
 transformation method was computed over all 10000 sequences in each dataset.
-For Yeo-Johnson transformations average ranks are shown in Table \ref{tab:comparison_methods_simulation_yeo_johnson}.
+Average ranks for Yeo-Johnson transformations are shown in Table
+\ref{tab:comparison_methods_simulation_yeo_johnson}.
+Location and shift-invariant Yeo-Johnson transformation ranked best for
+all datasets without outliers. The robust variant ranked best in dirty and shifted
+datasets with outliers, but not in the clean dataset.
+Results for Box-Cox transformations are shown in Table \ref{tab:comparison_methods_simulations_box_cox}.
 
 ```{r include = FALSE, eval = FALSE}
 
@@ -821,7 +858,7 @@ data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.v
 \begin{center}
 \caption{
 Comparison of average rank between Yeo-Johnson transformation methods based on either residual error (without outliers) or residual error of the central portion
-(with outliers; $\kappa = 0.70$) over 3 datasets with 10000 sequences each. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
+(with outliers; $\kappa = 0.80$) over 3 datasets with 10000 sequences each. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
 of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
 The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
@@ -836,15 +873,15 @@ transformation & outliers: & no & yes & no & yes & no & yes \\
 
 \midrule
 
-none                                  & &         8.45  &         7.52  &         7.29  &         5.99  &         7.39  &         6.39 \\
-conventional                          & &         3.64  &         5.57  &         3.78  &         7.04  &         6.45  &         5.79 \\
-conventional (z-score norm.)          & &         4.68  &         5.78  &         6.29  &         5.10  &         5.34  &         5.08 \\
-conventional (robust scaling)         & &         4.00  &         6.74  &         5.28  &         5.78  &         4.32  &         5.79 \\
-Raymaekers-Rousseeuw                  & &         4.41  &         3.66  &         3.92  &         4.40  &         6.23  &         5.50 \\
-Raymaekers-Rousseeuw (z-score norm.)  & &         5.21  &         3.16  &         6.13  &         4.24  &         5.18  &         4.15 \\
-Raymaekers-Rousseeuw (robust scaling) & &         4.62  &         3.42  &         5.22  &         4.38  &         4.26  &         4.30 \\
-invariant                             & & \textbf{3.05} &         6.95  & \textbf{3.03} &         6.16  & \textbf{2.45} &         6.13 \\
-robust invariant                      & &         6.95  & \textbf{2.20} &         4.07  & \textbf{1.90} &         3.38  & \textbf{1.87} \\
+none                                  & &         8.51  &         7.60  &         7.33  &         6.15  &         7.44  &         6.60 \\
+conventional                          & &         3.70  &         5.70  &         3.87  &         7.06  &         6.49  &         5.93 \\
+conventional (z-score norm.)          & &         4.72  &         5.68  &         6.38  &         5.01  &         5.43  &         4.87 \\
+conventional (robust scaling)         & &         4.06  &         6.77  &         5.37  &         5.75  &         4.41  &         5.63 \\
+Raymaekers-Rousseeuw                  & &         4.50  &         3.20  &         4.01  &         4.13  &         6.27  &         5.65 \\
+Raymaekers-Rousseeuw (z-score norm.)  & &         5.27  & \textbf{2.66} &         6.23  &         3.59  &         5.28  &         3.48 \\
+Raymaekers-Rousseeuw (robust scaling) & &         4.70  &         2.95  &         5.32  &         3.77  &         4.36  &         3.66 \\
+invariant                             & & \textbf{3.13} &         6.77  & \textbf{3.22} &         6.12  & \textbf{2.64} &         6.03 \\
+robust invariant                      & &         6.41  &         3.66  &         3.27  & \textbf{3.41} &         2.68  & \textbf{3.10} \\
 
 \bottomrule
 \end{tabular}
@@ -868,7 +905,8 @@ data.table::dcast(data, transformation ~ dataset, value.var = "p_value")
 
 ## Invariance
 
-Location- and scale-invariant power transformations are intended to yield improved transformations to normality in the presence of large shifts in location, distributions that due to location and scale are not centered near zero, or both.
+Location- and scale-invariant power transformations are intended to yield improved
+transformations to normality in the presence of large shifts in location, distributions that due to location and scale are not centered near zero, or both.
 Earlier, we assessed these transformations using simulated data.
 In the following, they are evaluated using examples from real datasets.
 We focus on the Yeo-Johnson transformation because of its ability to handle features with negative values.
