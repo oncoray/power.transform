@@ -2250,7 +2250,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   data_2_labels <- data.table::data.table(
     x = data_2_x_range,
     task_difficulty  = factor(c("overall", "overall"), levels = difficulty_labels),
-    label = c("none better", "z-stand. better")
+    label = c("worse", "z-stand. better")
   )
 
   p2 <- ggplot2::ggplot(
@@ -2295,7 +2295,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   data_1_labels <- data.table::data.table(
     x = data_1_x_range,
     task_difficulty  = factor(c("overall", "overall"), levels = difficulty_labels),
-    label = c("worse than avg.", "better than avg.")
+    label = c("worse", "better than avg.")
   )
 
   p1 <- ggplot2::ggplot(
@@ -2338,7 +2338,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p1 <- p1 + ggplot2::ggtitle("learner vs. average")
 
   p <- (p1 + p2 + patchwork::plot_layout(ncol = 2, axes = "collect_y", axis_titles = "collect_y", widths = c(0.8, 0.2))) / p3 + patchwork::plot_layout(
-    heights = c(0.3, 1.0)
+    heights = c(0.3333, 0.6667)
   )
 
   return(p)

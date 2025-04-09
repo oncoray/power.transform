@@ -13,6 +13,7 @@ header-includes:
 - \usepackage{amsmath}
 - \usepackage{amsthm}
 - \usepackage{booktabs}
+- \newtheorem*{definition}{Definition}
 - \DeclareMathOperator*{\argmax}{argmax}
 - \DeclareMathOperator*{\argmin}{argmin}
 - \DeclareMathOperator{\sgn}{sgn}
@@ -85,13 +86,18 @@ In conclusion, robust location- and scale-invariant power transformations can re
 
 # Introduction
 
-Many statistical and some machine learning methods assume normality of the underlying data, e.g. analysis of variance and linear discriminant analysis.
+Many statistical and some machine learning methods assume normality of the underlying data,
+e.g. analysis of variance and linear discriminant analysis.
 However, numerical features in datasets may strongly deviate from normal distributions, e.g. by being skewed.
 Power transformations aim to stabilise variance and improve normality of such features [@Bartlett1947-rx; @Tukey1957-rt].
 The two most commonly used transformations are that of @Box1964-mz and @Yeo2000-vw.
-The Box-Cox transformation of a feature value $x_i$ of feature $\mathbf{X}=\left\{x_1, x_2, \ldots, x_n \right\}$ under the transformation parameter $\lambda$ is defined as:
 
-```{=latex}
+The Box-Cox transformation is defined as:
+
+\begin{definition}[Box-Cox power transformation]
+Let $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i > 0 \right\}$ be a finite sequence of length $n > 0$.
+Let $\lambda \in \mathcal{R}$ be a transformation parameter.
+Then the Box-Cox power transformation of element $x_i$ is defined as:
 \begin{equation}
 \label{eqn:box-cox-original}
 \phi_{\text{BC}}^\lambda (x_i) = 
@@ -100,10 +106,14 @@ The Box-Cox transformation of a feature value $x_i$ of feature $\mathbf{X}=\left
 \log(x_i) & \text{if } \lambda = 0
 \end{cases}
 \end{equation}
-```
-One limitation of the Box-Cox transformation is that it is only defined for $x_i > 0$. In contrast, the Yeo-Johnson transformation under the transformation parameter $\lambda$ is defined for any $x_i \in \mathbb{R}$:
+\end{definition}
 
-```{=latex}
+One limitation of the Box-Cox transformation is that it is only defined for $x_i > 0$. 
+In contrast, the Yeo-Johnson transformation under the transformation parameter $\lambda$ is defined for any $x_i \in \mathbb{R}$, as follows:
+
+\begin{definition}[Yeo-Johnson power transformation]
+Let $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i \in \mathbb{R} \right\}$ be a finite sequence of length $n > 0$.
+Let $\lambda \in \mathcal{R}$ be a transformation parameter.
 \begin{equation}
 \label{eqn:yeo-johnson-original}
 \phi_{\text{YJ}}^\lambda (x_i) = 
@@ -114,9 +124,11 @@ One limitation of the Box-Cox transformation is that it is only defined for $x_i
 -\log(1 - x_i) & \text{if } \lambda = 2 \text{ and } x_i < 0
 \end{cases}
 \end{equation}
-```
+\end{definition}
+
 The $\lambda$-parameter is typically optimised using maximum likelihood estimation under the assumption that the transformed feature is normally distributed.
-As noted by Raymaekers and Rousseeuw, this approach is sensitive to outliers, and robust versions of Box-Cox and Yeo-Johnson transformations were devised [@Raymaekers2024-zf].
+As noted by Raymaekers and Rousseeuw, this approach is sensitive to outliers, 
+and robust versions of Box-Cox and Yeo-Johnson transformations were devised [@Raymaekers2024-zf].
 
 Applying a power transformation does not guarantee that transformed features are normally distributed.
 Depending on location and scale of a feature and the presence of outliers, power transformations may decrease normality, as shown in Figure \ref{fig:decreased-normality}.
@@ -126,7 +138,8 @@ Likewise, machine learning methods that assume normality of input features may s
 Moreover, large negative or positive $\lambda$-parameters may lead to numeric issues in any subsequent computations.
 
 Statistical tests for normality, such as the Shapiro-Wilk test [@Shapiro1965-zd], could be automatically applied to transformed features.
-However, given sufficiently large sample sizes such tests can detect trivial deviations from normality, and may lead to rejection of sufficiently good power transformations.
+However, given sufficiently large sample sizes such tests can detect trivial
+deviations from normality, and may lead to rejection of sufficiently good power transformations.
 
 ```{r decreased-normality, echo=FALSE, fig.cap=cap, fig.height=2.5, warning=FALSE}
 cap <- paste0(
@@ -161,10 +174,19 @@ Finally, we define the overall framework for the empirical central normality tes
 
 ## Location- and scale-invariant power transformation
 
-Box-Cox and Yeo-Johnson transformations are modified by introducing shift parameter $x_0$ and scale parameter $s$ into equations \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}.
-The location- and scale-invariant Box-Cox transformation of a feature value $x_i$ of feature $\mathbf{X}$ under transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$ is then:
+Box-Cox and Yeo-Johnson transformations are modified by introducing
+shift parameter $x_0$ and scale parameter $s$ into equations \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}.
+The location- and scale-invariant Box-Cox transformation of a feature value 
+$x_i$ of feature $\mathbf{X}$ under transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$ 
+is then defined as:
 
-```{=latex}
+\begin{definition}[Location- and scale- invariant Box-Cox power transformation]
+Let $\lambda \in \mathcal{R}$ be a transformation parameter.
+Let $x_0 \in \mathcal{R}$ and $s > 0$ be location and scale parameters.
+Let $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i - x_0 > 0 \right\}$ be a finite sequence of length $n > 0$.
+
+Then the location- and scale-invariant Box-Cox power transformation of element $x_i$ is defined as:
+
 \begin{equation}
 \label{eqn:box-cox-invariant}
 \phi_{\text{BC}}^{\lambda, x_0, s} (x_i) = 
@@ -173,10 +195,18 @@ The location- and scale-invariant Box-Cox transformation of a feature value $x_i
 \log\left[\frac{x_i - x_0}{s}\right] & \text{if } \lambda = 0
 \end{cases}
 \end{equation}
-```
-where $x_i - x_0 > 0$. Likewise, the location- and scale-invariant Yeo-Johnson transformation of a feature value $x_i$ under transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$ is:
+\end{definition}
 
-```{=latex}
+Likewise, the location- and scale-invariant Yeo-Johnson transformation of a feature value $x_i$ 
+under transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$ is defined as:
+
+\begin{definition}[Location- and scale- invariant Yeo-Johnson power transformation]
+Let $\lambda \in \mathcal{R}$ be a transformation parameter.
+Let $x_0 \in \mathcal{R}$ and $s > 0$ be location and scale parameters.
+Let $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i \in \mathcal{R} \right\}$ be a finite sequence of length $n > 0$.
+
+Then the location- and scale-invariant Yeo-Johnson power transformation of element $x_i$ is defined as:
+
 \begin{equation}
 \label{eqn:yeo-johnson-invariant}
 \phi_{\text{YJ}}^{\lambda, x_0, s} (x_i) = 
@@ -187,13 +217,18 @@ where $x_i - x_0 > 0$. Likewise, the location- and scale-invariant Yeo-Johnson t
 -\log\left[1 - \frac{x_i - x_0}{s}\right] & \text{if } \lambda = 2 \text{ and } x_i - x_0 < 0
 \end{cases}
 \end{equation}
-```
+\end{definition}
 
-For both invariant transformations, $\lambda$, $x_0$ and $s$ parameters can be obtained by maximising the log-likelihood function, i.e. using maximum likelihood estimation (MLE).
+For both invariant transformations, $\lambda$, $x_0$ and $s$ parameters
+can be obtained by maximising the log-likelihood function, i.e. using maximum likelihood estimation (MLE).
 A full derivation of the log-likelihood function for both transformations is shown in Appendix A.
 The location- and scale-invariant Box-Cox log-likelihood function is:
 
-```{=latex}
+\begin{definition} [Log-likelihood function of the location- and scale- invariant Box-Cox power transformation]
+Let $\mathbf{X}$, $\lambda$, $x_0$, and $s$ be defined as earlier (Eqn. \ref{eqn:box-cox-invariant}).
+Let $\mu$ and $\sigma^2$ be the mean and variance of the transformed sequence $\phi_{\text{BC}}^{\lambda, x_0, s} (\mathbf{X})$, respectively.
+
+Then the log-likelihood function of the location- and scale- invariant Box-Cox power transformation is defined as:
 \begin{equation}
 \label{eqn:box-cox-invariant-log-likelihood}
 \begin{split}
@@ -201,12 +236,15 @@ The location- and scale-invariant Box-Cox log-likelihood function is:
 & -n \lambda \log s + \left( \lambda - 1 \right) \sum_{i=1}^n \log \left[ x_i - x_0 \right]
 \end{split}
 \end{equation}
-```
-subject to $x_i - x_0 > 0$.
-$\mu$ and $\sigma^2$ are the mean and variance of the Box-Cox transformed feature $\phi_{\text{BC}}^{\lambda, x_0, s} (\mathbf{X})$, respectively.
+\end{definition}
+
 Similarly, the location- and scale-invariant Yeo-Johnson log-likelihood function is:
 
-```{=latex}
+\begin{definition}[Log-likelihood function of the location- and scale- invariant Yeo-Johnson power transformation]
+Let $\mathbf{X}$, $\lambda$, $x_0$, and $s$ be defined as earlier (Eqn. \ref{eqn:yeo-johnson-invariant}).
+Let $\mu$ and $\sigma^2$ be the mean and variance of the transformed sequence $\phi_{\text{YJ}}^{\lambda, x_0, s} (\mathbf{X})$, respectively.
+
+Then the log-likelihood function of the location- and scale- invariant Yeo-Johnson power transformation is defined as:
 \begin{equation}
 \label{eqn:yeo-johnson-invariant-log-likelihood}
 \begin{split}
@@ -214,8 +252,7 @@ Similarly, the location- and scale-invariant Yeo-Johnson log-likelihood function
 & - n \log s + (\lambda - 1) \sum_{i=1}^n \sgn(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
 \end{split}
 \end{equation}
-```
-where $\mu$ and $\sigma^2$ are the mean and variance of the Yeo-Johnson transformed feature $\phi_{\text{YJ}}^{\lambda, x_0, s} (\mathbf{X})$, respectively.
+\end{definition}
 
 
 ## Robust location- and scale-invariant power transformations
@@ -364,7 +401,7 @@ Realistic feature distributions may be skewed.
 Gijbels et al. describe a recipe for introducing skewness into the otherwise symmetric generalised normal distribution [@Gijbels2019-te], 
 leading to the following probability density function:
 
-\begin{definion}[Asymmetric generalised normal distribution probability density function]
+\begin{definition}[Asymmetric generalised normal distribution probability density function]
 Let $\alpha \in (0,1)$ be a skewness parameter.
 Let $\mu \in \mathcal{R}$ be a location parameter.
 Let $\sigma > 0$ be a shape parameter.
@@ -416,7 +453,7 @@ Deviations from normality can be detected by normality tests, such as the Shapir
 In practice, normality tests may be too stringent with large sample sizes, outliers, or both.
 Here we develop a test for central normality.
 
-\begin{definition}[central portion of a sequence]
+\begin{definition}[Central portion of a sequence]
 Let $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i \in \mathbb{R}\right\}$ be a finite sequence of length $n > 0$,
 ordered so that $x_1 \leq x_2 \leq \ldots \leq x_n$.
 Let $p_i = \frac{i - 1/3}{n + 1/3}$, with $i = 1, 2, \ldots n$ be the percentile value
@@ -492,7 +529,7 @@ Of note, the `power.transform` package shifts feature values into the positive d
 ## Invariance to location and scale
 
 To assess whether the proposed power transformations lead to values of $\lambda$ 
-that are invariant to location and scale of the distribution, we simulated three different sequences
+that are invariant to location and scale of the distribution, we simulated three different sequences.
 We first randomly drew $10000$ values from a normal distribution: 
 $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)$, 
 or equivalently $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.5, 2\right)$.
