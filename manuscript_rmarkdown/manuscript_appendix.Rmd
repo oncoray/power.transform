@@ -439,7 +439,9 @@ Each of the above criteria can be used for optimisation, i.e.:
 \end{equation}
 ```
 
-For conventional power transformations with fixed location and scale parameters, the transformation $\phi^{\lambda, x_0, s} (\mathbf{X})$ may be substituted by $\phi^{\lambda} (\mathbf{X})$, or equivalently, $x_0$ and $s$ may be fixed:
+For conventional power transformations with fixed location and scale parameters, 
+the transformation $\phi^{\lambda, x_0, s} (\mathbf{X})$ may be substituted by $\phi^{\lambda} (\mathbf{X})$, 
+or equivalently, $x_0$ and $s$ may be fixed:
 ```{=latex}
 \begin{equation}
 \left\{ \hat{\lambda}\right\} = \argmin_{\lambda} U\left(\mathbf{X}, \lambda; x_0, s \right)
@@ -447,14 +449,23 @@ For conventional power transformations with fixed location and scale parameters,
 ```
 
 
-# Appendix C: Simulations with other optimisation criteria
+## Simulations with other optimisation criteria
 
-Invariance of location- and scale-invariant power transformations was assessed using the optimisation criteria in [Appendix B](Appendix B: Optimisation of transformation parameters).
+Invariance of location- and scale-invariant power transformations was assessed 
+using the optimisation criteria in [Appendix B](Appendix B: Optimisation of transformation parameters).
 This follows the simulation in the main manuscript, where MLE was used for optimization.
-In short, we first randomly drew $10000$ values from a normal distribution: $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)$, or equivalently $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.5, 2\right)$.
-The second distribution was a right-skewed normal distribution $\mathbf{X}_{\text{right}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.2, 2\right)$.
-The third distribution was a left-skewed normal distribution $\mathbf{X}_{\text{left}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.8, 2\right)$.
-We then computed transformation parameter $\lambda$ using the original definitions (equations \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}) and the location- and scale-invariant definitions (equations \ref{eqn:box-cox-invariant} and \ref{eqn:yeo-johnson-invariant}) for each distribution using different optimisation criteria.
+In short, we first randomly drew $10000$ values from a normal distribution:
+$\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)$,
+or equivalently $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.5, 2\right)$.
+The second distribution was a right-skewed normal distribution 
+$\mathbf{X}_{\text{right}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.2, 2\right)$.
+The third distribution was a left-skewed normal distribution 
+$\mathbf{X}_{\text{left}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.8, 2\right)$.
+
+We then computed transformation parameter $\lambda$ using the original definitions
+(equations \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}) 
+and the location- and scale-invariant definitions (equations \ref{eqn:box-cox-invariant} 
+and \ref{eqn:yeo-johnson-invariant}) for each distribution using different optimisation criteria.
 To assess location invariance, a positive value $d_{\text{shift}}$ was added to each distribution with $d_{\text{shift}} \in [1, 10^6]$.
 Similarly, to assess scale invariance, each distribution was multiplied by a positive value $d_{\text{scale}}$, where $d_{\text{scale}} \in [1, 10^6]$.
 
@@ -581,9 +592,7 @@ cap <- paste0(
 
 
 
-# Appendix D: Simulations on clean data
-
-
+# Appendix E: Simulations on clean data
 
 Robust transformations are hypothesised to have a cost in efficiency for data
 without outliers, i.e. clean data. Here we randomly draw data from a standard normal
@@ -788,7 +797,7 @@ data.table::dcast(data, transformation ~ dataset, value.var = "lambda")
 data.table::dcast(data, transformation ~ dataset, value.var = "p_value")
 ```
 
-# Appendix D: Experimental results
+# Appendix F: Experimental results
 
 The effect of using location- and scale-invariant transformations was investigated
 using real-world datasets, as described in the main manuscript.
@@ -903,7 +912,8 @@ robust invariant                      & 0.933 & 0.178     & 0.759     & $< 0.001
 
 ## Box-Cox transformation
 
-Results for Box-Cox transformations are shown in Tables
+Results for Box-Cox transformations are shown in Tables \ref{tab:experimental-results-appendix-residuals-bc},
+\ref{tab:experimental-results-appendix-lambda-bc} and \ref{tab:experimental-results-appendix-p-value-bc}.
 
 
 ```{r include = FALSE, eval = FALSE}
@@ -926,8 +936,8 @@ data.table::dcast(data, transformation ~ dataset, value.var = "p_value")
 \caption{Residual errors for features from real-world datasets after Box-Cox transformation to normality. 
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
-\label{tab:experimental-results-appendix-residuals}
-\begin{tabular}{l | r r r r r-bc}
+\label{tab:experimental-results-appendix-residuals-bc}
+\begin{tabular}{l | r r r r r}
 
 \toprule
 feature & age & AWT & FE & latitude & PBM \\
@@ -1007,38 +1017,6 @@ robust invariant                      & 0.899 & 0.890 & 0.866     & $< 0.001$ & 
 \end{tabular}
 \end{center}
 \end{table}
-
-
-
-# Appendix F: Normalisation before transformation
-
-An alternative to location- and scale-invariant transformations is normalising feature distributions prior to conventional transformations.
-We assessed two normalisation methods were used:
-1. z-standardisation, i.e. $x^{\prime}_{i} = \left(x_i - \mu \right) / \sigma$, with $\mu$ and $\sigma$ the mean and standard deviation of feature $\mathbf{X}$; 
-and 2. robust scaling, i.e. $x^{\prime}_{i} = \left(x_i - \text{median}\left(\mathbf{X}\right) \right) / \text{IQR}\left(\mathbf{X}\right)$, with $\text{IQR}$ representing the interquartile range of feature $\mathbf{X}$.
-
-Table \ref{tab:normalisation-before-transformation-appendix} shows residual errors after transformation to normality of the five features from real-world datasets presented previously in Appendix D and the main manuscript.
-Table \ref{tab:normalisation-before-transformation-lambda-appendix} shows the corresponding values for transformation parameter $\lambda$, 
-\ref{tab:normalisation-before-transformation-p-value-appendix} shows p-values of the empirical central normality test.
-Normalisation prior to transformation prevents unexpectedly high $\lambda$ values in the presence of large location shifts, as can be observed for the latitude feature.
-Normalisation prior to transformation, however, does not consistently improve residual errors after transformation. 
-Interestingly, use of normalisation prior to transformation with robust power transformation using the method by Raymaekers and Rousseeuw [@Raymaekers2024-zf] led to higher residual errors for arterial wall thickness, fuel efficiency and latitude features.
-This is similar to observations by @Raymaekers2024-zf, who observed that their method can emphasize values of outliers after transformation.
-Location- and scale-invariant transformations have similar or lower residual errors compared to errors resulting from normalisation prior to transformation.
-Not surprisingly, normalisation before transformation does not noticeably improve central normality, as assessed using the empirical central normality test. 
-
-```{r include = FALSE, eval = FALSE}
-
-data <- .assess_standardisation_before_transformation()
-data <- data[, mget(c("residuals_central", "lambda", "p_value", "transformation", "dataset"))]
-data[, "residuals_central" := round(residuals_central, digits = 1L)]
-data[, "lambda" := round(lambda, digits = 1L)]
-data[, "p_value" := round(p_value, digits = 3L)]
-data.table::dcast(data, transformation ~ dataset, value.var = "residuals_central")
-data.table::dcast(data, transformation ~ dataset, value.var = "lambda")
-data.table::dcast(data, transformation ~ dataset, value.var = "p_value")
-```
-
 
 
 # References
