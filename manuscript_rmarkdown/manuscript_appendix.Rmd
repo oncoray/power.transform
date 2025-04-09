@@ -72,10 +72,10 @@ parse_mean_sd_latex <- function(mu, sigma, digits=2L){
 
 ```
 
-# Appendix A: Log-likelihood functions for location and scale invariant power transformation
+# Appendix A: Log-likelihood functions for location- and scale-invariant power transformation
 
-Location and scale-invariant Box-Cox and Yeo-Johnson transformations are parametrised using location $x_0$ and scale $s$ parameters, in addition to transformation parameter $\lambda$.
-This leads to the following transformations. The location and scale-invariant Box-Cox transformation is:
+Location- and scale-invariant Box-Cox and Yeo-Johnson transformations are parametrised using location $x_0$ and scale $s$ parameters, in addition to transformation parameter $\lambda$.
+This leads to the following transformations. The location- and scale-invariant Box-Cox transformation is:
 
 ```{=latex}
 \begin{equation}
@@ -87,7 +87,7 @@ This leads to the following transformations. The location and scale-invariant Bo
 \end{equation}
 ```
 where $x_i - x_0 > 0$.
-The location and scale-invariant Yeo-Johnson transformation is:
+The location- and scale-invariant Yeo-Johnson transformation is:
 
 ```{=latex}
 \begin{equation}
@@ -688,7 +688,7 @@ Additionally, results for Yeo-Johnson transformations are shown in Table
 \ref{tab:clean-transformation-appendix-residuals-yj},
 \ref{tab:clean-transformation-appendix-lambda-yj},
 and \ref{tab:clean-transformation-appendix-p-value-yj}.
-As may be observed, in these examples robust location and shift-invariant 
+As may be observed, in these examples robust location- and shift-invariant 
 transformations have higher residual errors because of low weights being
 assigned to tails of a distribution. This is also shown in 
 Tables \ref{tab:comparison_methods_simulations_yeo_johnson}
