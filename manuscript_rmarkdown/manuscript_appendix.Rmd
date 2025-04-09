@@ -13,6 +13,7 @@ header-includes:
 - \usepackage{amsthm}
 - \usepackage{booktabs}
 - \usepackage{multirow}
+- \usepackage{placeins}
 - \newtheorem{definition}{Definition}
 - \DeclareMathOperator*{\argmax}{argmax}
 - \DeclareMathOperator*{\argmin}{argmin}
@@ -585,138 +586,19 @@ cap <- paste0(
 
 ```
 
+\FloatBarrier
 
 
 
 
 
 
+# Appendix E: Assessing transformations using simulated data
 
-# Appendix E: Simulations on clean data
+## Ranking Box-Cox transformations
 
-Robust transformations are hypothesised to have a cost in efficiency for data
-without outliers, i.e. clean data. Here we randomly draw data from a standard normal
-distribution $\mathcal{N}(0,1)$. Subsequently, we perform an inverse transformation
-$\left(\phi_{\text{YJ}}^{\lambda, 0, 1}\right)^{-1}$, with $\lambda \in \left(0, 2\right)$.
-
-These transformed data
-
-An alternative to location- and scale-invariant transformations is normalising feature distributions prior to conventional transformations.
-We assessed two normalisation methods were used:
-1. z-standardisation, i.e. $x^{\prime}_{i} = \left(x_i - \mu \right) / \sigma$, with $\mu$ and $\sigma$ the mean and standard deviation of feature $\mathbf{X}$; 
-and 2. robust scaling, i.e. $x^{\prime}_{i} = \left(x_i - \text{median}\left(\mathbf{X}\right) \right) / \text{IQR}\left(\mathbf{X}\right)$, with $\text{IQR}$ representing the interquartile range of feature $\mathbf{X}$.
-
-[Generated data: clean, n = 30, n = 100, n = 1000, lambda = 0.1, 1.0, 1.9]
-
-```{r include = FALSE, eval = FALSE}
-
-data <- .assess_standardisation_before_transformation_simulation(lambda_limit = c(-4.0, 6.0))
-data <- data[, mget(c("residuals", "residuals_central", "lambda", "p_value", "transformation", "dataset"))]
-data[, "residuals" := round(residuals, digits = 1L)]
-data[, "residuals_central" := round(residuals_central, digits = 1L)]
-data[, "lambda" := round(lambda, digits = 1L)]
-data[, "p_value" := round(p_value, digits = 3L)]
-data.table::dcast(data, transformation ~ dataset, value.var = "residuals")
-data.table::dcast(data, transformation ~ dataset, value.var = "residuals_central")
-data.table::dcast(data, transformation ~ dataset, value.var = "lambda")
-data.table::dcast(data, transformation ~ dataset, value.var = "p_value")
-```
-
-
-```{=latex}
-\begin{table}
-\begin{center}
-\caption{Residual errors for features from simulated clean data without outliers after Yeo-Johnson transformation to normality.
-Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
-\label{tab:clean-transformation-residuals-appendix}
-\small{
-\begin{tabular}{l | l r r r r r r r r r}
-
-\toprule
-& n: & \multicolumn{3}{c}{30} & \multicolumn{3}{c}{100} & \multicolumn{3}{c}{500} \\
-transformation & $\lambda$: & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 \\
-
-\midrule
-
-none                                  & & 4.0 & 3.4 & 4.6 & 40.1 & 8.9 & 20.8 & 184.6 & 10.1 & 191.8 \\
-conventional                          & & 2.7 & 3.3 & 3.6 &  6.5 & 8.1 &  5.6 &  14.2 & 10.1 &  16.1 \\
-conventional (z-score norm.)          & & 2.5 & 3.3 & 3.7 &  9.8 & 8.1 &  5.6 &  24.1 & 10.1 &  15.9 \\
-conventional (robust scaling)         & & 2.6 & 3.3 & 3.7 &  7.4 & 8.2 &  5.6 &  15.5 & 10.1 &  14.0 \\
-Raymaekers-Rousseeuw                  & & 3.8 & 3.3 & 3.6 &  6.5 & 8.5 &  5.6 &  14.4 & 11.0 &  17.6 \\
-Raymaekers-Rousseeuw (z-score norm.)  & & 2.6 & 3.3 & 3.7 &  9.8 & 8.5 &  5.6 &  24.1 & 11.1 &  15.9 \\
-Raymaekers-Rousseeuw (robust scaling) & & 2.6 & 3.3 & 3.7 &  7.4 & 8.6 &  5.6 &  15.4 & 11.1 &  15.1 \\
-invariant                             & & 3.0 & 3.5 & 3.6 &  5.0 & 8.1 &  5.6 &  13.1 & 10.9 &  17.8 \\
-robust invariant                      & & 3.0 & 3.3 & 3.6 &  5.2 & 8.3 &  5.9 &  19.9 & 13.6 &  32.9 \\
-\bottomrule
-\end{tabular}
-}
-\end{center}
-\end{table}
-```
-
-```{=latex}
-\begin{table}
-\begin{center}
-\caption{Transformation parameter $\lambda$ for features from simulated clean data without outliers after Yeo-Johnson transformation to normality.
-Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
-\label{tab:clean-transformation-lambda-appendix}
-\small{
-\begin{tabular}{l | l r r r r r r r r r}
-
-\toprule
-& n: & \multicolumn{3}{c}{30} & \multicolumn{3}{c}{100} & \multicolumn{3}{c}{500} \\
-transformation & $\lambda$: & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 \\
-
-\midrule
-
-conventional                          & & 0.6 & 1.2 & 1.5 &  0.0 & 0.9 & 1.6 &  0.1 & 1.0 & 1.9 \\
-conventional (z-score norm.)          & & 0.5 & 1.2 & 1.5 & -0.2 & 0.9 & 1.7 & -0.2 & 1.0 & 2.2 \\
-conventional (robust scaling)         & & 0.5 & 1.3 & 1.6 & -0.3 & 0.9 & 1.7 & -0.2 & 1.0 & 2.1 \\
-Raymaekers-Rousseeuw                  & & 1.0 & 1.2 & 1.5 &  0.0 & 0.7 & 1.6 &  0.1 & 1.0 & 1.9 \\
-Raymaekers-Rousseeuw (z-score norm.)  & & 0.7 & 1.2 & 1.5 & -0.2 & 0.7 & 1.7 & -0.2 & 1.0 & 2.2 \\
-Raymaekers-Rousseeuw (robust scaling) & & 0.6 & 1.3 & 1.6 & -0.3 & 0.6 & 1.7 & -0.2 & 1.0 & 2.1 \\
-invariant                             & & 0.4 & 1.4 & 1.7 &  0.1 & 0.9 & 1.8 &  0.1 & 1.1 & 3.0 \\
-robust invariant                      & & 0.4 & 1.3 & 1.5 &  0.0 & 0.8 & 1.7 &  0.0 & 1.1 & 2.0 \\
-\bottomrule
-\end{tabular}
-}
-\end{center}
-\end{table}
-```
-
-```{=latex}
-\begin{table}
-\begin{center}
-\caption{
-p-values of empirical central normality tests for features from simulated clean data without outliers after Yeo-Johnson transformation to normality.
-Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
-\label{tab:clean-transformation-p-value-appendix}
-\small{
-\begin{tabular}{p{3.5cm} | l r r r r r r r r r}
-
-\toprule
-& n: & \multicolumn{3}{c}{30} & \multicolumn{3}{c}{100} & \multicolumn{3}{c}{500} \\
-transformation & $\lambda$: & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 \\
-
-\midrule
-
-none                                  & & 0.986 & 0.614 & 0.323 & $<0.001$ & 0.063 & 0.016 & $<0.001$ & 0.997 & $<0.001$ \\
-conventional                          & & 0.986 & 0.464 & 0.488 &   0.675  & 0.139 & 0.620 &   0.902  & 0.999 &   0.698 \\
-conventional (z-score norm.)          & & 0.979 & 0.440 & 0.477 &   0.200  & 0.141 & 0.770 &   0.419  & 0.999 &   0.723 \\
-conventional (robust scaling)         & & 0.982 & 0.439 & 0.484 &   0.487  & 0.130 & 0.683 &   0.883  & 0.999 &   0.817 \\
-Raymaekers-Rousseeuw                  & & 0.989 & 0.464 & 0.488 &   0.675  & 0.446 & 0.620 &   0.876  & 0.992 &   0.821 \\
-Raymaekers-Rousseeuw (z-score norm.)  & & 0.992 & 0.440 & 0.477 &   0.200  & 0.448 & 0.770 &   0.460  & 0.991 &   0.719 \\
-Raymaekers-Rousseeuw (robust scaling) & & 0.993 & 0.439 & 0.484 &   0.487  & 0.422 & 0.683 &   0.887  & 0.991 &   0.848 \\
-invariant                             & & 0.993 & 0.355 & 0.461 &   0.720  & 0.153 & 0.490 &   0.910  & 0.999 &   0.682 \\
-robust invariant                      & & 0.994 & 0.407 & 0.484 &   0.642  & 0.291 & 0.489 &   0.848  & 0.996 &   0.628 \\
-\bottomrule
-\end{tabular}
-}
-\end{center}
-\end{table}
-```
-
-
+Box-Cox transformations were assessed in the same manner as Yeo-Johnson transformations.
+The results are shown in Table \ref{tab:comparison_methods_simulations_box_cox}.
 
 ```{r include = FALSE, eval = FALSE}
 
@@ -782,6 +664,146 @@ robust invariant                      & &         6.09  & \textbf{2.75} &       
 \end{table}
 
 
+\FloatBarrier
+
+## Examples using clean data
+
+Robust transformations are hypothesised to have a cost in efficiency for data
+without outliers, i.e. clean data. Here we draw nine sequences with elements randomly drawn from a standard normal
+distribution $\mathcal{N}(0,1)$. Subsequently, we perform an inverse transformation
+$\left(\phi^{\lambda, 0, 1}\right)^{-1}$, with $\lambda \in \left(0, 2\right)$.
+
+The sequences drawn resulted from the permutations of the number of elements of each
+sequence ($n \in \{30, 100, 500\}$) and transformation parameter for the
+inverse transformation $\lambda \in \{0.1, 1.0, 1.9\}$. Each sequence then underwent
+power transformation using Box-Cox and Yeo-Johnson transformations. For Box-Cox
+transformations, each sequence was shifted prior to inverse transformation
+so that every element after inverse transformation would be strictly positive.
+
+Results for Box-Cox transformations are shown in Table
+\ref{tab:clean-transformation-appendix-residuals-bc},
+\ref{tab:clean-transformation-appendix-lambda-bc},
+and \ref{tab:clean-transformation-appendix-p-value-bc}.
+Additionally, results for Yeo-Johnson transformations are shown in Table
+\ref{tab:clean-transformation-appendix-residuals-yj},
+\ref{tab:clean-transformation-appendix-lambda-yj},
+and \ref{tab:clean-transformation-appendix-p-value-yj}.
+As may be observed, in these examples robust location and shift-invariant 
+transformations have higher residual errors because of low weights being
+assigned to tails of a distribution. This is also shown in 
+Tables \ref{tab:comparison_methods_simulations_yeo_johnson}
+and \ref{tab:comparison_methods_simulations_box_cox} for clean data without outliers.
+
+```{r include = FALSE, eval = FALSE}
+
+data <- .assess_standardisation_before_transformation_simulation(lambda_limit = c(-4.0, 6.0))
+data <- data[, mget(c("residuals", "residuals_central", "lambda", "p_value", "transformation", "dataset"))]
+data[, "residuals" := round(residuals, digits = 1L)]
+data[, "residuals_central" := round(residuals_central, digits = 1L)]
+data[, "lambda" := round(lambda, digits = 1L)]
+data[, "p_value" := round(p_value, digits = 3L)]
+data.table::dcast(data, transformation ~ dataset, value.var = "residuals")
+data.table::dcast(data, transformation ~ dataset, value.var = "residuals_central")
+data.table::dcast(data, transformation ~ dataset, value.var = "lambda")
+data.table::dcast(data, transformation ~ dataset, value.var = "p_value")
+```
+
+
+\begin{table}
+\begin{center}
+\caption{Residual errors for features from simulated clean data without outliers after Yeo-Johnson transformation to normality.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
+\label{tab:clean-transformation-appendix-residuals-yj}
+\small{
+\begin{tabular}{l | l r r r r r r r r r}
+
+\toprule
+& n: & \multicolumn{3}{c}{30} & \multicolumn{3}{c}{100} & \multicolumn{3}{c}{500} \\
+transformation & $\lambda$: & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 \\
+
+\midrule
+
+none                                  & & 4.0 & 3.4 & 4.6 & 40.1 &  8.9 & 20.8 & 184.6 & 10.1 & 191.8 \\
+conventional                          & & 2.7 & 3.3 & 3.6 &  6.5 &  8.1 &  5.6 &  14.2 & 10.1 &  16.1 \\
+conventional (z-score norm.)          & & 2.5 & 3.3 & 3.7 &  9.8 &  8.1 &  5.6 &  24.1 & 10.1 &  15.9 \\
+conventional (robust scaling)         & & 2.6 & 3.3 & 3.7 &  7.4 &  8.2 &  5.6 &  15.5 & 10.1 &  14.0 \\
+Raymaekers-Rousseeuw                  & & 3.8 & 3.3 & 3.6 &  6.5 &  8.5 &  5.6 &  14.4 & 11.0 &  17.6 \\
+Raymaekers-Rousseeuw (z-score norm.)  & & 2.6 & 3.3 & 3.7 &  9.8 &  8.5 &  5.6 &  24.1 & 11.1 &  15.9 \\
+Raymaekers-Rousseeuw (robust scaling) & & 2.6 & 3.3 & 3.7 &  7.4 &  8.6 &  5.6 &  15.4 & 11.1 &  15.1 \\
+invariant                             & & 3.0 & 3.5 & 3.6 &  5.0 &  8.1 &  5.6 &  13.1 & 10.9 &  17.8 \\
+robust invariant                      & & 3.0 & 3.4 & 3.6 &  5.5 & 10.1 &  6.2 &  18.7 & 13.2 &  32.8 \\
+
+\bottomrule
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+
+
+\begin{table}
+\begin{center}
+\caption{Transformation parameter $\lambda$ for features from simulated clean data without outliers after Yeo-Johnson transformation to normality.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
+\label{tab:clean-transformation-appendix-lambda-yj}
+\small{
+\begin{tabular}{l | l r r r r r r r r r}
+
+\toprule
+& n: & \multicolumn{3}{c}{30} & \multicolumn{3}{c}{100} & \multicolumn{3}{c}{500} \\
+transformation & $\lambda$: & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 \\
+
+\midrule
+
+conventional                          & & 0.6 & 1.2 & 1.5 &  0.0 & 0.9 & 1.6 &  0.1 & 1.0 & 1.9 \\
+conventional (z-score norm.)          & & 0.5 & 1.2 & 1.5 & -0.2 & 0.9 & 1.7 & -0.2 & 1.0 & 2.2 \\
+conventional (robust scaling)         & & 0.5 & 1.3 & 1.6 & -0.3 & 0.9 & 1.7 & -0.2 & 1.0 & 2.1 \\
+Raymaekers-Rousseeuw                  & & 1.0 & 1.2 & 1.5 &  0.0 & 0.7 & 1.6 &  0.1 & 1.0 & 1.9 \\
+Raymaekers-Rousseeuw (z-score norm.)  & & 0.7 & 1.2 & 1.5 & -0.2 & 0.7 & 1.7 & -0.2 & 1.0 & 2.2 \\
+Raymaekers-Rousseeuw (robust scaling) & & 0.6 & 1.3 & 1.6 & -0.3 & 0.6 & 1.7 & -0.2 & 1.0 & 2.1 \\
+invariant                             & & 0.4 & 1.4 & 1.7 &  0.1 & 0.9 & 1.8 &  0.1 & 1.1 & 3.0 \\
+robust invariant                      & & 0.5 & 1.1 & 1.5 & -0.1 & 0.7 & 1.7 &  0.1 & 1.1 & 1.9 \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+
+
+\begin{table}
+\begin{center}
+\caption{
+p-values of empirical central normality tests for features from simulated clean data without outliers after Yeo-Johnson transformation to normality.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
+\label{tab:clean-transformation-appendix-p-value-yj}
+\small{
+\begin{tabular}{p{3.5cm} | l r r r r r r r r r}
+
+\toprule
+& n: & \multicolumn{3}{c}{30} & \multicolumn{3}{c}{100} & \multicolumn{3}{c}{500} \\
+transformation & $\lambda$: & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 \\
+
+\midrule
+
+none                                  & & 0.981 & 0.816 & 0.576 & $<0.001$ & 0.099 & 0.011 & $<0.001$ & 0.993 & $<0.001$ \\
+conventional                          & & 0.979 & 0.614 & 0.617 &   0.722  & 0.221 & 0.782 &   0.946  & 0.997 &   0.637 \\
+conventional (z-score norm.)          & & 0.970 & 0.594 & 0.645 &   0.251  & 0.224 & 0.895 &   0.529  & 0.998 &   0.828 \\
+conventional (robust scaling)         & & 0.974 & 0.593 & 0.640 &   0.538  & 0.207 & 0.837 &   0.933  & 0.998 &   0.810 \\
+Raymaekers-Rousseeuw                  & & 0.983 & 0.614 & 0.617 &   0.722  & 0.622 & 0.782 &   0.927  & 0.985 &   0.831 \\
+Raymaekers-Rousseeuw (z-score norm.)  & & 0.985 & 0.594 & 0.645 &   0.251  & 0.623 & 0.895 &   0.564  & 0.984 &   0.807 \\
+Raymaekers-Rousseeuw (robust scaling) & & 0.987 & 0.593 & 0.640 &   0.538  & 0.599 & 0.837 &   0.935  & 0.984 &   0.875 \\
+invariant                             & & 0.987 & 0.487 & 0.573 &   0.778  & 0.241 & 0.683 &   0.963  & 0.997 &   0.865 \\
+robust invariant                      & & 0.992 & 0.753 & 0.667 &   0.909  & 0.739 & 0.628 &   0.968  & 0.994 &   0.680 \\
+
+\bottomrule
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+
+
 
 ```{r include = FALSE, eval = FALSE}
 
@@ -796,6 +818,103 @@ data.table::dcast(data, transformation ~ dataset, value.var = "residuals_central
 data.table::dcast(data, transformation ~ dataset, value.var = "lambda")
 data.table::dcast(data, transformation ~ dataset, value.var = "p_value")
 ```
+
+\begin{table}
+\begin{center}
+\caption{Residual errors for features from simulated clean data without outliers after Box-Cox transformation to normality.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
+\label{tab:clean-transformation-appendix-residuals-bc}
+\small{
+\begin{tabular}{l | l r r r r r r r r r}
+
+\toprule
+& n: & \multicolumn{3}{c}{30} & \multicolumn{3}{c}{100} & \multicolumn{3}{c}{500} \\
+transformation & $\lambda$: & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 \\
+
+\midrule
+
+none                                  & & 5.3 & 3.4 & 3.8 & 45.7 &  8.9 & 6.0 & 221.8 & 10.1 & 29.7 \\
+conventional                          & & 2.4 & 3.2 & 3.5 &  5.9 &  8.4 & 5.5 &  14.3 &  9.8 & 16.1 \\
+conventional (z-score norm.)          & & 2.4 & 3.2 & 3.7 &  5.4 &  8.7 & 5.5 &  14.0 & 10.4 & 16.1 \\
+conventional (robust scaling)         & & 2.4 & 3.2 & 3.7 &  5.4 &  8.7 & 5.5 &  14.0 & 10.4 & 16.1 \\
+Raymaekers-Rousseeuw                  & & 2.4 & 3.2 & 3.5 &  5.9 & 13.3 & 5.7 &  16.1 & 13.6 & 16.9 \\
+Raymaekers-Rousseeuw (z-score norm.)  & & 2.4 & 3.2 & 4.9 &  6.3 &  8.9 & 6.2 &  19.1 & 19.0 & 19.9 \\
+Raymaekers-Rousseeuw (robust scaling) & & 2.4 & 3.2 & 4.9 &  6.3 &  8.9 & 6.2 &  18.4 & 19.0 & 19.9 \\
+invariant                             & & 2.4 & 3.2 & 3.7 &  5.4 &  8.7 & 5.5 &  13.7 &  9.9 & 16.0 \\
+robust invariant                      & & 2.4 & 4.3 & 4.7 &  8.9 & 20.4 & 6.7 &  14.1 & 15.8 & 37.6 \\
+
+\bottomrule
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+
+
+\begin{table}
+\begin{center}
+\caption{Transformation parameter $\lambda$ for features from simulated clean data without outliers after Box-Cox transformation to normality.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
+\label{tab:clean-transformation-appendix-lambda-bc}
+\small{
+\begin{tabular}{l | l r r r r r r r r r}
+
+\toprule
+& n: & \multicolumn{3}{c}{30} & \multicolumn{3}{c}{100} & \multicolumn{3}{c}{500} \\
+transformation & $\lambda$: & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 \\
+
+\midrule
+
+conventional                          & & 0.4 & 1.3 & 0.5 & 0.0 &  0.9 & 0.7 & 0.1 & 1.1 & 2.0 \\
+conventional (z-score norm.)          & & 0.4 & 1.1 & 0.8 & 0.2 &  0.9 & 0.8 & 0.1 & 1.0 & 1.4 \\
+conventional (robust scaling)         & & 0.4 & 1.1 & 0.8 & 0.2 &  0.9 & 0.8 & 0.1 & 1.0 & 1.4 \\
+Raymaekers-Rousseeuw                  & & 0.4 & 1.3 & 0.5 & 0.0 & -0.1 & 0.5 & 0.1 & 0.9 & 1.8 \\
+Raymaekers-Rousseeuw (z-score norm.)  & & 0.4 & 1.1 & 0.4 & 0.1 &  0.8 & 0.7 & 0.1 & 0.9 & 1.2 \\
+Raymaekers-Rousseeuw (robust scaling) & & 0.4 & 1.1 & 0.4 & 0.1 &  0.8 & 0.7 & 0.1 & 0.9 & 1.2 \\
+invariant                             & & 0.4 & 1.6 & 0.8 & 0.2 &  0.9 & 0.8 & 0.1 & 1.1 & 1.9 \\
+robust invariant                      & & 0.5 & 0.8 & 0.4 & 0.0 &  0.2 & 0.7 & 0.1 & 0.9 & 0.9 \\
+
+\bottomrule
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+
+
+\begin{table}
+\begin{center}
+\caption{
+p-values of empirical central normality tests for features from simulated clean data without outliers after Box-Cox transformation to normality.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
+\label{tab:clean-transformation-appendix-p-value-bc}
+\small{
+\begin{tabular}{p{3.5cm} | l r r r r r r r r r}
+
+\toprule
+& n: & \multicolumn{3}{c}{30} & \multicolumn{3}{c}{100} & \multicolumn{3}{c}{500} \\
+transformation & $\lambda$: & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 \\
+
+\midrule
+
+none                                  & & 0.940 & 0.816 & 0.498 & $<0.001$ & 0.098 & 0.714 & $<0.001$ & 0.993 & 0.928 \\
+conventional                          & & 0.948 & 0.695 & 0.603 &   0.798  & 0.163 & 0.791 &   0.931  & 0.997 & 0.658 \\
+conventional (z-score norm.)          & & 0.947 & 0.777 & 0.624 &   0.611  & 0.182 & 0.788 &   0.969  & 0.991 & 0.822 \\
+conventional (robust scaling)         & & 0.947 & 0.777 & 0.624 &   0.611  & 0.182 & 0.788 &   0.969  & 0.991 & 0.822 \\
+Raymaekers-Rousseeuw                  & & 0.948 & 0.695 & 0.603 &   0.798  & 0.768 & 0.806 &   0.816  & 0.962 & 0.782 \\
+Raymaekers-Rousseeuw (z-score norm.)  & & 0.947 & 0.777 & 0.753 &   0.913  & 0.255 & 0.784 &   0.775  & 0.866 & 0.921 \\
+Raymaekers-Rousseeuw (robust scaling) & & 0.947 & 0.777 & 0.753 &   0.913  & 0.255 & 0.784 &   0.807  & 0.866 & 0.921 \\
+invariant                             & & 0.947 & 0.661 & 0.624 &   0.611  & 0.182 & 0.789 &   0.956  & 0.997 & 0.664 \\
+robust invariant                      & & 0.969 & 0.824 & 0.750 &   0.972  & 0.779 & 0.775 &   0.956  & 0.934 & 0.840 \\
+
+\bottomrule
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+\FloatBarrier
+
 
 # Appendix F: Experimental results
 
@@ -910,6 +1029,10 @@ robust invariant                      & 0.933 & 0.178     & 0.759     & $< 0.001
 \end{center}
 \end{table}
 
+\FloatBarrier
+
+
+
 ## Box-Cox transformation
 
 Results for Box-Cox transformations are shown in Tables \ref{tab:experimental-results-appendix-residuals-bc},
@@ -1018,5 +1141,6 @@ robust invariant                      & 0.899 & 0.890 & 0.866     & $< 0.001$ & 
 \end{center}
 \end{table}
 
+\FloatBarrier
 
 # References

@@ -1296,6 +1296,8 @@
         sd = 1.0
       )
 
+      if (method == "box_cox" && any(x <= -1.0 / lambda[jj])) x <- x + 1 - min(x) - 1.0 / lambda[jj]
+
       # Perform inverse transform.
       transformer <- power.transform::create_transformer_skeleton(
         method = method,
