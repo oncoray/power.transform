@@ -1043,12 +1043,13 @@ invariant Yeo-Johnson, robust invariant Yeo-Johnson with empirical central
 normality test (rejecting transformations with $p \leq 0.01$), and normalisation method (none,
 $z$-standardisation), yielding 32 distinct configurations.
 Before each experiment, each dataset was randomly split into a training (70%)
-and holdout test (30%) set five times. Thus, a total of 27720 models were
+and holdout test (30%) set five times. Thus, a total of 36960 models were
 created. Each model was then evaluated using the holdout test set using one of
 two metrics, i.e. the root relative squared error (RRSE) for regression tasks and the
 area under the receiver operating characteristic curve (AUC) for classification tasks.
 
-For the purpose of assessing the effect of the difficulty of the task, we computed the median performance score over all models for each dataset and assigned one the following categories:
+For the purpose of assessing the effect of the difficulty of the task, 
+we computed the median performance score over all models for each dataset and assigned one the following categories:
 
 * very easy: $\text{AUC} \geq 0.90$ or $\text{RRSE} \leq 0.10$ (57 datasets)
 * easy: $0.90 > \text{AUC} \geq 0.80$ or $0.30 \geq \text{RRSE} > 0.10$ (40 datasets)
@@ -1145,24 +1146,24 @@ To estimate the marginal effects of process parameters, including transformation
 we first fit a regression random forest (ranger package [@Wright2017-rf] version 0.16.0): 2000 trees, 
 node size 2, other hyperparameters default) with process parameters and task difficulty as predictors and normalised rank as response variable.
 The estimated marginal effects are shown in Figure \ref{fig:marginal-effect-plot}.
-On the scale of normalised ranks ($[0.0, 1.0]$), the overall estimated marginal effect of using a random forest instead of generalised linear model was $0.272$.
-The overall marginal effect of using z-standardisation to normalise features was $0.008$.
+On the scale of normalised ranks ($[0.0, 1.0]$), only the random forest performed better than the average of all learners (rank difference $0.173$).
+The overall marginal effect of using z-standardisation to normalise features was $0.011$.
 Transformation methods had the following marginal effects:
-$0.003$ for using conventional Yeo-Johnson transformation instead of no transformation;
-$-0.007$ for using robust invariant Yeo-Johnson transformation instead of no transformation; 
-$-0.009$ for using robust invariant Yeo-Johnson transformation with empirical central normality test instead of no transformation; 
-$-0.010$ for using robust invariant Yeo-Johnson transformation instead of conventional Yeo-Johnson transformation;
+$-0.001$ for using conventional Yeo-Johnson transformation instead of no transformation;
+$-0.012$ for using robust invariant Yeo-Johnson transformation instead of no transformation; 
+$-0.012$ for using robust invariant Yeo-Johnson transformation with empirical central normality test instead of no transformation; 
+$-0.012$ for using robust invariant Yeo-Johnson transformation instead of conventional Yeo-Johnson transformation;
 and $-0.012$ for using using robust invariant Yeo-Johnson transformation with empirical central normality test instead of conventional Yeo-Johnson transformation.
 
 ```{r marginal-effect-plot, echo=FALSE, fig.cap=cap, fig.height=7.5, warning=FALSE}
 cap <- paste0(
-  "Estimated marginal effect of learners, normalisation and transformation methods on ranked model performance scores in 18560 machine learning experiments on 232 datasets. ",
-  "The top-left panel shows the marginal effect of learners, i.e. random forests and generalised linear models (GLM). ",
-  "Random forests outperform GLM models for all task difficulties. ",
+  "Estimated marginal effect of learners, normalisation and transformation methods on ranked model performance scores in 36960 machine learning experiments on 231 datasets. ",
+  "The four top-left panels shows the marginal effect of learners vs. the average, i.e. generalised linear models (GLM), L1-regularised LM (Lasso), gradient-boosted LM and random forest. ",
+  "Random forests outperform the average. ",
   "The top-right panel shows the marginal effect of feature normalisation methods, i.e. no normalisation and z-standardisation. ",
-  "z-standardisation is generally beneficial, but the estimated effect is neglible. ",
-  "The bottom panel shows the marginal effects of different transformation methods, split by learner and normalisation method. ",
-  "There is no consistent behaviour, and estimated effects are neglible. ",
+  "z-standardisation is generally beneficial, but the estimated effect is marginal. ",
+  "The bottom panel shows the marginal effects of different transformation methods, split by normalisation method. ",
+  "The estimated effects are similar in size to the effect of normalisation and marginal. ",
   "Note that the ranges of the $x$-axes of the three main panels differ. ",
   "ECNT: empirical central normality test."
 )
@@ -1184,9 +1185,9 @@ This is particularly relevant for automated data processing, where such issues m
 Compared to non-robust location- and scale-invariant transformations, real-world examples with outliers showed higher residual errors of transformed features. 
 Robust transformations seek to minimise residual errors for the central part of the distribution, instead of the entire distribution, including outliers.
 The empirical central normality test indicated that robust transformations are better able to achieve central normality in the presence of outliers.
-However, in a machine learning experiment of 232 real-world datasets that contained at least one numeric feature, we did not find a meaningful benefit -- nor detriment -- to model performance for location- and scale-invariant power transformations.
+However, in a machine learning experiment of 231 real-world datasets that contained at least one numeric feature, we did not find a meaningful benefit -- nor detriment -- to model performance for location- and scale-invariant power transformations.
 One reason may be that numeric features with large location shifts ($|\mu| > 1000.0$) were uncommon.
-Of the 4886 numeric features in the 232 datasets, 266 (5%) features in 34 datasets had large location shifts, of which 200 appeared in just 2 datasets.
+Of the 4886 numeric features in the 231 datasets, 266 (5%) features in 34 datasets had large location shifts, of which 200 appeared in just 2 datasets.
 For the latter two datasets, the transformation method did not show significant difference between groups (Friedman test; $p > 0.05$).
 ```{r include = FALSE, eval = TRUE}
 
@@ -1241,7 +1242,11 @@ The combination of both facilitate the use of power transformations in automated
 
 # Data and code availability
 
-Location- and scale-invariant power transformations were implemented in the `power.transform` package for R, which is available from [GitHub](https://github.com/oncoray/power.transform) and the [CRAN repository](https://cran.r-project.org/package=power.transform). The manuscript was created using R Markdown and is likewise available from the `power.transform` GitHub repository. Data and results for the machine learning experiment are separately available from [Zenodo](https://doi.org/10.5281/zenodo.14986689).
+Location- and scale-invariant power transformations were implemented in the `power.transform` 
+package for R, which is available from [GitHub](https://github.com/oncoray/power.transform) 
+and the [CRAN repository](https://cran.r-project.org/package=power.transform). 
+The manuscript was created using R Markdown and is likewise available from the `power.transform` GitHub repository. 
+Data and results for the machine learning experiment are separately available from [Zenodo](https://doi.org/10.5281/zenodo.14986689).
 
 
 # References
