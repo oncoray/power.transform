@@ -497,7 +497,7 @@ cap <- paste0(
 .plot_shifted_distributions_appendix(manuscript_dir = manuscript_dir, plot_theme = plot_theme)
 ```
 
-# Appendix D: Central normality test and empirical central normality test critical values
+# Appendix C: Central normality test and empirical central normality test critical values
 
 Critical values for the central normality test and its empirical variant are
 found in Table \ref{tab:central-normality-critical-statistic} and Table 
@@ -606,7 +606,7 @@ cap <- paste0(
 
 
 
-# Appendix E: Assessing transformations using simulated data
+# Appendix D: Assessing transformations using simulated data
 
 ## Ranking Box-Cox transformations
 
@@ -929,7 +929,7 @@ robust invariant                      & & 0.969 & 0.824 & 0.750 &   0.972  & 0.7
 \FloatBarrier
 
 
-# Appendix F: Experimental results
+# Appendix E: Experimental results
 
 The effect of using location- and scale-invariant transformations was investigated
 using real-world datasets, as described in the main manuscript.
