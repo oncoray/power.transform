@@ -775,10 +775,14 @@ usethis::use_data(
 \begin{center}
 \caption{Optimal weighting parameters and corresponding loss for location- and scale-invariant Box-Cox power transformations.
 $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values,
-and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. 
+and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution.
 The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column. 
 The \textit{optimal} column shows the optimal parameter values.
-The \textit{loss} column shows the loss achieved by each method, under optimised parameters.}
+The \textit{loss} column shows the composite loss achieved by each method under optimised parameters.
+This loss is based on residual errors of transformed features and deviations in $\lambda$ parameters
+found compared to the $\lambda$ parameters found prior to inserting outliers.
+The loss metric can be compared between different weighting methods.
+}
 \label{tab:optimal-weighting-parameters-box-cox}
 \begin{tabular}{l r r r r r r r}
 
@@ -810,8 +814,11 @@ $r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 0.76 & 0.77 & $(0, 10]$ & 0.76 & 5
 $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values,
 and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. 
 The \textit{initial} column shows the starting parameter value for the optimisation process, with the corresponding boundary values in the \textit{limits} column.
-The \textit{optimal} column shows the optimal parameter values. 
-The \textit{loss} column shows the loss achieved by each method, under optimised parameters.}
+The \textit{loss} column shows the composite loss achieved by each method under optimised parameters.
+This loss is based on residual errors of transformed features and deviations in $\lambda$ parameters
+found compared to the $\lambda$ parameters found prior to inserting outliers.
+The loss metric can be compared between different weighting methods.
+}
 \label{tab:optimal-weighting-parameters-yeo-johnson}
 \begin{tabular}{l r r r r r r r}
 
@@ -1277,7 +1284,7 @@ h_transformation <- friedman.test(as.matrix(data[, "dataset" := NULL]))
 Location- and scale-invariant transformations are realised by simultaneously 
 optimising three parameters, i.e. transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$.
 We derived the log-likelihood function to facilitate optimisation using MLE.
-Alternatively, standardisation of a numeric variable 
+Alternatively, standardisation of a numeric feature 
 (e.g., through subtracting its median value and division by its interquartile range) 
 prior to conventional power transformations can achieve a similar effect in reducing sensitivity
 to the feature's location and scale.
@@ -1287,8 +1294,19 @@ location- and scale-invariant transformations are able to achieve better transfo
 to normality, as demonstrated by lower residual errors in simulation experiments.
 
 We assessed several weighting methods to achieve robust power transformations.
+Robust power transformations should satisfy two conflicting aims: they should minimise
+residual errors after transformation to central normality, and minimise the overall
+effect of outliers on estimation of transformation parameter $\lambda$.
+These aims are reflected in the composite loss used to optimise weighting parameters.
+For Yeo-Johnson transformation, empirical probabilities with tapered cosine weighting
+resulted in the lowest loss.
+The optimal parameters led to weights that gradually decline towards the tails of empirical probabilities, i.e. elements with low and high values
+receive less or no weight.
+Similarly, for Box-Cox transformation, empirical probabilities with step weighting
+resulted in the lowest loss. In this case the central 80% of the elements are used,
+and the remaining 10% in each tail are ignored.
 Methods that relied on the z-score of the transformed feature or the residual error 
-yielded worse results than the non-robust method.
+yielded worse loss than the non-robust method or those based on empirical probabilities.
 Underperformance of these weighting methods could be explained by their reliance on transformed feature values for setting weights.
 Consequently, their weights change at each iteration in the MLE optimisation process.
 This increases local variance in the log-likelihood function and creates local optima that the optimiser may not handle well.
