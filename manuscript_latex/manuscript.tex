@@ -189,9 +189,8 @@ the underlying data, e.g.~analysis of variance and linear discriminant
 analysis. However, numerical features in datasets may strongly deviate
 from normal distributions, e.g.~by being skewed. Power transformations
 aim to stabilise variance and improve normality of such features
-(Bartlett 1947; John W. Tukey 1957). The two most commonly used
-transformations are that of Box and Cox (1964) and Yeo and Johnson
-(2000).
+\citep{Bartlett1947-rx, Tukey1957-rt}. The two most commonly used
+transformations are that of \citet{Box1964-mz} and \citet{Yeo2000-vw}.
 
 The Box-Cox transformation is defined as:
 
@@ -233,8 +232,7 @@ The \(\lambda\)-parameter is typically optimised using maximum
 likelihood estimation under the assumption that the transformed feature
 is normally distributed. As noted by Raymaekers and Rousseeuw, this
 approach is sensitive to outliers, and robust versions of Box-Cox and
-Yeo-Johnson transformations were devised (Raymaekers and Rousseeuw
-2024).
+Yeo-Johnson transformations were devised \citep{Raymaekers2024-zf}.
 
 Applying a power transformation does not guarantee that transformed
 features are normally distributed. Depending on location and scale of a
@@ -249,8 +247,8 @@ features may suffer a decrease in performance. Moreover, large negative
 or positive \(\lambda\)-parameters may lead to numeric issues in any
 subsequent computations.
 
-Statistical tests for normality, such as the Shapiro-Wilk test (Shapiro
-and Wilk 1965), could be automatically applied to transformed features.
+Statistical tests for normality, such as the Shapiro-Wilk test \citep{Shapiro1965-zd},
+could be automatically applied to transformed features.
 However, given sufficiently large sample sizes such tests can detect
 trivial deviations from normality, and may lead to rejection of
 sufficiently good power transformations.
@@ -398,14 +396,14 @@ transformations}\label{robust-location--and-scale-invariant-power-transformation
 Real-world data may contain outliers, to which maximum likelihood
 estimation can be sensitive. Their presence may lead to poor
 transformations to normality, as shown in Figure
-\ref{fig:decreased-normality}. As indicated by Raymaekers and Rousseeuw
-(2024), the general aim of power transformations should be to transform
+\ref{fig:decreased-normality}. As indicated by \citet{Raymaekers2024-zf},
+ the general aim of power transformations should be to transform
 non-outlier data to normality, i.e.~achieve \emph{central normality}. To
 achieve this, they devised an iterative procedure to find a robust
 estimate of the transformation parameter \(\lambda\). Briefly, this
 process requires identifying outliers in the data and weighting such
-instances during the optimisation process. Raymaekers and Rousseeuw
-(2024) achieve this through weighted maximum likelihood estimation.
+instances during the optimisation process. \citet{Raymaekers2024-zf}
+achieve this through weighted maximum likelihood estimation.
 However, because this procedure iteratively estimates and updates
 \(\lambda\), it can not be used here to simultaneously estimate
 \(\lambda\), \(x_0\) and \(s\) for location- and scale-invariant power
@@ -414,8 +412,8 @@ for estimating the transformation, shift and scale parameters.
 
 Here, weighted maximum likelihood estimation is based on equations
 \ref{eqn:box-cox-invariant-log-likelihood} and
-\ref{eqn:yeo-johnson-invariant-log-likelihood}. Compared to Raymaekers
-and Rousseeuw (2024), these log-likelihood functions include additional
+\ref{eqn:yeo-johnson-invariant-log-likelihood}. Compared to \citet{Raymaekers2024-zf},
+these log-likelihood functions include additional
 terms to accommodate estimation of \(x_0\) and \(s\). The weighted
 location- and scale-invariant Box-Cox log-likelihood function is:
 
@@ -499,7 +497,7 @@ will be defined later, we investigate three weighting functions:
   \end{cases}
   \end{equation*}
 \item
-  A tapered cosine function (J. W. Tukey 1967), with \(\delta_1 \geq 0\)
+  A tapered cosine function \citep{Tukey1967-eb}, with \(\delta_1 \geq 0\)
   and \(\delta_2 \geq \delta_1\) as threshold parameters:
   \begin{equation*}
   w_i =
@@ -543,12 +541,11 @@ the (transformed) feature in one of several ways:
   zero-centered.
 \item
   The weighting function uses the z-score of the transformed feature
-  \(\phi^{\lambda, x_0, s} (\mathbf{X})\). After Raymaekers and
-  Rousseeuw (2024),
+  \(\phi^{\lambda, x_0, s} (\mathbf{X})\). After \citep{Raymaekers2024-zf},
   \(z_i = \frac{\phi^{\lambda, x_0, s}(x_i) - \mu_M}{\sigma_M}\). Here,
   \(\mu_M\) and \(\sigma_M\) are robust Huber M-estimates of location
   and scale of the transformed feature
-  \(\phi^{\lambda, x_0, s} (\mathbf{X})\) (Huber 1981). Then
+  \(\phi^{\lambda, x_0, s} (\mathbf{X})\) \citep{Huber1981-su}. Then
   \(\dot{x}_i = z_i\).
 \item
   After sorting \(\mathbf{X}\) in ascending order, the weighting
@@ -571,7 +568,7 @@ location and scale of a feature and methods to improve their robustness
 against outliers need to be assessed using data drawn from a range of
 different distributions. Since the power transformations are intended
 for use with unimodal distributions, the generalised normal distribution
-(Subbotin 1923; Nadarajah 2005) is a suitable option for simulating
+\citep{Subbotin1923-qk, Nadarajah2005-xe} is a suitable option for simulating
 realistic feature distributions. This distribution has the following
 probability density function \(f_{\beta}\) for a value
 \(x \in \mathbb{R}\):
@@ -593,7 +590,7 @@ large \(\beta\), the distribution approaches a uniform distribution.
 
 Realistic feature distributions may be skewed. Gijbels et al.~describe a
 recipe for introducing skewness into the otherwise symmetric generalised
-normal distribution (Gijbels, Karim, and Verhasselt 2019), leading to
+normal distribution  \citep{Gijbels2019-te}, leading to
 the following probability density function:
 
 \begin{definition}[Asymmetric generalised normal distribution probability density function]
@@ -622,8 +619,7 @@ We require a quantile function (or an approximation thereof) to draw
 random values from an asymmetric generalised normal distribution using
 inverse transform sampling. Gijbels et al.~derived the quantile function
 \(F_{\alpha}^{-1}(p)\), which incorporates the quantile function of the
-symmetric generalised normal distribution derived by Griffin (Griffin
-2018):
+symmetric generalised normal distribution derived by Griffin \citep{Gijbels2019-te}:
 
 \begin{definition}[Asymmetric generalised normal distribution quantile function]
 Let $p \in \left[0, 1\right]$ be a probability.
@@ -651,7 +647,7 @@ F_{\alpha}^{-1}(p; \mu, \sigma, \beta) =
 Power transformations aim to transform features to a normal
 distribution. However, this may not always be successful or possible.
 Deviations from normality can be detected by normality tests, such as
-the Shapiro-Wilk test (Shapiro and Wilk 1965). In practice, normality
+the Shapiro-Wilk test  \citep{Gijbels2019-te}. In practice, normality
 tests may be too stringent with large sample sizes, outliers, or both.
 Here we develop a test for central normality.
 
@@ -673,7 +669,7 @@ $\mathbf{X}_{\text{c}} = \left\{x_i \in \mathbf{X} \, | \,  \frac{1-\kappa}{2} \
 \begin{definition}[Residual errors of the central portion of a sequence]
 
 Let the residual error for each element of $\mathbf{X}$ be $r_i =\left| \frac{x_i - \mu_M}{\sigma_M} - F^{-1}_{\mathcal{N}}(p_i) \right|$, 
-with $\mu_M$ and $\sigma_M$ robust Huber M-estimates of location and scale of $\mathbf{X}$ [@Huber1981-su], 
+with $\mu_M$ and $\sigma_M$ robust Huber M-estimates of location and scale of $\mathbf{X}$ \citep{Huber1981-su}, 
 and $F^{-1}_{\mathcal{N}}$ the quantile function of the normal distribution $\mathcal{N}(0, 1)$.
 
 Then, the set of residual errors of the central portion of $\mathbf{X}$ (i.e. $\mathbf{X}_{\text{c}}$) is
@@ -733,10 +729,10 @@ The \(\lambda\) parameter for conventional power transformations (Eqn.
 as \(\lambda\), \(x_0\) and \(s\) parameters for location- and
 scale-invariant power transformations (Eqn. \ref{eqn:box-cox-invariant}
 and \ref{eqn:yeo-johnson-invariant}) were estimated using the BOBYQA
-algorithm for derivative-free bound constraint optimisation (Powell
-2009) through maximum likelihood estimation. The required algorithms
+algorithm for derivative-free bound constraint optimisation \citep{Powell2009-zb} 
+through maximum likelihood estimation. The required algorithms
 were implemented in the \texttt{power.transform} R software package
-(Zwanenburg and L\"ock 2024b) (version 1.0.1). Of note, the
+\citep{Zwanenburg2024-kq} (version 1.0.1). Of note, the
 \texttt{power.transform} package shifts feature values into the positive
 domain if negative or zero values are present for Box-Cox power
 transformations.
@@ -903,8 +899,8 @@ were then randomly drawn, with
 sequences with between \(50\) and \(1000\) elements each.
 
 Outlier values were then drawn to randomly replace 10 percent of the
-elements of \(\mathbf{X}_i\). Outlier values were set according to John
-W. Tukey (1977), as follows. Let \(x^{*} \sim U\left(-2, 2\right)\).
+elements of \(\mathbf{X}_i\). Outlier values were set according to \citet{Tukey1977-xm},
+as follows. Let \(x^{*} \sim U\left(-2, 2\right)\).
 Then the corresponding outlier value was:
 
 \begin{equation}
@@ -937,7 +933,7 @@ aimed to prevent solutions that provide small improvements in central
 normality at the cost of a poor fit of the tails of sequences.
 
 Minimisation was conducted using the BOBYQA algorithm for
-derivative-free bound constraint optimisation (Powell 2009). The
+derivative-free bound constraint optimisation \citep{Powell2009-zb}. The
 resulting weighting function parameters for weighted MLE are shown in
 Tables \ref{tab:optimal-weighting-parameters-box-cox} and
 \ref{tab:optimal-weighting-parameters-yeo-johnson} for robust location-
@@ -1053,7 +1049,7 @@ replacing 10 percent of elements in each sequence, as described earlier.
 
 In addition to no power transformation and location- and scale-invariant
 power transformations, conventional and Raymaekers and Rousseeuw's
-robust adaptation (Raymaekers and Rousseeuw 2024) were assessed. For the
+robust adaptation \citep{Raymaekers2024-zf} were assessed. For the
 latter two methods, normalisation before standardisation using was
 additionally assessed using the following two methods:
 
@@ -1153,7 +1149,7 @@ cancer}\label{age-of-patients-with-lung-cancer}
 
 A common feature in health-related datasets is age. Here we use data on
 228 patients with lung cancer that was collected and published by
-Loprinzi et al. (Loprinzi et al. 1994). The age in the cohort was
+Loprinzi et al. \citep{Loprinzi1994-cd}. The age in the cohort was
 \(62.4 \pm 9.1\) (mean ± standard deviation) years. Applying
 conventional and invariant Yeo-Johnson transformations to patient age
 yielded the following results, see Figure
@@ -1180,7 +1176,7 @@ significant deviations from central normality for any transformation
 \subsubsection{Penguin body mass}\label{penguin-body-mass}
 
 Gorman, Williams and Fraser recorded body mass (in grams) of 342
-penguins of three different species (Gorman, Williams, and Fraser 2014).
+penguins of three different species \citep{Gorman2014-eo}.
 The body mass was \((4.2 \pm 0.8) \cdot 10^3\) (mean ± standard
 deviation) grams, and not centrally normal (\(p < 0.001\)). Applying
 conventional and invariant Yeo-Johnson transformations to body mass
@@ -1210,7 +1206,7 @@ dataset}\label{latitude-in-the-ames-housing-dataset}
 
 Geospatial datasets usually contain coordinates. The Ames housing
 dataset contains data on 2930 properties that were sold between 2006 and
-2010 (De Cock 2011), including their geospatial coordinates. The
+2010 \citep{De-Cock2011-jf}, including their geospatial coordinates. The
 latitude was \(42.03 \pm 0.02)\) (mean ± standard deviation). Applying
 conventional and invariant Yeo-Johnson transformations to latitude
 yielded the following results, see Figure
@@ -1254,7 +1250,7 @@ transformations in real data with outliers.
 dataset}\label{fuel-efficiency-in-the-top-gear-dataset}
 
 The Top Gear dataset contains data on 297 vehicles that appeared on the
-BBC television show \emph{Top Gear} (Alfons 2021). Within this dataset,
+BBC television show \emph{Top Gear} \citep{Alfons2021-kc}. Within this dataset,
 the fuel consumption feature contains outliers due to highly
 fuel-efficient vehicles. Applying conventional and invariant Yeo-Johnson
 transformations to the fuel consumption feature yielded the following
@@ -1280,7 +1276,7 @@ transformations produce distributions that are centrally normal
 dataset}\label{maximum-arterial-wall-thickness-in-an-ischemic-stroke-dataset}
 
 The ischemic stroke dataset contains historic data from 126 patients
-with risk at ischemic stroke (Kuhn and Johnson 2019). These patients
+with risk at ischemic stroke \citep{Kuhn2019-kt}. These patients
 underwent Computed Tomography Angiography to characterize the carotid
 artery blockages. Angiography imaging was then assessed, and various
 characteristics related to the blood vessels and the disease are
@@ -1308,10 +1304,10 @@ Robust transformations produce distributions that are centrally normal
 learning}\label{integration-into-end-to-end-machine-learning}
 
 We used 231 datasets containing at least one numeric feature from the
-Penn Machine Learning Benchmarks collection (Romano et al. 2022). In
+Penn Machine Learning Benchmarks collection \citep{Romano2022-gq}. In
 this collection, 114 datasets correspond to regression tasks and 117
 datasets to classification tasks. Using the familiar auto-machine
-learning library (Zwanenburg and L\"ock 2024a) (version 1.5.0), each
+learning library \citep{Zwanenburg2021-so} (version 1.5.0), each
 dataset was used to train a model for each of 32 process configurations.
 Each process configuration specifies the learner (generalised linear
 model, L1-regularised linear models (Lasso), gradient boosted linear
@@ -1369,7 +1365,7 @@ test: \(p = 0.007\)), all had a significant impact (at \(p = 0.05\)).
 
 To estimate the marginal effects of process parameters, including
 transformation method, we first fit a regression random forest (ranger
-package (Wright and Ziegler 2017) version 0.16.0): 2000 trees, node size
+package \citep{Wright2017-rf} version 0.16.0): 2000 trees, node size
 2, other hyperparameters default) with process parameters and task
 difficulty as predictors and normalised rank as response variable. The
 estimated marginal effects are shown in Figure
@@ -1405,9 +1401,9 @@ of conventional Yeo-Johnson transformation.
 In their work on power transformation, Box and Cox already mention
 transformation with a shift parameter, but preferred the version in Eq.
 \ref{eqn:box-cox-original} for the theoretical analysis in their paper
-(Box and Cox 1964), which subsequently became the convention. Yeo and
-Johnson's power transformation lacks a shift parameter altogether (Yeo
-and Johnson 2000). We showed that these power transformations are
+\citep{Box1964-mz}, which subsequently became the convention. Yeo and
+Johnson's power transformation lacks a shift parameter altogether \citep{Yeo2000-vw}.
+We showed that these power transformations are
 sensitive to location and scale of data distributions. To mitigate this
 issue, we defined location- and scale-invariant variants of the Box-Cox
 and Yeo-Johnson transformations. We furthermore assessed methods for
@@ -1481,7 +1477,7 @@ We introduced an empirical test for central normality to assess whether
 sequences deviate from normality in a way that might require closer
 inspection prior to further processing. The empirical test for central
 normality differs from other tests for normality, such as the
-Shapiro-Wilk test (Shapiro and Wilk 1965), as it assesses normality of
+Shapiro-Wilk test \citep{Shapiro1965-zd}, as it assesses normality of
 the central portion of a feature, instead of the entire feature.
 Compared to the central normality test and the Shapiro-Wilk test, the
 empirical central normality test remains consistent in the presence of
@@ -1657,7 +1653,7 @@ This leads to the following log-likelihood:
 \end{split}
 \end{equation}
 
-Similarly to Raymaekers and Rousseeuw (2024), sample weights \(w_i\) are
+Similarly to \citet{Raymaekers2024-zf}, sample weights \(w_i\) are
 introduced to facilitate robust power transformations. The weighted
 log-likelihood of the location- and scale-invariant Box-Cox
 transformation is:
@@ -1750,7 +1746,7 @@ monotonic, \(\mathbf{Y}\) will likewise be ordered.
 Below we will focus on criteria based on the empirical density function
 and those based on skewness and kurtosis of the transformed featured.
 Other potential criteria, such as the Shapiro-Wilk test statistic
-(Shapiro and Wilk 1965) are not investigated here. In the case of the
+\citet{Raymaekers2024-zf} are not investigated here. In the case of the
 Shapiro-Wilk test statistic this is because of lack of scalability to
 features with many (\(> 5000\)) instances, and because adapting the test
 statistic to include weights is not straightforward.
@@ -1771,7 +1767,7 @@ non-robust power transformations, \(\mu\) and \(\sigma\) are sample mean
 and sample standard deviation, respectively. For robust power
 transformations, we estimate \(\mu\) and \(\sigma\) as Huber M-estimates
 of location and scale of the transformed feature
-\(\phi^{\lambda, x_0, s} (\mathbf{X})\) (Huber 1981).
+\(\phi^{\lambda, x_0, s} (\mathbf{X})\) \citep{Huber1981-su}.
 
 \subsubsection{Anderson-Darling
 criterion}\label{anderson-darling-criterion}
@@ -1786,7 +1782,7 @@ U_{\text{AD}} \left(\mathbf{X}, \lambda, x_0 \right) = \frac{1}{\sum_{i=1}^n w_i
 Here \(w_i\) are weights, and \(\mu\) and \(\sigma\) are location and
 scale parameters. For non-robust power transformations, all \(w_i = 1\).
 Note that this criterion is not the same as the Anderson-Darling test
-statistic (Anderson and Darling 1952), which involves solving (or
+statistic \citep{Anderson1952-gz}, which involves solving (or
 approximating) an integral function, contains an extra scalar
 multiplication term, and does not include weights. The Anderson-Darling
 criterion seeks to minimise the squared Euclidean distance between the
@@ -1795,7 +1791,7 @@ the normal CDF receiving more weight than those at the the centre of the
 CDF.
 
 \subsubsection{Cramér-von Mises
-criterion}\label{cramuxe9r-von-mises-criterion}
+criterion}\label{cramer-von-mises-criterion}
 
 The Cramér-von Mises criterion is also based on the empirical
 distribution function of \(\mathbf{X}\). We define the Cramér-von Mises
@@ -1807,8 +1803,8 @@ U_{\text{CvM}} \left(\mathbf{X}, \lambda, x_0 \right) = \frac{1}{\sum_{i=1}^n w_
 
 Here \(w_i\) are weights, and \(\mu\) and \(\sigma\) are location and
 scale parameters. For non-robust power transformations, all \(w_i = 1\).
-The criterion is similar to the Cramér-von Mises test statistic Mises
-(1928), aside from a additive scalar value and the introduction of
+The criterion is similar to the Cramér-von Mises test statistic 
+\citep{Cramer1928-rc, Von_Mises1928-ef}, aside from a additive scalar value and the introduction of
 weights. This criterion, like the Anderson-Darling criterion, seeks to
 minimise the squared Euclidean distance between the EDF and the normal
 CDF. Unlike the Anderson-Darling criterion, this criterion weights all
@@ -1854,14 +1850,13 @@ k = \frac{\sum_{i=1}^n w_i \left(\phi^{\lambda, x_0, s} \left( x_i \right) - \mu
 \subsubsection{D'Agostino criterion}\label{dagostino-criterion}
 
 The D'Agostino criterion defined here follows the D'Agostino \(K^2\)
-test statistic (D'Agostino and Belanger 1990). This test statistic is
+test statistic \citep{DAgostino1990-kp}. This test statistic is
 composed of two separate test statistics, one of which is related to
 skewness, and the other to kurtosis. Both test statistics are computed
 in several steps. Let us first define \(\nu=\sum_{i=1}^n w_i\). Thus for
 non-robust power transformations, \(\nu = n\).
 
-For the skewness test statistic we first compute (D'Agostino and
-Belanger 1990):
+For the skewness test statistic we first compute \citep{DAgostino1990-kp}:
 
 \begin{equation}
 \beta_1 = s \sqrt{ \frac{\left(\nu + 1\right) \left(\nu + 3\right)} {6 \left(\nu - 2\right)} }
@@ -1885,8 +1880,7 @@ The skewness test statistic is then:
 Z_s = \delta \log\left[\frac{\beta_1}{\alpha} + \sqrt{\frac{\beta_1^2}{\alpha^2} + 1} \right]
 \end{equation}
 
-For the kurtosis test statistic we first compute (D'Agostino and
-Belanger 1990; Anscombe and Glynn 1983):
+For the kurtosis test statistic we first compute \citep{Anscombe1983-nz, DAgostino1990-kp}:
 
 \begin{equation}
 \beta_1 = 3 \frac{\nu - 1}{\nu + 1}
@@ -1936,7 +1930,7 @@ U_{\text{JB}} \left(\mathbf{X}, \lambda, x_0 \right) = s^2 + \left(k - 3\right)^
 \end{equation}
 
 The main difference between the above criterion and the Jarque-Bera test
-statistic (Jarque and Bera 1980) is that a scalar multiplication is
+statistic \citep{Jarque1980-hw} is that a scalar multiplication is
 absent.
 
 \subsection{Optimisation using non-MLE
