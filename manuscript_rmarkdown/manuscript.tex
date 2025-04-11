@@ -110,7 +110,7 @@
 \title{Location and Scale-Invariant Power Transformations for
 Transforming Data to Normality}
 \author{Alex Zwanenburg, Steffen Löck}
-\date{2025-04-09}
+\date{2025-04-11}
 
 \begin{document}
 \maketitle
@@ -216,7 +216,7 @@ sufficiently good power transformations.
 
 }
 
-\caption{Effect of location, scale and outliers on estimation of the Box-Cox and Yeo-Johnson transformation parameter $\lambda$. $10000$ samples were drawn from a normal distribution: $\mathcal{N}(\mu, 1)$ for the shift dataset, $\mathcal{N}(10, \sigma)$ for the scale dataset and $\mathcal{N}(0, 1)$ for the outlier dataset. Additionally, an outlier with value $d$ was added to the outlier dataset. Since samples are drawn from a normal distribution, a transformation parameter of $\lambda = 1$ is expected. However, a large shift in location, a scale that is small compared to the location, or presence of large outliers lead to incorrectly estimated transformation parameter values.}\label{fig:decreased-normality}
+\caption{Effect of location, scale and outliers on estimation of the Box-Cox and Yeo-Johnson transformation parameter $\lambda$. $10000$ samples were drawn from a normal distribution: $\mathcal{N}(\mu, 1)$ for the \textit{shift} dataset, $\mathcal{N}(10, \sigma)$ for the \textit{scale} dataset and $\mathcal{N}(0, 1)$ for the \textit{outlier} dataset. Additionally, an outlier with value $d$ was added to the outlier dataset. Since samples are drawn from a normal distribution, a transformation parameter of $\lambda = 1$ is expected. However, a large shift in location, a scale that is small compared to the location, or presence of large outliers lead to incorrectly estimated transformation parameter values.}\label{fig:decreased-normality}
 \end{figure}
 
 To address these issues, we make the following contributions:
@@ -247,6 +247,14 @@ weighting methods for robust transformations. We then define the
 quantile function for asymmetric generalised normal distributions to
 enable random sampling. Finally, we define the overall framework for the
 empirical central normality test.
+
+First, we define a (numeric) feature. Throughout this work, whenever
+reference is made to a feature, a numeric feature is meant unless noted
+otherwise.
+
+\begin{definition}[Numeric feature]
+A numeric feature is a finite sequence $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i \in  \right\}$ of length $n$.
+\end{definition}
 
 \subsection{Location- and scale-invariant power
 transformation}\label{location--and-scale-invariant-power-transformation}
@@ -322,7 +330,7 @@ Then the log-likelihood function of the location- and scale- invariant Box-Cox p
 Similarly, the location- and scale-invariant Yeo-Johnson log-likelihood
 function is:
 
-\begin{definition}
+\begin{definition}[Log-likelihood function of the location- and scale- invariant Yeo-Johnson power transformation]
 Let $\mathbf{X}$, $\lambda$, $x_0$, and $s$ be defined as earlier (Eqn. \ref{eqn:yeo-johnson-invariant}).
 Let $\mu$ and $\sigma^2$ be the mean and variance of the transformed sequence $\phi_{\text{YJ}}^{\lambda, x_0, s} (\mathbf{X})$, respectively.
 
@@ -359,9 +367,24 @@ for estimating the transformation, shift and scale parameters.
 Here, weighted maximum likelihood estimation is based on equations
 \ref{eqn:box-cox-invariant-log-likelihood} and
 \ref{eqn:yeo-johnson-invariant-log-likelihood}. Compared to Raymaekers
-and Rousseeuw (2024), these log-likelihood functions includes additional
+and Rousseeuw (2024), these log-likelihood functions include additional
 terms to accommodate estimation of \(x_0\) and \(s\). The weighted
 location- and scale-invariant Box-Cox log-likelihood function is:
+
+\begin{definition}[Weighted log-likelihood function of the location- and scale- invariant Box-Cox power transformation]
+Let $\mathbf{X}$, $\lambda$, $x_0$, and $s$ be defined as earlier (Eqn. \ref{eqn:box-cox-invariant}).
+Let $w_i \geq 0$ be the weight corresponding to each element of $\mathbf{X}$.
+Let $\mu_w$ be the weighted mean of the Box-Cox transformed sequence:
+\begin{equation*}
+\mu_w = \frac{\sum_{i=1}^n w_i \phi_{\text{BC}}^{\lambda, x_0, s} (x_i)} {\sum_{i=1}^n w_i}
+\end{equation*}
+
+Let $\sigma^2_w$ be the weighted variance of the Box-Cox transformed sequence:
+\begin{equation*}
+\sigma_w^2 = \frac{\sum_{i=1}^n w_i \left(\phi_{\text{BC}}^{\lambda, x_0, s} (x_i) - \mu_w \right)^2}{\sum_{i=1}^n w_i}
+\end{equation*}
+
+Then, the weighted log-likelihood function of the location- and scale- invariant Box-Cox power transformation is:
 
 \begin{equation}
 \label{eqn:box-cox-weighted-invariant-log-likelihood}
@@ -370,33 +393,35 @@ location- and scale-invariant Box-Cox log-likelihood function is:
 & - \lambda \left( \sum_{i=1}^n w_i \right) \log s + \left( \lambda - 1 \right) \sum_{i=1}^n w_i \log \left[ x_i - x_0 \right]
 \end{split}
 \end{equation}
-
-where \(\mu_w\) and \(\sigma^2_w\) are the weighted mean and weighted
-variance of the Box-Cox transformed feature
-\(\phi_{\text{BC}}^{\lambda, x_0, s} (\mathbf{X})\):
-
-\begin{equation}
-\sigma_w^2 = \frac{\sum_{i=1}^n w_i \left(\phi_{\text{BC}}^{\lambda, x_0, s} (x_i) - \mu_w \right)^2}{\sum_{i=1}^n w_i} \quad \text{with } \mu_w = \frac{\sum_{i=1}^n w_i \phi_{\text{BC}}^{\lambda, x_0, s} (x_i)} {\sum_{i=1}^n w_i}
-\end{equation}
+\end{definition}
 
 Analogously, the weighted location- and scale-invariant Yeo-Johnson
 log-likelihood function is:
+
+\begin{definition}[Weighted log-likelihood function of the location- and scale- invariant Yeo-Johnson power transformation]
+
+Let $\mathbf{X}$, $\lambda$, $x_0$, and $s$ be defined as earlier (Eqn. \ref{eqn:yeo-johnson-invariant}).
+Let $w_i \geq 0$ be the weight corresponding to each element of $\mathbf{X}$.
+Let $\mu_w$ be the weighted mean of the Yeo-Johnson transformed sequence:
+\begin{equation*}
+\mu_w = \frac{\sum_{i=1}^n w_i \phi_{\text{YJ}}^{\lambda, x_0, s} (x_i)} {\sum_{i=1}^n w_i}
+\end{equation*}
+
+Let $\sigma^2_w$ be the weighted variance of the Yeo-Johnson transformed sequence:
+\begin{equation*}
+\sigma_w^2 = \frac{\sum_{i=1}^n w_i \left(\phi_{\text{YJ}}^{\lambda, x_0, s} (x_i) - \mu_w \right)^2}{\sum_{i=1}^n w_i}
+\end{equation*}
+
+Then, the weighted log-likelihood function of the location- and scale- invariant Yeo-Johnson power transformation is:
 
 \begin{equation}
 \label{eqn:yeo-johnson-weighted-invariant-log-likelihood}
 \begin{split}
 \mathcal{l}_{\text{rYJ}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi_{\text{YJ}}^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
-& - \left( \sum_{i=1}^n w_i \right) \log s + (\lambda - 1) \sum_{i=1}^n w_i \sgn(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
+& - \left( \sum_{i=1}^n w_i \right) \log s + (\lambda - 1) \sum_{i=1}^n w_i \mathop{\mathrm{sgn}}(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
 \end{split}
 \end{equation}
-
-where \(\mu_w\) and \(\sigma^2_w\) are the weighted mean and weighted
-variance of the Yeo-Johnson transformed feature
-\(\phi_{\text{YJ}}^{\lambda, x_0, s} (\mathbf{X})\):
-
-\begin{equation}
-\sigma_w^2 = \frac{\sum_{i=1}^n w_i \left(\phi_{\text{YJ}}^{\lambda, x_0, s} (x_i) - \mu_w \right)^2}{\sum_{i=1}^n w_i} \quad \text{with } \mu_w = \frac{\sum_{i=1}^n w_i \phi_{\text{YJ}}^{\lambda, x_0, s} (x_i)} {\sum_{i=1}^n w_i}
-\end{equation}
+\end{definition}
 
 The weights \(w_i\) in equations
 \ref{eqn:box-cox-weighted-invariant-log-likelihood} and
@@ -405,51 +430,38 @@ several weighting functions. Using \(\dot{x}_i\) as an argument that
 will be defined later, we investigate three weighting functions:
 
 \begin{itemize}
-\tightlist
 \item
   A step function, with \(\delta_1 \geq 0\) as threshold parameter:
-\end{itemize}
-
-\begin{equation}
-w_i =
-\begin{cases}
-1 & \text{if } \left| \dot{x}_i \right| \leq \delta_1\\
-0 & \text{if } \left| \dot{x}_i \right| > \delta_1
-\end{cases}
-\end{equation}
-
-\begin{itemize}
-\tightlist
+  \begin{equation*}
+  w_i =
+  \begin{cases}
+  1 & \text{if } \left| \dot{x}_i \right| \leq \delta_1\\
+  0 & \text{if } \left| \dot{x}_i \right| > \delta_1
+  \end{cases}
+  \end{equation*}
 \item
   A triangle function (or generalised Huber weight), with
   \(\delta_1 \geq 0\) and \(\delta_2 \geq \delta_1\) as threshold
-  parameters:
-\end{itemize}
-
-\begin{equation}
-w_i =
-\begin{cases}
-1 & \text{if } \left| \dot{x}_i \right| < \delta_1\\
-1 - \frac{\left| \dot{x}_i \right| - \delta_1}{\delta_2 - \delta_1} & \text{if } \delta_1 \leq \left| \dot{x}_i \right| \leq \delta_2 \\
-0 & \text{if } \left| \dot{x}_i \right| > \delta_2
-\end{cases}
-\end{equation}
-
-\begin{itemize}
-\tightlist
+  parameters: \begin{equation*}
+  w_i =
+  \begin{cases}
+  1 & \text{if } \left| \dot{x}_i \right| < \delta_1\\
+  1 - \frac{\left| \dot{x}_i \right| - \delta_1}{\delta_2 - \delta_1} & \text{if } \delta_1 \leq \left| \dot{x}_i \right| \leq \delta_2 \\
+  0 & \text{if } \left| \dot{x}_i \right| > \delta_2
+  \end{cases}
+  \end{equation*}
 \item
   A tapered cosine function (J. W. Tukey 1967), with \(\delta_1 \geq 0\)
   and \(\delta_2 \geq \delta_1\) as threshold parameters:
+  \begin{equation*}
+  w_i =
+  \begin{cases}
+  1 & \text{if } \left| \dot{x}_i \right| < \delta_1\\
+  0.5 + 0.5 \cos\left(\pi \frac{\left| \dot{x}_i \right| - \delta_1}{\delta_2 - \delta_1} \right) & \text{if } \delta_1 \leq \left| \dot{x}_i \right| \leq \delta_2 \\
+  0 & \text{if } \left| \dot{x}_i \right| > \delta_2
+  \end{cases}
+  \end{equation*}
 \end{itemize}
-
-\begin{equation}
-w_i =
-\begin{cases}
-1 & \text{if } \left| \dot{x}_i \right| < \delta_1\\
-0.5 + 0.5 \cos\left(\pi \frac{\left| \dot{x}_i \right| - \delta_1}{\delta_2 - \delta_1} \right) & \text{if } \delta_1 \leq \left| \dot{x}_i \right| \leq \delta_2 \\
-0 & \text{if } \left| \dot{x}_i \right| > \delta_2
-\end{cases}
-\end{equation}
 
 All weighting functions share the characteristic that for
 \(\left| \dot{x}_i \right|< \delta_1\), instances are fully weighted,
@@ -731,8 +743,8 @@ test statistic values for the empirical variant of the central normality
 test. For each sequence we then computed \(\tau_{n, \kappa}\) for
 \(\kappa \in \left\{0.60, 0.70, 0.80, 0.90, 0.95, 1.00\right\}\).
 
-Figure \ref{empirical-central-normality-kappa} shows
-\(\tau_{\alpha = 0.95, n, \kappa}\) as a function of \(n\) for different
+Figure \ref{fig:empirical-central-normality-kappa} shows
+\(\tau_{\alpha = 0.05, n, \kappa}\) as a function of \(n\) for different
 values of \(\kappa\). With decreasing \(\kappa\), the test statistic
 curve decreases. The curves for \(\kappa = 0.60\), \(\kappa = 0.70\) and
 \(\kappa = 0.80\) are similar, whereas curves for \(\kappa \geq 0.90\)
@@ -766,9 +778,9 @@ respective test was used to reject the null hypothesis that the sequence
 is (centrally) normal. The null hypothesis was rejected if
 \(p \leq 0.05\). The type I error rate was determined by computing the
 fraction of centrally normal sequences rejected this way. Figure
-\ref{empirical-central-normality-error_rate} shows that the empirical
-central normality test had the expected type I error rate for centrally
-normal data (with tails of the distribution not being normally
+\ref{fig:empirical-central-normality-error_rate} shows that the
+empirical central normality test had the expected type I error rate for
+centrally normal data (with tails of the distribution not being normally
 distributed), whereas the central normality test and Shapiro-Wilk test
 overestimated type I error rates.
 
@@ -803,10 +815,10 @@ Outliers may be present in data and affect estimation of transformation
 parameters. The log-likelihood function can be weighted to assign less
 weight to outlier instances, see equations
 \ref{eqn:box-cox-weighted-invariant-log-likelihood} and
-\ref{eqn:yeo-johnson-weighted-invariant-log-likelihood}. We proposed
-three weighting function: step, triangle and tapered cosine, that have
+\ref{eqn:yeo-johnson-weighted-invariant-log-likelihood}. We propose
+three weighting functions: step, triangle and tapered cosine, that have
 one, two and two parameters, respectively. Each weighting function then
-takes one of three values as input: probabilities of the empirical
+uses one of the following inputs: probabilities of the empirical
 distribution of the original feature, the z-score of the transformed
 feature values, or the residual error between the z-score of the
 transformed feature values and their expected z-score based on the
@@ -1081,12 +1093,12 @@ scale-invariant transformation (\(\lambda = 1.3\), \(\sum r_i = 9.3\),
 \(\mu_{YJ} = -1.0\), \(\sigma_{YJ} = 1.1\), \(p = 0.93\)).
 
 Location- and scale-invariant transformation led to a lower overall
-residual errors, indicating a better transformation. Conventional
-transformations inflated the mean \(\mu_{YJ}\) and standard deviation
-\(\sigma_{YJ}\) of the age feature after transformation. The empirical
-central normality test did not detect any statistically significant
-deviations from central normality for any transformation (all
-\(p \geq 0.93\)).
+residual error, indicating a better transformation to normality.
+Conventional transformations inflated the mean \(\mu_{YJ}\) and standard
+deviation \(\sigma_{YJ}\) of the age feature after transformation. The
+empirical central normality test did not detect any statistically
+significant deviations from central normality for any transformation
+(all \(p \geq 0.93\)).
 
 \subsubsection{Penguin body mass}\label{penguin-body-mass}
 
@@ -1274,7 +1286,7 @@ test: \(p < 10^{-8})\).
 Considering single process parameters, the choice of learner (Friedman
 test: \(p < 10^{-8})\)), normalisation method (Wilcoxon signed rank
 test: \(p = 4 \cdot 10^{-8}\)), and transformation method (Friedman
-test:\(p = 0.007\), all had a significant impact (at \(p = 0.05\)).
+test: \(p = 0.007\)), all had a significant impact (at \(p = 0.05\)).
 
 To estimate the marginal effects of process parameters, including
 transformation method, we first fit a regression random forest (ranger
@@ -1284,11 +1296,11 @@ difficulty as predictors and normalised rank as response variable. The
 estimated marginal effects are shown in Figure
 \ref{fig:marginal-effect-plot}. On the scale of normalised ranks
 (\([0.0, 1.0]\)), only the random forest performed better than the
-average of all learners (rank difference \(0.173\)). The overall
-marginal effect of using z-standardisation to normalise features was
-\(0.011\). Transformation methods had the following marginal effects:
-\(-0.001\) for using conventional Yeo-Johnson transformation instead of
-no transformation; \(-0.012\) for using robust invariant Yeo-Johnson
+average of all learners (rank difference \(0.173\)). The marginal
+improvement in performance from z-standardisation was \(0.011\).
+Transformation methods had the following marginal effects: \(-0.001\)
+for using conventional Yeo-Johnson transformation instead of no
+transformation; \(-0.012\) for using robust invariant Yeo-Johnson
 transformation instead of no transformation; \(-0.012\) for using robust
 invariant Yeo-Johnson transformation with empirical central normality
 test instead of no transformation; \(-0.012\) for using robust invariant
@@ -1329,11 +1341,10 @@ processing, where such issues may go unnoticed.
 
 In simulation, robust location- and scale-invariant transformations
 ranked best in datasets with outliers, and ranked highly in datasets
-without outliers, except for data without outliers that were directly
-derived from strictly normal distributions. This could be observed in
-real-world examples, where robust location-and scale-invariant
-transformations achieved central normality for when the non-robust
-variant could not.
+without outliers, except for features without outliers that were
+directly sampled from strictly normal distributions. In real-world
+examples, robust location-and scale-invariant transformations achieved
+central normality when the non-robust variant could not.
 
 However, in a machine learning experiment of 231 real-world datasets
 that contained at least one numeric feature, we did not find a
@@ -1353,12 +1364,12 @@ parameter \(\lambda\), shift parameter \(x_0\) and scale parameter
 using MLE. Alternatively, standardisation of a numeric variable (e.g.,
 through subtracting its median value and division by its interquartile
 range) prior to conventional power transformations can achieve a similar
-effect in reducing sensitivity to the distribution's location and scale,
-as demonstrated by our findings. While this alternative helps prevent
-these issues -- provided that normalisation does not lead to negative
-values for Box-Cox transformations -- location- and scale-invariant
-transformations are able to achieve better transformations to normality,
-demonstrated by a lower residual error.
+effect in reducing sensitivity to the feature's location and scale.
+While this alternative helps prevent these issues -- provided that
+standardisation does not lead to negative values for Box-Cox
+transformations -- location- and scale-invariant transformations are
+able to achieve better transformations to normality, as demonstrated by
+lower residual errors in simulation experiments.
 
 We assessed several weighting methods to achieve robust power
 transformations. Methods that relied on the z-score of the transformed
@@ -1377,11 +1388,15 @@ inspection prior to further processing. The empirical test for central
 normality differs from other tests for normality, such as the
 Shapiro-Wilk test (Shapiro and Wilk 1965), as it assesses normality of
 the central portion of a feature, instead of the entire feature.
+Compared to the central normality test and the Shapiro-Wilk test, the
+empirical central normality test remains consistent in the presence of
+outliers, although the former tests are more powerful when outliers are
+absent.
 
-This work has the following limitations. Firstly, we did observe several
-numerical stability issues for optimisation criteria other than MLE
-(Appendix B). These appear in regions where transformation parameters
-would lead to very large or small numbers when using conventional power
+This work has the following limitation: We observed several numerical
+stability issues for optimisation criteria other than MLE (Appendix B).
+These appear in regions where transformation parameters would lead to
+very large or small numbers when using conventional power
 transformations. For MLE stability issues were not observed.
 
 \section{Conclusion}\label{conclusion}

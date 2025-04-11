@@ -101,7 +101,8 @@ The location- and scale-invariant Yeo-Johnson transformation is:
 \end{equation}
 ```
 
-The parameters of these power transformations can be optimised based by maximising the log-likelihood function, under the assumption that the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$ follows a normal distribution.
+The parameters of these power transformations can be optimised by maximising the
+log-likelihood function, under the assumption that the transformed feature $\phi^{\lambda, x_0, s} (\mathbf{X})$ follows a normal distribution.
 The log-likelihood functions for conventional Box-Cox and Yeo-Johnson transformations are well-known.
 However, the introduction of scaling parameter $s$ prevents their direct use.
 Here, we first derive the general form of the log-likelihood functions, and then derive their power-transformation specific definitions.
@@ -257,9 +258,13 @@ Generally, optimisation requires minimisation or maximisation of a criterion.
 In MLE, the maximised criterion is the log-likelihood function of the normal distribution.
 Here, we investigate power transformation using optimisation criteria that are closely related to test statistics for normality tests.
 
-Let $\mathbf{X}$ be a feature with ordered feature values, and $\mathbf{Y}^\lambda =\phi^{\lambda} \left(\mathbf{X} \right)$ and $\mathbf{Y}^{\lambda, x_0, s} =\phi^{\lambda, x_0, s} \left(\mathbf{X} \right)$ its transformed values using conventional and shift and scale invariant power transformations, respectively. Since power transformations are monotonic, $\mathbf{Y}$ will likewise be ordered.
+Let $\mathbf{X}$ be a feature with ordered feature values,
+and $\mathbf{Y}^\lambda =\phi^{\lambda} \left(\mathbf{X} \right)$ and
+$\mathbf{Y}^{\lambda, x_0, s} =\phi^{\lambda, x_0, s} \left(\mathbf{X} \right)$ 
+its transformed values using conventional and location- and scale-invariant power transformations, respectively.
+Since power transformations are monotonic, $\mathbf{Y}$ will likewise be ordered.
 
-Below we will focus on criteria based on the empirical density function and those based on skewness and kurtosis of the transformed featured.
+Below we will focus on criteria based on the empirical density function and those based on skewness and kurtosis of the transformed feature.
 Other potential criteria, such as the Shapiro-Wilk test statistic [@Shapiro1965-zd] are not investigated here.
 In the case of the Shapiro-Wilk test statistic this is because of lack of scalability to features with many ($> 5000$) instances, and because adapting the test statistic to include weights is not straightforward.
 
@@ -285,8 +290,12 @@ U_{\text{AD}} \left(\mathbf{X}, \lambda, x_0 \right) = \frac{1}{\sum_{i=1}^n w_i
 
 Here $w_i$ are weights, and $\mu$ and $\sigma$ are location and scale parameters. 
 For non-robust power transformations, all $w_i = 1$.
-Note that this criterion is not the same as the Anderson-Darling test statistic [@Anderson1952-gz], which involves solving (or approximating) an integral function, contains an extra scalar multiplication term, and does not include weights.
-The Anderson-Darling criterion seeks to minimise the squared Euclidean distance between the EDF and the normal CDF, with differences at the upper and lower end of the normal CDF receiving more weight than those at the the centre of the CDF.
+Note that this criterion is not the same as the Anderson-Darling test statistic [@Anderson1952-gz],
+which involves solving (or approximating) an integral function,
+contains an extra scalar multiplication term, and does not include weights.
+The Anderson-Darling criterion seeks to minimise the squared Euclidean distance 
+between the EDF and the normal CDF, with differences at the upper and lower end
+of the normal CDF receiving more weight than those at the centre of the CDF.
 
 ### Cramér-von Mises criterion
 
@@ -300,16 +309,20 @@ U_{\text{CvM}} \left(\mathbf{X}, \lambda, x_0 \right) = \frac{1}{\sum_{i=1}^n w_
 
 Here $w_i$ are weights, and $\mu$ and $\sigma$ are location and scale parameters.
 For non-robust power transformations, all $w_i = 1$.
-The criterion is similar to the Cramér-von Mises test statistic [@Cramer1928-rc, @Von_Mises1928-ef], aside from a additive scalar value and the introduction of weights.
+The criterion is similar to the Cramér-von Mises test statistic [@Cramer1928-rc, @Von_Mises1928-ef],
+aside from an additive scalar value and the introduction of weights.
 This criterion, like the Anderson-Darling criterion, seeks to minimise the squared Euclidean distance between the EDF and the normal CDF.
 Unlike the Anderson-Darling criterion, this criterion weights all instances equally.
 
-For conventional power transformations with a fixed shift parameter, the transformation $\phi^{\lambda, x_0, s} (\mathbf{X})$ may be substituted by $\phi^{\lambda} (\mathbf{X})$ in the definition of the Cramér-von Mises criterion.
+For conventional power transformations with a fixed shift parameter,
+the transformation $\phi^{\lambda, x_0, s} (\mathbf{X})$ may be substituted 
+by $\phi^{\lambda} (\mathbf{X})$ in the definition of the Cramér-von Mises criterion.
 
 ## Skewness-kurtosis-based criteria
 
 The second class of criteria seeks to reduce skewness and (excess) kurtosis of the transformed feature $\mathbf{Y}$.
-We will first define the location $\mu$ and scale $\sigma$ of the the transformed as these are required for computing skewness and kurtosis.
+We will first define the location $\mu$ and scale $\sigma$ of the transformed feature
+as these are required for computing skewness and kurtosis.
 Here, $\mu$ is defined as:
 
 ```{=latex}
@@ -318,8 +331,8 @@ Here, $\mu$ is defined as:
 \end{equation}
 ```
 
-The location, or mean, is weighted using weights $w_i$.
-For non-robust transformations, $w_i = 1$.
+The location, or mean, is weighted by $w_i$, which equals $1$ for non-robust transformations.
+
 Then, $\sigma^2$ is defined as:
 ```{=latex}
 \begin{equation}
@@ -505,7 +518,7 @@ found in Table \ref{tab:central-normality-critical-statistic} and Table
 \begin{center}
 \caption{Critical values of test statistic $\tau_{\alpha, n, \kappa = 0.80}$ for
 \textbf{central normality} at $\kappa = 0.80$, as a function of significance 
-level $\alpha$ and number of instances $n$. The values shown must be divided by $100$.}
+level $\alpha$ and number of instances $n$. The values in this table should be divided by $100$ before use.}
 \label{tab:central-normality-critical-statistic}
 \begin{tabular}{l | r r r r r r r r r}
 
@@ -544,7 +557,7 @@ $n$ \textbackslash $\alpha$ & 0.001 & 0.01 & 0.025 & 0.05 & 0.1 & 0.2 & 0.5 & 0.
 \begin{center}
 \caption{Critical values of test statistic $\tau_{\alpha, n, \kappa = 0.70}$ for
 \textbf{empirical central normality} at $\kappa = 0.70$, as a function of significance 
-level $\alpha$ and number of instances $n$. The values shown must be divided by $100$.}
+level $\alpha$ and number of instances $n$.The values in this table should be divided by $100$ before use.}
 \label{tab:empirical-central-normality-critical-statistic}
 \begin{tabular}{l | r r r r r r r r r}
 
@@ -678,7 +691,7 @@ sequence ($n \in \{30, 100, 500\}$) and transformation parameter for the
 inverse transformation $\lambda \in \{0.1, 1.0, 1.9\}$. Each sequence then underwent
 power transformation using Box-Cox and Yeo-Johnson transformations. For Box-Cox
 transformations, each sequence was shifted prior to inverse transformation
-so that every element after inverse transformation would be strictly positive.
+ensuring all elements were strictly positive after inverse transformation.
 
 Results for Box-Cox transformations are shown in Table
 \ref{tab:clean-transformation-appendix-residuals-bc},
