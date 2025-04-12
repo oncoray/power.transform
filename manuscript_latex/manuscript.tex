@@ -56,6 +56,7 @@
 %% \usepackage{algorithmicx}%
 %% \usepackage{algpseudocode}%
 \usepackage{listings}%
+\usepackage{placeins}
 %%%%
 \newtheorem*{definition}{Definition}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -353,7 +354,7 @@ Then the location- and scale-invariant Yeo-Johnson power transformation of eleme
 For both invariant transformations, \(\lambda\), \(x_0\) and \(s\)
 parameters can be obtained by maximising the log-likelihood function,
 i.e.~using maximum likelihood estimation (MLE). A full derivation of the
-log-likelihood function for both transformations is shown in Appendix A.
+log-likelihood function for both transformations is shown in \hyperref[appendix-a]{Appendix A}.
 The location- and scale-invariant Box-Cox log-likelihood function is:
 
 \begin{definition} [Log-likelihood function of the location- and scale- invariant Box-Cox power transformation]
@@ -941,7 +942,6 @@ and scale-invariant Box-Cox and Yeo-Johnson transformations,
 respectively.
 
 \begin{table}
-\begin{center}
 \caption{Optimal weighting parameters and corresponding loss for location- and scale-invariant Box-Cox power transformations.
 $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values,
 and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution.
@@ -972,11 +972,9 @@ $r$ (triangle)           & 0.50 & $(0, 10]$ & 0.80 & 0.81 & $(0, 10]$ & 0.84 & 5
 $r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 0.76 & 0.77 & $(0, 10]$ & 0.76 & 53.2 \\
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{Optimal weighting parameters and corresponding loss for location- and scale-invariant Yeo-Johnson power transformations.
 $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values,
 and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution. 
@@ -1006,7 +1004,6 @@ $r$ (triangle)           & 0.50 & $(0, 10]$ & 0.87 & 1.00 & $(0, 10]$ & 0.87 & 6
 $r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.06 & 1.00 & $(0, 10]$ & 1.07 & 67.1 \\
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \subsection{Assessing transformations using simulated
@@ -1076,7 +1073,7 @@ residual errors (data without outliers) or the sum of residual errors of
 the central portion (data with outliers). The average rank of each
 transformation method was computed over all 10000 sequences in each
 dataset. Average ranks for Yeo-Johnson transformations are shown in
-Table \ref{tab:comparison_methods_simulation_yeo_johnson}. Location and
+Table \ref{tab:comparison_methods_simulations_yeo_johnson}. Location and
 shift-invariant Yeo-Johnson transformation ranked best for all datasets
 without outliers. The robust variant ranked best in dirty and shifted
 datasets with outliers, but not in the clean dataset. Results for
@@ -1084,7 +1081,6 @@ Box-Cox transformations are shown in Table
 \ref{tab:comparison_methods_simulations_box_cox}.
 
 \begin{table}
-\begin{center}
 \caption{
 Comparison of average rank between Yeo-Johnson transformation methods based on either residual error (without outliers) or residual error of the central portion
 (with outliers; $\kappa = 0.80$) over 3 datasets with 10000 sequences each. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
@@ -1114,7 +1110,6 @@ robust invariant                      & &         6.41  &         3.66  &       
 
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 
@@ -1133,7 +1128,7 @@ centered near zero, or both. Earlier, we assessed these transformations
 using simulated data. In the following, they are evaluated using
 examples from real datasets. We focus on the Yeo-Johnson transformation
 because of its ability to handle features with negative values. Results
-for Box-Cox transformations are shown in Appendix E.
+for Box-Cox transformations are shown in \hyperref[appendix-e]{Appendix E}.
 
 \begin{figure}
 
@@ -1150,7 +1145,7 @@ cancer}\label{age-of-patients-with-lung-cancer}
 A common feature in health-related datasets is age. Here we use data on
 228 patients with lung cancer that was collected and published by
 Loprinzi et al. \citep{Loprinzi1994-cd}. The age in the cohort was
-\(62.4 \pm 9.1\) (mean ± standard deviation) years. Applying
+\(62.4 \pm 9.1\) (mean $\pm$ standard deviation) years. Applying
 conventional and invariant Yeo-Johnson transformations to patient age
 yielded the following results, see Figure
 \ref{fig:experimental-results-invariance}: no transformation
@@ -1177,7 +1172,7 @@ significant deviations from central normality for any transformation
 
 Gorman, Williams and Fraser recorded body mass (in grams) of 342
 penguins of three different species \citep{Gorman2014-eo}.
-The body mass was \((4.2 \pm 0.8) \cdot 10^3\) (mean ± standard
+The body mass was \((4.2 \pm 0.8) \cdot 10^3\) (mean $\pm$ standard
 deviation) grams, and not centrally normal (\(p < 0.001\)). Applying
 conventional and invariant Yeo-Johnson transformations to body mass
 yielded the following results, see Figure
@@ -1207,7 +1202,7 @@ dataset}\label{latitude-in-the-ames-housing-dataset}
 Geospatial datasets usually contain coordinates. The Ames housing
 dataset contains data on 2930 properties that were sold between 2006 and
 2010 \citep{De-Cock2011-jf}, including their geospatial coordinates. The
-latitude was \(42.03 \pm 0.02)\) (mean ± standard deviation). Applying
+latitude was \(42.03 \pm 0.02)\) (mean $\pm$ standard deviation). Applying
 conventional and invariant Yeo-Johnson transformations to latitude
 yielded the following results, see Figure
 \ref{fig:experimental-results-invariance}: no transformation (residual
@@ -1328,7 +1323,6 @@ we computed the median performance score over all models for each
 dataset and assigned one the following categories:
 
 \begin{itemize}
-\tightlist
 \item
   very easy: \(\text{AUC} \geq 0.90\) or \(\text{RRSE} \leq 0.10\) (57
   datasets)
@@ -1393,7 +1387,7 @@ of conventional Yeo-Johnson transformation.
 \caption{Estimated marginal effect of learners, normalisation and transformation methods on ranked model performance scores in 36960 machine learning experiments on 231 datasets. The four top-left panels shows the marginal effect of learners vs. the average, i.e. generalised linear models (GLM), L1-regularised LM (Lasso), gradient-boosted LM and random forest. Random forests outperform the average. The top-right panel shows the marginal effect of feature normalisation methods, i.e. no normalisation and z-standardisation. z-standardisation is generally beneficial, but the estimated effect is marginal. The bottom panel shows the marginal effects of different transformation methods, split by normalisation method. The estimated effects are similar in size to the effect of normalisation and marginal. Note that the ranges of the $x$-axes of the three main panels differ. ECNT: empirical central normality test.}\label{fig:marginal-effect-plot}
 \end{figure}
 
-
+\FloatBarrier
 
 
 \section{Discussion}\label{discussion}
@@ -1485,7 +1479,7 @@ outliers, although the former tests are more powerful when outliers are
 absent.
 
 This work has the following limitation: We observed several numerical
-stability issues for optimisation criteria other than MLE (Appendix B).
+stability issues for optimisation criteria other than MLE (\hyperref[appendix-b]{Appendix B}).
 These appear in regions where transformation parameters would lead to
 very large or small numbers when using conventional power
 transformations. For MLE stability issues were not observed.
@@ -1528,7 +1522,7 @@ repository (https://cran.r-project.org/package=power.transform). The manuscript 
 
 \begin{appendices}
 
-\section{Appendix A: Log-likelihood functions for location- and
+\section{Log-likelihood functions for location- and
 scale-invariant power
 transformation}\label{appendix-a}
 
@@ -1726,7 +1720,7 @@ variance of the Yeo-Johnson transformed feature
 
 
 
-\section{Appendix B: Optimisation of transformation
+\section{Optimisation of transformation
 parameters}\label{appendix-b}
 
 Maximum likelihood estimation (MLE) is commonly used to optimise
@@ -1790,11 +1784,11 @@ EDF and the normal CDF, with differences at the upper and lower end of
 the normal CDF receiving more weight than those at the the centre of the
 CDF.
 
-\subsubsection{Cramér-von Mises
+\subsubsection{Cram\'{e}r-von Mises
 criterion}\label{cramer-von-mises-criterion}
 
-The Cramér-von Mises criterion is also based on the empirical
-distribution function of \(\mathbf{X}\). We define the Cramér-von Mises
+The Cram\'{e}r-von Mises criterion is also based on the empirical
+distribution function of \(\mathbf{X}\). We define the Cram\'{e}r-von Mises
 criterion as follows:
 
 \begin{equation}
@@ -1803,7 +1797,7 @@ U_{\text{CvM}} \left(\mathbf{X}, \lambda, x_0 \right) = \frac{1}{\sum_{i=1}^n w_
 
 Here \(w_i\) are weights, and \(\mu\) and \(\sigma\) are location and
 scale parameters. For non-robust power transformations, all \(w_i = 1\).
-The criterion is similar to the Cramér-von Mises test statistic 
+The criterion is similar to the Cram\'{e}r-von Mises test statistic 
 \citep{Cramer1928-rc, Von_Mises1928-ef}, aside from a additive scalar value and the introduction of
 weights. This criterion, like the Anderson-Darling criterion, seeks to
 minimise the squared Euclidean distance between the EDF and the normal
@@ -1813,7 +1807,7 @@ instances equally.
 For conventional power transformations with a fixed shift parameter, the
 transformation \(\phi^{\lambda, x_0, s} (\mathbf{X})\) may be
 substituted by \(\phi^{\lambda} (\mathbf{X})\) in the definition of the
-Cramér-von Mises criterion.
+Cram\'{e}r-von Mises criterion.
 
 \subsection{Skewness-kurtosis-based
 criteria}\label{skewness-kurtosis-based-criteria}
@@ -1955,7 +1949,7 @@ may be substituted by \(\phi^{\lambda} (\mathbf{X})\), or equivalently,
 criteria}\label{simulations-with-other-optimisation-criteria}
 
 Invariance of location- and scale-invariant power transformations was
-assessed using the optimisation criteria in Appendix B. 
+assessed using the optimisation criteria in \hyperref[appendix-b]{Appendix B}. 
 This follows the simulation in the main manuscript, where MLE was
 used for optimization. In short, we first randomly drew \(10000\) values
 from a normal distribution:
@@ -1990,9 +1984,11 @@ The results are shown in Figure
 \caption{Invariant power transformation produces transformation parameters that are invariant to location and scale. Samples were drawn from normal, right-skewed and left-skewed distributions, respectively, which then underwent a shift $d_{\text{shift}}$ or multiplication by $d_{\text{scale}}$. Estimates of the transformation parameter $\lambda$ for the conventional power transformations show strong dependency on the overall location and scale of the distribution and the optimisation criterion, whereas estimates obtained for the location- and scale-invariant power transformations are constant. For location- and scale-invariant power transformations, the Anderson-Darling criterion leads to unstable estimates of $\lambda$ for skewed distributions, possibly due to large weights being assigned to samples at the upper and lower ends of the distribution.}\label{fig:shifted-distributions-appendix}
 \end{figure}
 
+\FloatBarrier
 
 
-\section{Appendix C: Central normality test and empirical central
+
+\section{Central normality test and empirical central
 normality test critical
 values}\label{appendix-c}
 
@@ -2002,7 +1998,6 @@ Table \ref{tab:empirical-central-normality-critical-statistic},
 respectively.
 
 \begin{table}
-\begin{center}
 \caption{Critical values of test statistic $\tau_{\alpha, n, \kappa = 0.80}$ for
 \textbf{central normality} at $\kappa = 0.80$, as a function of significance 
 level $\alpha$ and number of instances $n$. The values shown must be divided by $100$.}
@@ -2026,11 +2021,9 @@ $n$ \textbackslash $\alpha$ & 0.001 & 0.01 & 0.025 & 0.05 & 0.1 & 0.2 & 0.5 & 0.
 10000 &   1.22 &  1.00 &  0.90 &  0.82 &  0.74 &  0.65 &  0.51 &  0.41 &  0.37 \\
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{Critical values of test statistic $\tau_{\alpha, n, \kappa = 0.70}$ for
 \textbf{empirical central normality} at $\kappa = 0.70$, as a function of significance 
 level $\alpha$ and number of instances $n$. The values shown must be divided by $100$.}
@@ -2054,7 +2047,6 @@ $n$ \textbackslash $\alpha$ & 0.001 & 0.01 & 0.025 & 0.05 & 0.1 & 0.2 & 0.5 & 0.
 10000 &   2.39 &  2.18 &  2.08 &  2.00 &  1.91 &  1.81 &  1.59 &  1.39 &  1.28 \\
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \begin{figure}
@@ -2066,7 +2058,11 @@ $n$ \textbackslash $\alpha$ & 0.001 & 0.01 & 0.025 & 0.05 & 0.1 & 0.2 & 0.5 & 0.
 \caption{Critical test statistic $\tau_{\alpha, n, \kappa = 0.80}$ of the (empirical) central normality test as function of $n$ for several values of significance level $\alpha$. The critical test statistics for central normality test are determined using fully normal data, whereas the statistics for the empirical variant are determined using centrally normal data, i.e. with fully normal data where 10\% of elements are replaced by outliers. emp: empirical}\label{fig:empirical-central-normality-critical-statistics}
 \end{figure}
 
-\section{Appendix D: Assessing transformations using simulated
+\FloatBarrier
+
+
+
+\section{Assessing transformations using simulated
 data}\label{appendix-d}
 
 \subsection{Ranking Box-Cox
@@ -2077,7 +2073,6 @@ transformations. The results are shown in Table
 \ref{tab:comparison_methods_simulations_box_cox}.
 
 \begin{table}
-\begin{center}
 \caption{
 Comparison of average rank between Box-Cox transformation methods based on either residual error (without outliers) or residual error of the central portion
 (with outliers; $\kappa = 0.80$) over 3 datasets with 10000 sequences each. The clean dataset consists of sequences derived through inverse Box-Cox transformation
@@ -2108,8 +2103,12 @@ robust invariant                      & &         6.09  & \textbf{2.75} &       
 
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
+
+\FloatBarrier
+
+
+
 
 \subsection{Examples using clean data}\label{examples-using-clean-data}
 
@@ -2145,7 +2144,6 @@ tails of a distribution. This is also shown in Tables
 outliers.
 
 \begin{table}
-\begin{center}
 \caption{Residual errors for features from simulated clean data without outliers after Yeo-Johnson transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
 \label{tab:clean-transformation-appendix-residuals-yj}
@@ -2171,11 +2169,9 @@ robust invariant                      & & 3.0 & 3.4 & 3.6 &  5.5 & 10.1 &  6.2 &
 \bottomrule
 \end{tabular}
 }
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{Transformation parameter $\lambda$ for features from simulated clean data without outliers after Yeo-Johnson transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
 \label{tab:clean-transformation-appendix-lambda-yj}
@@ -2199,11 +2195,9 @@ robust invariant                      & & 0.5 & 1.1 & 1.5 & -0.1 & 0.7 & 1.7 &  
 \bottomrule
 \end{tabular}
 }
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{
 p-values of empirical central normality tests for features from simulated clean data without outliers after Yeo-Johnson transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
@@ -2230,11 +2224,9 @@ robust invariant                      & & 0.992 & 0.753 & 0.667 &   0.909  & 0.7
 \bottomrule
 \end{tabular}
 }
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{Residual errors for features from simulated clean data without outliers after Box-Cox transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
 \label{tab:clean-transformation-appendix-residuals-bc}
@@ -2260,11 +2252,9 @@ robust invariant                      & & 2.4 & 4.3 & 4.7 &  8.9 & 20.4 & 6.7 & 
 \bottomrule
 \end{tabular}
 }
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{Transformation parameter $\lambda$ for features from simulated clean data without outliers after Box-Cox transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
 \label{tab:clean-transformation-appendix-lambda-bc}
@@ -2289,11 +2279,9 @@ robust invariant                      & & 0.5 & 0.8 & 0.4 & 0.0 &  0.2 & 0.7 & 0
 \bottomrule
 \end{tabular}
 }
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{
 p-values of empirical central normality tests for features from simulated clean data without outliers after Box-Cox transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
@@ -2320,10 +2308,14 @@ robust invariant                      & & 0.969 & 0.824 & 0.750 &   0.972  & 0.7
 \bottomrule
 \end{tabular}
 }
-\end{center}
 \end{table}
 
-\section{Appendix E: Experimental
+\FloatBarrier
+
+
+
+
+\section{Experimental
 results}\label{appendix-e}
 
 The effect of using location- and scale-invariant transformations was
@@ -2339,7 +2331,6 @@ Additional results for Yeo-Johnson transformations are shown in Tables
 \ref{tab:experimental-results-appendix-p-value}.
 
 \begin{table}
-\begin{center}
 \caption{Residual errors for features from real-world datasets after Yeo-Johnson transformation to normality. 
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
@@ -2362,11 +2353,9 @@ robust invariant                      &  9.3 &  30.2 & 55.8 & 308.1 & 22.0 \\
 
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{Transformation parameter $\lambda$ for features from real-world datasets after Yeo-Johnson transformation to normality. 
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
@@ -2387,11 +2376,9 @@ invariant                             & 1.3 &  0.2 & -1.3 &  1.5 &  0.5 \\
 robust invariant                      & 1.3 & -0.3 &  1.0 &  1.1 &  0.3 \\
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{
 p-values of empirical central normality tests for features from real-world datasets after Yeo-Johnson transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
@@ -2416,8 +2403,9 @@ robust invariant                      & 0.933 & 0.178     & 0.759     & $< 0.001
 
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
+
+\FloatBarrier
 
 \subsection{Box-Cox transformation}\label{box-cox-transformation}
 
@@ -2427,7 +2415,6 @@ Results for Box-Cox transformations are shown in Tables
 \ref{tab:experimental-results-appendix-p-value-bc}.
 
 \begin{table}
-\begin{center}
 \caption{Residual errors for features from real-world datasets after Box-Cox transformation to normality. 
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
@@ -2450,11 +2437,9 @@ robust invariant                      & 12.8 & 150.1 &  60.5 & 646.0 & 27.4 \\
 
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{Transformation parameter $\lambda$ for features from real-world datasets after Box-Cox transformation to normality. 
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
@@ -2477,11 +2462,9 @@ robust invariant                      & 1.3 &  1.2 &  1.1 &  0.4 &  0.1 \\
 
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{
 p-values of empirical central normality tests for features from real-world datasets after Box-Cox transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
@@ -2506,8 +2489,9 @@ robust invariant                      & 0.899 & 0.890 & 0.866     & $< 0.001$ & 
 
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
+
+\FloatBarrier
 
 \end{appendices}
 

@@ -243,7 +243,7 @@ Then the log-likelihood function of the location- and scale- invariant Box-Cox p
 \begin{equation}
 \label{eqn:box-cox-invariant-log-likelihood}
 \begin{split}
-\mathcal{l}_{\text{BC}}^{\lambda, x_0, s} = & -\frac{n}{2} \log \left[2 \pi \sigma^2 \right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi_{BC}^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
+\mathcal{L}_{\text{BC}}^{\lambda, x_0, s} = & -\frac{n}{2} \log \left[2 \pi \sigma^2 \right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi_{BC}^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
 & -n \lambda \log s + \left( \lambda - 1 \right) \sum_{i=1}^n \log \left[ x_i - x_0 \right]
 \end{split}
 \end{equation}
@@ -259,7 +259,7 @@ Then the log-likelihood function of the location- and scale- invariant Yeo-Johns
 \begin{equation}
 \label{eqn:yeo-johnson-invariant-log-likelihood}
 \begin{split}
-\mathcal{l}_{\text{YJ}}^{\lambda, x_0, s} = & -\frac{n}{2} \log\left[2 \pi \sigma^2\right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi_{YJ}^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
+\mathcal{L}_{\text{YJ}}^{\lambda, x_0, s} = & -\frac{n}{2} \log\left[2 \pi \sigma^2\right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi_{YJ}^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
 & - n \log s + (\lambda - 1) \sum_{i=1}^n \sgn(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
 \end{split}
 \end{equation}
@@ -299,7 +299,7 @@ Then, the weighted log-likelihood function of the location- and scale- invariant
 \begin{equation}
 \label{eqn:box-cox-weighted-invariant-log-likelihood}
 \begin{split}
-\mathcal{l}_{\text{rBC}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi_{\text{BC}}^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
+\mathcal{L}_{\text{rBC}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi_{\text{BC}}^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
 & - \lambda \left( \sum_{i=1}^n w_i \right) \log s + \left( \lambda - 1 \right) \sum_{i=1}^n w_i \log \left[ x_i - x_0 \right]
 \end{split}
 \end{equation}
@@ -328,7 +328,7 @@ Then, the weighted log-likelihood function of the location- and scale- invariant
 \begin{equation}
 \label{eqn:yeo-johnson-weighted-invariant-log-likelihood}
 \begin{split}
-\mathcal{l}_{\text{rYJ}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi_{\text{YJ}}^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
+\mathcal{L}_{\text{rYJ}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi_{\text{YJ}}^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
 & - \left( \sum_{i=1}^n w_i \right) \log s + (\lambda - 1) \sum_{i=1}^n w_i \sgn(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
 \end{split}
 \end{equation}

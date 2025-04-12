@@ -135,11 +135,11 @@ The Jacobian takes the following form, with off-diagonal elements $0$:
 Thus, $\left| \mathbf{J} \right| = \prod_{i=1}^n \frac{\partial}{\partial x_i} \phi^{\lambda, x_0, s}(x_i)$.
 
 Since in our situation $\{x_1, \ldots, x_n\}$ in $f^{\lambda, x_0, s}(x_1, \ldots, x_n)$ are considered fixed (i.e., known), $f^{\lambda, x_0, s}(x_1, \ldots, x_n)$ may be considered a likelihood function.
-The log-likelihood function $\mathcal{l}^{\lambda, x_0, s}$ is then:
+The log-likelihood function $\mathcal{L}^{\lambda, x_0, s}$ is then:
 ```{=latex}
 \begin{equation}
 \begin{split}
-\mathcal{l}^{\lambda, x_0, s} & = \log f^{\lambda, x_0, s}(x_1, \ldots, x_n) \\
+\mathcal{L}^{\lambda, x_0, s} & = \log f^{\lambda, x_0, s}(x_1, \ldots, x_n) \\
  & = \log \left[ f^{\lambda, x_0, s} (\phi^{\lambda, x_0, s}(x_1), \ldots, \phi^{\lambda, x_0, s}(x_n)) \right] + \log \left|\mathbf{J}\right| \\
  & = \log \left[ f^{\lambda, x_0, s} (\phi^{\lambda, x_0, s}(x_1), \ldots, \phi^{\lambda, x_0, s}(x_n)) \right] + \log \prod_{i=1}^n \frac{\partial}{\partial x_i} \phi^{\lambda, x_0, s}(x_i) \\
  & = -\frac{n}{2} \log \left[2 \pi \sigma^2 \right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 + \sum_{i=1}^n \log \left[ \frac{\partial}{\partial x_i} \phi^{\lambda, x_0, s}(x_i)\right]
@@ -162,7 +162,7 @@ For the location- and scale-invariant Box-Cox transformation the partial derivat
 \end{equation}
 ```
 
-Thus the final term in $\mathcal{l}_{\text{BC}}^{\lambda, x_0, s}$ is:
+Thus the final term in $\mathcal{L}_{\text{BC}}^{\lambda, x_0, s}$ is:
 ```{=latex}
 \begin{equation}
 \begin{split}
@@ -177,7 +177,7 @@ This leads to the following log-likelihood:
 ```{=latex}
 \begin{equation}
 \begin{split}
-\mathcal{l}_{\text{BC}}^{\lambda, x_0, s} = & -\frac{n}{2} \log \left[2 \pi \sigma^2 \right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
+\mathcal{L}_{\text{BC}}^{\lambda, x_0, s} = & -\frac{n}{2} \log \left[2 \pi \sigma^2 \right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
 & -n \lambda \log s + \left( \lambda - 1 \right) \sum_{i=1}^n \log \left[ x_i - x_0 \right]
 \end{split}
 \end{equation}
@@ -188,7 +188,7 @@ The weighted log-likelihood of the location- and scale-invariant Box-Cox transfo
 ```{=latex}
 \begin{equation}
 \begin{split}
-\mathcal{l}_{\text{rBC}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
+\mathcal{L}_{\text{rBC}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
 & - \lambda \left( \sum_{i=1}^n w_i \right) \log s + \left( \lambda - 1 \right) \sum_{i=1}^n w_i \log \left[ x_i - x_0 \right]
 \end{split}
 \end{equation}
@@ -214,7 +214,7 @@ For the location- and scale-invariant Yeo-Johnson transformation, the partial de
 \end{equation}
 ```
 
-Thus the final term in $\mathcal{l}_{\text{YJ}}^{\lambda, x_0, s}$ is:
+Thus the final term in $\mathcal{L}_{\text{YJ}}^{\lambda, x_0, s}$ is:
 ```{=latex}
 \begin{equation}
 \begin{split}
@@ -227,7 +227,7 @@ This leads to the following log-likelihood:
 ```{=latex}
 \begin{equation}
 \begin{split}
-\mathcal{l}_{\text{YJ}}^{\lambda, x_0, s} = & -\frac{n}{2} \log\left[2 \pi \sigma^2\right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
+\mathcal{L}_{\text{YJ}}^{\lambda, x_0, s} = & -\frac{n}{2} \log\left[2 \pi \sigma^2\right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
 & - n \log s + (\lambda - 1) \sum_{i=1}^n \sgn(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
 \end{split}
 \end{equation}
@@ -237,7 +237,7 @@ The weighted log-likelihood for location- and scale-invariant Yeo-Johnson transf
 ```{=latex}
 \begin{equation}
 \begin{split}
-\mathcal{l}_{\text{rYJ}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
+\mathcal{L}_{\text{rYJ}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
 & - \left( \sum_{i=1}^n w_i \right) \log s + (\lambda - 1) \sum_{i=1}^n w_i \sgn(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
 \end{split}
 \end{equation}
