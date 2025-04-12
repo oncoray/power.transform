@@ -1067,466 +1067,6 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 
 
-.plot_residuals <- function(plot_theme, manuscript_dir) {
-  # Prevent warnings due to non-standard evaluation.
-  has_outliers <- residual <- threshold <- residual_error <- method <- p <- NULL
-
-  if (!file.exists(file.path(manuscript_dir, "manuscript_residual_error.RDS"))) {
-    # Get data
-    data <- .get_goodness_of_fit_data(manuscript_dir = manuscript_dir)
-
-    outlier_free_data <- data[
-      has_outliers == FALSE,
-      list("residual_error" = stats::quantile(residual, probs = 0.99)),
-      by = c("p", "method")
-    ]
-
-    data <- data[, list(
-      "residual_50" = stats::quantile(residual, probs = 0.50),
-      "residual_90" = stats::quantile(residual, probs = 0.90),
-      "residual_95" = stats::quantile(residual, probs = 0.95),
-      "residual_99" = stats::quantile(residual, probs = 0.99),
-      "residual_max" = max(residual)
-    ),
-    by = c("p", "method")
-    ]
-
-    data <- data.table::melt(
-      data = data,
-      id.vars = c("p", "method"),
-      variable.name = "threshold",
-      value.name = "residual_error"
-    )
-
-    data$threshold <- factor(
-      x = data$threshold,
-      levels = c("residual_50", "residual_90", "residual_95", "residual_99", "residual_max"),
-      labels = c("50 %", "90 %", "95 %", "99 %", "100 %")
-    )
-
-    saveRDS(
-      data,
-      file.path(manuscript_dir, "manuscript_residual_error.RDS")
-    )
-  } else {
-    data <- readRDS(file.path(manuscript_dir, "manuscript_residual_error.RDS"))
-
-    outlier_free_data <- data[
-      has_outliers == FALSE,
-      list("residual_error" = stats::quantile(residual, probs = 0.99)),
-      by = c("p", "method")
-    ]
-  }
-
-  p_bc <- ggplot2::ggplot(
-    data = data[method == "Box-Cox"],
-    mapping = ggplot2::aes(
-      x = p,
-      y = residual_error,
-      colour = threshold
-    )
-  )
-  p_bc <- p_bc + plot_theme
-  p_bc <- p_bc + ggplot2::geom_line()
-  p_bc <- p_bc + ggplot2::geom_line(
-    data = outlier_free_data[method == "Box-Cox"],
-    mapping = ggplot2::aes(
-      x = p,
-      y = residual_error
-    ),
-    colour = "gray40",
-    linetype = "dashed"
-  )
-  p_bc <- p_bc + ggplot2::scale_colour_discrete(
-    name = "percentile\n(Box-Cox)",
-    type = c("50 %" = "#ABC6E2", "90 %" = "#779EC6", "95 %" = "#4E79A7", "99 %" = "#346394", "100 %" = "#1D4D7E")
-  )
-  p_bc <- p_bc + ggplot2::xlab("empirical probability")
-  p_bc <- p_bc + ggplot2::ylab("absolute residual error")
-  p_bc <- p_bc + ggplot2::coord_cartesian(
-    xlim = c(0, 1),
-    ylim = c(0, 1)
-  )
-
-  p_yj <- ggplot2::ggplot(
-    data = data[method == "Yeo-Johnson"],
-    mapping = ggplot2::aes(
-      x = p,
-      y = residual_error,
-      colour = threshold
-    )
-  )
-  p_yj <- p_yj + plot_theme
-  p_yj <- p_yj + ggplot2::geom_line()
-  p_yj <- p_yj + ggplot2::geom_line(
-    data = outlier_free_data[method == "Yeo-Johnson"],
-    mapping = ggplot2::aes(
-      x = p,
-      y = residual_error
-    ),
-    colour = "gray40",
-    linetype = "dashed"
-  )
-  p_yj <- p_yj + ggplot2::scale_colour_discrete(
-    name = "percentile\n(Yeo-Johnson)",
-    type = c("50 %" = "#FFBD7D", "90 %" = "#FFA954", "95 %" = "#F28E2B", "99 %" = "#CD6B0B", "100 %" = "#A25000")
-  )
-  p_yj <- p_yj + ggplot2::xlab("empirical probability")
-  p_yj <- p_yj + ggplot2::ylab("absolute residual error")
-  p_yj <- p_yj + ggplot2::coord_cartesian(
-    xlim = c(0, 1),
-    ylim = c(0, 1)
-  )
-  p_yj <- p_yj + ggplot2::theme(
-    axis.title.y = ggplot2::element_blank(),
-    axis.text.y = ggplot2::element_blank()
-  )
-
-  p <- p_bc + p_yj + patchwork::plot_layout(ncol = 2, guides = "collect")
-
-  return(p)
-}
-
-
-
-.plot_type_1_error_rate <- function(plot_theme, manuscript_dir) {
-  # Prevent warnings due to non-standard evaluation.
-  residual <- rejected <- p <- n <- mare <- method <- NULL
-
-  if (!file.exists(file.path(manuscript_dir, "type_1_error_rate_plot_main_manuscript.RDS"))) {
-    # Get data
-    data <- .get_goodness_of_fit_data(manuscript_dir = manuscript_dir)
-
-    central_width <- c(0.60, 0.70, 0.80, 0.90, 0.95, 1.00)
-
-    mare_data <- list()
-
-    for (ii in seq_along(central_width)) {
-      p_lower <- 0.50 - central_width[ii] / 2
-      p_upper <- 0.50 + central_width[ii] / 2
-
-      x <- data.table::copy(data)
-
-      # Clip empirical probabilities to centre.
-      x <- x[p >= p_lower & p <= p_upper]
-
-      # Compute mean absolute residual error per feature.
-      x <- x[, list("mare" = mean(residual)), by = c("distribution_id", "outlier_id", "method")]
-      x <- x[, list("n" = .N), by = c("mare", "method")][order(mare, method)]
-      x[, "rejected" := 1.0 - cumsum(n) / sum(n), by = "method"]
-      x <- rbind(
-        data.table::data.table(
-          "mare" = c(0.0, 0.0),
-          "method" = c("Box-Cox", "Yeo-Johnson"),
-          "n" = 0L,
-          "rejected" = 1.0
-        ),
-        x
-      )
-
-      x[, "kappa" := central_width[ii]]
-
-      mare_data[[ii]] <- x
-    }
-
-    data <- data.table::rbindlist(mare_data)
-
-    data$kappa <- factor(
-      x = data$kappa,
-      levels = central_width,
-      labels = c("60 %", "70 %", "80 %", "90 %", "95 %", "100 %")
-    )
-
-    saveRDS(
-      data,
-      file.path(manuscript_dir, "type_1_error_rate_plot_main_manuscript.RDS")
-    )
-  } else {
-    data <- readRDS(file.path(manuscript_dir, "type_1_error_rate_plot_main_manuscript.RDS"))
-  }
-
-  p_bc <- ggplot2::ggplot(
-    data = data[method == "Box-Cox"],
-    mapping = ggplot2::aes(
-      x = mare,
-      y = rejected,
-      colour = kappa
-    )
-  )
-  p_bc <- p_bc + plot_theme
-  p_bc <- p_bc + ggplot2::geom_step()
-  p_bc <- p_bc + ggplot2::scale_colour_discrete(
-    name = "central portion κ\n(Box-Cox)",
-    type = c(
-      "60 %" = "#bacbde",
-      "70 %" = "#98b2cd",
-      "80 %" = "#7598bd",
-      "90 %" = "#537dac",
-      "95 %" = "#42648a",
-      "100 %" = "#324b67"
-    )
-  )
-  p_bc <- p_bc + ggplot2::xlab(latex2exp::TeX("test statistic $\\tau_{ecn}$"))
-  p_bc <- p_bc + ggplot2::ylab("type I error rate")
-  p_bc <- p_bc + ggplot2::coord_cartesian(xlim = c(0, 0.25))
-
-  p_yj <- ggplot2::ggplot(
-    data = data[method == "Yeo-Johnson"],
-    mapping = ggplot2::aes(
-      x = mare,
-      y = rejected,
-      colour = kappa
-    )
-  )
-  p_yj <- p_yj + plot_theme
-  p_yj <- p_yj + ggplot2::geom_step()
-  p_yj <- p_yj + ggplot2::scale_colour_discrete(
-    name = "central portion κ\n(Yeo-Johnson)",
-    type = c(
-      "60 %" = "#f9c59f",
-      "70 %" = "#f6a76f",
-      "80 %" = "#f38a3f",
-      "90 %" = "#f06d0f",
-      "95 %" = "#c0570c",
-      "100 %" = "#904109"
-    )
-  )
-  p_yj <- p_yj + ggplot2::xlab(latex2exp::TeX("test statistic $\\tau_{ecn}$"))
-  p_yj <- p_yj + ggplot2::coord_cartesian(xlim = c(0, 0.25))
-  p_yj <- p_yj + ggplot2::theme(
-    axis.title.y = ggplot2::element_blank(),
-    axis.text.y = ggplot2::element_blank()
-  )
-
-  p <- p_bc + p_yj + patchwork::plot_layout(ncol = 2, guides = "collect")
-
-  return(p)
-}
-
-
-
-.plot_type_1_error_rate_appendix <- function(plot_theme, manuscript_dir) {
-  # Prevent warnings due to non-standard evaluation.
-  residual <- rejected <- p <- n <- mare <- method <- NULL
-  outlier_id <- test_statistic <- NULL
-
-  file_name <- file.path(manuscript_dir, "type_1_error_rate_plot_appendix.RDS")
-
-  if (!file.exists(file_name)) {
-    # Get data. We need three datasets:
-    # - Dataset presented in main manuscript.
-    # -
-    data <- .get_goodness_of_fit_data(manuscript_dir = manuscript_dir)
-    data_no_outlier <- data.table::copy(data[outlier_id == 1L])
-    data_no_outlier$method <- factor(
-      data_no_outlier$method,
-      levels = c("Box-Cox", "Yeo-Johnson"),
-      labels = c("Box-Cox (no outlier)", "Yeo-Johnson (no outlier)")
-    )
-    data_normal <- .get_goodness_of_fit_data_normal_only(manuscript_dir = manuscript_dir)
-    data <- data.table::rbindlist(list(data, data_no_outlier, data_normal))
-
-
-    # Process data
-    central_width <- c(0.60, 0.70, 0.80, 0.90, 0.95, 1.00)
-    mare_data <- list()
-
-    for (ii in seq_along(central_width)) {
-      p_lower <- 0.50 - central_width[ii] / 2
-      p_upper <- 0.50 + central_width[ii] / 2
-
-      x <- data.table::copy(data)
-
-      # Clip empirical probabilities to centre.
-      x <- x[p >= p_lower & p <= p_upper]
-
-      # Compute mean absolute residual error per feature.
-      x <- x[, list("mare" = mean(residual)), by = c("distribution_id", "outlier_id", "method")]
-      x <- x[, list("n" = .N), by = c("mare", "method")][order(mare, method)]
-      x[, "rejected" := 1.0 - cumsum(n) / sum(n), by = "method"]
-      x <- rbind(
-        data.table::data.table(
-          "mare" = c(0.0, 0.0, 0.0, 0.0, 0.0),
-          "method" = c("Box-Cox", "Yeo-Johnson", "Box-Cox (no outlier)", "Yeo-Johnson (no outlier)", "none"),
-          "n" = 0L,
-          "rejected" = 1.0
-        ),
-        x
-      )
-
-      x[, "kappa" := central_width[ii]]
-
-      mare_data[[ii]] <- x
-    }
-
-    data <- data.table::rbindlist(mare_data)
-
-    data$kappa <- factor(
-      x = data$kappa,
-      levels = central_width,
-      labels = c("60 %", "70 %", "80 %", "90 %", "95 %", "100 %")
-    )
-
-    saveRDS(data, file_name)
-
-  } else {
-    data <- readRDS(file_name)
-  }
-
-  data$method <- factor(
-    data$method,
-    c("Box-Cox", "Box-Cox (no outlier)", "Yeo-Johnson", "Yeo-Johnson (no outlier)", "none")
-  )
-
-  p <- ggplot2::ggplot(
-    data = data[kappa == "80 %", ],
-    mapping = ggplot2::aes(
-      x = mare,
-      y = rejected,
-      colour = method
-    )
-  )
-  p <- p + plot_theme
-  p <- p + ggplot2::geom_step()
-  p <- p + ggplot2::scale_colour_discrete(
-    name = "type",
-    type = c(
-      "Box-Cox" = "#4E79A7",
-      "Box-Cox (no outlier)" = "#A0CBE8",
-      "Yeo-Johnson" = "#F28E2B",
-      "Yeo-Johnson (no outlier)" = "#FFBE7D",
-      "none" = "#59A14F"
-    )
-  )
-  p <- p + ggplot2::xlab(latex2exp::TeX("test statistic $\\tau_{ecn}$"))
-  p <- p + ggplot2::ylab("type I error rate")
-  p <- p + ggplot2::coord_cartesian(xlim = c(0, 0.25))
-
-  # Process test data.
-  significance_values <- c(0.50, 0.20, 0.10, 0.05, 0.02, 0.01, 0.001)
-
-  test_data <- data[
-    kappa == "80 %",
-    list(
-      "test_statistic" = stats::spline(
-        x = rejected,
-        y = mare,
-        method = "hyman",
-        xout = significance_values
-      )$y,
-      "alpha" = significance_values
-    ),
-    by = "method"
-  ]
-
-  test_data$alpha <- factor(test_data$alpha, levels=significance_values)
-  test_data[, "test_statistic" := round(test_statistic, digits=3)]
-
-  test_data <- data.table::dcast(
-    data = test_data,
-    method ~ alpha,
-    value.var = "test_statistic"
-  )
-
-  return(list("p" = p, "data" = test_data))
-}
-
-#
-#
-#
-# .plot_type_1_error_rate_appendix <- function(plot_theme, manuscript_dir) {
-#   # Prevent warnings due to non-standard evaluation.
-#   residual <- rejected <- p <- n <- mare <- method <- NULL
-#
-#   # Get data
-#   data <- .get_test_statistics_data_appendix(manuscript_dir = manuscript_dir)
-#
-#   central_width <- c(0.60, 0.70, 0.80, 0.90, 0.95, 1.00)
-#
-#   data$kappa <- factor(
-#     x = data$kappa,
-#     levels = central_width,
-#     labels = c("60 %", "70 %", "80 %", "90 %", "95 %", "100 %")
-#   )
-#
-#   data <- data[kappa == "80 %"]
-#
-#   plot_start_list <- list()
-#   ii <- 1L
-#   for (method in levels(data$method)) {
-#     for (method_tag in levels(data$method_tag)) {
-#       for (kappa in levels(data$kappa)) {
-#         plot_start_list[[ii]] <- data.table::data.table(
-#           mare = 0.0,
-#           method = method,
-#           method_tag = method_tag,
-#           n = 0L,
-#           rejected = 1.0,
-#           kappa = kappa
-#         )
-#
-#         ii <- ii + 1L
-#       }
-#     }
-#   }
-#
-#   data <- data.table::rbindlist(c(list(data), plot_start_list))
-#
-#   p_bc <- ggplot2::ggplot(
-#     data = data[method == "Box-Cox"],
-#     mapping = ggplot2::aes(
-#       x = mare,
-#       y = rejected,
-#       colour = method_tag
-#     )
-#   )
-#   p_bc <- p_bc + plot_theme
-#   p_bc <- p_bc + ggplot2::geom_step()
-#   p_bc <- p_bc + ggplot2::scale_colour_discrete(
-#     name = "power transform variant\n(Box-Cox)",
-#     type = c(
-#       "robust, shift sens. (MLE)" = "#bacbde",
-#       "conventional (MLE)" = "#98b2cd",
-#       "robust, shift sens. (C-vM)" = "#42648a",
-#       "conventional (C-vM)" = "#324b67"
-#     )
-#   )
-#   p_bc <- p_bc + ggplot2::xlab("test statistic")
-#   p_bc <- p_bc + ggplot2::ylab("type I error rate")
-#   p_bc <- p_bc + ggplot2::coord_cartesian(xlim = c(0, 0.15))
-#
-#   p_yj <- ggplot2::ggplot(
-#     data = data[method == "Yeo-Johnson"],
-#     mapping = ggplot2::aes(
-#       x = mare,
-#       y = rejected,
-#       colour = method_tag
-#     )
-#   )
-#   p_yj <- p_yj + plot_theme
-#   p_yj <- p_yj + ggplot2::geom_step()
-#   p_yj <- p_yj + ggplot2::scale_colour_discrete(
-#     name = "power transform variant\n(Yeo-Johnson)",
-#     type = c(
-#       "robust, shift sens. (MLE)" = "#f9c59f",
-#       "conventional (MLE)" = "#f6a76f",
-#       "robust, shift sens. (C-vM)" = "#c0570c",
-#       "conventional (C-vM)" = "#904109"
-#     )
-#   )
-#   p_yj <- p_yj + ggplot2::xlab("test statistic")
-#   p_yj <- p_yj + ggplot2::coord_cartesian(xlim = c(0, 0.15))
-#   p_yj <- p_yj + ggplot2::theme(
-#     axis.title.y = ggplot2::element_blank(),
-#     axis.text.y = ggplot2::element_blank()
-#   )
-#
-#   p <- p_bc + p_yj + patchwork::plot_layout(ncol = 2, guides = "collect")
-#
-#   return(p)
-# }
-
-
 .plot_bimodal_distribution_test <- function(plot_theme, manuscript_dir) {
 
   # Lambda plot,
@@ -1542,7 +1082,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
     # Normal distribution.
     x_1 <- power.transform::ragn(
-      10000L,
+      100L,
       location = -location_shift / 2,
       scale = 1 / sqrt(2),
       alpha = 0.5,
@@ -1665,11 +1205,10 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p_2 <- .create_density_and_qq_plot(location_shift = 2.0, plot_theme = plot_theme)
   p_3 <- .create_density_and_qq_plot(location_shift = 3.0, plot_theme = plot_theme)
   p_4 <- .create_density_and_qq_plot(location_shift = 4.0, plot_theme = plot_theme)
-  p_5 <- .create_density_and_qq_plot(location_shift = 5.0, plot_theme = plot_theme)
 
-  p <- p_1$density + p_2$density + p_3$density + p_4$density + p_5$density +
-    p_1$qq + p_2$qq + p_3$qq + p_4$qq + p_5$qq +
-    patchwork::plot_layout(ncol = 5, heights = c(1.3, 1))
+  p <- p_1$density + p_2$density + p_3$density + p_4$density +
+    p_1$qq + p_2$qq + p_3$qq + p_4$qq +
+    patchwork::plot_layout(ncol = 4, heights = c(1.3, 1))
 
   return(p)
 }
@@ -2457,46 +1996,39 @@ get_annotation_settings <- function(ggtheme = NULL) {
     ordered=TRUE
   )
 
-  # difficulty_levels <- c("all", "very_easy", "easy", "intermediate", "difficult", "very_difficult", "unsolvable")
-  # difficulty_labels <- c("overall", "very easy", "easy", "intermediate", "difficult", "very difficult", "unsolvable")
-  difficulty_levels <- c("all", "very_easy", "easy", "intermediate", "difficult", "very_difficult")
+  difficulty_levels <- c("overall", "very_easy", "easy", "intermediate", "difficult", "very_difficult")
   difficulty_labels <- c("overall", "very easy", "easy", "intermediate", "difficult", "very difficult")
+
+  learner_levels <- c("glm", "lasso", "xgboost_lm", "random_forest_ranger")
+  learner_labels <- c("GLM", "Lasso", "gradient-boosted LM", "random forest")
+
+  abstract_data[, "value" := predict(model, data = abstract_data)$predictions]
 
   # Effect of learner ----------------------------------------------------------
   result_list <- list()
   learners <- levels(data$learner)
 
   for (learner_a in learners) {
-    for (learner_b in learners) {
-      if (learner_a == learner_b) next
+    result_list <- c(
+      result_list,
+      list(data.table::data.table(
+        "value" = mean(abstract_data[learner == learner_a]$value) - mean(abstract_data$value),
+        "task_difficulty" = "overall",
+        "learner_1" = learner_a
+      ))
+    )
 
-      x <- predict(model, data = abstract_data[learner == learner_a])$predictions -
-        predict(model, data = abstract_data[learner == learner_b])$predictions
-
+    for (difficulty in levels(abstract_data$task_difficulty)) {
       result_list <- c(
         result_list,
         list(data.table::data.table(
-          "value" = mean(x),
-          "task_difficulty" = "all",
-          "learner_1" = learner_a,
-          "learner_2" = learner_b
+          "value" =
+            mean(abstract_data[learner == learner_a & task_difficulty == difficulty]$value) -
+            mean(abstract_data[task_difficulty == difficulty]$value),
+          "task_difficulty" = difficulty,
+          "learner_1" = learner_a
         ))
       )
-
-      for (difficulty in levels(abstract_data$task_difficulty)) {
-        x <- predict(model, data = abstract_data[learner == learner_a & task_difficulty == difficulty])$predictions -
-          predict(model, data = abstract_data[learner == learner_b & task_difficulty == difficulty])$predictions
-
-        result_list <- c(
-          result_list,
-          list(data.table::data.table(
-            "value" = mean(x),
-            "task_difficulty" = difficulty,
-            "learner_1" = learner_a,
-            "learner_2" = learner_b
-          ))
-        )
-      }
     }
   }
 
@@ -2508,25 +2040,31 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
   data_1$learner_1 <- factor(
     data_1$learner_1,
-    levels = learners
-  )
-  data_1$learner_2 <- factor(
-    data_1$learner_2,
-    levels = learners
+    levels = learner_levels,
+    labels = learner_labels
   )
 
 
   # Effect of normalisation method ---------------------------------------------
-  result_list <- list()
-  x <- predict(model, data = abstract_data[normalisation_method == "robust_standardisation"])$predictions -
-    predict(model, data = abstract_data[normalisation_method == "none"])$predictions
-  result_list <- c(result_list, list(data.table::data.table("value" = mean(x), "task_difficulty" = "all")))
+  result_list <- list(data.table::data.table(
+    "value" =
+      mean(abstract_data[normalisation_method == "robust_standardisation"]$value) -
+      mean(abstract_data[normalisation_method == "none"]$value),
+    "task_difficulty" = "overall"
+  ))
 
   for (difficulty in levels(abstract_data$task_difficulty)) {
-    x <- predict(model, data = abstract_data[normalisation_method == "robust_standardisation" & task_difficulty == difficulty])$predictions -
-      predict(model, data = abstract_data[normalisation_method == "none" & task_difficulty == difficulty])$predictions
-    result_list <- c(result_list, list(data.table::data.table("value" = mean(x), "task_difficulty" = difficulty)))
+    result_list <- c(
+      result_list,
+      list(data.table::data.table(
+        "value" =
+          mean(abstract_data[normalisation_method == "robust_standardisation" & task_difficulty == difficulty]$value) -
+          mean(abstract_data[normalisation_method == "none" & task_difficulty == difficulty]$value),
+        "task_difficulty" = difficulty
+      ))
+    )
   }
+
   data_2 <- data.table::rbindlist(result_list)
   data_2$task_difficulty <- factor(
     data_2$task_difficulty,
@@ -2538,67 +2076,91 @@ get_annotation_settings <- function(ggtheme = NULL) {
   # Effect of transformation method vs. none, by learner, task difficulty and
   # normalisation method.
   result_list <- list()
-  for (lrnr in levels(abstract_data$learner)) {
+  summary_list <- list()
+
+  for (method in c("conventional", "invariant_robust", "invariant_robust_gof")) {
     for (norm_method in levels(abstract_data$normalisation_method)){
-      for (method in c("conventional", "invariant_robust", "invariant_robust_gof")) {
-        x <- predict(model, data = abstract_data[learner == lrnr & transformation_method == method & normalisation_method == norm_method])$predictions -
-          predict(model, data = abstract_data[learner == lrnr & transformation_method == "none" & normalisation_method == norm_method])$predictions
-        x <- data.table::data.table(
-          "value" = mean(x),
+      result_list <- c(
+        result_list,
+        list(data.table::data.table(
+          "value" =
+            mean(abstract_data[normalisation_method == norm_method & transformation_method == method]$value) -
+            mean(abstract_data[normalisation_method == norm_method & transformation_method == "none"]$value),
           "transformation_method" = paste0(method, "_none"),
           "normalisation_method" = norm_method,
-          "learner" = lrnr,
-          "task_difficulty" = "all"
-        )
-        result_list <- c(result_list, list(x))
+          "task_difficulty" = "overall"
+        ))
+      )
 
-        for (difficulty in levels(abstract_data$task_difficulty)) {
-          x <- predict(model, data = abstract_data[learner == lrnr & task_difficulty == difficulty & transformation_method == method & normalisation_method == norm_method])$predictions -
-            predict(model, data = abstract_data[learner == lrnr & task_difficulty == difficulty & transformation_method == "none" & normalisation_method == norm_method])$predictions
-          x <- data.table::data.table(
-            "value" = mean(x),
+      for (difficulty in levels(abstract_data$task_difficulty)) {
+        result_list <- c(
+          result_list,
+          list(data.table::data.table(
+            "value" =
+              mean(abstract_data[normalisation_method == norm_method & transformation_method == method & task_difficulty == difficulty]$value) -
+              mean(abstract_data[normalisation_method == norm_method & transformation_method == "none" & task_difficulty == difficulty]$value),
             "transformation_method" = paste0(method, "_none"),
             "normalisation_method" = norm_method,
-            "learner" = lrnr,
             "task_difficulty" = difficulty
-          )
-          result_list <- c(result_list, list(x))
-        }
-      }
-
-      for (method in c("invariant_robust", "invariant_robust_gof")) {
-        x <- predict(model, data = abstract_data[learner == lrnr & transformation_method == method & normalisation_method == norm_method])$predictions -
-          predict(model, data = abstract_data[learner == lrnr & transformation_method == "conventional" & normalisation_method == norm_method])$predictions
-        x <- data.table::data.table(
-          "value" = mean(x),
-          "transformation_method" = paste0(method, "_conventional"),
-          "normalisation_method" = norm_method,
-          "learner" = lrnr,
-          "task_difficulty" = "all"
+          ))
         )
-        result_list <- c(result_list, list(x))
-
-        for (difficulty in levels(abstract_data$task_difficulty)) {
-          x <- predict(model, data = abstract_data[learner == lrnr & task_difficulty == difficulty & transformation_method == method & normalisation_method == norm_method])$predictions -
-            predict(model, data = abstract_data[learner == lrnr & task_difficulty == difficulty & transformation_method == "conventional" & normalisation_method == norm_method])$predictions
-          x <- data.table::data.table(
-            "value" = mean(x),
-            "transformation_method" = paste0(method, "_conventional"),
-            "normalisation_method" = norm_method,
-            "learner" = lrnr,
-            "task_difficulty" = difficulty
-          )
-          result_list <- c(result_list, list(x))
-        }
       }
     }
+
+    summary_list <- c(
+      summary_list,
+      list(data.table::data.table(
+        "value" =
+          mean(abstract_data[transformation_method == method]$value) -
+          mean(abstract_data[transformation_method == "none"]$value),
+        "transformation_method" = paste0(method, "_none"),
+        "task_difficulty" = "overall"
+      ))
+    )
+  }
+
+  for (method in c("invariant_robust", "invariant_robust_gof")) {
+    for (norm_method in levels(abstract_data$normalisation_method)){
+      result_list <- c(
+        result_list,
+        list(data.table::data.table(
+          "value" =
+            mean(abstract_data[normalisation_method == norm_method & transformation_method == method]$value) -
+            mean(abstract_data[normalisation_method == norm_method & transformation_method == "conventional"]$value),
+          "transformation_method" = paste0(method, "_conventional"),
+          "normalisation_method" = norm_method,
+          "task_difficulty" = "overall"
+        ))
+      )
+
+      for (difficulty in levels(abstract_data$task_difficulty)) {
+        result_list <- c(
+          result_list,
+          list(data.table::data.table(
+            "value" =
+              mean(abstract_data[normalisation_method == norm_method & transformation_method == method & task_difficulty == difficulty]$value) -
+              mean(abstract_data[normalisation_method == norm_method & transformation_method == "conventional" & task_difficulty == difficulty]$value),
+            "transformation_method" = paste0(method, "_conventional"),
+            "normalisation_method" = norm_method,
+            "task_difficulty" = difficulty
+          ))
+        )
+      }
+    }
+
+    summary_list <- c(
+      summary_list,
+      list(data.table::data.table(
+        "value" =
+          mean(abstract_data[transformation_method == method]$value) -
+          mean(abstract_data[transformation_method == "none"]$value),
+        "transformation_method" = paste0(method, "_conventional"),
+        "task_difficulty" = "overall"
+      ))
+    )
   }
   data_3 <- data.table::rbindlist(result_list)
-  data_3$learner <- factor(
-    data_3$learner,
-    levels = c("glm", "random_forest_ranger"),
-    labels = c("GLM", "random forest")
-  )
+
   transformation_method_labels = c(
     "conventional \nvs. none",
     "robust invariant \nvs. none",
@@ -2616,20 +2178,14 @@ get_annotation_settings <- function(ggtheme = NULL) {
     levels = c("none", "robust_standardisation"),
     labels = c("no normalisation", "z-standardisation")
   )
-  data_3[, "learner_normalisation_method":= paste0(learner, "\n", normalisation_method)]
-  data_3$learner_normalisation_method <- factor(
-    data_3$learner_normalisation_method,
-    levels = c("GLM\nno normalisation", "GLM\nz-standardisation", "random forest\nno normalisation", "random forest\nz-standardisation")
-  )
   data_3$task_difficulty <- factor(
     data_3$task_difficulty,
     levels = difficulty_levels,
     labels = difficulty_labels
   )
 
-  data_3_x_range = c(-0.08, 0.08)
+  data_3_x_range = c(-0.04, 0.04)
   data_3_labels <- data.table::data.table(
-    learner = factor("random forest", levels = levels(data_3$learner)),
     normalisation_method = factor("z-standardisation", levels = levels(data_3$normalisation_method)),
     transformation_method = factor(transformation_method_labels),
     task_difficulty  = factor("overall", levels = difficulty_labels),
@@ -2651,7 +2207,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     colour = "grey40"
   )
   p3 <- p3 + ggplot2::geom_col(show.legend = FALSE)
-  p3 <- p3 + ggplot2::facet_grid(learner_normalisation_method ~ transformation_method)
+  p3 <- p3 + ggplot2::facet_grid(normalisation_method ~ transformation_method)
   p3 <- p3 + ggplot2::geom_text(
     x = data_3_x_range[1L],
     ggplot2::aes(label=label_1),
@@ -2678,7 +2234,6 @@ get_annotation_settings <- function(ggtheme = NULL) {
     name = NULL,
     guide = "none",
     type = c(
-      "unsolvable" = "#1c3319",
       "very difficult" = "#325d2d",
       "difficult" = "#498641",
       "intermediate" = "#60ae56",
@@ -2695,7 +2250,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   data_2_labels <- data.table::data.table(
     x = data_2_x_range,
     task_difficulty  = factor(c("overall", "overall"), levels = difficulty_labels),
-    label = c("none better", "z-stand. better")
+    label = c("worse", "z-stand. better")
   )
 
   p2 <- ggplot2::ggplot(
@@ -2723,7 +2278,6 @@ get_annotation_settings <- function(ggtheme = NULL) {
     name = NULL,
     guide = "none",
     type = c(
-      "unsolvable" = "#482105",
       "very difficult" = "#813b08",
       "difficult" = "#bb550c",
       "intermediate" = "#f07014",
@@ -2737,11 +2291,11 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p2 <- p2 + ggplot2::xlab("normalised rank difference")
   p2 <- p2 + ggplot2::ggtitle("z-standardisation vs. none")
 
-  data_1_x_range = c(-0.05, 0.35)
+  data_1_x_range = c(-0.15, 0.35)
   data_1_labels <- data.table::data.table(
     x = data_1_x_range,
     task_difficulty  = factor(c("overall", "overall"), levels = difficulty_labels),
-    label = c("GLM better", "random forest better")
+    label = c("worse", "better than avg.")
   )
 
   p1 <- ggplot2::ggplot(
@@ -2754,6 +2308,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     linetype = "longdash",
     colour = "grey40"
   )
+  p1 <- p1 + ggplot2::facet_grid(cols = ggplot2::vars(learner_1))
   p1 <- p1 + ggplot2::geom_col(show.legend = FALSE)
   p1 <- p1 + ggplot2::geom_text(
     data = data_1_labels,
@@ -2769,7 +2324,6 @@ get_annotation_settings <- function(ggtheme = NULL) {
     name = NULL,
     guide = "none",
     type = c(
-      "unsolvable" = "#192534",
       "very difficult" = "#2d435d",
       "difficult" = "#416186",
       "intermediate" = "#567fae",
@@ -2781,14 +2335,183 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p1 <- p1 + ggplot2::xlim(data_1_x_range)
   p1 <- p1 + ggplot2::ylab("task difficulty")
   p1 <- p1 + ggplot2::xlab("normalised rank difference")
-  p1 <- p1 + ggplot2::ggtitle("random forest vs. generalised linear model")
+  p1 <- p1 + ggplot2::ggtitle("learner vs. average")
 
-  p <- (p1 + p2 + patchwork::plot_layout(ncol = 2, axes = "collect_y", axis_titles = "collect_y")) / p3 + patchwork::plot_layout(
-    heights = c(0.3, 1.0)
+  p <- (p1 + p2 + patchwork::plot_layout(ncol = 2, axes = "collect_y", axis_titles = "collect_y", widths = c(0.8, 0.2))) / p3 + patchwork::plot_layout(
+    heights = c(0.3333, 0.6667)
   )
 
   return(p)
 }
+
+
+
+.plot_test_statistic_centrality <- function(manuscript_dir, plot_theme) {
+  # Plots data that allows us to select the fitting centrality parameter kappa.
+
+  data_w_outliers <- .get_test_statistics_data(
+    manuscript_dir = manuscript_dir,
+    with_outliers = TRUE
+  )
+  data_w_outliers[, "outlier" := TRUE]
+
+  data_wo_outliers <- .get_test_statistics_data(
+    manuscript_dir = manuscript_dir,
+    with_outliers = FALSE
+  )
+  data_wo_outliers[, "outlier" := FALSE]
+
+  data <- rbind(data_w_outliers, data_wo_outliers)
+
+  # Compute alpha
+  data[, "alpha" := 1.0 - (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa", "outlier")]
+
+  # Compute alpha = 0.95
+  data <- data[, list("tau" = stats::spline(
+    x = alpha,
+    y = mean_residual_error,
+    method = "fmm",
+    xout = 0.05
+  )$y),
+  by = c("n", "kappa", "outlier")]
+
+  data$kappa <- factor(
+    x = data$kappa,
+    levels = c(0.60, 0.70, 0.80, 0.90, 0.95, 1.00),
+    labels = c("60 %", "70 %", "80 %", "90 %", "95 %", "100 %")
+  )
+
+  p <- ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = .data$n,
+      y = .data$tau,
+      colour = .data$kappa
+    )
+  )
+  p <- p + plot_theme
+  p <- p + ggplot2::scale_x_log10(name = "n")
+  p <- p + ggplot2::ylab(latex2exp::TeX("test statistic $\\tau_{\\alpha = 0.05, n, \\kappa}$"))
+  p <- p + ggplot2::scale_colour_discrete(
+    name = "central portion κ",
+    type = c(
+      "60 %" = "#bacbde",
+      "70 %" = "#537dac",
+      "80 %" = "#324b67",
+      "90 %" = "#f9c59f",
+      "95 %" = "#f06d0f",
+      "100 %" = "#904109"
+    )
+  )
+
+  p_no_outliers <- p + ggplot2::geom_line(
+    data = data[outlier == FALSE])
+  p_no_outliers <- p_no_outliers + ggplot2::ggtitle("central normality test")
+
+    p_outliers <- p + ggplot2::geom_line(data = data[outlier == TRUE])
+  p_outliers <- p_outliers + ggplot2::ggtitle("emp. central normality test")
+  p_outliers <- p_outliers + ggplot2::theme(
+    axis.text.y = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank()
+  )
+
+  # Patch all the plots together.
+  p <- p_no_outliers + p_outliers + patchwork::plot_layout(
+    ncol = 2,
+    guides = "collect"
+  )
+
+  return(p)
+}
+
+
+
+.plot_test_statistic_tau <- function(manuscript_dir, plot_theme, k = 0.80) {
+  # Plots critical tau for several alpha levels.
+
+  data_w_outliers <- .get_test_statistics_data(
+    manuscript_dir = manuscript_dir,
+    with_outliers = TRUE
+  )
+  data_w_outliers[, "outlier" := TRUE]
+
+  data_wo_outliers <- .get_test_statistics_data(
+    manuscript_dir = manuscript_dir,
+    with_outliers = FALSE
+  )
+  data_wo_outliers[, "outlier" := FALSE]
+
+  data <- rbind(data_w_outliers, data_wo_outliers)
+  data <- data[kappa == k]
+
+  alpha_levels <- 1.0 - c(0.80, 0.90, 0.95, 0.975, 0.99, 0.999)
+
+  # Compute alpha
+  data[, "alpha" := 1.0 - (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa", "outlier")]
+
+  # Compute tau at the specified confidence levels.
+  data <- data[
+    ,
+    list(
+      "tau" = stats::spline(
+        x = alpha,
+        y = mean_residual_error,
+        method = "fmm",
+        xout = alpha_levels)$y,
+      "alpha" = alpha_levels
+    ),
+    by = c("n", "outlier")
+  ]
+
+  data$alpha <- factor(
+    x = data$alpha,
+    levels = alpha_levels,
+    labels = c("20.0 %", "10.0 %", "5.0 %", "2.5 %", "1.0 %", "0.1 %")
+  )
+
+  p <- ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = .data$n,
+      y = .data$tau,
+      colour = .data$alpha
+    )
+  )
+  p <- p + plot_theme
+  p <- p + ggplot2::scale_x_log10(name = "n")
+  p <- p + ggplot2::ylab(latex2exp::TeX("test statistic $\\tau_{\\alpha, n, \\kappa = 0.80}$"))
+  p <- p + ggplot2::scale_colour_discrete(
+    name = "significance level",
+    type = c(
+      "20.0 %" = "#bacbde",
+      "10.0 %" = "#537dac",
+      "5.0 %" = "#324b67",
+      "2.5 %" = "#f9c59f",
+      "1.0 %" = "#f06d0f",
+      "0.1 %" = "#904109"
+    )
+  )
+
+  p_no_outliers <- p + ggplot2::geom_line(
+    data = data[outlier == FALSE])
+  p_no_outliers <- p_no_outliers + ggplot2::ggtitle("central normality test")
+
+  p_outliers <- p + ggplot2::geom_line(data = data[outlier == TRUE])
+  p_outliers <- p_outliers + ggplot2::ggtitle("emp. central normality test")
+  p_outliers <- p_outliers + ggplot2::theme(
+    axis.text.y = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank()
+  )
+
+  # Patch all the plots together.
+  p <- p_no_outliers + p_outliers + patchwork::plot_layout(
+    ncol = 2,
+    guides = "collect"
+  )
+
+  return(p)
+}
+
 
 
 .plot_test_dependency_sample_size <- function(manuscript_dir, plot_theme) {
@@ -2798,7 +2521,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
   # From 5 to 1000 in equal steps (log 10 scale)
   n <- 10^(seq(from = 0.75, to = 3.0, by = 0.125))
 
-  if (!file.exists(file.path(manuscript_dir, "sample_size_dependency.RDS"))) {
+  file_name <- file.path(manuscript_dir, "sample_size_dependency.RDS")
+  if (!file.exists(file_name)) {
     set.seed(19L)
 
     data <- list()
@@ -2836,27 +2560,15 @@ get_annotation_settings <- function(ggtheme = NULL) {
         data[[jj + (ii - 1L) * n_rep]] <- data.table::data.table(
           "n" = n[ii],
           "p_value" = c(
-            power.transform::assess_transformation(
-              x = x,
-              transformer = power.transform::find_transformation_parameters(
-                x = x,
-                method = "none"
-              ),
-              verbose = FALSE
-            ),
-            power.transform::assess_transformation(
-              x = x_outlier,
-              transformer = power.transform::find_transformation_parameters(
-                x = x_outlier,
-                method = "none"
-              ),
-              verbose = FALSE
-            ),
+            power.transform::cn.test(x = x)$p_value,
+            power.transform::cn.test(x = x_outlier)$p_value,
+            power.transform::ecn.test(x = x)$p_value,
+            power.transform::ecn.test(x = x_outlier)$p_value,
             shapiro.test(x)$p.value,
             shapiro.test(x_outlier)$p.value
           ),
-          "outlier" = c(FALSE, TRUE, FALSE, TRUE),
-          "test" = factor(c("ECN", "ECN", "SW", "SW"), levels = c("SW", "ECN"))
+          "outlier" = c(FALSE, TRUE, FALSE, TRUE, FALSE, TRUE),
+          "test" = factor(c("CN", "CN", "ECN", "ECN", "SW", "SW"), levels = c("SW", "CN", "ECN"))
         )
       }
     }
@@ -2864,8 +2576,10 @@ get_annotation_settings <- function(ggtheme = NULL) {
     # Aggregate to single table.
     data <- data.table::rbindlist(data)
 
+    saveRDS(data, file_name)
+
   } else {
-    data <- readRDS(file.path(manuscript_dir, "sample_size_dependency.RDS"))
+    data <- readRDS(file_name)
   }
 
   # Compute type I error rate (i.e. fraction of distributions that are centrally
@@ -2894,11 +2608,12 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p <- p + ggplot2::scale_colour_discrete(
     name = "central normality test",
     type = c(
+      "CN" = "#A0CBE8",
       "ECN" = "#4E79A7",
       "SW" = "#F28E2B"
     ),
-    breaks = c("ECN", "SW"),
-    labels = c("ECN test", "Shapiro-Wilk test")
+    breaks = c("ECN", "CN", "SW"),
+    labels = c("ECN test", "CN test", "Shapiro-Wilk test")
   )
 
 
@@ -2921,4 +2636,6 @@ get_annotation_settings <- function(ggtheme = NULL) {
     ncol = 2,
     guides = "collect"
   )
+
+  return(p)
 }

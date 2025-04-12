@@ -16,45 +16,45 @@ Reallocating 'singl_function' (item size: 4) to 100 items.
 Database file #1: refs.bib
 apacite.bst [2013/07/21 v6.03 APA bibliography style]
 Warning--No address in Powell2009-zb
-You've used 29 entries,
+You've used 28 entries,
             7437 wiz_defined-function locations,
-            1590 strings with 16901 characters,
-and the built_in function-call counts, 55793 in all, are:
-= -- 6938
-> -- 426
-< -- 2647
-+ -- 2736
-- -- 59
-* -- 3582
-:= -- 10303
-add.period$ -- 90
-call.type$ -- 29
-change.case$ -- 549
+            1584 strings with 16768 characters,
+and the built_in function-call counts, 54175 in all, are:
+= -- 6740
+> -- 416
+< -- 2567
++ -- 2666
+- -- 57
+* -- 3484
+:= -- 9992
+add.period$ -- 86
+call.type$ -- 28
+change.case$ -- 530
 chr.to.int$ -- 0
-cite$ -- 59
-duplicate$ -- 1430
-empty$ -- 2203
-format.name$ -- 653
-if$ -- 10601
+cite$ -- 57
+duplicate$ -- 1394
+empty$ -- 2132
+format.name$ -- 639
+if$ -- 10288
 int.to.chr$ -- 0
-int.to.str$ -- 91
+int.to.str$ -- 88
 missing$ -- 0
-newline$ -- 815
-num.names$ -- 234
-pop$ -- 1005
+newline$ -- 793
+num.names$ -- 226
+pop$ -- 935
 preamble$ -- 1
-purify$ -- 154
+purify$ -- 148
 quote$ -- 0
-skip$ -- 3488
+skip$ -- 3415
 stack$ -- 0
-substring$ -- 3085
-swap$ -- 831
-text.length$ -- 131
+substring$ -- 3010
+swap$ -- 814
+text.length$ -- 127
 text.prefix$ -- 0
 top$ -- 1
-type$ -- 2448
+type$ -- 2368
 warning$ -- 1
-while$ -- 253
+while$ -- 246
 width$ -- 0
-write$ -- 950
+write$ -- 926
 (There was 1 warning)

@@ -319,29 +319,6 @@ Gorman, K.B.%
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
-Griffin%
-}{%
-Griffin%
-}{%
-{\protect \APACyear {2018}}%
-}]{%
-Griffin2018-bf}
-\APACinsertmetastar {%
-Griffin2018-bf}%
-\begin{APACrefauthors}%
-Griffin, M.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2018}{{\APACmonth{01}}}{}.
-\newblock
-\APACrefbtitle {gnorm: Generalized Normal/Exponential Power Distribution.}
-  {gnorm: Generalized normal/exponential power distribution.}
-\newblock
-\APACaddressPublisher{}{The R Foundation}.
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
 Huber%
 }{%
 Huber%
