@@ -167,10 +167,10 @@ for (n in c(100, 1000, 10000)) {
           testthat::expect_lt(p_value, 0.01)
 
         } else if (
-          n == 10000 && parameter_list[[ii]]$method == "yeo_johnson" &&
-          !(parameter_list[[ii]]$invariant == TRUE && parameter_list[[ii]]$robust == TRUE)
+          n == 10000L &&
+          parameter_list[[ii]]$method == "yeo_johnson" &&
+          parameter_list[[ii]]$robust == FALSE
         ) {
-          # These tend to do worse.
           testthat::expect_lt(p_value, 0.05)
 
         } else {
