@@ -256,8 +256,8 @@ setMethod(
   y <- unique(data[, mget(y_name)][order(get(y_name))])[[y_name]]
 
   # Lower and upper values of x.
-  x_l <- tail(x[x < x_0], n = 1L)
-  x_u <- head(x[x >= x_0], n = 1L)
+  x_l <- utils::tail(x[x < x_0], n = 1L)
+  x_u <- utils::head(x[x >= x_0], n = 1L)
 
   if (length(x_l) == 0L) {
     if (!limited && x_u != x_0) return(NA_real_)
@@ -269,8 +269,8 @@ setMethod(
   }
 
   # Lower and upper values of y.
-  y_l <- tail(y[y < y_0], n = 1L)
-  y_u <- head(y[y >= y_0], n = 1L)
+  y_l <- utils::tail(y[y < y_0], n = 1L)
+  y_u <- utils::head(y[y >= y_0], n = 1L)
 
   if (length(y_l) == 0L) {
     if (!limited && y_u != y_0) return(NA_real_)
@@ -313,6 +313,9 @@ setMethod(
   # on a grid (it's the surface), we need to interpolate tau (in the
   # lookup-table) for n and every alpha in the lookup-table first. Then we need
   # to interpolate alpha for the provided tau.
+
+  # Prevent CRAN NOTE due to non-standard use of variables by data.table.
+  n <- tau <- NULL
 
   # Interpolate tau for n_lookup.
   data <- data[
