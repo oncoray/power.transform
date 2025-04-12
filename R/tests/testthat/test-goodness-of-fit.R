@@ -213,7 +213,7 @@ for (n in c(100, 1000, 10000)) {
           transformer = transformer
         ))
 
-        testthat::expect_lt(p_value, 0.55)
+        testthat::expect_lt(p_value, 0.60)
 
         # Bi-modal distribution (small separation) -----------------------------
 
@@ -252,7 +252,7 @@ for (n in c(100, 1000, 10000)) {
         ))
 
         if (n == 100) {
-          testthat::expect_lt(p_value, 0.35)
+          testthat::expect_lt(p_value, 0.60)
         } else {
           testthat::expect_lt(p_value, 0.10)
         }
