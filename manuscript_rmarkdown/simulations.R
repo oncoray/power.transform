@@ -1400,7 +1400,8 @@
       x <- (x - mean(x)) / stats::sd(x)
 
     } else if (endsWith(transformation_method, "(robust scaling)")) {
-      x <- (x - stats::median(x)) / stats::IQR(x)
+      x <- (x - stats::median(x)) / robustbase::Qn(x)
+
     }
 
     if (startsWith(transformation_method, "none")) {

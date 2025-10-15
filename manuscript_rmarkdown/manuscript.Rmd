@@ -876,8 +876,8 @@ the following two methods:
 
 1. z-standardisation: $x^{\prime}_{i} = \left(x_i - \mu \right) / \sigma$, with $\mu$ and $\sigma$ the mean and standard deviation of sequence $\mathbf{X}$.
 
-2. robust scaling: $x^{\prime}_{i} = \left(x_i - \text{median}\left(\mathbf{X}\right) \right) / \text{IQR}\left(\mathbf{X}\right)$,
-   with $\text{IQR}$ representing the interquartile range of $\mathbf{X}$.
+2. robust scaling: $x^{\prime}_{i} = \left(x_i - \text{median}\left(\mathbf{X}\right) \right) / Q_n\left(\mathbf{X}\right)$,
+   with $Q_n$ representing the robust $Q_n$ scale estimator of $\mathbf{X}$ [@Croux1992-zz; @Rousseeuw1993-it].
 
 This results in nine types of power transformation. Transformation parameters
 were optimised for each sequence. Subsequently the sum of residual errors 
