@@ -1098,7 +1098,7 @@
   if (file.exists(file_name)) return(readRDS(file_name))
 
   # Generate distributions to assess.
-  n_distributions <- 10000L
+  n_distributions <- 1000000L
 
   # Generate alpha, beta and n.
   n <- stats::runif(n = n_distributions, min = 1.0, max = 4.0)
