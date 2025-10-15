@@ -1113,6 +1113,35 @@
   # 2, and Box-Cox only if lambda > 0.
   lambda <- stats::runif(n = n_distributions, min = 0.00, max = 2.00)
 
+  .compute_wrapper <- function(
+    ii,
+    n,
+    alpha,
+    beta,
+    conf_lambda,
+    data_type,
+    method,
+    k
+  ) {
+    return(
+      mapply(
+        FUN = ..compute,
+        ii = ii,
+        n = n,
+        alpha = alpha,
+        beta = beta,
+        conf_lambda = conf_lambda,
+        MoreArgs = list(
+          "data_type" = data_type,
+          "method" = method,
+          "k" = k
+        ),
+        SIMPLIFY = FALSE,
+        USE.NAMES = FALSE
+      )
+    )
+  }
+
   ..compute <- function(
     ii,
     n,
@@ -1241,19 +1270,21 @@
     return(data)
   }
 
-  cl <- parallel::makeCluster(18L)
+  n_threads <- 18L
+  cl <- parallel::makeCluster(n_threads)
   on.exit(parallel::stopCluster(cl))
 
+  parallel::clusterExport(cl = cl, "..compute", envir = rlang::current_env())
   parallel::clusterExport(cl = cl, "..standardisation_before_transformation")
 
   data <- parallel::clusterMap(
     cl = cl,
-    fun = ..compute,
-    ii = seq_len(n_distributions),
-    n = n,
-    alpha = alpha,
-    beta = beta,
-    conf_lambda = lambda,
+    fun = .compute_wrapper,
+    ii = split(seq_len(n_distributions), cut(seq_len(n_distributions), breaks = n_threads, labels = FALSE)),
+    n = split(n, cut(n, breaks = n_threads, labels = FALSE)),
+    alpha = split(alpha, cut(alpha, breaks = n_threads, labels = FALSE)),
+    beta = split(beta, cut(beta, breaks = n_threads, labels = FALSE)),
+    conf_lambda = split(lambda, cut(lambda, breaks = n_threads, labels = FALSE)),
     MoreArgs = list(
       "data_type" = data_type,
       "method" = method,
@@ -1262,7 +1293,7 @@
     SIMPLIFY = FALSE,
     USE.NAMES = FALSE
   )
-  data <- data.table::rbindlist(data)
+  data <- data.table::rbindlist(unlist(data, recursive = FALSE, use.names = FALSE))
 
   # Cache data.
   saveRDS(data, file_name)
