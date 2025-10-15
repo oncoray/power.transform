@@ -1,3 +1,10 @@
+# Version 1.0.2
+
+## Changes
+
+- When checking if required packages are installed, `power.transform` now caches
+  results. This prevents unnecessary look-up on the disk.
+
 # Version 1.0.1
 
 ## Changes
