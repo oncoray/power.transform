@@ -1098,7 +1098,7 @@
   if (file.exists(file_name)) return(readRDS(file_name))
 
   # Generate distributions to assess.
-  n_distributions <- 1000000L
+  n_distributions <- 1E5
 
   # Generate alpha, beta and n.
   n <- stats::runif(n = n_distributions, min = 1.0, max = 4.0)
@@ -1277,14 +1277,32 @@
   parallel::clusterExport(cl = cl, "..compute", envir = rlang::current_env())
   parallel::clusterExport(cl = cl, "..standardisation_before_transformation")
 
+  assignment_id <- rep_len(seq_len(n_threads), n_distributions)
+
+  # data <- mapply(
+  #   FUN = .compute_wrapper,
+  #   ii = split(seq_len(n_distributions), assignment_id),
+  #   n = split(n, assignment_id),
+  #   alpha = split(alpha, assignment_id),
+  #   beta = split(beta, assignment_id),
+  #   conf_lambda = split(lambda, assignment_id),
+  #   MoreArgs = list(
+  #     "data_type" = data_type,
+  #     "method" = method,
+  #     "k" = k
+  #   ),
+  #   SIMPLIFY = FALSE,
+  #   USE.NAMES = FALSE
+  # )
+
   data <- parallel::clusterMap(
     cl = cl,
     fun = .compute_wrapper,
-    ii = split(seq_len(n_distributions), cut(seq_len(n_distributions), breaks = n_threads, labels = FALSE)),
-    n = split(n, cut(n, breaks = n_threads, labels = FALSE)),
-    alpha = split(alpha, cut(alpha, breaks = n_threads, labels = FALSE)),
-    beta = split(beta, cut(beta, breaks = n_threads, labels = FALSE)),
-    conf_lambda = split(lambda, cut(lambda, breaks = n_threads, labels = FALSE)),
+    ii = split(seq_len(n_distributions), assignment_id),
+    n = split(n, assignment_id),
+    alpha = split(alpha, assignment_id),
+    beta = split(beta, assignment_id),
+    conf_lambda = split(lambda, assignment_id),
     MoreArgs = list(
       "data_type" = data_type,
       "method" = method,
