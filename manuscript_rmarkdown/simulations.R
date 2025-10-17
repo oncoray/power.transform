@@ -1558,39 +1558,64 @@
 
 
 
-.get_test_statistics_data <- function(manuscript_dir, with_outliers = FALSE) {
+.get_test_statistics_data <- function(manuscript_dir) {
   n_rep <- 30000L  # number of distributions drawn.
-  k <- 0.10  # outlier fraction
+  # n_rep <- 10L  # number of distributions drawn.
+  k <- c(0.00, 0.01, 0.02, 0.05, 0.10, 0.15, 0.20)  # outlier rate
   kappa <- c(0.60, 0.70, 0.80, 0.90, 0.95, 1.00)  # central portion of distribution.
 
   # From 5 to 10000 in equal steps (log 10 scale)
   n <- unique(floor(10^(seq(from = 0.75, to = 4.0, by = 0.0625))))
 
-  if (with_outliers) {
-    file_name <- file.path(manuscript_dir, "raw_ecn_statistics_w_outlier.RDS")
-  } else {
-    file_name <- file.path(manuscript_dir, "raw_ecn_statistics.RDS")
+  # Wrapper for multi-processing.
+  .compute_wrapper <- function(
+    n,
+    n_rep,
+    k,
+    kappa
+  ) {
+    return(
+      lapply(
+        X = n,
+        FUN = ..get_test_statistics_data,
+        n_rep = n_rep,
+        k = k,
+        kappa = kappa
+      )
+    )
   }
 
-  if (!file.exists(file_name)) {
+  file_name <- file.path(manuscript_dir, "raw_ecn_statistics.RDS")
 
-    cl <- parallel::makeCluster(18L)
+  if (!file.exists(file_name)) {
+    n_threads <- 18L
+    assignment_id <- rep_len(seq_len(n_threads), length(n))
+
+    cl <- parallel::makeCluster(n_threads)
     on.exit(parallel::stopCluster(cl))
 
-    data <- parallel::parLapplyLB(
+    parallel::clusterExport(cl = cl, "..get_test_statistics_data")
+
+    # data <- lapply(
+    #   X = split(n, assignment_id),
+    #   FUN = .compute_wrapper,
+    #   n_rep = n_rep,
+    #   k = k,
+    #   kappa = kappa
+    # )
+
+    data <- parallel::parLapply(
       cl = cl,
-      X = seq_along(n),
-      fun = ..get_test_statistics_data,
-      n = n,
+      X = split(n, assignment_id),
+      fun = .compute_wrapper,
       n_rep = n_rep,
       k = k,
-      kappa = kappa,
-      with_outliers = with_outliers
+      kappa = kappa
     )
 
     # Aggregate to single table.
-    data <- data.table::rbindlist(data)
-    data <- data[order(n, kappa, mean_residual_error)]
+    data <- data.table::rbindlist(unlist(data, recursive = FALSE))
+    data <- data[order(n, outlier_rate, kappa, mean_residual_error)]
 
     # Store
     saveRDS(data, file_name)
@@ -1603,82 +1628,85 @@
 }
 
 
-..get_test_statistics_data <- function(ii, n, n_rep, k, kappa, with_outliers = FALSE) {
-  set.seed(19L + ii)
+..get_test_statistics_data <- function(n, n_rep, k, kappa) {
+  set.seed(19L + n)
 
   data <- list()
-  # Repeat 1000 times.
+  result_index <- 1L
+
+  # Repeat n_rep times.
   for (jj in seq_len(n_rep)) {
-    x <- power.transform::ragn(floor(n[ii]), location = 0, scale = 1 / sqrt(2), alpha = 0.5, beta = 2)
+    x <- power.transform::ragn(floor(n), location = 0, scale = 1 / sqrt(2), alpha = 0.5, beta = 2)
 
     # Compute upper and lower quartiles, and IQR.
     q_lower <- stats::quantile(x, probs = 0.25, names = FALSE)
     q_upper <- stats::quantile(x, probs = 0.75, names = FALSE)
     interquartile_range <- stats::IQR(x)
 
-    if (with_outliers) {
-      # Set data where the outliers will be copied into.
+    for (current_outlier_rate in k) {
       x_outlier <- x
 
-      # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
-      # than Q3 + 1.5 IQR.
-      n_draw <- ceiling(k * length(x))
-      x_random <- stats::runif(n_draw, min = -2.0, max = 2.0)
+      # Find samples to replace with outlier values.
+      ii_outlier <- stats::runif(length(x)) <= current_outlier_rate
+      n_draw <- sum(ii_outlier)
+      if (n_draw > 0) {
+        x_random <- stats::runif(n_draw, min = -2.0, max = 2.0)
 
-      outlier <- numeric(n_draw)
-      if (any(x_random < 0)) {
-        outlier[x_random < 0] <- q_lower - 1.5 * interquartile_range + x_random[x_random < 0] * interquartile_range
+        outlier_values <- numeric(n_draw)
+        if (any(x_random < 0)) {
+          outlier_values[x_random < 0] <- q_lower - 1.5 * interquartile_range + x_random[x_random < 0] * interquartile_range
+        }
+
+        if (any(x_random >= 0)) {
+          outlier_values[x_random >= 0] <- q_upper + 1.5 * interquartile_range + x_random[x_random >= 0] * interquartile_range
+        }
+
+        # Randomly insert outlier values.
+        x_outlier[ii_outlier] <- outlier_values
       }
 
-      if (any(x_random >= 0)) {
-        outlier[x_random >= 0] <- q_upper + 1.5 * interquartile_range + x_random[x_random >= 0] * interquartile_range
-      }
-
-      # Randomly insert outlier values.
-      x_outlier[sample(seq_along(x), size = n_draw, replace = FALSE)] <- outlier
+      # Sort values
       x_outlier <- sort(x_outlier)
 
-    } else {
-      # Use data without outlier.
-      x_outlier <- sort(x)
+      # Compute the expected z-score.
+      z_expected <- power.transform:::compute_expected_z(x = x_outlier)
+
+      # Compute M-estimates for locality and scale
+      robust_estimates <- power.transform::huber_estimate(x_outlier, tol = 1E-3)
+
+      # Avoid division by 0.0.
+      if (robust_estimates$sigma == 0.0) robust_estimates$sigma <- 1.0
+
+      # Compute the observed z-score.
+      z_observed <- (x_outlier - robust_estimates$mu) / robust_estimates$sigma
+
+      # Compute residuals.
+      residual <- z_observed - z_expected
+      residual_data <- data.table::data.table(
+        "z_expected" = z_expected,
+        "z_observed" = z_observed,
+        "residual" = residual,
+        "p_observed" = (seq_along(x) - 1 / 3) / (length(x) + 1 / 3)
+      )
+
+      # Compute mean residual error for all kappa.
+      mean_residual_error <- numeric(length(kappa))
+      for (kk in seq_along(kappa)) {
+        p_lower <- 0.50 - kappa[kk] / 2
+        p_upper <- 0.50 + kappa[kk] / 2
+
+        mean_residual_error[kk] <- mean(abs(residual_data[p_observed >= p_lower & p_observed <= p_upper]$residual))
+      }
+
+      # Set data.
+      data[[result_index]] <- list(
+        "n" = n,
+        "outlier_rate" = current_outlier_rate,
+        "kappa" = kappa,
+        "mean_residual_error" = mean_residual_error
+      )
+      result_index <- result_index + 1L
     }
-
-    # Compute the expected z-score.
-    z_expected <- power.transform:::compute_expected_z(x = x_outlier)
-
-    # Compute M-estimates for locality and scale
-    robust_estimates <- power.transform::huber_estimate(x_outlier, tol = 1E-3)
-
-    # Avoid division by 0.0.
-    if (robust_estimates$sigma == 0.0) robust_estimates$sigma <- 1.0
-
-    # Compute the observed z-score.
-    z_observed <- (x_outlier - robust_estimates$mu) / robust_estimates$sigma
-
-    # Compute residuals.
-    residual <- z_observed - z_expected
-    residual_data <- data.table::data.table(
-      "z_expected" = z_expected,
-      "z_observed" = z_observed,
-      "residual" = residual,
-      "p_observed" = (seq_along(x) - 1 / 3) / (length(x) + 1 / 3)
-    )
-
-    # Compute mean residual error for all kappa.
-    mean_residual_error <- numeric(length(kappa))
-    for (kk in seq_along(kappa)) {
-      p_lower <- 0.50 - kappa[kk] / 2
-      p_upper <- 0.50 + kappa[kk] / 2
-
-      mean_residual_error[kk] <- mean(abs(residual_data[p_observed >= p_lower & p_observed <= p_upper]$residual))
-    }
-
-    # Set data.
-    data[[jj]] <- data.table::data.table(
-      "n" = n[ii],
-      "kappa" = kappa,
-      "mean_residual_error" = mean_residual_error
-    )
   }
 
   data <- data.table::rbindlist(data)
@@ -1690,6 +1718,7 @@
 .get_test_statistic_lookup_table <- function(
     manuscript_dir,
     k = 0.80,
+    outlier_rate = 0.10,
     for_manuscript = TRUE,
     with_outliers = FALSE
 ) {
@@ -1710,7 +1739,7 @@
       2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000)
   }
 
-  data <- .get_test_statistics_data(manuscript_dir, with_outliers = with_outliers)
+  data <- .get_test_statistics_data(manuscript_dir)
   data <- data[kappa == k]
   data[, "kappa" := NULL]
 
