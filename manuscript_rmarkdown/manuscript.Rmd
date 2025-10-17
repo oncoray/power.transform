@@ -845,7 +845,7 @@ $r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.06 & 1.00 & $(0, 10]$ & 1.07 & 6
 
 ## Assessing transformations using simulated data
 
-Three datasets with 10000 sequences each were created to assess transformation
+Three datasets with 100000 sequences each were created to assess transformation
 to normality. For each sequence $\mathbf{X}_i$, $n = \lceil 10^\gamma \rceil$
 elements were randomly drawn, with $\gamma \sim U\left(1, 4\right)$, 
 resulting in sequences with between $10$ and $10000$ elements. 
@@ -885,7 +885,7 @@ and sum of residual errors of the central portion ($\kappa = 0.80$) were compute
 for each sequence after transformation. Then, each method was ranked according 
 to the sum of residual errors (data without outliers) or the sum of residual
 errors of the central portion (data with outliers). The average rank of each
-transformation method was computed over all 10000 sequences in each dataset.
+transformation method was computed over all 100000 sequences in each dataset.
 Average ranks for Yeo-Johnson transformations are shown in Table
 \ref{tab:comparison_methods_simulation_yeo_johnson}.
 Location and shift-invariant Yeo-Johnson transformation ranked best for
@@ -927,7 +927,7 @@ data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.v
 \begin{center}
 \caption{
 Comparison of average rank between Yeo-Johnson transformation methods based on either residual error (without outliers) or residual error of the central portion
-(with outliers; $\kappa = 0.80$) over 3 datasets with 10000 sequences each. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
+(with outliers; $\kappa = 0.80$) over 3 datasets with 100000 sequences each. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
 of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
 The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
@@ -942,15 +942,15 @@ transformation & outliers: & no & yes & no & yes & no & yes \\
 
 \midrule
 
-none                                  & &         8.51  &         7.60  &         7.33  &         6.15  &         7.44  &         6.60 \\
-conventional                          & &         3.70  &         5.70  &         3.87  &         7.06  &         6.49  &         5.93 \\
-conventional (z-score norm.)          & &         4.72  &         5.68  &         6.38  &         5.01  &         5.43  &         4.87 \\
-conventional (robust scaling)         & &         4.06  &         6.77  &         5.37  &         5.75  &         4.41  &         5.63 \\
-Raymaekers-Rousseeuw                  & &         4.50  &         3.20  &         4.01  &         4.13  &         6.27  &         5.65 \\
-Raymaekers-Rousseeuw (z-score norm.)  & &         5.27  & \textbf{2.66} &         6.23  &         3.59  &         5.28  &         3.48 \\
-Raymaekers-Rousseeuw (robust scaling) & &         4.70  &         2.95  &         5.32  &         3.77  &         4.36  &         3.66 \\
-invariant                             & & \textbf{3.13} &         6.77  & \textbf{3.22} &         6.12  & \textbf{2.64} &         6.03 \\
-robust invariant                      & &         6.41  &         3.66  &         3.27  & \textbf{3.41} &         2.68  & \textbf{3.10} \\
+none                                  & &         8.52  &         7.62  &         7.35  &         6.17  &         7.46  &         6.62 \\
+conventional                          & &         3.82  &         5.78  &         3.86  &         7.08  &         6.51  &         5.95 \\
+conventional (z-score norm.)          & &         4.70  &         5.75  &         6.44  &         5.07  &         5.48  &         4.93 \\
+conventional (robust scaling)         & &         3.83  &         6.61  &         5.36  &         5.72  &         4.41  &         5.59 \\
+Raymaekers-Rousseeuw                  & &         4.64  &         3.22  &         4.01  &         4.11  &         6.28  &         5.67 \\
+Raymaekers-Rousseeuw (z-score norm.)  & &         5.24  & \textbf{2.66} &         6.25  &         3.62  &         5.29  &         3.50 \\
+Raymaekers-Rousseeuw (robust scaling) & &         4.70  &         2.99  &         5.22  &         3.69  &         4.27  &         3.57 \\
+invariant                             & & \textbf{3.11} &         6.74  & \textbf{3.24} &         6.13  & \textbf{2.63} &         6.03 \\
+robust invariant                      & &         6.44  &         3.64  &         3.27  & \textbf{3.40} &         2.65  & \textbf{3.14} \\
 
 \bottomrule
 \end{tabular}
