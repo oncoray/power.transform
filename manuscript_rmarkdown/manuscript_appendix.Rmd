@@ -679,6 +679,256 @@ robust invariant                      & &         6.09  & \textbf{2.75} &       
 
 \FloatBarrier
 
+## Ranking Yeo-Johnson transformations (pt. II)
+
+The main manuscript shows the overall ranking of different Yeo-Johnson-based power transformation methods across three
+sets of problems.
+To assess the effect of limited sequence lengths, we perform ranking on subsets of the experiment.
+The results for ranking the subset of sequences with 30 samples or fewer ($n = 16001$) 
+is shown in Table \ref{tab:comparison_methods_simulations_yeo_johnson_10_30}.
+In the clean dataset without outliers, where all sequences were sampled from a normal distribution and 
+then underwent an inverse Yeo-Johnson transformation,
+conventional and location- and scale-invariant are ranked similarly, with no clear advantage
+to any method. For the remaining datasets, the robust location- and scale-invariant
+method ranked best. It slightly outperformed (robustly scaled) conventional Yeo-Johnson transformations
+and (z-score normalised) robust transformations [@Raymaekers2024-zf], in datasets without and with outliers, respectively.
+
+In the subset for larger sequence lengths, with at least 1000 samples per sequence ($n = 33037$),
+the cost of making the location- and scale-invariant transformation robust against outliers
+becomes more apparent (Table \ref{tab:comparison_methods_simulations_yeo_johnson_1000_10000}).
+In the clean dataset without outliers, down-weighting of the tails of the distribution by
+the robust location- and scale-invariant method leads to larger residuals compared 
+to other methods (Table \ref{tab:comparison_methods_simulations_yeo_johnson_1000_10000_avg_residual}.
+
+
+```{r include = FALSE, eval = FALSE}
+
+# Yeo-Johnson on clean and dirty data.
+clean_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "clean")
+dirty_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "dirty")
+shifted_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "dirty_shifted")
+
+data <- rbind(clean_data, dirty_data, shifted_data, fill = TRUE)
+data$dataset <- factor(data$dataset, levels = c("clean", "dirty", "dirty_shifted"))
+
+# 30 samples or fewer
+data <- data[n_samples <= 30L, ]
+
+# Add rank based on residual error for central normality.
+data[outlier == FALSE, "method_rank" := rank(residuals), by = c("experiment_id", "outlier", "dataset")]
+data[outlier == TRUE, "method_rank" := rank(residuals_central), by = c("experiment_id", "outlier", "dataset")]
+data[outlier == FALSE, "norm_residuals" := residuals / n_samples]
+data[outlier == TRUE, "norm_residuals" := residuals_central / n_samples]
+
+table_data <- data[
+  ,
+  list(
+    "avg." = round(mean(method_rank), digits = 2L),
+    "10%" = quantile(method_rank, 0.10),
+    "50%" = quantile(method_rank, 0.50),
+    "90%" = quantile(method_rank, 0.90),
+    "avg. norm. res." = round(mean(norm_residuals), digits = 3)
+  ),
+  by = c("transformation", "outlier", "dataset")
+]
+
+# Table with average rank.
+data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.var = "avg.")
+
+# Table with average normalised residuals.
+data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.var = "avg. norm. res.")
+
+```
+
+
+\begin{table}
+\begin{center}
+\caption{
+Comparison of average rank between Yeo-Johnson transformation methods based on either residual error (without outliers) or residual error of the central portion
+(with outliers; $\kappa = 0.80$) over 3 datasets with 16001 sequences each. Each sequence contained 30 samples or fewer. 
+The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
+A rank of 1 is the best and a rank of 9 the worst. For each dataset, the best ranking transformation is marked in bold.
+}
+\label{tab:comparison_methods_simulations_yeo_johnson_10_30}
+\begin{tabular}{l | l r r r r r r}
+
+\toprule
+& dataset: & \multicolumn{2}{c}{clean} & \multicolumn{2}{c}{dirty} & \multicolumn{2}{c}{shifted} \\
+transformation & outliers: & no & yes & no & yes & no & yes \\
+
+\midrule
+
+none                                  & &         7.75  &         6.81  &         7.27  &         6.40  &         7.45  &         6.60 \\
+conventional                          & &         4.19  &         5.47  &         4.48  &         5.78  &         6.55  &         5.94 \\
+conventional (z-score norm.)          & &         4.36  &         5.12  &         5.01  &         4.99  &         4.35  &         4.70 \\
+conventional (robust scaling)         & & \textbf{4.05} &         5.63  &         4.38  &         5.49  &         3.76  &         5.20 \\
+Raymaekers-Rousseeuw                  & &         5.36  &         4.19  &         5.14  &         4.62  &         6.32  &         5.83 \\
+Raymaekers-Rousseeuw (z-score norm.)  & &         5.56  &         4.08  &         5.67  &         4.05  &         5.03  &         3.81 \\
+Raymaekers-Rousseeuw (robust scaling) & &         5.33  &         4.14  &         5.15  &         4.15  &         4.55  &         3.94 \\
+invariant                             & &         4.11  &         5.92  &         4.12  &         5.67  &         3.62  &         5.37 \\
+robust invariant                      & &         4.28  & \textbf{3.65} & \textbf{3.79} & \textbf{3.85} & \textbf{3.37} & \textbf{3.61} \\
+
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+
+
+\begin{table}
+\begin{center}
+\caption{
+Comparison of average normalised residual error between Yeo-Johnson transformation methods based on either the residual error (without outliers) or the residual error of the central portion
+(with outliers; $\kappa = 0.80$) over 3 datasets with 16001 sequences each. Residual errors were normalised by sequence length to reduce the effect of sequence length on the residual error.
+Each sequence contained 30 samples or fewer. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
+A lower normalised residual error is better. Discrepancies with the rank-based method may occur, as even with normalisation residual errors 
+are not fully comparable between experiments, whereas the ranks achieved within each experiment are.
+}
+\label{tab:comparison_methods_simulations_yeo_johnson_10_30_avg_residual}
+\begin{tabular}{l | l r r r r r r}
+
+\toprule
+& dataset: & \multicolumn{2}{c}{clean} & \multicolumn{2}{c}{dirty} & \multicolumn{2}{c}{shifted} \\
+transformation & outliers: & no & yes & no & yes & no & yes \\
+
+\midrule
+
+none                                  & & 0.246 & 0.139 & 0.186 & 0.125 & 0.187 & 0.125 \\
+conventional                          & & 0.139 & 0.114 & 0.142 & 0.106 & 0.187 & 0.125 \\
+conventional (z-score norm.)          & & 0.139 & 0.113 & 0.142 & 0.104 & 0.142 & 0.104 \\
+conventional (robust scaling)         & & 0.139 & 0.114 & 0.141 & 0.104 & 0.141 & 0.104 \\
+Raymaekers-Rousseeuw                  & & 0.211 & 0.121 & 0.183 & 1.212 & 0.187 & 0.125 \\
+Raymaekers-Rousseeuw (z-score norm.)  & & 0.295 & 0.129 & 0.175 & 0.125 & 0.175 & 0.125 \\
+Raymaekers-Rousseeuw (robust scaling) & & 0.209 & 0.124 & 0.172 & 0.116 & 0.172 & 0.116 \\
+invariant                             & & 0.141 & 0.115 & 0.140 & 0.106 & 0.140 & 0.106 \\
+robust invariant                      & & 0.141 & 0.100 & 0.140 & 0.095 & 0.140 & 0.090 \\
+
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+
+```{r include = FALSE, eval = FALSE}
+
+# Yeo-Johnson on clean and dirty data.
+clean_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "clean")
+dirty_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "dirty")
+shifted_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "dirty_shifted")
+
+data <- rbind(clean_data, dirty_data, shifted_data, fill = TRUE)
+data$dataset <- factor(data$dataset, levels = c("clean", "dirty", "dirty_shifted"))
+
+# 30 samples or fewer
+data <- data[n_samples >= 1000L, ]
+
+# Add rank based on residual error for central normality.
+data[outlier == FALSE, "method_rank" := rank(residuals), by = c("experiment_id", "outlier", "dataset")]
+data[outlier == TRUE, "method_rank" := rank(residuals_central), by = c("experiment_id", "outlier", "dataset")]
+data[outlier == FALSE, "norm_residuals" := residuals / n_samples]
+data[outlier == TRUE, "norm_residuals" := residuals_central / n_samples]
+
+table_data <- data[
+  ,
+  list(
+    "avg." = round(mean(method_rank), digits = 2L),
+    "10%" = quantile(method_rank, 0.10),
+    "50%" = quantile(method_rank, 0.50),
+    "90%" = quantile(method_rank, 0.90),
+    "avg. norm. res." = round(mean(norm_residuals), digits = 3)
+  ),
+  by = c("transformation", "outlier", "dataset")
+]
+
+# Table with average rank.
+data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.var = "avg.")
+
+# Table with average normalised residuals.
+data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.var = "avg. norm. res.")
+
+
+```
+
+\begin{table}
+\begin{center}
+\caption{
+Comparison of average rank between Yeo-Johnson transformation methods based on either residual error (without outliers) or residual error of the central portion
+(with outliers; $\kappa = 0.80$) over 3 datasets with 33037 sequences each. Each sequence contained between 1000 and 10000 samples.
+The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
+A rank of 1 is the best and a rank of 9 the worst. For each dataset, the best ranking transformation is marked in bold.
+}
+\label{tab:comparison_methods_simulations_yeo_johnson_1000_10000}
+\begin{tabular}{l | l r r r r r r}
+
+\toprule
+& dataset: & \multicolumn{2}{c}{clean} & \multicolumn{2}{c}{dirty} & \multicolumn{2}{c}{shifted} \\
+transformation & outliers: & no & yes & no & yes & no & yes \\
+
+\midrule
+
+none                                  & &         8.85  &         8.14  &         7.35  &         6.29  &         7.41  &         6.87 \\
+conventional                          & &         3.50  &         5.65  &         3.52  &         7.78  &         6.42  &         6.05 \\
+conventional (z-score norm.)          & &         5.24  &         5.94  &         7.34  &         4.98  &         6.26  &         4.79 \\
+conventional (robust scaling)         & &         3.53  &         6.98  &         5.97  &         5.79  &         4.87  &         5.65 \\
+Raymaekers-Rousseeuw                  & &         4.15  &         2.81  &         3.37  &         3.72  &         6.19  &         5.79 \\
+Raymaekers-Rousseeuw (z-score norm.)  & &         5.34  & \textbf{1.86} &         6.57  &         3.39  &         5.49  &         3.30 \\
+Raymaekers-Rousseeuw (robust scaling) & &         4.20  &         2.33  &         5.21  &         3.36  &         4.12  &         3.23 \\
+invariant                             & & \textbf{2.36} &         7.59  & \textbf{2.66} &         6.82  & \textbf{1.98} &         6.81 \\
+robust invariant                      & &         7.83  &         3.70  &         3.01  & \textbf{2.88} &         2.26  & \textbf{2.51} \\
+
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+
+\begin{table}
+\begin{center}
+\caption{
+Comparison of average normalised residual error between Yeo-Johnson transformation methods based on either the residual error (without outliers) or the residual error of the central portion
+(with outliers; $\kappa = 0.80$) over 3 datasets with 16001 sequences each. Residual errors were normalised by sequence length to reduce the effect of sequence length on the residual error.
+Each sequence contained between 1000 and 10000 samples. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
+A lower normalised residual error is better. Discrepancies with the rank-based method may occur, as even with normalisation residual errors 
+are not fully comparable between experiments, whereas the ranks achieved within each experiment are.
+}
+\label{tab:comparison_methods_simulations_yeo_johnson_1000_10000_avg_residual}
+\begin{tabular}{l | l r r r r r r}
+
+\toprule
+& dataset: & \multicolumn{2}{c}{clean} & \multicolumn{2}{c}{dirty} & \multicolumn{2}{c}{shifted} \\
+transformation & outliers: & no & yes & no & yes & no & yes \\
+
+\midrule
+
+none                                  & & 0.186 & 0.073 & 0.106 & 0.043 & 0.106 & 0.043 \\
+conventional                          & & 0.014 & 0.060 & 0.060 & 0.046 & 0.106 & 0.043 \\
+conventional (z-score norm.)          & & 0.021 & 0.061 & 0.070 & 0.040 & 0.070 & 0.040 \\
+conventional (robust scaling)         & & 0.014 & 0.061 & 0.069 & 0.040 & 0.069 & 0.040 \\
+Raymaekers-Rousseeuw                  & & 0.015 & 0.017 & 0.060 & 0.024 & 0.106 & 0.043 \\
+Raymaekers-Rousseeuw (z-score norm.)  & & 0.021 & 0.016 & 0.070 & 0.024 & 0.070 & 0.024 \\
+Raymaekers-Rousseeuw (robust scaling) & & 0.015 & 0.016 & 0.068 & 0.024 & 0.068 & 0.024 \\
+invariant                             & & 0.013 & 0.067 & 0.059 & 0.044 & 0.059 & 0.044 \\
+robust invariant                      & & 0.034 & 0.034 & 0.061 & 0.026 & 0.061 & 0.026 \\
+
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+\FloatBarrier
+
 ## Examples using clean data
 
 Robust transformations are hypothesised to have a cost in efficiency for data
