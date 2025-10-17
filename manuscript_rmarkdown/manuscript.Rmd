@@ -185,7 +185,9 @@ A numeric feature is a finite sequence $\mathbf{X} = \left\{x_1, x_2, \ldots, x_
 
 ## Location- and scale-invariant power transformation
 
-Box-Cox and Yeo-Johnson transformations are modified by introducing
+@Box1964-mz originally included a shift parameter in their transformation, but
+for their formal analysis set it to $0$, whereas @Yeo2000-vw did not include
+a shift or scale parameter. Here, Box-Cox and Yeo-Johnson transformations are modified by introducing
 shift parameter $x_0$ and scale parameter $s$ into equations \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}.
 The location- and scale-invariant Box-Cox transformation of a feature value 
 $x_i$ of feature $\mathbf{X}$ under transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$ 
