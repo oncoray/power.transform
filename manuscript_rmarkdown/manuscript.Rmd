@@ -584,19 +584,21 @@ For each distribution, transformation parameter $\lambda$ varied with $d_{\text{
 In contrast, estimation of $\lambda$ for invariant power transformations was invariant to both $d_{\text{shift}}$ and $d_{\text{scale}}$.
 
 
-## Central normality and empirical central normality test
+## Empirical central normality test
 
 To develop a test for central normality we need to consider two
-parameters: the central portion $\kappa$ as a fixed parameter, and test
-statistic $\tau_{\text{ecn}}$. We will first define the central portion
+parameters: the central portion $\kappa$ and outlier rate $\zeta$ as fixed parameters,
+and test statistic $\tau_{\text{ecn}}$. We will first define the central portion
 $\kappa$.
 
 For each number of samples $n \in \left\{\lfloor 10^\nu \rfloor | \nu \in \left\{0.7500, 0.8125, \ldots, 4.0000 \right \} \right\}$
 we randomly drew $m_d = 30000$ ordered sequences $\mathbf{X}$ from $\mathcal{N}(0,1)$.
 This dataset was used to compute the critical test statistic values for the central normality test.
-Additionally, we added $10 \%$ outliers by randomly replacing elements of each ordered sequence.
-The dataset with outliers was used to compute the critical test statistic values for the empirical variant of the central normality test.
-For each sequence we then computed $\tau_{n, \kappa}$ for $\kappa \in \left\{0.60, 0.70, 0.80, 0.90, 0.95, 1.00\right\}$.
+Additionally, outliers were inserted by randomly replacing each element of an ordered sequence with a probability $\zeta$.
+We then computed the critical test statistic values for the empirical central normality test.
+For each sequence we then computed $\tau_{n, \kappa, \zeta}$ for 
+$\kappa \in \left\{0.60, 0.70, 0.80, 0.90, 0.95, 1.00\right\}$ and
+$\zeta \in \left\{0.0, 0.01, 0.02, 0.05, 0.10, 0.15, 0.20 \right\}$.
 
 ```{r include = FALSE, eval = FALSE}
 # This creates and sets the lookup table for critical test statistic.
@@ -624,25 +626,23 @@ usethis::use_data(
 )
 ```
 
-Figure \ref{fig:empirical-central-normality-kappa} shows $\tau_{\alpha = 0.05, n, \kappa}$
-as a function of $n$ for different values of $\kappa$. With decreasing
+Figure \ref{fig:empirical-central-normality-kappa} shows $\tau_{\alpha = 0.05, n, \kappa, \zeta}$
+as a function of $n$ for different values of $\kappa$ and $\zeta$. With decreasing
 $\kappa$, the test statistic curve decreases. The curves
 for $\kappa = 0.60$, $\kappa = 0.70$ and $\kappa = 0.80$ are similar, whereas curves for 
 $\kappa \geq 0.90$ are affected by outliers, as can be observed by comparing curves
 of the central normality test with those of the empirical variant.
 
-Since the (empirical) central normality tests assesses whether the central part of a sequence is normally distributed,
+Since the empirical central normality tests assesses whether the central part of a sequence is normally distributed,
 we used $\kappa = 0.80$. Critical statistic values for central normality and empirical central
 normality tests are shown are shown in Table \ref{tab:central-normality-critical-statistic} and Table 
 \ref{tab:empirical-central-normality-critical-statistic}, respectively.
 
 ```{r empirical-central-normality-kappa, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
 cap <- paste0(
-  "Critical test statistic $\\tau_{\\alpha = 0.05, n, \\kappa}$ of the (empirical) ",
-  "central normality test as function of $n$ for several values of central portion $\\kappa$. ",
-  "The critical test statistics for central normality test are determined using fully normal data, ",
-  "whereas the statistics for the empirical variant are determined using centrally normal data, ",
-  "i.e. with fully normal data where 10% of elements are replaced by outliers. ",
+  "Critical test statistic $\\tau_{\\alpha = 0.05, n, \\kappa, \\zeta}$ of the empirical ",
+  "central normality test as function of $n$ for several values of central portion $\\kappa$ ",
+  "and outlier rates $\\zeta$. ",
   "emp: empirical"
 )
 
