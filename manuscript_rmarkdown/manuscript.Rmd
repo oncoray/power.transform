@@ -624,9 +624,8 @@ $\kappa \geq 0.90$ are affected by outliers, as can be observed by comparing cur
 of the central normality test with those of the empirical variant.
 
 Since the empirical central normality tests assesses whether the central part of a sequence is normally distributed,
-we used $\kappa = 0.80$. Critical statistic values for central normality and empirical central
-normality tests are shown are shown in Table \ref{tab:central-normality-critical-statistic} and Table 
-\ref{tab:empirical-central-normality-critical-statistic}, respectively.
+we used $\kappa = 0.80$. Critical statistic values for $\kappa = 0.80$ and $\zeta = 0.10$ are shown in Table 
+\ref{tab:empirical-central-normality-critical-statistic}.
 
 ```{r empirical-central-normality-kappa, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
 cap <- paste0(
@@ -755,8 +754,7 @@ two_sided_function_parameters <- .get_optimised_weighting_function_parameters(
 )
 
 usethis::use_data(
-  central_normality_lookup_table,
-  empirical_central_normality_lookup_table,
+  ecn_lookup_table,
   two_sided_function_parameters, 
   internal = TRUE, 
   overwrite = TRUE

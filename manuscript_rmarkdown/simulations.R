@@ -1754,3 +1754,60 @@
 }
 
 
+
+.get_test_statistic_lookup_table_manuscript <- function(
+    manuscript_dir,
+    kappa_lookup = 0.80,
+    outlier_rate_lookup = 0.10
+) {
+  alpha_levels <- rev(1.0 - c(0.10, 0.20, 0.50, 0.80, 0.90, 0.95, 0.975, 0.99, 0.999))
+  n <- c(5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000)
+
+  data <- .get_test_statistics_data(manuscript_dir)
+  data <- data[kappa == kappa_lookup & outlier_rate == outlier_rate_lookup]
+
+  # Compute alpha. Higher alpha yields higher tau (with n constant).
+  data[, "alpha" := 1.0 - (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa", "outlier_rate")]
+
+  # Compute tau at the specified confidence levels.
+  data <- data[
+    ,
+    list(
+      "tau" = stats::spline(
+        x = alpha,
+        y = mean_residual_error,
+        method = "fmm",
+        xout = alpha_levels)$y,
+      "alpha" = alpha_levels
+    ),
+    by = c("n", "kappa", "outlier_rate")
+  ]
+
+  # Convert to factor to make it easier to parse.
+  data$alpha <- factor(data$alpha, ordered = TRUE)
+
+  new_data <- lapply(
+    split(data, data$alpha),
+    function(data, n) {
+      x <- stats::spline(
+        x = data$n,
+        y = data$tau,
+        method = "fmm",
+        xout = n
+      )$y
+
+      return(list("n" = n, "tau" = x, "alpha" = data$alpha[1L]))
+    },
+    n = n
+  )
+
+  new_data <- data.table::rbindlist(new_data)
+
+  # Represent as 10^-2 for better interpretability.
+  new_data[, "tau" := round(tau * 100.0, 2L)]
+  return(data.table::dcast(
+    data = new_data,
+    formula = n ~ alpha,
+    value.var = "tau"
+  ))
+}
