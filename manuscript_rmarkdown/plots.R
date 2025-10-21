@@ -2537,66 +2537,120 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 
 .plot_test_dependency_sample_size <- function(manuscript_dir, plot_theme) {
-  n_rep <- 1000L
-  k <- 0.10
+
+  .compute_wrapper <- function(
+    n
+  ) {
+    return(
+      lapply(
+        X = n,
+        FUN = ..compute
+      )
+    )
+  }
+
+  ..compute <- function(
+    n
+  ) {
+    set.seed(n)
+
+    n_rep <- 1000L
+    data <- list()
+    for (jj in seq_len(n_rep)) {
+      x <- power.transform::ragn(floor(n), location = 0, scale = 1 / sqrt(2), alpha = 0.5, beta = 2)
+
+      # Compute upper and lower quartiles, and IQR.
+      q_lower <- stats::quantile(x, probs = 0.25, names = FALSE)
+      q_upper <- stats::quantile(x, probs = 0.75, names = FALSE)
+      interquartile_range <- stats::IQR(x)
+
+      # Set data where the outliers will be copied into.
+      x_outlier_5 <- x
+      x_outlier_10 <- x
+
+      # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
+      # than Q3 + 1.5 IQR.
+      n_draw_5 <- ceiling(0.05 * length(x))
+      n_draw_10 <- ceiling(0.10 * length(x))
+      x_random_5 <- stats::runif(n_draw_5, min = -2.0, max = 2.0)
+      x_random_10 <- stats::runif(n_draw_10, min = -2.0, max = 2.0)
+
+      outlier_5 <- numeric(n_draw_5)
+      outlier_10 <- numeric(n_draw_10)
+      if (any(x_random_5 < 0)) {
+        outlier_5[x_random_5 < 0] <- q_lower - 1.5 * interquartile_range + x_random_5[x_random_5 < 0] * interquartile_range
+      }
+
+      if (any(x_random_5 >= 0)) {
+        outlier_5[x_random_5 >= 0] <- q_upper + 1.5 * interquartile_range + x_random_5[x_random_5 >= 0] * interquartile_range
+      }
+
+      if (any(x_random_10 < 0)) {
+        outlier_10[x_random_10 < 0] <- q_lower - 1.5 * interquartile_range + x_random_10[x_random_10 < 0] * interquartile_range
+      }
+
+      if (any(x_random_10 >= 0)) {
+        outlier_10[x_random_10 >= 0] <- q_upper + 1.5 * interquartile_range + x_random_10[x_random_10 >= 0] * interquartile_range
+      }
+
+      # Randomly insert outlier values.
+      x_outlier_5[sample(seq_along(x), size = n_draw_5, replace = FALSE)] <- outlier_5
+      x_outlier_10[sample(seq_along(x), size = n_draw_10, replace = FALSE)] <- outlier_10
+
+      data[[jj]] <- data.table::data.table(
+        "n" = n,
+        "p_value" = c(
+          power.transform::ecn_test(x = x, outlier_rate = 0.00)$p_value,
+          power.transform::ecn_test(x = x, outlier_rate = 0.05)$p_value,
+          power.transform::ecn_test(x = x, outlier_rate = 0.1)$p_value,
+          shapiro.test(x)$p.value,
+          power.transform::ecn_test(x = x_outlier_5, outlier_rate = 0.00)$p_value,
+          power.transform::ecn_test(x = x_outlier_5, outlier_rate = 0.05)$p_value,
+          power.transform::ecn_test(x = x_outlier_5, outlier_rate = 0.1)$p_value,
+          shapiro.test(x_outlier_5)$p.value,
+          power.transform::ecn_test(x = x_outlier_10, outlier_rate = 0.00)$p_value,
+          power.transform::ecn_test(x = x_outlier_10, outlier_rate = 0.05)$p_value,
+          power.transform::ecn_test(x = x_outlier_10, outlier_rate = 0.1)$p_value,
+          shapiro.test(x_outlier_10)$p.value
+        ),
+        "actual_outlier_rate" = c(0.0, 0.0, 0.0, 0.0, 0.05, 0.05, 0.05, 0.05, 0.10, 0.10, 0.10, 0.10, 0.10),
+        "test" = factor(
+          c(
+            "ECN (0 %)", "ECN (5 %)", "ECN (10%)", "SW",
+            "ECN (0 %)", "ECN (5 %)", "ECN (10%)", "SW",
+            "ECN (0 %)", "ECN (5 %)", "ECN (10%)", "SW"
+          ),
+          levels = c("SW", "ECN (0 %)", "ECN (5 %)", "ECN (10 %)")
+        )
+      )
+    }
+
+    return(data)
+  }
 
   # From 5 to 1000 in equal steps (log 10 scale)
   n <- 10^(seq(from = 0.75, to = 3.0, by = 0.125))
+  n <- floor(n)
 
   file_name <- file.path(manuscript_dir, "sample_size_dependency.RDS")
   if (!file.exists(file_name)) {
-    set.seed(19L)
+    n_threads <- 18L
+    assignment_id <- rep_len(seq_len(n_threads), length(n))
 
-    data <- list()
-    for (ii in seq_along(n)) {
-      # Repeat 1000 times.
-      for (jj in seq_len(n_rep)) {
-        x <- power.transform::ragn(floor(n[ii]), location = 0, scale = 1 / sqrt(2), alpha = 0.5, beta = 2)
+    cl <- parallel::makeCluster(n_threads)
+    on.exit(parallel::stopCluster(cl))
 
-        # Compute upper and lower quartiles, and IQR.
-        q_lower <- stats::quantile(x, probs = 0.25, names = FALSE)
-        q_upper <- stats::quantile(x, probs = 0.75, names = FALSE)
-        interquartile_range <- stats::IQR(x)
+    parallel::clusterExport(cl = cl, "..compute", envir = rlang::current_env())
 
-        # Set data where the outliers will be copied into.
-        x_outlier <- x
+    data <- parallel::parLapply(
+      cl = cl,
+      X = split(n, assignment_id),
+      fun = .compute_wrapper
+    )
 
-        # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
-        # than Q3 + 1.5 IQR.
-        n_draw <- ceiling(k * length(x))
-        x_random <- stats::runif(n_draw, min = -2.0, max = 2.0)
-
-
-        outlier <- numeric(n_draw)
-        if (any(x_random < 0)) {
-          outlier[x_random < 0] <- q_lower - 1.5 * interquartile_range + x_random[x_random < 0] * interquartile_range
-        }
-
-        if (any(x_random >= 0)) {
-          outlier[x_random >= 0] <- q_upper + 1.5 * interquartile_range + x_random[x_random >= 0] * interquartile_range
-        }
-
-        # Randomly insert outlier values.
-        x_outlier[sample(seq_along(x), size = n_draw, replace = FALSE)] <- outlier
-
-        data[[jj + (ii - 1L) * n_rep]] <- data.table::data.table(
-          "n" = n[ii],
-          "p_value" = c(
-            power.transform::cn.test(x = x)$p_value,
-            power.transform::cn.test(x = x_outlier)$p_value,
-            power.transform::ecn.test(x = x)$p_value,
-            power.transform::ecn.test(x = x_outlier)$p_value,
-            shapiro.test(x)$p.value,
-            shapiro.test(x_outlier)$p.value
-          ),
-          "outlier" = c(FALSE, TRUE, FALSE, TRUE, FALSE, TRUE),
-          "test" = factor(c("CN", "CN", "ECN", "ECN", "SW", "SW"), levels = c("SW", "CN", "ECN"))
-        )
-      }
-    }
-
+    # TODO: something is not correct here.
     # Aggregate to single table.
-    data <- data.table::rbindlist(data)
+    data <- data.table::rbindlist(unlist(data, recursive = FALSE))
 
     saveRDS(data, file_name)
 
@@ -2607,7 +2661,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   # Compute type I error rate (i.e. fraction of distributions that are centrally
   # normal are rejected by the test).
   data[, "rejected" := p_value <= 0.05]
-  data <- data[, list("type_1_error_rate" = sum(rejected) / .N), by = c("n", "outlier", "test")]
+  data <- data[, list("type_1_error_rate" = sum(rejected) / .N), by = c("n", "actual_outlier_rate", "test")]
 
   p <- ggplot2::ggplot(
     mapping = ggplot2::aes(
