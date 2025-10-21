@@ -2440,25 +2440,15 @@ get_annotation_settings <- function(ggtheme = NULL) {
 .plot_test_statistic_tau <- function(manuscript_dir, plot_theme, k = 0.80) {
   # Plots critical tau for several alpha levels.
 
-  data_w_outliers <- .get_test_statistics_data(
-    manuscript_dir = manuscript_dir,
-    with_outliers = TRUE
+  data <- .get_test_statistics_data(
+    manuscript_dir = manuscript_dir
   )
-  data_w_outliers[, "outlier" := TRUE]
-
-  data_wo_outliers <- .get_test_statistics_data(
-    manuscript_dir = manuscript_dir,
-    with_outliers = FALSE
-  )
-  data_wo_outliers[, "outlier" := FALSE]
-
-  data <- rbind(data_w_outliers, data_wo_outliers)
   data <- data[kappa == k]
 
   alpha_levels <- 1.0 - c(0.80, 0.90, 0.95, 0.975, 0.99, 0.999)
 
   # Compute alpha
-  data[, "alpha" := 1.0 - (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa", "outlier")]
+  data[, "alpha" := 1.0 - (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa", "outlier_rate")]
 
   # Compute tau at the specified confidence levels.
   data <- data[
@@ -2471,13 +2461,19 @@ get_annotation_settings <- function(ggtheme = NULL) {
         xout = alpha_levels)$y,
       "alpha" = alpha_levels
     ),
-    by = c("n", "outlier")
+    by = c("n", "outlier_rate")
   ]
 
   data$alpha <- factor(
     x = data$alpha,
     levels = alpha_levels,
     labels = c("20.0 %", "10.0 %", "5.0 %", "2.5 %", "1.0 %", "0.1 %")
+  )
+
+  data$outlier_rate <- factor(
+    x = data$outlier_rate,
+    levels = c(0.00, 0.01, 0.02, 0.05, 0.10, 0.15, 0.20),
+    labels = c("0 %", "1 %", "2 %", "5 %", "10 %", "15 %", "20 %")
   )
 
   p <- ggplot2::ggplot(
@@ -2489,9 +2485,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
   p <- p + plot_theme
   p <- p + ggplot2::scale_x_log10(name = "n")
-  p <- p + ggplot2::ylab(latex2exp::TeX("test statistic $\\tau_{\\alpha, n, \\kappa = 0.80}$"))
+  p <- p + ggplot2::ylab(latex2exp::TeX("test statistic $\\tau_{\\alpha, n, \\kappa = 0.80, \\zeta}$"))
   p <- p + ggplot2::scale_colour_discrete(
-    name = "significance level",
+    name = "significance\nlevel",
     type = c(
       "20.0 %" = "#bacbde",
       "10.0 %" = "#537dac",
@@ -2502,21 +2498,36 @@ get_annotation_settings <- function(ggtheme = NULL) {
     )
   )
 
-  p_no_outliers <- p + ggplot2::geom_line(
-    data = data[outlier == FALSE])
-  p_no_outliers <- p_no_outliers + ggplot2::ggtitle("central normality test")
+  p_0 <- p + ggplot2::geom_line(data = data[outlier_rate == "0 %"])
+  p_0 <- p_0 + ggplot2::ggtitle("no outliers")
 
-  p_outliers <- p + ggplot2::geom_line(data = data[outlier == TRUE])
-  p_outliers <- p_outliers + ggplot2::ggtitle("emp. central normality test")
-  p_outliers <- p_outliers + ggplot2::theme(
+  p_2 <- p + ggplot2::geom_line(data = data[outlier_rate == "2 %"])
+  p_2 <- p_2 + ggplot2::ggtitle(latex2exp::TeX("\\zeta = 0.02"))
+  p_2 <- p_2 + ggplot2::theme(
+    axis.text.y = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank()
+  )
+
+  p_5 <- p + ggplot2::geom_line(data = data[outlier_rate == "5 %"])
+  p_5 <- p_5 + ggplot2::ggtitle(latex2exp::TeX("\\zeta = 0.05"))
+  p_5 <- p_5 + ggplot2::theme(
+    axis.text.y = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank()
+  )
+
+  p_10 <- p + ggplot2::geom_line(data = data[outlier_rate == "10 %"])
+  p_10 <- p_10 + ggplot2::ggtitle(latex2exp::TeX("\\zeta = 0.10"))
+  p_10 <- p_10 + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),
     axis.title.y = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank()
   )
 
   # Patch all the plots together.
-  p <- p_no_outliers + p_outliers + patchwork::plot_layout(
-    ncol = 2,
+  p <- p_0 + p_2 + p_5 + p_10 + patchwork::plot_layout(
+    ncol = 4,
     guides = "collect"
   )
 

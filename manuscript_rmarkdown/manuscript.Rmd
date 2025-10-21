@@ -604,22 +604,12 @@ $\zeta \in \left\{0.0, 0.01, 0.02, 0.05, 0.10, 0.15, 0.20 \right\}$.
 # This creates and sets the lookup table for critical test statistic.
 load(file = "./R/sysdata.rda")
 
-central_normality_lookup_table <- .get_test_statistic_lookup_table(
-  manuscript_dir = manuscript_dir,
-  k = 0.80,
-  outlier_rate = 0.00,
-  for_manuscript = FALSE
-)
-
-empirical_central_normality_lookup_table <- .get_test_statistic_lookup_table(
-  manuscript_dir = manuscript_dir,
-  k = 0.80,
-  for_manuscript = FALSE
+ecn_lookup_table <- .get_test_statistic_lookup_table(
+  manuscript_dir = manuscript_dir
 )
 
 usethis::use_data(
-  central_normality_lookup_table,
-  empirical_central_normality_lookup_table,
+  ecn_lookup_table,
   two_sided_function_parameters, 
   internal = TRUE, 
   overwrite = TRUE

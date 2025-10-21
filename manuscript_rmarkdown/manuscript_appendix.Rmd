@@ -499,7 +499,7 @@ cap <- paste0(
 
 # Appendix C: Central normality test and empirical central normality test critical values
 
-Critical values for the central normality test and its empirical variant are
+Critical values for the empirical central normality test are
 found in Table \ref{tab:central-normality-critical-statistic} and Table 
 \ref{tab:empirical-central-normality-critical-statistic}, respectively.
 
@@ -584,11 +584,8 @@ $n$ \textbackslash $\alpha$ & 0.001 & 0.01 & 0.025 & 0.05 & 0.1 & 0.2 & 0.5 & 0.
 
 ```{r empirical-central-normality-critical-statistics, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
 cap <- paste0(
-  "Critical test statistic $\\tau_{\\alpha, n, \\kappa = 0.80}$ of the (empirical) ",
+  "Critical test statistic $\\tau_{\\alpha, n, \\kappa = 0.80, \\zeta}$ of the empirical ",
   "central normality test as function of $n$ for several values of significance level $\\alpha$. ",
-  "The critical test statistics for central normality test are determined using fully normal data, ",
-  "whereas the statistics for the empirical variant are determined using centrally normal data, ",
-  "i.e. with fully normal data where 10% of elements are replaced by outliers. ",
   "emp: empirical"
 )
 

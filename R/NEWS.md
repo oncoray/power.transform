@@ -2,6 +2,11 @@
 
 ## Changes
 
+- `ecn.test` was renamed to `ecn_test`. It now additionally takes `tau`, `n`,
+  `kappa` and `outlier_rate` as arguments (see function documentation).
+
+- `cn.test` was deprecated. Use `ecn_test` with `kappa = 1.0` and `outlier_rate = 0.0` instead.
+
 - When checking if required packages are installed, `power.transform` now caches
   results. This prevents unnecessary look-up on the disk.
 
