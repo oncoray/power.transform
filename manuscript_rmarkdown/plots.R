@@ -1074,7 +1074,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     location_shift = 0.0,
     plot_theme,
     limits = c(-7.0, 7.0),
-    drop_qq_y_axis = TRUE) {
+    drop_qq_y_axis = TRUE
+  ) {
     # Prevent warnings due to non-standard evaluation.
     distribution <- NULL
 
@@ -1125,20 +1126,25 @@ get_annotation_settings <- function(ggtheme = NULL) {
         x = x,
         y = ggplot2::after_stat(scaled),
         fill = distribution,
-        colour = distribution),
-      alpha = 0.2)
+        colour = distribution
+      ),
+      alpha = 0.2
+    )
     p <- p + ggplot2::geom_density(
       mapping = ggplot2::aes(
         x = x,
-        y = ggplot2::after_stat(scaled)),
-      colour = "grey10")
+        y = ggplot2::after_stat(scaled)
+      ),
+      colour = "grey10"
+    )
 
     p <- p + ggplot2::geom_segment(
       x = -location_shift / 2.0,
       xend = location_shift / 2.0,
       y = 0.10,
       yend = 0.10,
-      colour = "grey40")
+      colour = "grey40"
+    )
     p <- p + ggplot2::annotate(
       geom = "text",
       x = 0.0,
@@ -1153,14 +1159,14 @@ get_annotation_settings <- function(ggtheme = NULL) {
     )
 
     p <- p + ggplot2::coord_cartesian(xlim = limits)
-
-    p <- p + ggplot2::facet_grid(cols = vars(paste0("d = ", location_shift)))
+    p <- p + ggplot2::ggtitle(paste0("d = ", location_shift))
 
     p <- p + ggplot2::theme(
       axis.text.x = ggplot2::element_blank(),
       axis.title.x = ggplot2::element_blank(),
       axis.text.y = ggplot2::element_blank(),
-      axis.title.y = ggplot2::element_blank()
+      axis.title.y = ggplot2::element_blank(),
+      axis.ticks.y =  ggplot2::element_blank()
     )
 
     p <- p + paletteer::scale_color_paletteer_d(
