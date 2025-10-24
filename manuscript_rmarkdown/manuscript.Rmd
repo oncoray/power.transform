@@ -586,19 +586,29 @@ In contrast, estimation of $\lambda$ for invariant power transformations was inv
 
 ## Empirical central normality test
 
-To develop a test for central normality we need to consider two
-parameters: the central portion $\kappa$ and outlier rate $\zeta$ as fixed parameters,
-and test statistic $\tau_{\text{ecn}}$. We will first define the central portion
-$\kappa$.
-
+The critical test statistic for the empirical central normality test depends on 
+the significance level $\alpha$, sequence length $n$, central portion $\kappa$
+and estimated outlier rate $\zeta$, and was set through simulation. 
 For each number of samples $n \in \left\{\lfloor 10^\nu \rfloor | \nu \in \left\{0.7500, 0.8125, \ldots, 4.0000 \right \} \right\}$
-we randomly drew $m_d = 30000$ ordered sequences $\mathbf{X}$ from $\mathcal{N}(0,1)$.
-This dataset was used to compute the critical test statistic values for the central normality test.
-Additionally, outliers were inserted by randomly replacing each element of an ordered sequence with a probability $\zeta$.
-We then computed the critical test statistic values for the empirical central normality test.
-For each sequence we then computed $\tau_{n, \kappa, \zeta}$ for 
-$\kappa \in \left\{0.60, 0.70, 0.80, 0.90, 0.95, 1.00\right\}$ and
-$\zeta \in \left\{0.0, 0.01, 0.02, 0.05, 0.10, 0.15, 0.20 \right\}$.
+we randomly sampled $m_d = 30000$ ordered sequences $\mathbf{X}$ from $\mathcal{N}(0,1)$.
+Outliers were inserted by randomly replacing elements of an ordered sequence with probability 
+$\zeta \in \left\{0.0, 0.01, 0.02, 0.05, 0.10, 0.15, 0.20 \right\}$. 
+Outlier values were set according to @Tukey1977-xm, as follows.
+Let $x^{*} \sim U\left(-2, 2\right)$.
+Then the corresponding outlier value was:
+
+\begin{equation}
+\label{eqn:outlier_rate}
+x_{out} =
+\begin{cases}
+Q_1 - \left(1.5 - x^{*} \right) \text{IQR} & \text{if } x^{*} < 0 \\
+Q_3 + \left(1.5 + x^{*} \right) \text{IQR} & \text{if } x^{*} \geq 0
+\end{cases}
+\end{equation}
+
+Here, $Q_1$, $Q_3$ and $\text{IQR}$ are the first quartile, third quartile and interquartile range of $\mathbf{X}_i$, respectively.
+
+For each sequence we then computed $\tau_{\kappa}$ for $\kappa \in \left\{0.60, 0.70, 0.80, 0.90, 0.95, 1.00\right\}$.
 
 ```{r include = FALSE, eval = FALSE}
 # This creates and sets the lookup table for critical test statistic.
@@ -616,22 +626,24 @@ usethis::use_data(
 )
 ```
 
-Figure \ref{fig:empirical-central-normality-kappa} shows $\tau_{\alpha = 0.05, n, \kappa, \zeta}$
-as a function of $n$ for different values of $\kappa$ and $\zeta$. With decreasing
-$\kappa$, the test statistic curve decreases. The curves
-for $\kappa = 0.60$, $\kappa = 0.70$ and $\kappa = 0.80$ are similar, whereas curves for 
-$\kappa \geq 0.90$ are affected by outliers, as can be observed by comparing curves
-of the central normality test with those of the empirical variant.
+Figure \ref{fig:empirical-central-normality-kappa} shows the critical test static
+$\tau_{\alpha = 0.05, n, \kappa, \zeta}$
+as a function of $n$ for different values of $\kappa$ and $\zeta$.
+With decreasing $\kappa$, the test statistic curve decreases.
+The curves for $\kappa = 0.60$, $\kappa = 0.70$ and $\kappa = 0.80$ are similar,
+whereas curves for $\kappa \geq 0.90$ were affected by outliers.
 
-Since the empirical central normality tests assesses whether the central part of a sequence is normally distributed,
-we used $\kappa = 0.80$. Critical statistic values for $\kappa = 0.80$ and $\zeta = 0.10$ are shown in Table 
+We use $\kappa = 0.80$ and $\zeta = 0.10$ for the empirical central normality tests 
+in the remainder of the manuscript, unless noted otherwise.
+Critical statistic values of the empirical central normality test for 
+$\kappa = 0.80$ and $\zeta = 0.10$ are shown in Table 
 \ref{tab:empirical-central-normality-critical-statistic}.
 
 ```{r empirical-central-normality-kappa, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
 cap <- paste0(
   "Critical test statistic $\\tau_{\\alpha = 0.05, n, \\kappa, \\zeta}$ of the empirical ",
   "central normality test as function of $n$ for several values of central portion $\\kappa$ ",
-  "and outlier rates $\\zeta$. ",
+  "and estimated outlier rates $\\zeta$. ",
   "emp: empirical"
 )
 
@@ -642,22 +654,31 @@ cap <- paste0(
 
 ```
 
-To assess type I error rates for the (empirical) central normality test and compare
-these to the Shapiro-Wilk test for normality, we randomly drew another 1000 sequences from a
+To assess type I error rates for the empirical central normality test 
+($\kappa = 0.80$ and $\zeta \in \left\{0.00, 0.05, 0.10\right\}$) and compare
+these to the Shapiro-Wilk test for normality, we randomly drew another 10000 sequences from a
 standard normal distribution ($\mathcal{N}(0,1)$ for each 
 $n \in \left\{\lfloor 10^\nu \rfloor | \nu \in \left\{0.7500, 0.8125, \ldots, 3.0000 \right \} \right\}$.
-A second dataset was created by replacing elements with randomly drawn outliers, as described above.
+Each sequence was additionally randomly populated with outliers at 5% and 10% rates, as earlier.
+
 For each sequence, the p-value for the respective test was used to reject the null
 hypothesis that the sequence is (centrally) normal. The null hypothesis was rejected if $p \leq 0.05$.
 The type I error rate was determined by computing the fraction of centrally normal sequences rejected this way.
-Figure \ref{fig:empirical-central-normality-error_rate} shows that the empirical central normality test had the expected type I error rate for
-centrally normal data (with tails of the distribution not being normally distributed),
-whereas the central normality test and Shapiro-Wilk test overestimated type I error rates.
+Figure \ref{fig:empirical-central-normality-error_rate} shows that when the estimated outlier rate 
+for the empirical central normality test matches the outlier rate in the data,
+the test yields an accurate Type I error rate.
+The Shapiro-Wilk test is overly conservative in the presence of any outliers. 
+Empirical central normality tests where the estimated outlier rate is lower
+than the actual outlier rate are likewise conservative, but to a lesser degree. 
+Empirical central normality tests where the estimated outlier rate is higher 
+than the actual outlier rate are optimistic.
 
 ```{r empirical-central-normality-error_rate, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
 cap <- paste0(
-  "Observed type I error rates for (central) normality tests in the presence of data derived from normal distributions with and without outliers. ",
-  "The empirical central normality (ECN) test uses $\\kappa = 0.80$. CN: central normality"
+  "Observed type I error rates for central normality tests in the presence of data sampled from normal distributions ",
+  "without outliers, or with a 5% or 10% outlier rate. ",
+  "The empirical central normality (ECN) test used $\\kappa = 0.80$, and was further parameterised by the ",
+  "estimated outlier rate $\\zeta = 0.00$ (ECN (0 %)), $\\zeta = 0.05$ (ECN (5 %)) and $\\zeta = 0.10$ (ECN (10%))."  
 )
 
 .plot_test_dependency_sample_size(
@@ -711,22 +732,7 @@ and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$.
 Location and scale parameters were set as $\mu = 0$ and $\sigma = 1$, respectively.
 To form each sequence $\mathbf{X}_i$, $n = \lceil 10^\gamma \rceil$ instances were then randomly drawn, 
 with $\gamma \sim U\left(\log_{10}50, 3\right)$, resulting in a set of sequences with between $50$ and $1000$ elements each.
-
 Outlier values were then drawn to randomly replace 10 percent of the elements of $\mathbf{X}_i$.
-Outlier values were set according to @Tukey1977-xm, as follows.
-Let $x^{*} \sim U\left(-2, 2\right)$.
-Then the corresponding outlier value was:
-
-\begin{equation}
-x_{out} =
-\begin{cases}
-Q_1 - \left(1.5 - x^{*} \right) \text{IQR} & \text{if } x^{*} < 0 \\
-Q_3 + \left(1.5 + x^{*} \right) \text{IQR} & \text{if } x^{*} \geq 0
-\end{cases}
-\end{equation}
-
-$Q_1$, $Q_3$ and $\text{IQR}$ are the first quartile, third quartile and interquartile range of $\mathbf{X}_i$, respectively.
-Outlier values randomly replaced elements in $\mathbf{X}_i$.
 
 To find the optimal values for the weighting function parameters $\delta_1$ and $\delta_2$ (if applicable),
 we minimised a composite loss $L = \sum_{i=1}^{m_d} L_{\text{cn},i} + 0.1 \sum_{i=1}^{m_d} L_{\lambda,i}$.

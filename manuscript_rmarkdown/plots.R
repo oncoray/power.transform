@@ -2542,9 +2542,12 @@ get_annotation_settings <- function(ggtheme = NULL) {
     n
   ) {
     return(
-      lapply(
-        X = n,
-        FUN = ..compute
+      unlist(
+        lapply(
+          X = n,
+          FUN = ..compute
+        ),
+        recursive = FALSE
       )
     )
   }
@@ -2554,7 +2557,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   ) {
     set.seed(n)
 
-    n_rep <- 1000L
+    n_rep <- 10000L
     data <- list()
     for (jj in seq_len(n_rep)) {
       x <- power.transform::ragn(floor(n), location = 0, scale = 1 / sqrt(2), alpha = 0.5, beta = 2)
@@ -2569,33 +2572,38 @@ get_annotation_settings <- function(ggtheme = NULL) {
       x_outlier_10 <- x
 
       # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
-      # than Q3 + 1.5 IQR.
-      n_draw_5 <- ceiling(0.05 * length(x))
-      n_draw_10 <- ceiling(0.10 * length(x))
-      x_random_5 <- stats::runif(n_draw_5, min = -2.0, max = 2.0)
-      x_random_10 <- stats::runif(n_draw_10, min = -2.0, max = 2.0)
-
+      # than Q3 + 1.5 IQR, and use these to randomly replace instances.
+      # We do this for 5% and 10% outlier rates.
+      ii_outlier_5 <- stats::runif(length(x)) <= 0.05
+      n_draw_5 <- sum(ii_outlier_5)
       outlier_5 <- numeric(n_draw_5)
+
+      if (n_draw_5 > 0L) {
+        x_random_5 <- stats::runif(n_draw_5, min = -2.0, max = 2.0)
+        if (any(x_random_5 < 0)) {
+          outlier_5[x_random_5 < 0] <- q_lower - 1.5 * interquartile_range + x_random_5[x_random_5 < 0] * interquartile_range
+        }
+
+        if (any(x_random_5 >= 0)) {
+          outlier_5[x_random_5 >= 0] <- q_upper + 1.5 * interquartile_range + x_random_5[x_random_5 >= 0] * interquartile_range
+        }
+      }
+      x_outlier_5[ii_outlier_5] <- outlier_5
+
+      ii_outlier_10 <- stats::runif(length(x)) <= 0.10
+      n_draw_10 <- sum(ii_outlier_10)
       outlier_10 <- numeric(n_draw_10)
-      if (any(x_random_5 < 0)) {
-        outlier_5[x_random_5 < 0] <- q_lower - 1.5 * interquartile_range + x_random_5[x_random_5 < 0] * interquartile_range
-      }
+      if (n_draw_10 > 0L) {
+        x_random_10 <- stats::runif(n_draw_10, min = -2.0, max = 2.0)
+        if (any(x_random_10 < 0) > 0L) {
+          outlier_10[x_random_10 < 0] <- q_lower - 1.5 * interquartile_range + x_random_10[x_random_10 < 0] * interquartile_range
+        }
 
-      if (any(x_random_5 >= 0)) {
-        outlier_5[x_random_5 >= 0] <- q_upper + 1.5 * interquartile_range + x_random_5[x_random_5 >= 0] * interquartile_range
+        if (any(x_random_10 >= 0) > 0L) {
+          outlier_10[x_random_10 >= 0] <- q_upper + 1.5 * interquartile_range + x_random_10[x_random_10 >= 0] * interquartile_range
+        }
       }
-
-      if (any(x_random_10 < 0)) {
-        outlier_10[x_random_10 < 0] <- q_lower - 1.5 * interquartile_range + x_random_10[x_random_10 < 0] * interquartile_range
-      }
-
-      if (any(x_random_10 >= 0)) {
-        outlier_10[x_random_10 >= 0] <- q_upper + 1.5 * interquartile_range + x_random_10[x_random_10 >= 0] * interquartile_range
-      }
-
-      # Randomly insert outlier values.
-      x_outlier_5[sample(seq_along(x), size = n_draw_5, replace = FALSE)] <- outlier_5
-      x_outlier_10[sample(seq_along(x), size = n_draw_10, replace = FALSE)] <- outlier_10
+      x_outlier_10[ii_outlier_10] <- outlier_10
 
       data[[jj]] <- data.table::data.table(
         "n" = n,
@@ -2616,9 +2624,9 @@ get_annotation_settings <- function(ggtheme = NULL) {
         "actual_outlier_rate" = c(0.0, 0.0, 0.0, 0.0, 0.05, 0.05, 0.05, 0.05, 0.10, 0.10, 0.10, 0.10, 0.10),
         "test" = factor(
           c(
-            "ECN (0 %)", "ECN (5 %)", "ECN (10%)", "SW",
-            "ECN (0 %)", "ECN (5 %)", "ECN (10%)", "SW",
-            "ECN (0 %)", "ECN (5 %)", "ECN (10%)", "SW"
+            "ECN (0 %)", "ECN (5 %)", "ECN (10 %)", "SW",
+            "ECN (0 %)", "ECN (5 %)", "ECN (10 %)", "SW",
+            "ECN (0 %)", "ECN (5 %)", "ECN (10 %)", "SW"
           ),
           levels = c("SW", "ECN (0 %)", "ECN (5 %)", "ECN (10 %)")
         )
@@ -2648,7 +2656,6 @@ get_annotation_settings <- function(ggtheme = NULL) {
       fun = .compute_wrapper
     )
 
-    # TODO: something is not correct here.
     # Aggregate to single table.
     data <- data.table::rbindlist(unlist(data, recursive = FALSE))
 
@@ -2684,32 +2691,43 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p <- p + ggplot2::scale_colour_discrete(
     name = "central normality test",
     type = c(
-      "CN" = "#A0CBE8",
-      "ECN" = "#4E79A7",
+      "ECN (0 %)" = "#bacbde",
+      "ECN (5 %)" = "#537dac",
+      "ECN (10 %)" = "#324b67",
       "SW" = "#F28E2B"
     ),
-    breaks = c("ECN", "CN", "SW"),
-    labels = c("ECN test", "CN test", "Shapiro-Wilk test")
+    breaks = c("ECN (0 %)", "ECN (5 %)", "ECN (10 %)", "SW"),
+    labels = c("ECN (0 %)", "ECN (5 %)", "ECN (10 %)", "Shapiro-Wilk test")
   )
 
 
   # W/O outliers ---------------------------------------------------------------
   p_no_outliers <- p + ggplot2::geom_line(
-    data = data[outlier == FALSE])
-  p_no_outliers <- p_no_outliers + ggplot2::ggtitle("without outliers")
+    data = data[actual_outlier_rate == 0.0]
+  )
+  p_no_outliers <- p_no_outliers + ggplot2::ggtitle("no outliers")
 
-  # W outliers -----------------------------------------------------------------
-  p_outliers <- p + ggplot2::geom_line(data = data[outlier == TRUE])
-  p_outliers <- p_outliers + ggplot2::ggtitle("with outliers")
-  p_outliers <- p_outliers + ggplot2::theme(
+  # 5% outliers ----------------------------------------------------------------
+  p_outliers_5 <- p + ggplot2::geom_line(data = data[actual_outlier_rate == 0.05])
+  p_outliers_5 <- p_outliers_5 + ggplot2::ggtitle("5% outliers")
+  p_outliers_5 <- p_outliers_5 + ggplot2::theme(
+    axis.text.y = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank()
+  )
+
+  # 10 % outliers --------------------------------------------------------------
+  p_outliers_10 <- p + ggplot2::geom_line(data = data[actual_outlier_rate == 0.10])
+  p_outliers_10 <- p_outliers_10 + ggplot2::ggtitle("10% outliers")
+  p_outliers_10 <- p_outliers_10 + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),
     axis.title.y = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank()
   )
 
   # Patch all the plots together.
-  p <- p_no_outliers + p_outliers + patchwork::plot_layout(
-    ncol = 2,
+  p <- p_no_outliers + p_outliers_5 + p_outliers_10 + patchwork::plot_layout(
+    ncol = 3,
     guides = "collect"
   )
 
