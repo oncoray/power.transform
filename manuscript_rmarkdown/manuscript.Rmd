@@ -14,6 +14,7 @@ header-includes:
 - \usepackage{amsthm}
 - \usepackage{booktabs}
 - \newtheorem*{definition}{Definition}
+- \newtheorem*{corollary}[Corollary]
 - \DeclareMathOperator*{\argmax}{argmax}
 - \DeclareMathOperator*{\argmin}{argmin}
 - \DeclareMathOperator{\sgn}{sgn}
@@ -472,13 +473,13 @@ F_{\alpha}^{-1}(p; \mu, \sigma, \beta) =
 \end{definition}
 
 
-## Central normality test
+## Empirical central normality test
 
 Power transformations aim to transform features to a normal distribution.
 However, this may not always be successful or possible.
 Deviations from normality can be detected by normality tests, such as the Shapiro-Wilk test [@Shapiro1965-zd].
 In practice, normality tests may be too stringent with large sample sizes, outliers, or both.
-Here we develop a test for central normality.
+Here we develop an empirical test for central normality.
 
 \begin{definition}[Central portion of a sequence]
 Let $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i \in \mathbb{R}\right\}$ be a finite sequence of length $n > 0$,
@@ -506,39 +507,50 @@ $\mathbf{R}_{\text{c}} = \left\{ r_i \in \left\{ r_1, r_2, \ldots, r_n\right\} \
 
 \end{definition}
 
-\begin{definition}[Central normality of a sequence]
+\begin{definition}[Centrally normal distribution]
 
-The central portion of a sequence is normally distributed if the sum of residual
-errors is equal to zero:
-$\sum_{r_j \in \mathbf{R}_{\text{c}}} r_j = 0$
+A centrally normal distribution is any distribution whose quantile function is 
+defined by $F^{-1}_{\mathcal{N}}$ for $\frac{1-\kappa}{2} \leq  p \leq \frac{1 + \kappa}{2}$,
+with $\mathcal{N}$ any normal distribution.
 
 \end{definition}
 
-In practice, a finite sequence sampled from a normal distribution $\mathcal{N}(\mu, \sigma)$ will have a non-zero sum of residual errors.
+\begin{corollary}
+
+If the sum of residual errors of the central portion of a sequence is 0, i.e.,
+$\sum_{r_j \in \mathbf{R}_{\text{c}}} r_j = 0$, 
+the values of the elements in the central portion of that sequence follow a 
+centrally normal distribution. 
+
+\end{corollary}
+
+By the Glivenko-Cantelli theorem, if sequence $\mathbf{X}$ was sampled from a
+normal distribution $\mathcal{N}(\mu, \sigma)$,
+$\lim_{n \rightarrow \infty} \sum_{r_j \in \mathbf{R}_{\text{c}}} r_j = 0$,
+i.e. an infinite sequence sampled from a normal distribution has a central portion
+with values sampled from a centrally normal distribution.
 
 \begin{definition}[Central normality test]
-The null-hypothesis is defined as: $\mathcal{H}_0: \sum_{r_j \in \mathbf{R}_{\text{c}}}r_j = 0$
+The null-hypothesis $\mathcal{H}_0$ is that the sequence $\mathbf{X}$ was sampled
+from a population that has a centrally normal distribution.
 
-The alternative hypothesis is defined as: $\mathcal{H}_1: \sum_{r_j \in \mathbf{R}_{\text{c}}}r_j > 0$
+The alternative hypothesis is that the sequence $\mathbf{X}$ was sampled from a
+population that lacks a centrally normal distribution.
 \end{definition}
 
-The null-hypothesis $\mathcal{H}_0$ is that the central portion of sequence $\mathbf{X}$
-is normally distributed, with the alternative hypothesis $\mathcal{H}_1$ that it
-is not normally distributed. To test this hypothesis, a test statistic is computed
-and compared against a critical value.
+To test this hypothesis, a test statistic is computed and compared against a critical value.
 
 \begin{definition}[Central normality test statistic]
-Let $m$ be the number of elements of $\mathbf{R}_{\text{c}}$
+Let $m$ be the number of elements of $\mathbf{R}_{\text{c}}$.
 
 The test statistic is then $\tau_{n, \kappa} = \frac{1}{m}\sum_{r_j \in \mathbf{R}_{\text{c}}}r_j$.
 
 \end{definition}
 
 The null-hypothesis should be rejected at significance level $\alpha$ if 
-$\tau_{n, \kappa} \geq \tau_{\alpha, n, \kappa, \text{critical}}$.
-
-The central portion of the data needs to be defined and the Type 1 error rates determined to provide critical test statistics.
-We will do so in the [Simulation](#simulation) section.
+$\tau_{n, \kappa} \geq \tau_{\alpha, n, \kappa, \zeta, \text{critical}}$,
+with $\zeta$ the population estimate of the rate of outliers. Critical test
+values are determined in the [Simulation](#simulation) section.
 
 
 # Simulation
@@ -588,7 +600,9 @@ In contrast, estimation of $\lambda$ for invariant power transformations was inv
 
 The critical test statistic for the empirical central normality test depends on 
 the significance level $\alpha$, sequence length $n$, central portion $\kappa$
-and estimated outlier rate $\zeta$, and was set through simulation. 
+and estimated outlier rate $\zeta$.
+Critical test statistic values were set through simulation, as described below.
+
 For each number of samples $n \in \left\{\lfloor 10^\nu \rfloor | \nu \in \left\{0.7500, 0.8125, \ldots, 4.0000 \right \} \right\}$
 we randomly sampled $m_d = 30000$ ordered sequences $\mathbf{X}$ from $\mathcal{N}(0,1)$.
 Outliers were inserted by randomly replacing elements of an ordered sequence with probability 
