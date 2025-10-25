@@ -507,9 +507,9 @@ $\mathbf{R}_{\text{c}} = \left\{ r_i \in \left\{ r_1, r_2, \ldots, r_n\right\} \
 
 \end{definition}
 
-\begin{definition}[Centrally normal distribution]
+\begin{definition}[Central normal distribution]
 
-A centrally normal distribution is any distribution whose quantile function is 
+A central normal distribution is any distribution whose quantile function is 
 defined by $F^{-1}_{\mathcal{N}}$ for $\frac{1-\kappa}{2} \leq  p \leq \frac{1 + \kappa}{2}$,
 with $\mathcal{N}$ any normal distribution.
 
@@ -517,25 +517,24 @@ with $\mathcal{N}$ any normal distribution.
 
 \begin{corollary}
 
-If the sum of residual errors of the central portion of a sequence is 0, i.e.,
-$\sum_{r_j \in \mathbf{R}_{\text{c}}} r_j = 0$, 
-the values of the elements in the central portion of that sequence follow a 
-centrally normal distribution. 
+For $\kappa = 1.0$, the central normal distribution is a normal distribution.
 
 \end{corollary}
 
-By the Glivenko-Cantelli theorem, if sequence $\mathbf{X}$ was sampled from a
-normal distribution $\mathcal{N}(\mu, \sigma)$,
+\begin{corollary}
+
+By the Glivenko-Cantelli theorem, if a sequence $\mathbf{X}$ was sampled from a
+central normal distribution, then almost surely
 $\lim_{n \rightarrow \infty} \sum_{r_j \in \mathbf{R}_{\text{c}}} r_j = 0$,
-i.e. an infinite sequence sampled from a normal distribution has a central portion
-with values sampled from a centrally normal distribution.
+
+\end{corollary}
 
 \begin{definition}[Central normality test]
 The null-hypothesis $\mathcal{H}_0$ is that the sequence $\mathbf{X}$ was sampled
-from a population that has a centrally normal distribution.
+from a population that is distributed according to a central normal distribution.
 
 The alternative hypothesis is that the sequence $\mathbf{X}$ was sampled from a
-population that lacks a centrally normal distribution.
+population that is not distributed according to a central normal distribution.
 \end{definition}
 
 To test this hypothesis, a test statistic is computed and compared against a critical value.
@@ -549,9 +548,8 @@ The test statistic is then $\tau_{n, \kappa} = \frac{1}{m}\sum_{r_j \in \mathbf{
 
 The null-hypothesis should be rejected at significance level $\alpha$ if 
 $\tau_{n, \kappa} \geq \tau_{\alpha, n, \kappa, \zeta, \text{critical}}$,
-with $\zeta$ the population estimate of the rate of outliers. Critical test
-values are determined in the [Simulation](#simulation) section.
-
+with $\zeta$ the population estimate of the rate of outliers from a normal
+distribution, to be defined in the [Simulation](#simulation) section.
 
 # Simulation
 
