@@ -1647,27 +1647,29 @@
     # Compute the expected z-score.
     z_expected <- power.transform:::compute_expected_z(x = x)
 
-    # Compute M-estimates for locality and scale
-    robust_estimates <- power.transform::huber_estimate(x, tol = 1E-3)
-    if (robust_estimates$sigma == 0.0) robust_estimates$sigma <- 1.0
-
-    # Compute the observed z-score.
-    z_observed <- (x - robust_estimates$mu) / robust_estimates$sigma
-    p_observed <- (seq_along(x) - 1.0 / 3.0) / (length(x) + 1.0 / 3.0)
-
-    # Compute residuals.
-    residual_data <- data.table::data.table(
-      "z_expected" = z_expected,
-      "z_observed" = z_observed,
-      "residual" = z_observed - z_expected,
-      "p_observed" = p_observed
-    )
-
     # Compute mean residual error for all kappa.
     mean_residual_error <- numeric(length(kappa))
     for (kk in seq_along(kappa)) {
       p_lower <- 0.50 - kappa[kk] / 2.0
       p_upper <- 0.50 + kappa[kk] / 2.0
+
+      # Compute M-estimates for locality and scale
+      cutoff_k <- stats::qnorm(p_upper)
+      if (is.infinite(cutoff_k)) cutoff_k <- 9.0
+      robust_estimates <- power.transform::huber_estimate(x, k = cutoff_k, tol = 1E-3)
+      if (robust_estimates$sigma == 0.0) robust_estimates$sigma <- 1.0
+
+      # Compute the observed z-score.
+      z_observed <- (x - robust_estimates$mu) / robust_estimates$sigma
+      p_observed <- (seq_along(x) - 1.0 / 3.0) / (length(x) + 1.0 / 3.0)
+
+      # Compute residuals.
+      residual_data <- data.table::data.table(
+        "z_expected" = z_expected,
+        "z_observed" = z_observed,
+        "residual" = z_observed - z_expected,
+        "p_observed" = p_observed
+      )
 
       mean_residual_error[kk] <- mean(abs(residual_data[p_observed >= p_lower & p_observed <= p_upper]$residual))
     }
