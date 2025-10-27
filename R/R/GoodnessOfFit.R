@@ -16,6 +16,7 @@ NULL
 #'
 #' @param transformer A transformer object created using
 #'   `find_transformation_parameters`.
+#' @param kappa Central portion of the distribution.
 #' @param verbose Sets verbosity of the fubction.
 #' @param ... Unused arguments.
 #'
@@ -28,22 +29,31 @@ NULL
 #' x <- exp(stats::rnorm(1000))
 #' transformer <- find_transformation_parameters(
 #'   x = x,
-#'   method = "box_cox")
+#'   method = "box_cox"
+#' )
 #'
 #' assess_transformation(
 #'   x = x,
-#'   transformer = transformer)
+#'   transformer = transformer
+#' )
 assess_transformation <- function(
     x,
     transformer,
+    kappa = 0.80,
     verbose = TRUE,
-    ...) {
+    ...
+) {
 
   # Perform test. Note that assess_transformation is interested only on the
   # p-value of the test, hence we try to capture any errors, and handle them
   # gracefully.
   h <- tryCatch(
-    ecn_test(x = x, transformer = transformer, ...),
+    ecn_test(
+      x = x,
+      transformer = transformer,
+      kappa = kappa,
+      ...
+    ),
     error = identity
   )
 
@@ -57,10 +67,6 @@ assess_transformation <- function(
 
   return(h$p_value)
 }
-
-
-
-
 
 
 
@@ -192,6 +198,7 @@ ecn_test <- function(
   # We need to compute tau_lookup, if it is not provided through tau.
   tau_lookup <- tau
   n_lookup <- n
+  kappa_lookup <- kappa
   if (is.null(tau_lookup)) {
     # To use get_residuals we need to have a transformer. We just obfuscate this
     # by creating a dud transformer.
@@ -202,12 +209,13 @@ ecn_test <- function(
     # Compute residual data.
     residual_data <- get_residuals(
       x = x,
-      transformer = transformer
+      transformer = transformer,
+      kappa = kappa_lookup
     )
 
     # The test uses a central portion kappa = 0.80.
-    lower_bound <- (1.0 - kappa) / 2.0
-    upper_bound <- 1.0 - (1.0 - kappa) / 2.0
+    lower_bound <- (1.0 - kappa_lookup) / 2.0
+    upper_bound <- 1.0 - (1.0 - kappa_lookup) / 2.0
     residual_data <- residual_data[p_observed >= lower_bound & p_observed <= upper_bound]
 
     # Compute mean residual error for the central portion.
@@ -225,9 +233,6 @@ ecn_test <- function(
       length(n), " numbers."
     ))
   }
-
-  # Set remaining lookup values.
-  kappa_lookup <- kappa
 
   # Import from package data.
   data <- data.table::copy(ecn_lookup_table)
@@ -340,7 +345,9 @@ ecn_test <- function(
 get_residuals <- function(
     x,
     transformer,
-    ...) {
+    kappa = 0.80,
+    ...
+) {
 
   # Perform checks on x.
   .check_data(x)
@@ -350,7 +357,8 @@ get_residuals <- function(
 
   return(.get_fit_data(
     object = transformer,
-    x = x
+    x = x,
+    kappa = kappa
   ))
 }
 
@@ -370,7 +378,9 @@ setMethod(
   function(
     object,
     x,
-    ...) {
+    kappa = 0.8,
+    ...
+  ) {
 
     # Sort x, if required.
     if (is.unsorted(x)) x <- sort(x)
@@ -383,8 +393,12 @@ setMethod(
     # Compute the expected z-score.
     z_expected <- compute_expected_z(x = x)
 
-    # Compute M-estimates for locality and scale
-    robust_estimates <- huber_estimate(y, tol = 1E-3)
+    # Set k for the robust Huber's M-estimates based on kappa.
+    cutoff_k <- stats::qnorm(0.5 + kappa / 2.0)
+    if (is.infinite(cutoff_k)) cutoff_k <- 10.0
+
+    # Compute M-estimates for locality and scale.
+    robust_estimates <- huber_estimate(y, k = cutoff_k, tol = 1E-3)
 
     # Avoid division by 0.0.
     if (robust_estimates$sigma == 0.0) robust_estimates$sigma <- 1.0
@@ -503,48 +517,4 @@ setMethod(
     f[8L] * x_d         * y_d         * z_d
 
   return(f_out)
-}
-
-
-
-.interpolate_alpha <- function(n_lookup, tau_lookup, data) {
-  # Specific interpolation for alpha values based on n and tau. Since tau is not
-  # on a grid (it's the surface), we need to interpolate tau (in the
-  # lookup-table) for n and every alpha in the lookup-table first. Then we need
-  # to interpolate alpha for the provided tau.
-
-  # Prevent CRAN NOTE due to non-standard use of variables by data.table.
-  n <- tau <- NULL
-
-  # Interpolate tau for n_lookup.
-  data <- data[
-    ,
-    list(
-      "tau" = stats::spline(
-        x = n,
-        y = tau,
-        method = "fmm",
-        xout = n_lookup
-      )$y
-    ),
-    by = c("alpha")
-  ]
-
-  # Interpolate alpha for tau_lookup
-  alpha <- stats::spline(
-    x = data$tau,
-    y = data$alpha,
-    method = "fmm",
-    xout = tau_lookup
-  )$y
-
-  # Check if lookup is outside the domain of tau.
-  if(tau_lookup > max(data$tau)) alpha <- 0.0
-  if(tau_lookup < min(data$tau)) alpha <- 1.0
-
-  # Limit alpha to (0, 1) range.
-  if (alpha < 0.0) alpha <- 0.0
-  if (alpha > 1.0) alpha <- 1.0
-
-  return(alpha)
 }
