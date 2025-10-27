@@ -4,14 +4,7 @@
 \alias{ecn_test}
 \title{Empirical central normality test}
 \usage{
-ecn_test(
-  x = NULL,
-  transformer = NULL,
-  tau = NULL,
-  n = NULL,
-  outlier_rate = 0.1,
-  kappa = 0.8
-)
+ecn_test(x = NULL, transformer = NULL, tau = NULL, n = NULL, kappa = 0.8)
 }
 \arguments{
 \item{x}{vector of input data, of at least length 5.}
@@ -19,12 +12,23 @@ ecn_test(
 \item{transformer}{A transformer object created using
 \code{find_transformation_parameters}. Optional, if present residuals are
 determined from x after transformation.}
+
+\item{tau}{test statistic value. Usually computed from \code{x}, but if can be
+provided instead of \code{x}. \code{tau} cannot be negative.}
+
+\item{n}{number of samples. Usually the length of \code{x}, but can be provided
+directly with \code{tau} and \code{kappa}. \code{n} must be 5 or greater.}
+
+\item{kappa}{central portion of the distribution. For \code{kappa = 1.0} the test
+is equivalent to a normality test, such as the Shapiro-Wilk test.}
 }
 \value{
-list with mean absolute error (\code{tau}), critical value (at
-significance level = 0.95) of the test statistic (\code{tau_critical}) and
-p-value (\code{p_value}) for the empirical central normality test.
+list with the test statistic (\code{tau}), the critical value of the test
+statistic (at significance level = 0.95) (\code{tau_critical}) and p-value
+(\code{p_value}) for the empirical central normality test.
 }
 \description{
-Assesses central normality of input data using an empirical test.
+Assesses central normality of input data using an empirical test. The test
+has the null hypothesis that the input data were sampled from a central
+normal distribution.
 }

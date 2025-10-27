@@ -67,23 +67,29 @@ assess_transformation <- function(
 
 #' Empirical central normality test
 #'
-#' Assesses central normality of input data using an empirical test.
+#' Assesses central normality of input data using an empirical test. The test
+#' has the null hypothesis that the input data were sampled from a central
+#' normal distribution.
 #'
 #' @param x vector of input data, of at least length 5.
 #' @param transformer A transformer object created using
 #'   `find_transformation_parameters`. Optional, if present residuals are
 #'   determined from x after transformation.
-#'
-#' @return list with mean absolute error (`tau`), critical value (at
-#'   significance level = 0.95) of the test statistic (`tau_critical`) and
-#'   p-value (`p_value`) for the empirical central normality test.
+#' @param tau test statistic value. Usually computed from `x`, but if can be
+#'   provided instead of `x`. `tau` cannot be negative.
+#' @param n number of samples. Usually the length of `x`, but can be provided
+#'   directly with `tau` and `kappa`. `n` must be 5 or greater.
+#' @param kappa central portion of the distribution. For `kappa = 1.0` the test
+#'   is equivalent to a normality test, such as the Shapiro-Wilk test.
+#' @return list with the test statistic (`tau`), the critical value of the test
+#'   statistic (at significance level = 0.95) (`tau_critical`) and p-value
+#'   (`p_value`) for the empirical central normality test.
 #' @export
 ecn_test <- function(
     x = NULL,
     transformer = NULL,
     tau = NULL,
     n = NULL,
-    outlier_rate = 0.1,
     kappa = 0.8
 ) {
   # Prevent CRAN NOTE due to non-standard use of variables by data.table.
@@ -160,46 +166,24 @@ ecn_test <- function(
     }
   }
 
-  # Checks on outlier_rate.
-  if (!is.numeric(outlier_rate)) {
-    rlang::abort(paste0(
-      "outlier_rate is expected to be a single number between 0.0 and 0.1. Found: ",
-      paste_s(class(outlier_rate))
-    ))
-  }
-
-  if (length(outlier_rate) != 1L) {
-    rlang::abort(paste0(
-      "outlier_rate is expected to be a single number between 0.0 and 0.1. Found: ",
-      length(outlier_rate), " numbers."
-    ))
-  }
-
-  if (outlier_rate < 0.0 || outlier_rate > 0.2) {
-    rlang::abort(paste0(
-      "outlier_rate is expected to be a single number between 0.0 and 0.1. Found: ",
-      outlier_rate
-    ))
-  }
-
   # Checks on kappa.
   if (!is.numeric(kappa)) {
     rlang::abort(paste0(
-      "kappa is expected to be a single number between 0.6 and 1.0. Found: ",
+      "kappa is expected to be a single number between 0.5 and 1.0. Found: ",
       paste_s(class(kappa))
     ))
   }
 
   if (length(kappa) != 1L) {
     rlang::abort(paste0(
-      "kappa is expected to be a single number between 0.6 and 1.0. Found: ",
+      "kappa is expected to be a single number between 0.5 and 1.0. Found: ",
       length(kappa), " numbers."
     ))
   }
 
-  if (kappa < 0.6 || kappa > 1.0) {
+  if (kappa < 0.5 || kappa > 1.0) {
     rlang::abort(paste0(
-      "kappa is expected to be a single number between 0.6 and 1.0. Found: ",
+      "kappa is expected to be a single number between 0.5 and 1.0. Found: ",
       kappa
     ))
   }
@@ -243,21 +227,15 @@ ecn_test <- function(
   }
 
   # Set remaining lookup values.
-  outlier_rate_lookup <- outlier_rate
   kappa_lookup <- kappa
 
   # Import from package data.
   data <- data.table::copy(ecn_lookup_table)
 
-  # Step 1: filter table to include only nearest values for n, kappa,
-  # outlier_rate.
+  # Step 1: filter table to include only nearest values for n, and kappa.
   n_close <- levels(data$n)[c(
     max(which(as.numeric(levels(data$n)) <= n_lookup)),
     min(which(as.numeric(levels(data$n)) >= n_lookup))
-  )]
-  outlier_rate_close <- levels(data$outlier_rate)[c(
-    max(which(as.numeric(levels(data$outlier_rate)) <= outlier_rate_lookup)),
-    min(which(as.numeric(levels(data$outlier_rate)) >= outlier_rate_lookup))
   )]
   kappa_close <- levels(data$kappa)[c(
     max(which(as.numeric(levels(data$kappa)) <= kappa_lookup)),
@@ -265,7 +243,7 @@ ecn_test <- function(
   )]
 
   # Select data.
-  new_data <- data[n %in% n_close & outlier_rate %in% outlier_rate_close & kappa %in% kappa_close]
+  new_data <- data[n %in% n_close & kappa %in% kappa_close]
 
   ..alpha_filter <- function(tau, tau_lookup) {
     x <- logical(length(tau))
@@ -280,7 +258,7 @@ ecn_test <- function(
 
   # Determine which alpha values are of interest given the value of tau, and
   # filter again to avoid superfluous interpolation.
-  new_data[, "alpha_filter" := ..alpha_filter(tau, tau_lookup), by = c("n", "kappa", "outlier_rate")]
+  new_data[, "alpha_filter" := ..alpha_filter(tau, tau_lookup), by = c("n", "kappa")]
   selected_alpha <- new_data[alpha_filter == TRUE]$alpha
   selected_alpha <- c(min(selected_alpha), max(selected_alpha))
 
@@ -288,29 +266,24 @@ ecn_test <- function(
   # critical test statistic.
   new_data <- new_data[data.table::between(alpha, selected_alpha[1L], selected_alpha[2L]) | alpha == "0.05"]
 
-
-  # Convert n, kappa and outlier_rate to numeric values. They were originally
+  # Convert n, and kappa to numeric values. They were originally
   # stored as factors to facilitate lookup and compress the data.
   new_data$n <- as.numeric(levels(new_data$n)[as.integer(new_data$n)])
   new_data$kappa <- as.numeric(levels(new_data$kappa)[as.integer(new_data$kappa)])
-  new_data$outlier_rate <- as.numeric(levels(new_data$outlier_rate)[as.integer(new_data$outlier_rate)])
 
-  # For each alpha, interpolate tau given n, kappa, outlier_rate
+  # For each alpha, interpolate tau given n, and kappa.
   tau_interp <- sapply(
     split(new_data, new_data$alpha, drop = TRUE),
-    function(data, n_lookup, outlier_rate_lookup, tau_lookup) {
-      return(.interp_3d(
+    function(data, n_lookup, tau_lookup) {
+      return(.interp_2d(
         f = data$tau,
         x = data$n,
         y = data$kappa,
-        z = data$outlier_rate,
         x_c = n_lookup,
-        y_c = kappa_lookup,
-        z_c = outlier_rate_lookup
+        y_c = kappa_lookup
       ))
     },
     n_lookup = n_lookup,
-    outlier_rate_lookup = outlier_rate_lookup,
     tau_lookup = tau_lookup
   )
   tau_data <- data.table::data.table(
@@ -430,6 +403,52 @@ setMethod(
     ))
   }
 )
+
+
+
+.interp_2d <- function(f, x, y, x_c, y_c) {
+  # Helper function for 2d interpolation.
+  # f, x, y are numeric vectors of the same length, with f the values of the
+  # lattice points, and x and y their coordinates. x_c, y_c are the coordinates
+  # of the interpolation point.
+
+  ..get_coord <- function(x, x_c) {
+    x_0 <- min(x)
+    x_1 <- max(x)
+    if (x_1 == x_0) {
+      x_d <- x_0
+    } else {
+      x_d <- (x_c - x_0) / (x_1 - x_0)
+    }
+
+    return(x_d)
+  }
+
+  ..get_value <- function(f, x, y) {
+    f_out <- numeric(4L)
+    f[1L] <- f[which(x == min(x) & y == min(y))]  # 00
+    f[2L] <- f[which(x == max(x) & y == min(y))]  # 10
+    f[3L] <- f[which(x == min(x) & y == max(y))]  # 01
+    f[4L] <- f[which(x == max(x) & y == max(y))]  # 11
+
+    return(f)
+  }
+
+  # Find values at each lattice point, in an organised manner.
+  f <- ..get_value(f, x, y)
+
+  # Find coordinates to interpolate at.
+  x_d <- ..get_coord(x, x_c)
+  y_d <- ..get_coord(y, y_c)
+
+  f_out <-
+    f[1L] * (1.0 - x_d) * (1.0 - y_d) +
+    f[2L] * x_d         * (1.0 - y_d) +
+    f[3L] * (1.0 - x_d) * y_d         +
+    f[4L] * x_d         * y_d
+
+  return(f_out)
+}
 
 
 
