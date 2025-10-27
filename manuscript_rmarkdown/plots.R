@@ -2407,18 +2407,18 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 
 
-.plot_test_statistic_tau <- function(manuscript_dir, plot_theme, k = 0.80) {
+.plot_test_statistic_tau <- function(manuscript_dir, plot_theme, kappa_lookup = 0.80) {
   # Plots critical tau for several alpha levels.
 
   data <- .get_test_statistics_data(
     manuscript_dir = manuscript_dir
   )
-  data <- data[kappa == k]
+  data <- data[kappa == kappa_lookup]
 
   alpha_levels <- 1.0 - c(0.80, 0.90, 0.95, 0.975, 0.99, 0.999)
 
   # Compute alpha
-  data[, "alpha" := 1.0 - (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa", "outlier_rate")]
+  data[, "alpha" := 1.0 - (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa")]
 
   # Compute tau at the specified confidence levels.
   data <- data[
@@ -2431,19 +2431,13 @@ get_annotation_settings <- function(ggtheme = NULL) {
         xout = alpha_levels)$y,
       "alpha" = alpha_levels
     ),
-    by = c("n", "outlier_rate")
+    by = c("n")
   ]
 
   data$alpha <- factor(
     x = data$alpha,
     levels = alpha_levels,
     labels = c("20.0 %", "10.0 %", "5.0 %", "2.5 %", "1.0 %", "0.1 %")
-  )
-
-  data$outlier_rate <- factor(
-    x = data$outlier_rate,
-    levels = c(0.00, 0.01, 0.02, 0.05, 0.10, 0.15, 0.20),
-    labels = c("0 %", "1 %", "2 %", "5 %", "10 %", "15 %", "20 %")
   )
 
   p <- ggplot2::ggplot(
@@ -2455,7 +2449,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
   p <- p + plot_theme
   p <- p + ggplot2::scale_x_log10(name = "n")
-  p <- p + ggplot2::ylab(latex2exp::TeX("test statistic $\\tau_{\\alpha, n, \\kappa = 0.80, \\zeta}$"))
+  p <- p + ggplot2::ylab(latex2exp::TeX("test statistic $\\tau_{\\alpha, n, \\kappa = 0.80}$"))
   p <- p + ggplot2::scale_colour_discrete(
     name = "significance\nlevel",
     type = c(
@@ -2468,38 +2462,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
     )
   )
 
-  p_0 <- p + ggplot2::geom_line(data = data[outlier_rate == "0 %"])
-  p_0 <- p_0 + ggplot2::ggtitle("no outliers")
-
-  p_2 <- p + ggplot2::geom_line(data = data[outlier_rate == "2 %"])
-  p_2 <- p_2 + ggplot2::ggtitle(latex2exp::TeX("\\zeta = 0.02"))
-  p_2 <- p_2 + ggplot2::theme(
-    axis.text.y = ggplot2::element_blank(),
-    axis.title.y = ggplot2::element_blank(),
-    axis.ticks.y = ggplot2::element_blank()
-  )
-
-  p_5 <- p + ggplot2::geom_line(data = data[outlier_rate == "5 %"])
-  p_5 <- p_5 + ggplot2::ggtitle(latex2exp::TeX("\\zeta = 0.05"))
-  p_5 <- p_5 + ggplot2::theme(
-    axis.text.y = ggplot2::element_blank(),
-    axis.title.y = ggplot2::element_blank(),
-    axis.ticks.y = ggplot2::element_blank()
-  )
-
-  p_10 <- p + ggplot2::geom_line(data = data[outlier_rate == "10 %"])
-  p_10 <- p_10 + ggplot2::ggtitle(latex2exp::TeX("\\zeta = 0.10"))
-  p_10 <- p_10 + ggplot2::theme(
-    axis.text.y = ggplot2::element_blank(),
-    axis.title.y = ggplot2::element_blank(),
-    axis.ticks.y = ggplot2::element_blank()
-  )
-
-  # Patch all the plots together.
-  p <- p_0 + p_2 + p_5 + p_10 + patchwork::plot_layout(
-    ncol = 4,
-    guides = "collect"
-  )
+  p <- p + ggplot2::geom_line(data = data)
 
   return(p)
 }
