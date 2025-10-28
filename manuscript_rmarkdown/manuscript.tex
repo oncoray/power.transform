@@ -62,7 +62,7 @@
 \usepackage{amsthm}
 \usepackage{booktabs}
 \newtheorem*{definition}{Definition}
-\newtheorem*{corollary}[Corollary]
+\newtheorem*{corollary}{Corollary}
 \DeclareMathOperator*{\argmax}{argmax}
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator{\sgn}{sgn}
@@ -761,20 +761,14 @@ test behaves similar to the empirical central normality test with
 \(\kappa = 1.0\), which is expected. For \(n < 10\), the empirical
 central normality test can be optimistic.
 
-\textbackslash begin\{figure\}
+\begin{figure}
 
-\{\centering \includegraphics{manuscript_files/figure-latex/empirical-central-normality-error_rate-1}
+{\centering \includegraphics{manuscript_files/figure-latex/empirical-central-normality-error_rate-1} 
 
-\}
+}
 
-\textbackslash caption\{Observed type I error rates for central
-normality tests in the presence of data sampled from central normal
-distributions with \$\kappa \in \left{0.6, 0.8, 1.0\right}\}. Three
-empirical central normality (ECN) tests were performed, parameterised
-with same value for the central portion \(\kappa\).Additional, the
-Shapiro-Wilk test was assessed.ECN: empirical central
-normality\}\label{fig:empirical-central-normality-error_rate}
-\textbackslash end\{figure\}
+\caption{Observed type I error rates for central normality tests in the presence of data sampled from central normal distributions with $\kappa \in \left\{0.6, 0.8, 1.0\right\}$. Three empirical central normality (ECN) tests were performed, parameterised with same value for the central portion $\kappa$. Additionally, the Shapiro-Wilk test was assessed. ECN: empirical central normality}\label{fig:empirical-central-normality-error_rate}
+\end{figure}
 
 In Figure \ref{fig:empirical-central-normality-examples} we apply the
 empirical central normality test (with \(\kappa = 0.80\)) to assess
