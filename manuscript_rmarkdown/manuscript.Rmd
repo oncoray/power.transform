@@ -1319,12 +1319,13 @@ Methods that relied on the empirical probability did not suffer from this issue,
 
 We introduced an empirical test for central normality to assess whether sequences
 deviate from normality in a way that might require closer inspection prior to further processing.
-The empirical test for central normality differs from other tests for normality, 
+The empirical central normality test differs from other tests for normality, 
 such as the Shapiro-Wilk test [@Shapiro1965-zd], as it assesses normality of the central portion
 of a feature, instead of the entire feature. 
-Compared to the central normality test and the Shapiro-Wilk test, the empirical central
-normality test remains consistent in the presence of outliers, although the former
-tests are more powerful when outliers are absent.
+Compared to the Shapiro-Wilk test, the empirical central
+normality test remains consistent when a feature was not sampled from a normal distribution,
+such as a central normal distribution with $\kappa < 1.0$. This enables assessing
+reasonable normality of (transformed) features in the presence of outliers.
 
 This work has the following limitation: We observed several numerical stability
 issues for optimisation criteria other than MLE (Appendix B). These appear in regions
