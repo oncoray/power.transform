@@ -499,25 +499,23 @@ cap <- paste0(
 
 # Appendix C: Central normality test and empirical central normality test critical values
 
-Critical values for the empirical central normality test are
-found in Table \ref{tab:central-normality-critical-statistic} and Table 
-\ref{tab:empirical-central-normality-critical-statistic}, respectively.
+Critical values for the empirical central normality test at $\kappa = 0.80$ are
+found in Table \ref{tab:empirical-central-normality-critical-statistic}.
 
 
 ```{r include = FALSE, eval = FALSE}
 # This generates the table shown below.
 .get_test_statistic_lookup_table_manuscript(
   manuscript_dir = manuscript_dir,
-  kappa_lookup = 0.80,
-  outlier_rate_lookup = 0.10
+  kappa_lookup = 0.80
 )
 
 ```
 
 \begin{table}
 \begin{center}
-\caption{Critical values of test statistic $\tau_{\alpha, n, \kappa = 0.80, \zeta = 0.10}$ for
-central normality at $\kappa = 0.80$ and outlier rate $\zeta = 0.10$, as a function of significance 
+\caption{Critical values of test statistic $\tau_{\alpha, n, \kappa = 0.80}$ for
+central normality at $\kappa = 0.80$, as a function of significance 
 level $\alpha$ and number of instances $n$. The values in this table should be divided by $100$ before use.}
 \label{tab:empirical-central-normality-critical-statistic}
 \begin{tabular}{l | r r r r r r r r r}
@@ -526,36 +524,21 @@ level $\alpha$ and number of instances $n$. The values in this table should be d
 $n$ \textbackslash $\alpha$ & 0.001 & 0.01 & 0.025 & 0.05 & 0.1 & 0.2 & 0.5 & 0.8 & 0.9 \\
 
 \midrule
-    5 & 210.38 & 82.23 & 59.47 & 48.68 & 38.71 & 29.28 & 19.75 & 13.71 & 11.15 \\
-   10 &  43.22 & 33.68 & 29.26 & 26.04 & 22.96 & 19.62 & 14.37 & 10.50 &  8.89 \\
-   20 &  31.31 & 25.35 & 22.61 & 20.58 & 18.23 & 15.64 & 11.51 &  8.61 &  7.49 \\
-   50 &  19.97 & 16.53 & 14.83 & 13.33 & 11.77 & 10.11 &  7.60 &  5.85 &  5.16 \\
-  100 &  14.01 & 11.57 & 10.30 &  9.31 &  8.31 &  7.22 &  5.49 &  4.29 &  3.78 \\
-  200 &   9.87 &  8.15 &  7.39 &  6.73 &  6.02 &  5.28 &  4.06 &  3.16 &  2.80 \\
-  500 &   6.30 &  5.34 &  4.87 &  4.49 &  4.08 &  3.60 &  2.80 &  2.17 &  1.92 \\
- 1000 &   4.72 &  4.02 &  3.70 &  3.43 &  3.15 &  2.81 &  2.21 &  1.72 &  1.51 \\
- 2000 &   3.61 &  3.18 &  2.96 &  2.78 &  2.57 &  2.32 &  1.88 &  1.49 &  1.31 \\
- 5000 &   2.80 &  2.51 &  2.37 &  2.25 &  2.12 &  1.96 &  1.66 &  1.38 &  1.24 \\
-10000 &   2.41 &  2.20 &  2.10 &  2.02 &  1.92 &  1.81 &  1.60 &  1.39 &  1.28 \\
+    5 & 200.88 & 90.25 & 64.46 & 49.04 & 36.07 & 27.70 & 19.28 & 13.41 & 10.90 \\
+   10 &  45.90 & 31.78 & 27.12 & 24.14 & 21.23 & 18.30 & 13.68 & 10.20 &  8.71 \\
+   20 &  28.88 & 22.53 & 19.96 & 18.01 & 15.99 & 13.93 & 10.67 &  8.26 &  7.27 \\
+   50 &  16.86 & 14.10 & 12.66 & 11.55 & 10.28 &  8.95 &  7.00 &  5.53 &  4.91 \\
+  100 &  12.41 & 10.00 &  9.02 &  8.21 &  7.36 &  6.45 &  5.02 &  4.00 &  3.58 \\
+  200 &   8.65 &  7.05 &  6.37 &  5.80 &  5.22 &  4.57 &  3.57 &  2.84 &  2.54 \\
+  500 &   5.54 &  4.47 &  4.03 &  3.69 &  3.30 &  2.90 &  2.27 &  1.81 &  1.63 \\
+ 1000 &   3.88 &  3.17 &  2.86 &  2.60 &  2.34 &  2.05 &  1.61 &  1.28 &  1.15 \\
+ 2000 &   2.79 &  2.24 &  2.03 &  1.84 &  1.66 &  1.45 &  1.14 &  0.91 &  0.82 \\ 
+ 5000 &   1.75 &  1.41 &  1.27 &  1.17 &  1.05 &  0.92 &  0.72 &  0.58 &  0.52 \\
+10000 &   1.21 &  1.00 &  0.90 &  0.82 &  0.74 &  0.65 &  0.51 &  0.41 &  0.36 \\
 \bottomrule
 \end{tabular}
 \end{center}
 \end{table}
-
-
-```{r empirical-central-normality-critical-statistics, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
-cap <- paste0(
-  "Critical test statistic $\\tau_{\\alpha, n, \\kappa = 0.80, \\zeta}$ of the empirical ",
-  "central normality test as function of $n$ for several values of significance level $\\alpha$. ",
-  "emp: empirical"
-)
-
-.plot_test_statistic_tau(
-  plot_theme = plot_theme,
-  manuscript_dir = manuscript_dir
-)
-
-```
 
 \FloatBarrier
 

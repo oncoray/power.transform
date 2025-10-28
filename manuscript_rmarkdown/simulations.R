@@ -1559,8 +1559,8 @@
 
 
 .get_test_statistics_data <- function(manuscript_dir) {
-  # n_rep <- 30000L  # number of distributions drawn.
-  n_rep <- 10L  # number of distributions drawn.
+  n_rep <- 30000L  # number of distributions drawn.
+  # n_rep <- 10L  # number of distributions drawn.
   kappa <- c(0.50, 0.60, 0.70, 0.80, 0.90, 0.95, 1.00)  # central portion of distribution.
 
   # From 5 to 10000 in equal steps (log 10 scale)
@@ -1593,20 +1593,20 @@
 
     parallel::clusterExport(cl = cl, "..get_test_statistics_data")
 
-    data <- lapply(
-      X = split(n, assignment_id),
-      FUN = .compute_wrapper,
-      n_rep = n_rep,
-      kappa = kappa
-    )
-
-    # data <- parallel::parLapply(
-    #   cl = cl,
+    # data <- lapply(
     #   X = split(n, assignment_id),
-    #   fun = .compute_wrapper,
+    #   FUN = .compute_wrapper,
     #   n_rep = n_rep,
     #   kappa = kappa
     # )
+
+    data <- parallel::parLapply(
+      cl = cl,
+      X = split(n, assignment_id),
+      fun = .compute_wrapper,
+      n_rep = n_rep,
+      kappa = kappa
+    )
 
     # Aggregate to single table.
     data <- data.table::rbindlist(unlist(data, recursive = FALSE))

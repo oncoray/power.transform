@@ -547,9 +547,9 @@ The test statistic is then $\tau_{n, \kappa} = \frac{1}{m}\sum_{r_j \in \mathbf{
 \end{definition}
 
 The null-hypothesis should be rejected at significance level $\alpha$ if 
-$\tau_{n, \kappa} \geq \tau_{\alpha, n, \kappa, \zeta, \text{critical}}$,
-with $\zeta$ the population estimate of the rate of outliers from a normal
-distribution, to be defined in the [Simulation](#simulation) section.
+$\tau_{n, \kappa} \geq \tau_{\alpha, n, \kappa, \text{critical}}$.
+Critical test statistic values are determined in 
+the [Simulation](#simulation-ecn-test) section.
 
 # Simulation
 
@@ -594,33 +594,16 @@ For each distribution, transformation parameter $\lambda$ varied with $d_{\text{
 In contrast, estimation of $\lambda$ for invariant power transformations was invariant to both $d_{\text{shift}}$ and $d_{\text{scale}}$.
 
 
-## Empirical central normality test
+## Empirical central normality test {#simulation-ecn-test}
 
 The critical test statistic for the empirical central normality test depends on 
-the significance level $\alpha$, sequence length $n$, central portion $\kappa$
-and estimated outlier rate $\zeta$.
+the significance level $\alpha$, sequence length $n$ and central portion $\kappa$.
 Critical test statistic values were set through simulation, as described below.
 
 For each number of samples $n \in \left\{\lfloor 10^\nu \rfloor | \nu \in \left\{0.7500, 0.8125, \ldots, 4.0000 \right \} \right\}$
 we randomly sampled $m_d = 30000$ ordered sequences $\mathbf{X}$ from $\mathcal{N}(0,1)$.
-Outliers were inserted by randomly replacing elements of an ordered sequence with probability 
-$\zeta \in \left\{0.0, 0.01, 0.02, 0.05, 0.10, 0.15, 0.20 \right\}$. 
-Outlier values were set according to @Tukey1977-xm, as follows.
-Let $x^{*} \sim U\left(-2, 2\right)$.
-Then the corresponding outlier value was:
-
-\begin{equation}
-\label{eqn:outlier_rate}
-x_{out} =
-\begin{cases}
-Q_1 - \left(1.5 - x^{*} \right) \text{IQR} & \text{if } x^{*} < 0 \\
-Q_3 + \left(1.5 + x^{*} \right) \text{IQR} & \text{if } x^{*} \geq 0
-\end{cases}
-\end{equation}
-
-Here, $Q_1$, $Q_3$ and $\text{IQR}$ are the first quartile, third quartile and interquartile range of $\mathbf{X}_i$, respectively.
-
-For each sequence we then computed $\tau_{\kappa}$ for $\kappa \in \left\{0.60, 0.70, 0.80, 0.90, 0.95, 1.00\right\}$.
+For each sequence we then computed $\tau_{\kappa}$ for 
+$\kappa \in \left\{0.50, 0.60, 0.70, 0.80, 0.90, 0.95, 1.00\right\}$.
 
 ```{r include = FALSE, eval = FALSE}
 # This creates and sets the lookup table for critical test statistic.
@@ -638,40 +621,34 @@ usethis::use_data(
 )
 ```
 
-Figure \ref{fig:empirical-central-normality-kappa} shows the critical test static
-$\tau_{\alpha = 0.05, n, \kappa, \zeta}$
-as a function of $n$ for different values of $\kappa$ and $\zeta$.
-With decreasing $\kappa$, the test statistic curve decreases.
-The curves for $\kappa = 0.60$, $\kappa = 0.70$ and $\kappa = 0.80$ are similar,
-whereas curves for $\kappa \geq 0.90$ were affected by outliers.
+Figure \ref{fig:empirical-central-normality-combined} shows the critical test statistic
+$\tau_{\alpha, n, \kappa}$ as a function of $n$ for different values of $\kappa$ and $\alpha$. 
+For larger central portion $\kappa$, critical test statistic values increase.
+Similarly, critical test statistic values increase for lower significance levels.
 
-We use $\kappa = 0.80$ and $\zeta = 0.10$ for the empirical central normality tests 
-in the remainder of the manuscript, unless noted otherwise.
-Critical statistic values of the empirical central normality test for 
-$\kappa = 0.80$ and $\zeta = 0.10$ are shown in Table 
-\ref{tab:empirical-central-normality-critical-statistic}.
-
-```{r empirical-central-normality-kappa, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
+```{r empirical-central-normality-combined, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
 cap <- paste0(
-  "Critical test statistic $\\tau_{\\alpha = 0.05, n, \\kappa, \\zeta}$ of the empirical ",
-  "central normality test as function of $n$ for several values of central portion $\\kappa$ ",
-  "and estimated outlier rates $\\zeta$. ",
-  "emp: empirical"
+  "Critical test statistic $\\tau_{\\alpha = 0.05, n, \\kappa}$ of the empirical ",
+  "central normality test as function of $n$ for several values of central portion $\\kappa$ (left) ",
+  "and several values of significance level $\\alpha$ (right)."
 )
 
-.plot_test_statistic_centrality(
+.plot_test_statistic_combined(
   plot_theme = plot_theme,
   manuscript_dir = manuscript_dir
 )
 
 ```
 
-To assess type I error rates for the empirical central normality test 
-($\kappa = 0.80$ and $\zeta \in \left\{0.00, 0.05, 0.10\right\}$) and compare
+To assess type I error rates for the empirical central normality test and compare
 these to the Shapiro-Wilk test for normality, we randomly drew another 10000 sequences from a
-standard normal distribution ($\mathcal{N}(0,1)$ for each 
+central normal distribution for each 
 $n \in \left\{\lfloor 10^\nu \rfloor | \nu \in \left\{0.7500, 0.8125, \ldots, 3.0000 \right \} \right\}$.
-Each sequence was additionally randomly populated with outliers at 5% and 10% rates, as earlier.
+
+Each sequence was created as follows: first $n$ values are sampled from $\mathcal{N}(0, 1)$.
+Then, the elements outside the central portion of the sequence (i.e. $\mathbf{X} \setminus \mathbf{X}_{\text{c}}$) are replaced.
+Elements with $pi < \frac{1-\kappa}{2}$ are replaced with values sampled from $\mathcal{U}(-10,\min(\mathbf{X}_{\text{c}}))$,
+and elements with $p_i > \frac{1 + \kappa}{2}$ are replaced with values sampled from $\mathcal{U}(\max(\mathbf{X}_{\text{c}}), 10)$.
 
 For each sequence, the p-value for the respective test was used to reject the null
 hypothesis that the sequence is (centrally) normal. The null hypothesis was rejected if $p \leq 0.05$.
@@ -701,19 +678,19 @@ cap <- paste0(
 ```
 
 In Figure \ref{fig:empirical-central-normality-examples} we apply the empirical
-central normality test to assess central normality of features that are composed
+central normality test (with $\kappa = 0.80$) to assess central normality of features that are composed
 of a mixture of samples drawn from two normal distributions ($n = 100$ each).
-With increased separation of the underlying normal distributions, the probability of the
-feature being centrally normal decreases, as expected.
+With increased separation of the underlying normal distributions, 
+the test's p-value decreases, as expected.
 
 ```{r empirical-central-normality-examples, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
 cap <- paste0(
   "Bi-modal distributions and empirical central normality test results. ",
   "The feature (black) is a mixture of two identical sample sets (blue and orange, $n = 100$) ",
   "drawn from normal distributions that are offset by a distance $d$. ",
-  "We use the empirical centrally normality test to compute the probability for the hypothesis that ",
-  "the distribution is centrally normal. As may be observed, with increasing offset $d$ ",
-  "the probability that the feature is centrally normal decreases. ",
+  "The empirical central normality ($\\kappa = 0.80$) is used to test the hypothesis that the mixture is sampled from ",
+  "a central normal distribution. As may be observed, with increasing offset $d$ ",
+  "the test's p-value decreases. ",
   "Quantile-quantile plots are drawn below each distribution."
 )
 
@@ -724,6 +701,12 @@ cap <- paste0(
 
 ```
 
+
+We use $\kappa = 0.80$ for the empirical central normality tests 
+in the remainder of the manuscript, unless noted otherwise.
+Critical statistic values of the empirical central normality test for 
+$\kappa = 0.80$ are shown in Table 
+\ref{tab:empirical-central-normality-critical-statistic}.
 
 ## Robust transformations
 
@@ -745,6 +728,20 @@ Location and scale parameters were set as $\mu = 0$ and $\sigma = 1$, respective
 To form each sequence $\mathbf{X}_i$, $n = \lceil 10^\gamma \rceil$ instances were then randomly drawn, 
 with $\gamma \sim U\left(\log_{10}50, 3\right)$, resulting in a set of sequences with between $50$ and $1000$ elements each.
 Outlier values were then drawn to randomly replace 10 percent of the elements of $\mathbf{X}_i$.
+These values were set according to @Tukey1977-xm, as follows.
+Let $x^{*} \sim U\left(-2, 2\right)$.
+Then the corresponding outlier value was:
+
+\begin{equation}
+\label{eqn:outlier_rate}
+x_{out} =
+\begin{cases}
+Q_1 - \left(1.5 - x^{*} \right) \text{IQR} & \text{if } x^{*} < 0 \\
+Q_3 + \left(1.5 + x^{*} \right) \text{IQR} & \text{if } x^{*} \geq 0
+\end{cases}
+\end{equation}
+
+Here, $Q_1$, $Q_3$ and $\text{IQR}$ are the first quartile, third quartile and interquartile range of $\mathbf{X}_i$, respectively.
 
 To find the optimal values for the weighting function parameters $\delta_1$ and $\delta_2$ (if applicable),
 we minimised a composite loss $L = \sum_{i=1}^{m_d} L_{\text{cn},i} + 0.1 \sum_{i=1}^{m_d} L_{\lambda,i}$.

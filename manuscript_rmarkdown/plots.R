@@ -2352,6 +2352,27 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 
 
+.plot_test_statistic_combined <- function(manuscript_dir, plot_theme) {
+  p_kappa <- .plot_test_statistic_centrality(
+    manuscript_dir = manuscript_dir,
+    plot_theme = plot_theme
+  )
+
+  p_alpha <- .plot_test_statistic_tau(
+    manuscript_dir = manuscript_dir,
+    plot_theme = plot_theme
+  )
+
+  p <- p_kappa + p_alpha + patchwork::plot_layout(
+    ncol = 2L,
+    guides = "keep"
+  )
+
+  return(p)
+}
+
+
+
 .plot_test_statistic_centrality <- function(manuscript_dir, plot_theme) {
   # Plots data that allows us to select the fitting centrality parameter kappa.
 
@@ -2400,7 +2421,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     )
   )
 
-  P <- p + ggplot2::geom_line(data = data)
+  p <- p + ggplot2::geom_line(data = data)
+  p <- p + ggplot2::ggtitle(latex2exp::TeX("central portion $\\kappa$"))
 
   return(p)
 }
@@ -2451,7 +2473,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p <- p + ggplot2::scale_x_log10(name = "n")
   p <- p + ggplot2::ylab(latex2exp::TeX("test statistic $\\tau_{\\alpha, n, \\kappa = 0.80}$"))
   p <- p + ggplot2::scale_colour_discrete(
-    name = "significance\nlevel",
+    name = "significance\nlevel α",
     type = c(
       "20.0 %" = "#bacbde",
       "10.0 %" = "#537dac",
@@ -2463,6 +2485,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   )
 
   p <- p + ggplot2::geom_line(data = data)
+  p <- p + ggplot2::ggtitle(latex2exp::TeX("significance level $\\alpha$"))
 
   return(p)
 }
@@ -2490,78 +2513,70 @@ get_annotation_settings <- function(ggtheme = NULL) {
   ) {
     set.seed(n)
 
+    kappa <- c(1.0, 0.8, 0.6)
     n_rep <- 10000L
     data <- list()
+
     for (jj in seq_len(n_rep)) {
+      x_data <- list()
       x <- power.transform::ragn(floor(n), location = 0, scale = 1 / sqrt(2), alpha = 0.5, beta = 2)
 
-      # Compute upper and lower quartiles, and IQR.
-      q_lower <- stats::quantile(x, probs = 0.25, names = FALSE)
-      q_upper <- stats::quantile(x, probs = 0.75, names = FALSE)
-      interquartile_range <- stats::IQR(x)
+      # Sort in ascending order.
+      x <- sort(x)
 
-      # Set data where the outliers will be copied into.
-      x_outlier_5 <- x
-      x_outlier_10 <- x
+      # Compute quantiles empirically
+      p <- (seq_along(x) - 1.0 / 3.0) / (length(x) + 1.0 / 3.0)
 
-      # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
-      # than Q3 + 1.5 IQR, and use these to randomly replace instances.
-      # We do this for 5% and 10% outlier rates.
-      ii_outlier_5 <- stats::runif(length(x)) <= 0.05
-      n_draw_5 <- sum(ii_outlier_5)
-      outlier_5 <- numeric(n_draw_5)
+      # Compute mean residual error for all kappa.
+      for (kk in seq_along(kappa)) {
+        x_kappa <- x
 
-      if (n_draw_5 > 0L) {
-        x_random_5 <- stats::runif(n_draw_5, min = -2.0, max = 2.0)
-        if (any(x_random_5 < 0)) {
-          outlier_5[x_random_5 < 0] <- q_lower - 1.5 * interquartile_range + x_random_5[x_random_5 < 0] * interquartile_range
+        p_lower <- 0.50 - kappa[kk] / 2.0
+        p_upper <- 0.50 + kappa[kk] / 2.0
+
+        # Determine specific parts of the distribution.
+        lower_tail <- p < p_lower
+        central <- p >= p_lower & p <= p_upper
+        upper_tail <- p > p_upper
+
+        if (any(lower_tail)) {
+          x_kappa[lower_tail] <- stats::runif(sum(lower_tail), -10.0, min(x_kappa[central]))
         }
 
-        if (any(x_random_5 >= 0)) {
-          outlier_5[x_random_5 >= 0] <- q_upper + 1.5 * interquartile_range + x_random_5[x_random_5 >= 0] * interquartile_range
+        if (any(upper_tail)) {
+          x_kappa[upper_tail] <- stats::runif(sum(upper_tail), max(x_kappa[central]), 10.0)
         }
+
+        # Ensure that the sequence is sorted.
+        x_kappa <- sort(x_kappa)
+        x_data[[kk]] <- x_kappa
       }
-      x_outlier_5[ii_outlier_5] <- outlier_5
 
-      ii_outlier_10 <- stats::runif(length(x)) <= 0.10
-      n_draw_10 <- sum(ii_outlier_10)
-      outlier_10 <- numeric(n_draw_10)
-      if (n_draw_10 > 0L) {
-        x_random_10 <- stats::runif(n_draw_10, min = -2.0, max = 2.0)
-        if (any(x_random_10 < 0) > 0L) {
-          outlier_10[x_random_10 < 0] <- q_lower - 1.5 * interquartile_range + x_random_10[x_random_10 < 0] * interquartile_range
-        }
-
-        if (any(x_random_10 >= 0) > 0L) {
-          outlier_10[x_random_10 >= 0] <- q_upper + 1.5 * interquartile_range + x_random_10[x_random_10 >= 0] * interquartile_range
-        }
-      }
-      x_outlier_10[ii_outlier_10] <- outlier_10
 
       data[[jj]] <- data.table::data.table(
         "n" = n,
         "p_value" = c(
-          power.transform::ecn_test(x = x, outlier_rate = 0.00)$p_value,
-          power.transform::ecn_test(x = x, outlier_rate = 0.05)$p_value,
-          power.transform::ecn_test(x = x, outlier_rate = 0.1)$p_value,
-          shapiro.test(x)$p.value,
-          power.transform::ecn_test(x = x_outlier_5, outlier_rate = 0.00)$p_value,
-          power.transform::ecn_test(x = x_outlier_5, outlier_rate = 0.05)$p_value,
-          power.transform::ecn_test(x = x_outlier_5, outlier_rate = 0.1)$p_value,
-          shapiro.test(x_outlier_5)$p.value,
-          power.transform::ecn_test(x = x_outlier_10, outlier_rate = 0.00)$p_value,
-          power.transform::ecn_test(x = x_outlier_10, outlier_rate = 0.05)$p_value,
-          power.transform::ecn_test(x = x_outlier_10, outlier_rate = 0.1)$p_value,
-          shapiro.test(x_outlier_10)$p.value
+          power.transform::ecn_test(x = x_data[[1L]], kappa = 1.00)$p_value,
+          power.transform::ecn_test(x = x_data[[1L]], kappa = 0.80)$p_value,
+          power.transform::ecn_test(x = x_data[[1L]], kappa = 0.60)$p_value,
+          shapiro.test(x_data[[1L]])$p.value,
+          power.transform::ecn_test(x = x_data[[2L]], kappa = 1.00)$p_value,
+          power.transform::ecn_test(x = x_data[[2L]], kappa = 0.80)$p_value,
+          power.transform::ecn_test(x = x_data[[2L]], kappa = 0.60)$p_value,
+          shapiro.test(x_data[[2L]])$p.value,
+          power.transform::ecn_test(x = x_data[[3L]], kappa = 1.00)$p_value,
+          power.transform::ecn_test(x = x_data[[3L]], kappa = 0.80)$p_value,
+          power.transform::ecn_test(x = x_data[[3L]], kappa = 0.60)$p_value,
+          shapiro.test(x_data[[3L]])$p.value
         ),
-        "actual_outlier_rate" = c(0.0, 0.0, 0.0, 0.0, 0.05, 0.05, 0.05, 0.05, 0.10, 0.10, 0.10, 0.10, 0.10),
+        "kappa" = c(1.0, 1.0, 1.0, 1.0, 0.8, 0.8, 0.8, 0.8, 0.6, 0.6, 0.6, 0.6),
         "test" = factor(
           c(
-            "ECN (0 %)", "ECN (5 %)", "ECN (10 %)", "SW",
-            "ECN (0 %)", "ECN (5 %)", "ECN (10 %)", "SW",
-            "ECN (0 %)", "ECN (5 %)", "ECN (10 %)", "SW"
+            "ECN (κ = 1.0)", "ECN (κ = 0.8)", "ECN (κ = 0.6)", "SW",
+            "ECN (κ = 1.0)", "ECN (κ = 0.8)", "ECN (κ = 0.6)", "SW",
+            "ECN (κ = 1.0)", "ECN (κ = 0.8)", "ECN (κ = 0.6)", "SW"
           ),
-          levels = c("SW", "ECN (0 %)", "ECN (5 %)", "ECN (10 %)")
+          levels = c("SW", "ECN (κ = 1.0)", "ECN (κ = 0.8)", "ECN (κ = 0.6)")
         )
       )
     }
@@ -2583,6 +2598,11 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
     parallel::clusterExport(cl = cl, "..compute", envir = rlang::current_env())
 
+    # data <- lapply(
+    #   split(n, assignment_id),
+    #   FUN = .compute_wrapper
+    # )
+
     data <- parallel::parLapply(
       cl = cl,
       X = split(n, assignment_id),
@@ -2601,7 +2621,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   # Compute type I error rate (i.e. fraction of distributions that are centrally
   # normal are rejected by the test).
   data[, "rejected" := p_value <= 0.05]
-  data <- data[, list("type_1_error_rate" = sum(rejected) / .N), by = c("n", "actual_outlier_rate", "test")]
+  data <- data[, list("type_1_error_rate" = sum(rejected) / .N), by = c("n", "kappa", "test")]
 
   p <- ggplot2::ggplot(
     mapping = ggplot2::aes(
@@ -2624,42 +2644,42 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p <- p + ggplot2::scale_colour_discrete(
     name = "central normality test",
     type = c(
-      "ECN (0 %)" = "#bacbde",
-      "ECN (5 %)" = "#537dac",
-      "ECN (10 %)" = "#324b67",
+      "ECN (κ = 1.0)" = "#bacbde",
+      "ECN (κ = 0.8)" = "#537dac",
+      "ECN (κ = 0.6)" = "#324b67",
       "SW" = "#F28E2B"
     ),
-    breaks = c("ECN (0 %)", "ECN (5 %)", "ECN (10 %)", "SW"),
-    labels = c("ECN (0 %)", "ECN (5 %)", "ECN (10 %)", "Shapiro-Wilk test")
+    breaks = c("ECN (κ = 1.0)", "ECN (κ = 0.8)", "ECN (κ = 0.6)", "SW"),
+    labels = c("ECN (κ = 1.0)", "ECN (κ = 0.8)", "ECN (κ = 0.6)", "Shapiro-Wilk test")
   )
 
 
-  # W/O outliers ---------------------------------------------------------------
-  p_no_outliers <- p + ggplot2::geom_line(
-    data = data[actual_outlier_rate == 0.0]
+  # 100% central normality -----------------------------------------------------
+  p_100 <- p + ggplot2::geom_line(
+    data = data[kappa == 1.0]
   )
-  p_no_outliers <- p_no_outliers + ggplot2::ggtitle("no outliers")
+  p_100 <- p_100 + ggplot2::ggtitle(latex2exp::TeX("$\\kappa = 1.0$"))
 
-  # 5% outliers ----------------------------------------------------------------
-  p_outliers_5 <- p + ggplot2::geom_line(data = data[actual_outlier_rate == 0.05])
-  p_outliers_5 <- p_outliers_5 + ggplot2::ggtitle("5% outliers")
-  p_outliers_5 <- p_outliers_5 + ggplot2::theme(
+  # 80% central normality ------------------------------------------------------
+  p_80 <- p + ggplot2::geom_line(data = data[kappa == 0.8])
+  p_80 <- p_80 + ggplot2::ggtitle(latex2exp::TeX("$\\kappa = 0.8$"))
+  p_80 <- p_80 + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),
     axis.title.y = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank()
   )
 
-  # 10 % outliers --------------------------------------------------------------
-  p_outliers_10 <- p + ggplot2::geom_line(data = data[actual_outlier_rate == 0.10])
-  p_outliers_10 <- p_outliers_10 + ggplot2::ggtitle("10% outliers")
-  p_outliers_10 <- p_outliers_10 + ggplot2::theme(
+  # 60% central normality ------------------------------------------------------
+  p_60 <- p + ggplot2::geom_line(data = data[kappa == 0.60])
+  p_60 <- p_60 + ggplot2::ggtitle(latex2exp::TeX("$\\kappa = 0.6$"))
+  p_60 <- p_60 + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),
     axis.title.y = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank()
   )
 
   # Patch all the plots together.
-  p <- p_no_outliers + p_outliers_5 + p_outliers_10 + patchwork::plot_layout(
+  p <- p_100 + p_80 + p_60 + patchwork::plot_layout(
     ncol = 3,
     guides = "collect"
   )
