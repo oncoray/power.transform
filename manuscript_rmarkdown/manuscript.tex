@@ -1,11 +1,13 @@
 % Options for packages loaded elsewhere
 \PassOptionsToPackage{unicode}{hyperref}
 \PassOptionsToPackage{hyphens}{url}
-%
 \documentclass[
   a4paper,
 ]{article}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
 \usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
 \usepackage{iftex}
 \ifPDFTeX
   \usepackage[T1]{fontenc}
@@ -36,68 +38,34 @@
 }{% if KOMA class
   \KOMAoptions{parskip=half}}
 \makeatother
-\usepackage{xcolor}
-\usepackage[margin=1in]{geometry}
 \usepackage{graphicx}
 \makeatletter
-\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
-\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
-\makeatother
-% Scale images if necessary, so that they will not overflow the page
-% margins by default, and it is still possible to overwrite the defaults
-% using explicit options in \includegraphics[width, height, ...]{}
-\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
 % Set default figure placement to htbp
-\makeatletter
 \def\fps@figure{htbp}
 \makeatother
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
-% definitions for citeproc citations
-\NewDocumentCommand\citeproctext{}{}
-\NewDocumentCommand\citeproc{mm}{%
-  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
-\makeatletter
- % allow citations to break across lines
- \let\@cite@ofmt\@firstofone
- % avoid brackets around text for \cite:
- \def\@biblabel#1{}
- \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
-\makeatother
-\newlength{\cslhangindent}
-\setlength{\cslhangindent}{1.5em}
-\newlength{\csllabelwidth}
-\setlength{\csllabelwidth}{3em}
-\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
- {\begin{list}{}{%
-  \setlength{\itemindent}{0pt}
-  \setlength{\leftmargin}{0pt}
-  \setlength{\parsep}{0pt}
-  % turn on hanging indent if param 1 is 1
-  \ifodd #1
-   \setlength{\leftmargin}{\cslhangindent}
-   \setlength{\itemindent}{-1\cslhangindent}
-  \fi
-  % set entry spacing
-  \setlength{\itemsep}{#2\baselineskip}}}
- {\end{list}}
-\usepackage{calc}
-\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
-\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
-\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
-\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+\usepackage[]{natbib}
+\bibliographystyle{plainnat}
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{booktabs}
 \newtheorem*{definition}{Definition}
+\newtheorem*{corollary}[Corollary]
 \DeclareMathOperator*{\argmax}{argmax}
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator{\sgn}{sgn}
-\ifLuaTeX
-  \usepackage{selnolig}  % disable illegal ligatures
-\fi
 \usepackage{bookmark}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
@@ -110,7 +78,7 @@
 \title{Location and Scale-Invariant Power Transformations for
 Transforming Data to Normality}
 \author{Alex Zwanenburg, Steffen Löck}
-\date{2025-04-11}
+\date{2025-10-28}
 
 \begin{document}
 \maketitle
@@ -144,9 +112,8 @@ the underlying data, e.g.~analysis of variance and linear discriminant
 analysis. However, numerical features in datasets may strongly deviate
 from normal distributions, e.g.~by being skewed. Power transformations
 aim to stabilise variance and improve normality of such features
-(Bartlett 1947; John W. Tukey 1957). The two most commonly used
-transformations are that of Box and Cox (1964) and Yeo and Johnson
-(2000).
+\citep{Bartlett1947-rx, Tukey1957-rt}. The two most commonly used
+transformations are that of \citet{Box1964-mz} and \citet{Yeo2000-vw}.
 
 The Box-Cox transformation is defined as:
 
@@ -188,8 +155,7 @@ The \(\lambda\)-parameter is typically optimised using maximum
 likelihood estimation under the assumption that the transformed feature
 is normally distributed. As noted by Raymaekers and Rousseeuw, this
 approach is sensitive to outliers, and robust versions of Box-Cox and
-Yeo-Johnson transformations were devised (Raymaekers and Rousseeuw
-2024).
+Yeo-Johnson transformations were devised \citep{Raymaekers2024-zf}.
 
 Applying a power transformation does not guarantee that transformed
 features are normally distributed. Depending on location and scale of a
@@ -204,10 +170,10 @@ features may suffer a decrease in performance. Moreover, large negative
 or positive \(\lambda\)-parameters may lead to numeric issues in any
 subsequent computations.
 
-Statistical tests for normality, such as the Shapiro-Wilk test (Shapiro
-and Wilk 1965), could be automatically applied to transformed features.
-However, given sufficiently large sample sizes such tests can detect
-trivial deviations from normality, and may lead to rejection of
+Statistical tests for normality, such as the Shapiro-Wilk test
+\citep{Shapiro1965-zd}, could be automatically applied to transformed
+features. However, given sufficiently large sample sizes such tests can
+detect trivial deviations from normality, and may lead to rejection of
 sufficiently good power transformations.
 
 \begin{figure}
@@ -259,6 +225,9 @@ A numeric feature is a finite sequence $\mathbf{X} = \left\{x_1, x_2, \ldots, x_
 \subsection{Location- and scale-invariant power
 transformation}\label{location--and-scale-invariant-power-transformation}
 
+\citet{Box1964-mz} originally included a shift parameter in their
+transformation, but for their formal analysis set it to \(0\), whereas
+\citet{Yeo2000-vw} did not include a shift or scale parameter. Here,
 Box-Cox and Yeo-Johnson transformations are modified by introducing
 shift parameter \(x_0\) and scale parameter \(s\) into equations
 \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}. The
@@ -321,7 +290,7 @@ Then the log-likelihood function of the location- and scale- invariant Box-Cox p
 \begin{equation}
 \label{eqn:box-cox-invariant-log-likelihood}
 \begin{split}
-\mathcal{l}_{\text{BC}}^{\lambda, x_0, s} = & -\frac{n}{2} \log \left[2 \pi \sigma^2 \right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi_{BC}^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
+\mathcal{L}_{\text{BC}}^{\lambda, x_0, s} = & -\frac{n}{2} \log \left[2 \pi \sigma^2 \right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi_{BC}^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
 & -n \lambda \log s + \left( \lambda - 1 \right) \sum_{i=1}^n \log \left[ x_i - x_0 \right]
 \end{split}
 \end{equation}
@@ -338,7 +307,7 @@ Then the log-likelihood function of the location- and scale- invariant Yeo-Johns
 \begin{equation}
 \label{eqn:yeo-johnson-invariant-log-likelihood}
 \begin{split}
-\mathcal{l}_{\text{YJ}}^{\lambda, x_0, s} = & -\frac{n}{2} \log\left[2 \pi \sigma^2\right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi_{YJ}^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
+\mathcal{L}_{\text{YJ}}^{\lambda, x_0, s} = & -\frac{n}{2} \log\left[2 \pi \sigma^2\right] -\frac{1}{2 \sigma^2} \sum_{i=1}^n \left( \phi_{YJ}^{\lambda, x_0, s}(x_i) - \mu \right)^2 \\
 & - n \log s + (\lambda - 1) \sum_{i=1}^n \mathop{\mathrm{sgn}}(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
 \end{split}
 \end{equation}
@@ -350,26 +319,28 @@ transformations}\label{robust-location--and-scale-invariant-power-transformation
 Real-world data may contain outliers, to which maximum likelihood
 estimation can be sensitive. Their presence may lead to poor
 transformations to normality, as shown in Figure
-\ref{fig:decreased-normality}. As indicated by Raymaekers and Rousseeuw
-(2024), the general aim of power transformations should be to transform
-non-outlier data to normality, i.e.~achieve \emph{central normality}. To
-achieve this, they devised an iterative procedure to find a robust
-estimate of the transformation parameter \(\lambda\). Briefly, this
-process requires identifying outliers in the data and weighting such
-instances during the optimisation process. Raymaekers and Rousseeuw
-(2024) achieve this through weighted maximum likelihood estimation.
-However, because this procedure iteratively estimates and updates
-\(\lambda\), it can not be used here to simultaneously estimate
-\(\lambda\), \(x_0\) and \(s\) for location- and scale-invariant power
-transformations. Nonetheless, as a procedure, weighted MLE can be used
-for estimating the transformation, shift and scale parameters.
+\ref{fig:decreased-normality}. As indicated by
+\citet{Raymaekers2024-zf}, the general aim of power transformations
+should be to transform non-outlier data to normality, i.e.~achieve
+\emph{central normality}. To achieve this, they devised an iterative
+procedure to find a robust estimate of the transformation parameter
+\(\lambda\). Briefly, this process requires identifying outliers in the
+data and weighting such instances during the optimisation process.
+\citet{Raymaekers2024-zf} achieve this through weighted maximum
+likelihood estimation. However, because this procedure iteratively
+estimates and updates \(\lambda\), it can not be used here to
+simultaneously estimate \(\lambda\), \(x_0\) and \(s\) for location- and
+scale-invariant power transformations. Nonetheless, as a procedure,
+weighted MLE can be used for estimating the transformation, shift and
+scale parameters.
 
 Here, weighted maximum likelihood estimation is based on equations
 \ref{eqn:box-cox-invariant-log-likelihood} and
-\ref{eqn:yeo-johnson-invariant-log-likelihood}. Compared to Raymaekers
-and Rousseeuw (2024), these log-likelihood functions include additional
-terms to accommodate estimation of \(x_0\) and \(s\). The weighted
-location- and scale-invariant Box-Cox log-likelihood function is:
+\ref{eqn:yeo-johnson-invariant-log-likelihood}. Compared to
+\citet{Raymaekers2024-zf}, these log-likelihood functions include
+additional terms to accommodate estimation of \(x_0\) and \(s\). The
+weighted location- and scale-invariant Box-Cox log-likelihood function
+is:
 
 \begin{definition}[Weighted log-likelihood function of the location- and scale- invariant Box-Cox power transformation]
 Let $\mathbf{X}$, $\lambda$, $x_0$, and $s$ be defined as earlier (Eqn. \ref{eqn:box-cox-invariant}).
@@ -389,7 +360,7 @@ Then, the weighted log-likelihood function of the location- and scale- invariant
 \begin{equation}
 \label{eqn:box-cox-weighted-invariant-log-likelihood}
 \begin{split}
-\mathcal{l}_{\text{rBC}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi_{\text{BC}}^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
+\mathcal{L}_{\text{rBC}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi_{\text{BC}}^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
 & - \lambda \left( \sum_{i=1}^n w_i \right) \log s + \left( \lambda - 1 \right) \sum_{i=1}^n w_i \log \left[ x_i - x_0 \right]
 \end{split}
 \end{equation}
@@ -417,7 +388,7 @@ Then, the weighted log-likelihood function of the location- and scale- invariant
 \begin{equation}
 \label{eqn:yeo-johnson-weighted-invariant-log-likelihood}
 \begin{split}
-\mathcal{l}_{\text{rYJ}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi_{\text{YJ}}^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
+\mathcal{L}_{\text{rYJ}}^{\lambda, x_0, s} = & -\frac{1}{2} \left(\sum_{i=1}^n w_i \right) \log \left[ 2 \pi \sigma_w^2 \right] -\frac{1}{2 \sigma_w^2} \sum_{i=1}^n w_i \left( \phi_{\text{YJ}}^{\lambda, x_0, s}(x_i) - \mu_w \right)^2 \\
 & - \left( \sum_{i=1}^n w_i \right) \log s + (\lambda - 1) \sum_{i=1}^n w_i \mathop{\mathrm{sgn}}(x_i - x_0) \log \left[1 + \frac{|x_i - x_0|}{s} \right]
 \end{split}
 \end{equation}
@@ -451,9 +422,9 @@ will be defined later, we investigate three weighting functions:
   \end{cases}
   \end{equation*}
 \item
-  A tapered cosine function (J. W. Tukey 1967), with \(\delta_1 \geq 0\)
-  and \(\delta_2 \geq \delta_1\) as threshold parameters:
-  \begin{equation*}
+  A tapered cosine function \citep{Tukey1967-eb}, with
+  \(\delta_1 \geq 0\) and \(\delta_2 \geq \delta_1\) as threshold
+  parameters: \begin{equation*}
   w_i =
   \begin{cases}
   1 & \text{if } \left| \dot{x}_i \right| < \delta_1\\
@@ -495,12 +466,12 @@ the (transformed) feature in one of several ways:
   zero-centered.
 \item
   The weighting function uses the z-score of the transformed feature
-  \(\phi^{\lambda, x_0, s} (\mathbf{X})\). After Raymaekers and
-  Rousseeuw (2024),
+  \(\phi^{\lambda, x_0, s} (\mathbf{X})\). After
+  \citet{Raymaekers2024-zf},
   \(z_i = \frac{\phi^{\lambda, x_0, s}(x_i) - \mu_M}{\sigma_M}\). Here,
   \(\mu_M\) and \(\sigma_M\) are robust Huber M-estimates of location
   and scale of the transformed feature
-  \(\phi^{\lambda, x_0, s} (\mathbf{X})\) (Huber 1981). Then
+  \(\phi^{\lambda, x_0, s} (\mathbf{X})\) \citep{Huber1981-su}. Then
   \(\dot{x}_i = z_i\).
 \item
   After sorting \(\mathbf{X}\) in ascending order, the weighting
@@ -520,9 +491,9 @@ location and scale of a feature and methods to improve their robustness
 against outliers need to be assessed using data drawn from a range of
 different distributions. Since the power transformations are intended
 for use with unimodal distributions, the generalised normal distribution
-(Subbotin 1923; Nadarajah 2005) is a suitable option for simulating
-realistic feature distributions. This distribution has the following
-probability density function \(f_{\beta}\) for a value
+\citep{Subbotin1923-qk, Nadarajah2005-xe} is a suitable option for
+simulating realistic feature distributions. This distribution has the
+following probability density function \(f_{\beta}\) for a value
 \(x \in \mathbb{R}\):
 
 \begin{definition}[Standard generalised normal distribution probability density function]
@@ -542,8 +513,8 @@ large \(\beta\), the distribution approaches a uniform distribution.
 
 Realistic feature distributions may be skewed. Gijbels et al.~describe a
 recipe for introducing skewness into the otherwise symmetric generalised
-normal distribution (Gijbels, Karim, and Verhasselt 2019), leading to
-the following probability density function:
+normal distribution \citep{Gijbels2019-te}, leading to the following
+probability density function:
 
 \begin{definition}[Asymmetric generalised normal distribution probability density function]
 Let $\alpha \in (0,1)$ be a skewness parameter.
@@ -571,8 +542,8 @@ We require a quantile function (or an approximation thereof) to draw
 random values from an asymmetric generalised normal distribution using
 inverse transform sampling. Gijbels et al.~derived the quantile function
 \(F_{\alpha}^{-1}(p)\), which incorporates the quantile function of the
-symmetric generalised normal distribution derived by Griffin (Griffin
-2018):
+symmetric generalised normal distribution derived by Griffin
+\citep{Griffin2018-bf}:
 
 \begin{definition}[Asymmetric generalised normal distribution quantile function]
 Let $p \in \left[0, 1\right]$ be a probability.
@@ -592,14 +563,15 @@ F_{\alpha}^{-1}(p; \mu, \sigma, \beta) =
 \end{equation}
 \end{definition}
 
-\subsection{Central normality test}\label{central-normality-test}
+\subsection{Empirical central normality
+test}\label{empirical-central-normality-test}
 
 Power transformations aim to transform features to a normal
 distribution. However, this may not always be successful or possible.
 Deviations from normality can be detected by normality tests, such as
-the Shapiro-Wilk test (Shapiro and Wilk 1965). In practice, normality
+the Shapiro-Wilk test \citep{Shapiro1965-zd}. In practice, normality
 tests may be too stringent with large sample sizes, outliers, or both.
-Here we develop a test for central normality.
+Here we develop an empirical test for central normality.
 
 \begin{definition}[Central portion of a sequence]
 Let $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i \in \mathbb{R}\right\}$ be a finite sequence of length $n > 0$,
@@ -627,32 +599,41 @@ $\mathbf{R}_{\text{c}} = \left\{ r_i \in \left\{ r_1, r_2, \ldots, r_n\right\} \
 
 \end{definition}
 
-\begin{definition}[Central normality of a sequence]
+\begin{definition}[Central normal distribution]
 
-The central portion of a sequence is normally distributed if the sum of residual
-errors is equal to zero:
-$\sum_{r_j \in \mathbf{R}_{\text{c}}} r_j = 0$
+A central normal distribution is any distribution whose quantile function is 
+defined by $F^{-1}_{\mathcal{N}}$ for $\frac{1-\kappa}{2} \leq  p \leq \frac{1 + \kappa}{2}$,
+with $\mathcal{N}$ any normal distribution.
 
 \end{definition}
 
-In practice, a finite sequence sampled from a normal distribution
-\(\mathcal{N}(\mu, \sigma)\) will have a non-zero sum of residual
-errors.
+\begin{corollary}
+
+For $\kappa = 1.0$, the central normal distribution is a normal distribution.
+
+\end{corollary}
+
+\begin{corollary}
+
+By the Glivenko-Cantelli theorem, if a sequence $\mathbf{X}$ was sampled from a
+central normal distribution, then almost surely
+$\lim_{n \rightarrow \infty} \sum_{r_j \in \mathbf{R}_{\text{c}}} r_j = 0$,
+
+\end{corollary}
 
 \begin{definition}[Central normality test]
-The null-hypothesis is defined as: $\mathcal{H}_0: \sum_{r_j \in \mathbf{R}_{\text{c}}}r_j = 0$
+The null-hypothesis $\mathcal{H}_0$ is that the sequence $\mathbf{X}$ was sampled
+from a population that is distributed according to a central normal distribution.
 
-The alternative hypothesis is defined as: $\mathcal{H}_1: \sum_{r_j \in \mathbf{R}_{\text{c}}}r_j > 0$
+The alternative hypothesis is that the sequence $\mathbf{X}$ was sampled from a
+population that is not distributed according to a central normal distribution.
 \end{definition}
 
-The null-hypothesis \(\mathcal{H}_0\) is that the central portion of
-sequence \(\mathbf{X}\) is normally distributed, with the alternative
-hypothesis \(\mathcal{H}_1\) that it is not normally distributed. To
-test this hypothesis, a test statistic is computed and compared against
-a critical value.
+To test this hypothesis, a test statistic is computed and compared
+against a critical value.
 
 \begin{definition}[Central normality test statistic]
-Let $m$ be the number of elements of $\mathbf{R}_{\text{c}}$
+Let $m$ be the number of elements of $\mathbf{R}_{\text{c}}$.
 
 The test statistic is then $\tau_{n, \kappa} = \frac{1}{m}\sum_{r_j \in \mathbf{R}_{\text{c}}}r_j$.
 
@@ -660,10 +641,8 @@ The test statistic is then $\tau_{n, \kappa} = \frac{1}{m}\sum_{r_j \in \mathbf{
 
 The null-hypothesis should be rejected at significance level \(\alpha\)
 if \(\tau_{n, \kappa} \geq \tau_{\alpha, n, \kappa, \text{critical}}\).
-
-The central portion of the data needs to be defined and the Type 1 error
-rates determined to provide critical test statistics. We will do so in
-the \hyperref[simulation]{Simulation} section.
+Critical test statistic values are determined in the
+\hyperref[simulation-ecn-test]{Simulation} section.
 
 \section{Simulation}\label{simulation}
 
@@ -675,10 +654,10 @@ The \(\lambda\) parameter for conventional power transformations (Eqn.
 as \(\lambda\), \(x_0\) and \(s\) parameters for location- and
 scale-invariant power transformations (Eqn. \ref{eqn:box-cox-invariant}
 and \ref{eqn:yeo-johnson-invariant}) were estimated using the BOBYQA
-algorithm for derivative-free bound constraint optimisation (Powell
-2009) through maximum likelihood estimation. The required algorithms
-were implemented in the \texttt{power.transform} R software package
-(Zwanenburg and Löck 2024b) (version 1.0.1). Of note, the
+algorithm for derivative-free bound constraint optimisation
+\citep{Powell2009-zb} through maximum likelihood estimation. The
+required algorithms were implemented in the \texttt{power.transform} R
+software package \citep{Zwanenburg2024-kq} (version 1.0.1). Of note, the
 \texttt{power.transform} package shifts feature values into the positive
 domain if negative or zero values are present for Box-Cox power
 transformations.
@@ -724,81 +703,85 @@ conventional transformations. In contrast, estimation of \(\lambda\) for
 invariant power transformations was invariant to both
 \(d_{\text{shift}}\) and \(d_{\text{scale}}\).
 
-\subsection{Central normality and empirical central normality
-test}\label{central-normality-and-empirical-central-normality-test}
+\subsection{Empirical central normality test}\label{simulation-ecn-test}
 
-To develop a test for central normality we need to consider two
-parameters: the central portion \(\kappa\) as a fixed parameter, and
-test statistic \(\tau_{\text{ecn}}\). We will first define the central
-portion \(\kappa\).
+The critical test statistic for the empirical central normality test
+depends on the significance level \(\alpha\), sequence length \(n\) and
+central portion \(\kappa\). Critical test statistic values were set
+through simulation, as described below.
 
 For each number of samples
 \(n \in \left\{\lfloor 10^\nu \rfloor | \nu \in \left\{0.7500, 0.8125, \ldots, 4.0000 \right \} \right\}\)
-we randomly drew \(m_d = 30000\) ordered sequences \(\mathbf{X}\) from
-\(\mathcal{N}(0,1)\). This dataset was used to compute the critical test
-statistic values for the central normality test. Additionally, we added
-\(10 \%\) outliers by randomly replacing elements of each ordered
-sequence. The dataset with outliers was used to compute the critical
-test statistic values for the empirical variant of the central normality
-test. For each sequence we then computed \(\tau_{n, \kappa}\) for
-\(\kappa \in \left\{0.60, 0.70, 0.80, 0.90, 0.95, 1.00\right\}\).
+we randomly sampled \(m_d = 30000\) ordered sequences \(\mathbf{X}\)
+from \(\mathcal{N}(0,1)\). For each sequence we then computed
+\(\tau_{\kappa}\) for
+\(\kappa \in \left\{0.50, 0.60, 0.70, 0.80, 0.90, 0.95, 1.00\right\}\).
 
-Figure \ref{fig:empirical-central-normality-kappa} shows
-\(\tau_{\alpha = 0.05, n, \kappa}\) as a function of \(n\) for different
-values of \(\kappa\). With decreasing \(\kappa\), the test statistic
-curve decreases. The curves for \(\kappa = 0.60\), \(\kappa = 0.70\) and
-\(\kappa = 0.80\) are similar, whereas curves for \(\kappa \geq 0.90\)
-are affected by outliers, as can be observed by comparing curves of the
-central normality test with those of the empirical variant.
-
-Since the (empirical) central normality tests assesses whether the
-central part of a sequence is normally distributed, we used
-\(\kappa = 0.80\). Critical statistic values for central normality and
-empirical central normality tests are shown are shown in Table
-\ref{tab:central-normality-critical-statistic} and Table
-\ref{tab:empirical-central-normality-critical-statistic}, respectively.
+Figure \ref{fig:empirical-central-normality-combined} shows the critical
+test statistic \(\tau_{\alpha, n, \kappa}\) as a function of \(n\) for
+different values of \(\kappa\) and \(\alpha\). For larger central
+portion \(\kappa\), critical test statistic values increase. Similarly,
+critical test statistic values increase for lower significance levels.
 
 \begin{figure}
 
-{\centering \includegraphics{manuscript_files/figure-latex/empirical-central-normality-kappa-1} 
+{\centering \includegraphics{manuscript_files/figure-latex/empirical-central-normality-combined-1} 
 
 }
 
-\caption{Critical test statistic $\tau_{\alpha = 0.05, n, \kappa}$ of the (empirical) central normality test as function of $n$ for several values of central portion $\kappa$. The critical test statistics for central normality test are determined using fully normal data, whereas the statistics for the empirical variant are determined using centrally normal data, i.e. with fully normal data where 10\% of elements are replaced by outliers. emp: empirical}\label{fig:empirical-central-normality-kappa}
+\caption{Critical test statistic $\tau_{\alpha = 0.05, n, \kappa}$ of the empirical central normality test as function of $n$ for several values of central portion $\kappa$ (left) and several values of significance level $\alpha$ (right).}\label{fig:empirical-central-normality-combined}
 \end{figure}
 
-To assess type I error rates for the (empirical) central normality test
+To assess type I error rates for the empirical central normality test
 and compare these to the Shapiro-Wilk test for normality, we randomly
-drew another 1000 sequences from a standard normal distribution
-(\(\mathcal{N}(0,1)\) for each
+drew another 10000 sequences from a central normal distribution for each
 \(n \in \left\{\lfloor 10^\nu \rfloor | \nu \in \left\{0.7500, 0.8125, \ldots, 3.0000 \right \} \right\}\).
-A second dataset was created by replacing elements with randomly drawn
-outliers, as described above. For each sequence, the p-value for the
-respective test was used to reject the null hypothesis that the sequence
-is (centrally) normal. The null hypothesis was rejected if
-\(p \leq 0.05\). The type I error rate was determined by computing the
-fraction of centrally normal sequences rejected this way. Figure
-\ref{fig:empirical-central-normality-error_rate} shows that the
-empirical central normality test had the expected type I error rate for
-centrally normal data (with tails of the distribution not being normally
-distributed), whereas the central normality test and Shapiro-Wilk test
-overestimated type I error rates.
 
-\begin{figure}
+Each sequence was created as follows: first \(n\) values are sampled
+from \(\mathcal{N}(0, 1)\). Then, the elements outside the central
+portion of the sequence
+(i.e.~\(\mathbf{X} \setminus \mathbf{X}_{\text{c}}\)) are replaced.
+Elements with \(pi < \frac{1-\kappa}{2}\) are replaced with values
+sampled from \(\mathcal{U}(-10,\min(\mathbf{X}_{\text{c}}))\), and
+elements with \(p_i > \frac{1 + \kappa}{2}\) are replaced with values
+sampled from \(\mathcal{U}(\max(\mathbf{X}_{\text{c}}), 10)\).
 
-{\centering \includegraphics{manuscript_files/figure-latex/empirical-central-normality-error_rate-1} 
+For each sequence, the p-value for the respective test was used to
+reject the null hypothesis that sequences were derived from a population
+with a (central) normal distribution. The null hypothesis was rejected
+if \(p \leq 0.05\). The type I error rate was determined by computing
+the fraction of sequences rejected this way. Figure
+\ref{fig:empirical-central-normality-error_rate} shows that when the
+central portion \(\kappa\) of the central normal distribution is equal
+or greater than the \(\kappa\) parameter for the empirical central
+normality test, the tests are accurate. If \(\kappa\) of the empirical
+central normality test exceeds that the central portion \(\kappa\) for
+the underlying distribution, tests are conservative. The Shapiro-Wilk
+test behaves similar to the empirical central normality test with
+\(\kappa = 1.0\), which is expected. For \(n < 10\), the empirical
+central normality test can be optimistic.
 
-}
+\textbackslash begin\{figure\}
 
-\caption{Observed type I error rates for (central) normality tests in the presence of data derived from normal distributions with and without outliers. The empirical central normality (ECN) test uses $\kappa = 0.80$. CN: central normality}\label{fig:empirical-central-normality-error_rate}
-\end{figure}
+\{\centering \includegraphics{manuscript_files/figure-latex/empirical-central-normality-error_rate-1}
+
+\}
+
+\textbackslash caption\{Observed type I error rates for central
+normality tests in the presence of data sampled from central normal
+distributions with \$\kappa \in \left{0.6, 0.8, 1.0\right}\}. Three
+empirical central normality (ECN) tests were performed, parameterised
+with same value for the central portion \(\kappa\).Additional, the
+Shapiro-Wilk test was assessed.ECN: empirical central
+normality\}\label{fig:empirical-central-normality-error_rate}
+\textbackslash end\{figure\}
 
 In Figure \ref{fig:empirical-central-normality-examples} we apply the
-empirical central normality test to assess central normality of features
-that are composed of a mixture of samples drawn from two normal
-distributions (\(n = 100\) each). With increased separation of the
-underlying normal distributions, the probability of the feature being
-centrally normal decreases, as expected.
+empirical central normality test (with \(\kappa = 0.80\)) to assess
+central normality of features that are composed of a mixture of samples
+drawn from two normal distributions (\(n = 100\) each). With increased
+separation of the underlying normal distributions, the test's p-value
+decreases, as expected.
 
 \begin{figure}
 
@@ -806,8 +789,14 @@ centrally normal decreases, as expected.
 
 }
 
-\caption{Bi-modal distributions and empirical central normality test results. The feature (black) is a mixture of two identical sample sets (blue and orange, $n = 100$) drawn from normal distributions that are offset by a distance $d$. We use the empirical centrally normality test to compute the probability for the hypothesis that the distribution is centrally normal. As may be observed, with increasing offset $d$ the probability that the feature is centrally normal decreases. Quantile-quantile plots are drawn below each distribution.}\label{fig:empirical-central-normality-examples}
+\caption{Bi-modal distributions and empirical central normality test results. The feature (black) is a mixture of two identical sample sets (blue and orange, $n = 100$) drawn from normal distributions that are offset by a distance $d$. The empirical central normality ($\kappa = 0.80$) is used to test the hypothesis that the mixture is sampled from a central normal distribution. As may be observed, with increasing offset $d$ the test's p-value decreases. Quantile-quantile plots are drawn below each distribution.}\label{fig:empirical-central-normality-examples}
 \end{figure}
+
+We use \(\kappa = 0.80\) for the empirical central normality tests in
+the remainder of the manuscript, unless noted otherwise. Critical
+statistic values of the empirical central normality test for
+\(\kappa = 0.80\) are shown in Table
+\ref{tab:empirical-central-normality-critical-statistic}.
 
 \subsection{Robust transformations}\label{robust-transformations}
 
@@ -835,14 +824,15 @@ were set as \(\mu = 0\) and \(\sigma = 1\), respectively. To form each
 sequence \(\mathbf{X}_i\), \(n = \lceil 10^\gamma \rceil\) instances
 were then randomly drawn, with
 \(\gamma \sim U\left(\log_{10}50, 3\right)\), resulting in a set of
-sequences with between \(50\) and \(1000\) elements each.
-
-Outlier values were then drawn to randomly replace 10 percent of the
-elements of \(\mathbf{X}_i\). Outlier values were set according to John
-W. Tukey (1977), as follows. Let \(x^{*} \sim U\left(-2, 2\right)\).
-Then the corresponding outlier value was:
+sequences with between \(50\) and \(1000\) elements each. Outlier values
+were then drawn to randomly replace 10 percent of the elements of
+\(\mathbf{X}_i\). These values were set according to
+\citet{Tukey1977-xm}, as follows. Let
+\(x^{*} \sim U\left(-2, 2\right)\). Then the corresponding outlier value
+was:
 
 \begin{equation}
+\label{eqn:outlier_rate}
 x_{out} =
 \begin{cases}
 Q_1 - \left(1.5 - x^{*} \right) \text{IQR} & \text{if } x^{*} < 0 \\
@@ -850,9 +840,8 @@ Q_3 + \left(1.5 + x^{*} \right) \text{IQR} & \text{if } x^{*} \geq 0
 \end{cases}
 \end{equation}
 
-\(Q_1\), \(Q_3\) and \(\text{IQR}\) are the first quartile, third
+Here, \(Q_1\), \(Q_3\) and \(\text{IQR}\) are the first quartile, third
 quartile and interquartile range of \(\mathbf{X}_i\), respectively.
-Outlier values randomly replaced elements in \(\mathbf{X}_i\).
 
 To find the optimal values for the weighting function parameters
 \(\delta_1\) and \(\delta_2\) (if applicable), we minimised a composite
@@ -872,7 +861,7 @@ aimed to prevent solutions that provide small improvements in central
 normality at the cost of a poor fit of the tails of sequences.
 
 Minimisation was conducted using the BOBYQA algorithm for
-derivative-free bound constraint optimisation (Powell 2009). The
+derivative-free bound constraint optimisation \citep{Powell2009-zb}. The
 resulting weighting function parameters for weighted MLE are shown in
 Tables \ref{tab:optimal-weighting-parameters-box-cox} and
 \ref{tab:optimal-weighting-parameters-yeo-johnson} for robust location-
@@ -951,7 +940,7 @@ $r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.06 & 1.00 & $(0, 10]$ & 1.07 & 6
 \subsection{Assessing transformations using simulated
 data}\label{assessing-transformations-using-simulated-data}
 
-Three datasets with 10000 sequences each were created to assess
+Three datasets with 100000 sequences each were created to assess
 transformation to normality. For each sequence \(\mathbf{X}_i\),
 \(n = \lceil 10^\gamma \rceil\) elements were randomly drawn, with
 \(\gamma \sim U\left(1, 4\right)\), resulting in sequences with between
@@ -988,7 +977,7 @@ replacing 10 percent of elements in each sequence, as described earlier.
 
 In addition to no power transformation and location- and scale-invariant
 power transformations, conventional and Raymaekers and Rousseeuw's
-robust adaptation (Raymaekers and Rousseeuw 2024) were assessed. For the
+robust adaptation \citep{Raymaekers2024-zf} were assessed. For the
 latter two methods, normalisation before standardisation using was
 additionally assessed using the following two methods:
 
@@ -1001,9 +990,9 @@ additionally assessed using the following two methods:
   \(\mathbf{X}\).
 \item
   robust scaling:
-  \(x^{\prime}_{i} = \left(x_i - \text{median}\left(\mathbf{X}\right) \right) / \text{IQR}\left(\mathbf{X}\right)\),
-  with \(\text{IQR}\) representing the interquartile range of
-  \(\mathbf{X}\).
+  \(x^{\prime}_{i} = \left(x_i - \text{median}\left(\mathbf{X}\right) \right) / Q_n\left(\mathbf{X}\right)\),
+  with \(Q_n\) representing the robust \(Q_n\) scale estimator of
+  \(\mathbf{X}\) \citep{Croux1992-zz, Rousseeuw1993-it}.
 \end{enumerate}
 
 This results in nine types of power transformation. Transformation
@@ -1013,7 +1002,7 @@ residual errors and sum of residual errors of the central portion
 transformation. Then, each method was ranked according to the sum of
 residual errors (data without outliers) or the sum of residual errors of
 the central portion (data with outliers). The average rank of each
-transformation method was computed over all 10000 sequences in each
+transformation method was computed over all 100000 sequences in each
 dataset. Average ranks for Yeo-Johnson transformations are shown in
 Table \ref{tab:comparison_methods_simulation_yeo_johnson}. Location and
 shift-invariant Yeo-Johnson transformation ranked best for all datasets
@@ -1026,7 +1015,7 @@ Box-Cox transformations are shown in Table
 \begin{center}
 \caption{
 Comparison of average rank between Yeo-Johnson transformation methods based on either residual error (without outliers) or residual error of the central portion
-(with outliers; $\kappa = 0.80$) over 3 datasets with 10000 sequences each. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
+(with outliers; $\kappa = 0.80$) over 3 datasets with 100000 sequences each. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
 of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
 The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
@@ -1041,15 +1030,15 @@ transformation & outliers: & no & yes & no & yes & no & yes \\
 
 \midrule
 
-none                                  & &         8.51  &         7.60  &         7.33  &         6.15  &         7.44  &         6.60 \\
-conventional                          & &         3.70  &         5.70  &         3.87  &         7.06  &         6.49  &         5.93 \\
-conventional (z-score norm.)          & &         4.72  &         5.68  &         6.38  &         5.01  &         5.43  &         4.87 \\
-conventional (robust scaling)         & &         4.06  &         6.77  &         5.37  &         5.75  &         4.41  &         5.63 \\
-Raymaekers-Rousseeuw                  & &         4.50  &         3.20  &         4.01  &         4.13  &         6.27  &         5.65 \\
-Raymaekers-Rousseeuw (z-score norm.)  & &         5.27  & \textbf{2.66} &         6.23  &         3.59  &         5.28  &         3.48 \\
-Raymaekers-Rousseeuw (robust scaling) & &         4.70  &         2.95  &         5.32  &         3.77  &         4.36  &         3.66 \\
-invariant                             & & \textbf{3.13} &         6.77  & \textbf{3.22} &         6.12  & \textbf{2.64} &         6.03 \\
-robust invariant                      & &         6.41  &         3.66  &         3.27  & \textbf{3.41} &         2.68  & \textbf{3.10} \\
+none                                  & &         8.52  &         7.62  &         7.35  &         6.17  &         7.46  &         6.62 \\
+conventional                          & &         3.82  &         5.78  &         3.86  &         7.08  &         6.51  &         5.95 \\
+conventional (z-score norm.)          & &         4.70  &         5.75  &         6.44  &         5.07  &         5.48  &         4.93 \\
+conventional (robust scaling)         & &         3.83  &         6.61  &         5.36  &         5.72  &         4.41  &         5.59 \\
+Raymaekers-Rousseeuw                  & &         4.64  &         3.22  &         4.01  &         4.11  &         6.28  &         5.67 \\
+Raymaekers-Rousseeuw (z-score norm.)  & &         5.24  & \textbf{2.66} &         6.25  &         3.62  &         5.29  &         3.50 \\
+Raymaekers-Rousseeuw (robust scaling) & &         4.70  &         2.99  &         5.22  &         3.69  &         4.27  &         3.57 \\
+invariant                             & & \textbf{3.11} &         6.74  & \textbf{3.24} &         6.13  & \textbf{2.63} &         6.03 \\
+robust invariant                      & &         6.44  &         3.64  &         3.27  & \textbf{3.40} &         2.65  & \textbf{3.14} \\
 
 \bottomrule
 \end{tabular}
@@ -1083,7 +1072,7 @@ cancer}\label{age-of-patients-with-lung-cancer}
 
 A common feature in health-related datasets is age. Here we use data on
 228 patients with lung cancer that was collected and published by
-Loprinzi et al. (Loprinzi et al. 1994). The age in the cohort was
+Loprinzi et al. \citep{Loprinzi1994-cd}. The age in the cohort was
 \(62.4 \pm 9.1\) (mean ± standard deviation) years. Applying
 conventional and invariant Yeo-Johnson transformations to patient age
 yielded the following results, see Figure
@@ -1110,22 +1099,22 @@ significant deviations from central normality for any transformation
 \subsubsection{Penguin body mass}\label{penguin-body-mass}
 
 Gorman, Williams and Fraser recorded body mass (in grams) of 342
-penguins of three different species (Gorman, Williams, and Fraser 2014).
-The body mass was \((4.2 \pm 0.8) \cdot 10^3\) (mean ± standard
-deviation) grams, and not centrally normal (\(p < 0.001\)). Applying
-conventional and invariant Yeo-Johnson transformations to body mass
-yielded the following results, see Figure
-\ref{fig:experimental-results-invariance}: no transformation (residual
-sum \(\sum r_i = 48.0\), \(p < 0.001\)); conventional transformation
-(\(\lambda = -0.5\), \(\sum r_i = 32.2\), \(\mu_{YJ} = 2.1\),
-\(\sigma_{YJ} = 4 \cdot 10^{-3}\), \(p = 0.10\)); Raymaekers and
-Rousseeuw's robust adaptation (\(\lambda = -0.5\), \(\sum r_i = 32.2\),
+penguins of three different species \citep{Gorman2014-eo}. The body mass
+was \((4.2 \pm 0.8) \cdot 10^3\) (mean ± standard deviation) grams, and
+not centrally normal (\(p < 0.001\)). Applying conventional and
+invariant Yeo-Johnson transformations to body mass yielded the following
+results, see Figure \ref{fig:experimental-results-invariance}: no
+transformation (residual sum \(\sum r_i = 48.0\), \(p < 0.001\));
+conventional transformation (\(\lambda = -0.5\), \(\sum r_i = 32.2\),
 \(\mu_{YJ} = 2.1\), \(\sigma_{YJ} = 4 \cdot 10^{-3}\), \(p = 0.10\));
-location- and scale-invariant transformation (\(\lambda = 0.5\),
-\(\sum r_i = 26.8\), \(\mu_{YJ} = 0.9\), \(\sigma_{YJ} = 0.9\),
-\(p = 0.28\)); and robust location- and scale-invariant transformation
-(\(\lambda = 0.3\), \(\sum r_i = 22.0\), \(\mu_{YJ} = 0.7\),
-\(\sigma_{YJ} = 0.9\), \(p = 0.69\)).
+Raymaekers and Rousseeuw's robust adaptation (\(\lambda = -0.5\),
+\(\sum r_i = 32.2\), \(\mu_{YJ} = 2.1\),
+\(\sigma_{YJ} = 4 \cdot 10^{-3}\), \(p = 0.10\)); location- and
+scale-invariant transformation (\(\lambda = 0.5\), \(\sum r_i = 26.8\),
+\(\mu_{YJ} = 0.9\), \(\sigma_{YJ} = 0.9\), \(p = 0.28\)); and robust
+location- and scale-invariant transformation (\(\lambda = 0.3\),
+\(\sum r_i = 22.0\), \(\mu_{YJ} = 0.7\), \(\sigma_{YJ} = 0.9\),
+\(p = 0.69\)).
 
 Location- and scale-invariant transformation produced a lower overall
 residual errors, indicating a better transformation. Moreover,
@@ -1140,7 +1129,7 @@ dataset}\label{latitude-in-the-ames-housing-dataset}
 
 Geospatial datasets usually contain coordinates. The Ames housing
 dataset contains data on 2930 properties that were sold between 2006 and
-2010 (De Cock 2011), including their geospatial coordinates. The
+2010 \citep{De-Cock2011-jf}, including their geospatial coordinates. The
 latitude was \(42.03 \pm 0.02)\) (mean ± standard deviation). Applying
 conventional and invariant Yeo-Johnson transformations to latitude
 yielded the following results, see Figure
@@ -1182,8 +1171,8 @@ transformations in real data with outliers.
 dataset}\label{fuel-efficiency-in-the-top-gear-dataset}
 
 The Top Gear dataset contains data on 297 vehicles that appeared on the
-BBC television show \emph{Top Gear} (Alfons 2021). Within this dataset,
-the fuel consumption feature contains outliers due to highly
+BBC television show \emph{Top Gear} \citep{Alfons2021-kc}. Within this
+dataset, the fuel consumption feature contains outliers due to highly
 fuel-efficient vehicles. Applying conventional and invariant Yeo-Johnson
 transformations to the fuel consumption feature yielded the following
 results, see Figure \ref{fig:experimental-results-outlier-robustness}:
@@ -1208,7 +1197,7 @@ transformations produce distributions that are centrally normal
 dataset}\label{maximum-arterial-wall-thickness-in-an-ischemic-stroke-dataset}
 
 The ischemic stroke dataset contains historic data from 126 patients
-with risk at ischemic stroke (Kuhn and Johnson 2019). These patients
+with risk at ischemic stroke \citep{Kuhn2019-kt}. These patients
 underwent Computed Tomography Angiography to characterize the carotid
 artery blockages. Angiography imaging was then assessed, and various
 characteristics related to the blood vessels and the disease are
@@ -1236,16 +1225,16 @@ Robust transformations produce distributions that are centrally normal
 learning}\label{integration-into-end-to-end-machine-learning}
 
 We used 231 datasets containing at least one numeric feature from the
-Penn Machine Learning Benchmarks collection (Romano et al. 2022). In
+Penn Machine Learning Benchmarks collection \citep{Romano2022-gq}. In
 this collection, 114 datasets correspond to regression tasks and 117
 datasets to classification tasks. Using the familiar auto-machine
-learning library (Zwanenburg and Löck 2024a) (version 1.5.0), each
-dataset was used to train a model for each of 32 process configurations.
-Each process configuration specifies the learner (generalised linear
-model, L1-regularised linear models (Lasso), gradient boosted linear
-model, or random forest), transformation method (none, conventional
-Yeo-Johnson, robust invariant Yeo-Johnson, robust invariant Yeo-Johnson
-with empirical central normality test (rejecting transformations with
+learning library \citep{Zwanenburg2021-so} (version 1.5.0), each dataset
+was used to train a model for each of 32 process configurations. Each
+process configuration specifies the learner (generalised linear model,
+L1-regularised linear models (Lasso), gradient boosted linear model, or
+random forest), transformation method (none, conventional Yeo-Johnson,
+robust invariant Yeo-Johnson, robust invariant Yeo-Johnson with
+empirical central normality test (rejecting transformations with
 \(p \leq 0.01\)), and normalisation method (none,
 \(z\)-standardisation), yielding 32 distinct configurations. Before each
 experiment, each dataset was randomly split into a training (70\%) and
@@ -1297,8 +1286,8 @@ test: \(p = 0.007\)), all had a significant impact (at \(p = 0.05\)).
 
 To estimate the marginal effects of process parameters, including
 transformation method, we first fit a regression random forest (ranger
-package (Wright and Ziegler 2017) version 0.16.0): 2000 trees, node size
-2, other hyperparameters default) with process parameters and task
+package \citep{Wright2017-rf} version 0.16.0): 2000 trees, node size 2,
+other hyperparameters default) with process parameters and task
 difficulty as predictors and normalised rank as response variable. The
 estimated marginal effects are shown in Figure
 \ref{fig:marginal-effect-plot}. On the scale of normalised ranks
@@ -1330,9 +1319,9 @@ of conventional Yeo-Johnson transformation.
 In their work on power transformation, Box and Cox already mention
 transformation with a shift parameter, but preferred the version in Eq.
 \ref{eqn:box-cox-original} for the theoretical analysis in their paper
-(Box and Cox 1964), which subsequently became the convention. Yeo and
-Johnson's power transformation lacks a shift parameter altogether (Yeo
-and Johnson 2000). We showed that these power transformations are
+\citep{Box1964-mz}, which subsequently became the convention. Yeo and
+Johnson's power transformation lacks a shift parameter altogether
+\citep{Yeo2000-vw}. We showed that these power transformations are
 sensitive to location and scale of data distributions. To mitigate this
 issue, we defined location- and scale-invariant variants of the Box-Cox
 and Yeo-Johnson transformations. We furthermore assessed methods for
@@ -1404,14 +1393,15 @@ not suffer from this issue, as weights remained fixed during MLE.
 
 We introduced an empirical test for central normality to assess whether
 sequences deviate from normality in a way that might require closer
-inspection prior to further processing. The empirical test for central
-normality differs from other tests for normality, such as the
-Shapiro-Wilk test (Shapiro and Wilk 1965), as it assesses normality of
-the central portion of a feature, instead of the entire feature.
-Compared to the central normality test and the Shapiro-Wilk test, the
-empirical central normality test remains consistent in the presence of
-outliers, although the former tests are more powerful when outliers are
-absent.
+inspection prior to further processing. The empirical central normality
+test differs from other tests for normality, such as the Shapiro-Wilk
+test \citep{Shapiro1965-zd}, as it assesses normality of the central
+portion of a feature, instead of the entire feature. Compared to the
+Shapiro-Wilk test, the empirical central normality test remains
+consistent when a feature was not sampled from a normal distribution,
+such as a central normal distribution with \(\kappa < 1.0\). This
+enables assessing reasonable normality of (transformed) features in the
+presence of outliers.
 
 This work has the following limitation: We observed several numerical
 stability issues for optimisation criteria other than MLE (Appendix B).
@@ -1440,132 +1430,7 @@ available from the \texttt{power.transform} GitHub repository. Data and
 results for the machine learning experiment are separately available
 from \href{https://doi.org/10.5281/zenodo.14986689}{Zenodo}.
 
-\section*{References}\label{references}
-\addcontentsline{toc}{section}{References}
-
-\phantomsection\label{refs}
-\begin{CSLReferences}{1}{0}
-\bibitem[\citeproctext]{ref-Alfons2021-kc}
-Alfons, Andreas. 2021. {``{robustHD}: An {R} Package for Robust
-Regression with High-Dimensional Data.''} \emph{J. Open Source Softw.} 6
-(67): 3786. \url{https://doi.org/10.21105/joss.03786}.
-
-\bibitem[\citeproctext]{ref-Bartlett1947-rx}
-Bartlett, M S. 1947. {``The Use of Transformations.''} \emph{Biometrics}
-3 (1): 39--52. \url{https://doi.org/10.2307/3001536}.
-
-\bibitem[\citeproctext]{ref-Box1964-mz}
-Box, G E P, and D R Cox. 1964. {``An Analysis of Transformations.''}
-\emph{J. R. Stat. Soc. Series B Stat. Methodol.} 26 (2): 211--52.
-\url{https://doi.org/10.1111/J.2517-6161.1964.TB00553.X}.
-
-\bibitem[\citeproctext]{ref-De-Cock2011-jf}
-De Cock, Dean. 2011. {``Ames, Iowa: Alternative to the Boston Housing
-Data as an End of Semester Regression Project.''} \emph{J. Stat. Educ.}
-19 (3). \url{https://doi.org/10.1080/10691898.2011.11889627}.
-
-\bibitem[\citeproctext]{ref-Gijbels2019-te}
-Gijbels, Irène, Rezaul Karim, and Anneleen Verhasselt. 2019. {``Quantile
-Estimation in a Generalized Asymmetric Distributional Setting.''} In
-\emph{Stochastic Models, Statistics and Their Applications}, 13--40.
-Springer International Publishing.
-\url{https://doi.org/10.1007/978-3-030-28665-1/_2}.
-
-\bibitem[\citeproctext]{ref-Gorman2014-eo}
-Gorman, Kristen B, Tony D Williams, and William R Fraser. 2014.
-{``Ecological Sexual Dimorphism and Environmental Variability Within a
-Community of Antarctic Penguins (Genus Pygoscelis).''} \emph{PLoS One} 9
-(3): e90081. \url{https://doi.org/10.1371/journal.pone.0090081}.
-
-\bibitem[\citeproctext]{ref-Griffin2018-bf}
-Griffin, Maryclare. 2018. {``Gnorm: Generalized Normal/Exponential Power
-Distribution.''} The R Foundation.
-\url{https://doi.org/10.32614/cran.package.gnorm}.
-
-\bibitem[\citeproctext]{ref-Huber1981-su}
-Huber, Peter J. 1981. \emph{Robust Statistics}. John Wiley \& Sons.
-\url{https://doi.org/10.1002/0471725250}.
-
-\bibitem[\citeproctext]{ref-Kuhn2019-kt}
-Kuhn, Max, and Kjell Johnson. 2019. \emph{Feature Engineering and
-Selection: A Practical Approach for Predictive Models}. Chapman \&
-Hall/CRC Data Science Series. Chapman; Hall/CRC.
-\url{https://doi.org/10.1201/9781315108230}.
-
-\bibitem[\citeproctext]{ref-Loprinzi1994-cd}
-Loprinzi, C L, J A Laurie, H S Wieand, J E Krook, P J Novotny, J W
-Kugler, J Bartel, M Law, M Bateman, and N E Klatt. 1994. {``Prospective
-Evaluation of Prognostic Variables from Patient-Completed
-Questionnaires. North Central Cancer Treatment Group.''} \emph{J. Clin.
-Oncol.} 12 (3): 601--7. \url{https://doi.org/10.1200/JCO.1994.12.3.601}.
-
-\bibitem[\citeproctext]{ref-Nadarajah2005-xe}
-Nadarajah, Saralees. 2005. {``A Generalized Normal Distribution.''}
-\emph{J. Appl. Stat.} 32 (7): 685--94.
-\url{https://doi.org/10.1080/02664760500079464}.
-
-\bibitem[\citeproctext]{ref-Powell2009-zb}
-Powell, M J D. 2009. {``The {BOBYQA} Algorithm for Bound Constrained
-Optimization Without Derivatives.''} Cambridge NA Report NA2009/06.
-University of Cambridge.
-
-\bibitem[\citeproctext]{ref-Raymaekers2024-zf}
-Raymaekers, Jakob, and Peter J Rousseeuw. 2024. {``Transforming
-Variables to Central Normality.''} \emph{Mach. Learn.} 113 (8):
-4953--75. \url{https://doi.org/10.1007/s10994-021-05960-5}.
-
-\bibitem[\citeproctext]{ref-Romano2022-gq}
-Romano, Joseph D, Trang T Le, William La Cava, John T Gregg, Daniel J
-Goldberg, Praneel Chakraborty, Natasha L Ray, Daniel Himmelstein,
-Weixuan Fu, and Jason H Moore. 2022. {``{PMLB} V1.0: An Open-Source
-Dataset Collection for Benchmarking Machine Learning Methods.''}
-\emph{Bioinformatics} 38 (3): 878--80.
-\url{https://doi.org/10.1093/bioinformatics/btab727}.
-
-\bibitem[\citeproctext]{ref-Shapiro1965-zd}
-Shapiro, S S, and M B Wilk. 1965. {``An Analysis of Variance Test for
-Normality (Complete Samples).''} \emph{Biometrika} 52 (3/4): 591--611.
-\url{https://doi.org/10.2307/2333709}.
-
-\bibitem[\citeproctext]{ref-Subbotin1923-qk}
-Subbotin, M Th. 1923. {``On the Law of Frequency of Error.''} \emph{Mat.
-Sb.} 31 (2): 296--301.
-
-\bibitem[\citeproctext]{ref-Tukey1967-eb}
-Tukey, J W. 1967. {``An Introduction to the Calculations of Numerical
-Spectrum Analysis.''} In \emph{Advanced Seminar on Spectral Analysis of
-Time Series}, edited by B Harris. New York: John Wiley; Sons, Inc.
-
-\bibitem[\citeproctext]{ref-Tukey1957-rt}
-Tukey, John W. 1957. {``On the Comparative Anatomy of
-Transformations.''} \emph{Ann. Math. Stat.} 28 (3): 602--32.
-\url{https://doi.org/10.1214/AOMS/1177706875}.
-
-\bibitem[\citeproctext]{ref-Tukey1977-xm}
----------. 1977. \emph{Exploratory Data Analysis}. Addison-Wesley
-Publishing Company.
-
-\bibitem[\citeproctext]{ref-Wright2017-rf}
-Wright, Marvin N., and Andreas Ziegler. 2017. {``{ranger}: A Fast
-Implementation of Random Forests for High Dimensional Data in {C++} and
-{R}.''} \emph{Journal of Statistical Software} 77 (1): 1--17.
-\url{https://doi.org/10.18637/jss.v077.i01}.
-
-\bibitem[\citeproctext]{ref-Yeo2000-vw}
-Yeo, In‐kwon, and Richard A Johnson. 2000. {``A New Family of Power
-Transformations to Improve Normality or Symmetry.''} \emph{Biometrika}
-87 (4): 954--59. \url{https://doi.org/10.1093/biomet/87.4.954}.
-
-\bibitem[\citeproctext]{ref-Zwanenburg2021-so}
-Zwanenburg, Alex, and Steffen Löck. 2024a. {``Familiar: End-to-End
-Automated Machine Learning and Model Evaluation.''} The R Foundation.
-\url{https://doi.org/10.32614/cran.package.familiar}.
-
-\bibitem[\citeproctext]{ref-Zwanenburg2024-kq}
----------. 2024b. {``Power.transform: Location and Scale Invariant Power
-Transformations.''} The R Foundation.
-\url{https://doi.org/10.32614/cran.package.power.transform}.
-
-\end{CSLReferences}
+\renewcommand\refname{References}
+\bibliography{refs.bib}
 
 \end{document}

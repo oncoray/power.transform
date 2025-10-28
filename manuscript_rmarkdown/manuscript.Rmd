@@ -652,23 +652,25 @@ Elements with $pi < \frac{1-\kappa}{2}$ are replaced with values sampled from $\
 and elements with $p_i > \frac{1 + \kappa}{2}$ are replaced with values sampled from $\mathcal{U}(\max(\mathbf{X}_{\text{c}}), 10)$.
 
 For each sequence, the p-value for the respective test was used to reject the null
-hypothesis that the sequence is (centrally) normal. The null hypothesis was rejected if $p \leq 0.05$.
-The type I error rate was determined by computing the fraction of centrally normal sequences rejected this way.
-Figure \ref{fig:empirical-central-normality-error_rate} shows that when the estimated outlier rate 
-for the empirical central normality test matches the outlier rate in the data,
-the test yields an accurate Type I error rate.
-The Shapiro-Wilk test is overly conservative in the presence of any outliers. 
-Empirical central normality tests where the estimated outlier rate is lower
-than the actual outlier rate are likewise conservative, but to a lesser degree. 
-Empirical central normality tests where the estimated outlier rate is higher 
-than the actual outlier rate are optimistic.
+hypothesis that sequences were derived from a population with a (central) normal distribution.
+The null hypothesis was rejected if $p \leq 0.05$.
+The type I error rate was determined by computing the fraction of sequences rejected this way.
+Figure \ref{fig:empirical-central-normality-error_rate} shows that when the
+central portion $\kappa$ of the central normal distribution is equal or greater
+than the $\kappa$ parameter for the empirical central normality test, the tests 
+are accurate. If $\kappa$ of the empirical central normality test exceeds that 
+the central portion $\kappa$ for the underlying distribution, 
+tests are conservative. The Shapiro-Wilk test behaves similar to the empirical
+central normality test with $\kappa = 1.0$, which is expected. For $n < 10$,
+the empirical central normality test can be optimistic.
 
 ```{r empirical-central-normality-error_rate, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
 cap <- paste0(
-  "Observed type I error rates for central normality tests in the presence of data sampled from normal distributions ",
-  "without outliers, or with a 5% or 10% outlier rate. ",
-  "The empirical central normality (ECN) test used $\\kappa = 0.80$, and was further parameterised by the ",
-  "estimated outlier rate $\\zeta = 0.00$ (ECN (0 %)), $\\zeta = 0.05$ (ECN (5 %)) and $\\zeta = 0.10$ (ECN (10%))."  
+  "Observed type I error rates for central normality tests in the presence of data sampled from ",
+  "central normal distributions with $\\kappa \\in \\left{0.6, 0.8, 1.0\\right}$. ",
+  "Three empirical central normality (ECN) tests were performed, parameterised with same value for the central portion $\\kappa$. ",
+  "Additionally, the Shapiro-Wilk test was assessed.",
+  "ECN: empirical central normality"
 )
 
 .plot_test_dependency_sample_size(
