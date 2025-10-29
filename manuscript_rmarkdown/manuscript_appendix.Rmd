@@ -5,6 +5,7 @@ date: "`r Sys.Date()`"
 output:
   pdf_document:
     latex_engine: lualatex
+    citation_package: natbib
     keep_tex: true
 papersize: a4
 bibliography: refs.bib
@@ -497,19 +498,17 @@ cap <- paste0(
 .plot_shifted_distributions_appendix(manuscript_dir = manuscript_dir, plot_theme = plot_theme)
 ```
 
-# Appendix C: Central normality test and empirical central normality test critical values
+# Appendix C: Empirical central normality test critical values
 
-Critical values for the central normality test and its empirical variant are
-found in Table \ref{tab:central-normality-critical-statistic} and Table 
-\ref{tab:empirical-central-normality-critical-statistic}, respectively.
+Critical values for the empirical central normality test at $\kappa = 0.80$ are
+found in Table \ref{tab:empirical-central-normality-critical-statistic}.
 
 
 ```{r include = FALSE, eval = FALSE}
 # This generates the table shown below.
-.get_test_statistic_lookup_table(
+.get_test_statistic_lookup_table_manuscript(
   manuscript_dir = manuscript_dir,
-  k = 0.80,
-  for_manuscript = TRUE
+  kappa_lookup = 0.80
 )
 
 ```
@@ -517,47 +516,8 @@ found in Table \ref{tab:central-normality-critical-statistic} and Table
 \begin{table}
 \begin{center}
 \caption{Critical values of test statistic $\tau_{\alpha, n, \kappa = 0.80}$ for
-\textbf{central normality} at $\kappa = 0.80$, as a function of significance 
+central normality at $\kappa = 0.80$, as a function of significance 
 level $\alpha$ and number of instances $n$. The values in this table should be divided by $100$ before use.}
-\label{tab:central-normality-critical-statistic}
-\begin{tabular}{l | r r r r r r r r r}
-
-\toprule
-$n$ \textbackslash $\alpha$ & 0.001 & 0.01 & 0.025 & 0.05 & 0.1 & 0.2 & 0.5 & 0.8 & 0.9 \\
-
-\midrule
-    5 & 210.79 & 95.75 & 66.27 & 49.69 & 35.93 & 27.60 & 19.29 & 13.41 & 11.00 \\
-   10 &  48.04 & 31.44 & 26.96 & 23.91 & 21.11 & 18.16 & 13.66 & 10.14 &  8.67 \\
-   20 &  29.13 & 22.13 & 19.75 & 17.94 & 16.00 & 13.81 & 10.54 &  8.18 &  7.18 \\
-   50 &  17.31 & 14.01 & 12.63 & 11.48 & 10.28 &  9.00 &  7.00 &  5.54 &  4.94 \\
-  100 &  12.19 & 10.04 &  9.02 &  8.21 &  7.38 &  6.47 &  5.04 &  3.99 &  3.56 \\
-  200 &   8.68 &  7.11 &  6.40 &  5.83 &  5.22 &  4.57 &  3.59 &  2.86 &  2.56 \\ 
-  500 &   5.61 &  4.54 &  4.08 &  3.70 &  3.33 &  2.91 &  2.28 &  1.82 &  1.63 \\
- 1000 &   3.93 &  3.19 &  2.87 &  2.60 &  2.33 &  2.05 &  1.61 &  1.29 &  1.15 \\
- 2000 &   2.71 &  2.24 &  2.02 &  1.84 &  1.66 &  1.46 &  1.14 &  0.91 &  0.82 \\
- 5000 &   1.73 &  1.42 &  1.28 &  1.17 &  1.05 &  0.92 &  0.72 &  0.58 &  0.52 \\
-10000 &   1.22 &  1.00 &  0.90 &  0.82 &  0.74 &  0.65 &  0.51 &  0.41 &  0.37 \\
-\bottomrule
-\end{tabular}
-\end{center}
-\end{table}
-
-```{r include = FALSE, eval = FALSE}
-# This generates the table shown below.
-.get_test_statistic_lookup_table(
-  manuscript_dir = manuscript_dir,
-  k = 0.80,
-  for_manuscript = TRUE,
-  with_outliers = TRUE
-)
-
-```
-
-\begin{table}
-\begin{center}
-\caption{Critical values of test statistic $\tau_{\alpha, n, \kappa = 0.70}$ for
-\textbf{empirical central normality} at $\kappa = 0.70$, as a function of significance 
-level $\alpha$ and number of instances $n$.The values in this table should be divided by $100$ before use.}
 \label{tab:empirical-central-normality-critical-statistic}
 \begin{tabular}{l | r r r r r r r r r}
 
@@ -565,39 +525,21 @@ level $\alpha$ and number of instances $n$.The values in this table should be di
 $n$ \textbackslash $\alpha$ & 0.001 & 0.01 & 0.025 & 0.05 & 0.1 & 0.2 & 0.5 & 0.8 & 0.9 \\
 
 \midrule
-    5 & 159.27 & 66.78 & 57.06 & 50.55 & 43.42 & 34.89 & 22.28 & 14.92 & 12.10 \\
-   10 &  41.82 & 30.82 & 27.01 & 24.31 & 21.58 & 18.53 & 13.82 & 10.23 &  8.75 \\
-   20 &  29.44 & 23.65 & 21.23 & 19.16 & 17.01 & 14.67 & 11.10 &  8.42 &  7.35 \\
-   50 &  18.95 & 15.56 & 13.96 & 12.74 & 11.35 &  9.82 &  7.51 &  5.83 &  5.16 \\ 
-  100 &  13.49 & 11.00 &  9.91 &  8.98 &  8.03 &  7.04 &  5.43 &  4.25 &  3.76 \\
-  200 &   9.65 &  7.99 &  7.22 &  6.64 &  5.96 &  5.21 &  4.05 &  3.17 &  2.81 \\
-  500 &   6.37 &  5.32 &  4.82 &  4.44 &  4.03 &  3.57 &  2.79 &  2.18 &  1.92 \\
- 1000 &   4.64 &  3.95 &  3.65 &  3.39 &  3.11 &  2.78 &  2.20 &  1.73 &  1.53 \\
- 2000 &   3.61 &  3.18 &  2.96 &  2.78 &  2.57 &  2.32 &  1.89 &  1.50 &  1.33 \\
- 5000 &   2.78 &  2.48 &  2.36 &  2.24 &  2.11 &  1.95 &  1.66 &  1.39 &  1.25 \\
-10000 &   2.39 &  2.18 &  2.08 &  2.00 &  1.91 &  1.81 &  1.59 &  1.39 &  1.28 \\
+    5 & 200.88 & 90.25 & 64.46 & 49.04 & 36.07 & 27.70 & 19.28 & 13.41 & 10.90 \\
+   10 &  45.90 & 31.78 & 27.12 & 24.14 & 21.23 & 18.30 & 13.68 & 10.20 &  8.71 \\
+   20 &  28.88 & 22.53 & 19.96 & 18.01 & 15.99 & 13.93 & 10.67 &  8.26 &  7.27 \\
+   50 &  16.86 & 14.10 & 12.66 & 11.55 & 10.28 &  8.95 &  7.00 &  5.53 &  4.91 \\
+  100 &  12.41 & 10.00 &  9.02 &  8.21 &  7.36 &  6.45 &  5.02 &  4.00 &  3.58 \\
+  200 &   8.65 &  7.05 &  6.37 &  5.80 &  5.22 &  4.57 &  3.57 &  2.84 &  2.54 \\
+  500 &   5.54 &  4.47 &  4.03 &  3.69 &  3.30 &  2.90 &  2.27 &  1.81 &  1.63 \\
+ 1000 &   3.88 &  3.17 &  2.86 &  2.60 &  2.34 &  2.05 &  1.61 &  1.28 &  1.15 \\
+ 2000 &   2.79 &  2.24 &  2.03 &  1.84 &  1.66 &  1.45 &  1.14 &  0.91 &  0.82 \\ 
+ 5000 &   1.75 &  1.41 &  1.27 &  1.17 &  1.05 &  0.92 &  0.72 &  0.58 &  0.52 \\
+10000 &   1.21 &  1.00 &  0.90 &  0.82 &  0.74 &  0.65 &  0.51 &  0.41 &  0.36 \\
 \bottomrule
 \end{tabular}
 \end{center}
 \end{table}
-
-
-```{r empirical-central-normality-critical-statistics, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
-cap <- paste0(
-  "Critical test statistic $\\tau_{\\alpha, n, \\kappa = 0.80}$ of the (empirical) ",
-  "central normality test as function of $n$ for several values of significance level $\\alpha$. ",
-  "The critical test statistics for central normality test are determined using fully normal data, ",
-  "whereas the statistics for the empirical variant are determined using centrally normal data, ",
-  "i.e. with fully normal data where 10% of elements are replaced by outliers. ",
-  "emp: empirical"
-)
-
-.plot_test_statistic_tau(
-  plot_theme = plot_theme,
-  manuscript_dir = manuscript_dir
-)
-
-```
 
 \FloatBarrier
 
@@ -645,7 +587,7 @@ data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.v
 \begin{center}
 \caption{
 Comparison of average rank between Box-Cox transformation methods based on either residual error (without outliers) or residual error of the central portion
-(with outliers; $\kappa = 0.80$) over 3 datasets with 10000 sequences each. The clean dataset consists of sequences derived through inverse Box-Cox transformation
+(with outliers; $\kappa = 0.80$) over 3 datasets with 100000 sequences each. The clean dataset consists of sequences derived through inverse Box-Cox transformation
 of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions.
 The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
 If necessary, each sequence was shifted so that every element had a strictly positive value. 
@@ -661,21 +603,423 @@ transformation & outliers: & no & yes & no & yes & no & yes \\
 
 \midrule
 
-none                                  & &         7.65  &         6.96  &         7.28  &         6.58  &         7.45  &         6.78 \\
-conventional                          & &         3.10  &         5.98  &         5.42  &         6.16  &         6.49  &         6.10 \\
-conventional (z-score norm.)          & &         4.19  &         6.28  &         4.85  &         6.33  &         4.38  &         5.85 \\
-conventional (robust scaling)         & &         4.20  &         6.28  &         4.78  &         6.33  &         4.30  &         5.86 \\
-Raymaekers-Rousseeuw                  & &         4.46  &         3.55  &         5.39  &         3.69  &         6.29  &         5.84 \\ 
-Raymaekers-Rousseeuw (z-score norm.)  & &         6.21  &         3.83  &         4.95  &         3.85  &         4.51  &         3.50 \\ 
-Raymaekers-Rousseeuw (robust scaling) & &         6.12  &         3.82  &         4.97  &         3.85  &         4.52  &         3.50 \\
-invariant                             & & \textbf{2.99} &         5.55  & \textbf{3.65} &         6.01  & \textbf{3.52} &         5.57 \\
-robust invariant                      & &         6.09  & \textbf{2.75} &         3.71  & \textbf{2.20} &         3.55  & \textbf{2.00} \\
+none                                  & &         7.63  &         6.95  &         7.29  &         6.59  &         7.47  &         6.78 \\
+conventional                          & &         3.11  &         5.98  &         5.41  &         6.18  &         6.51  &         6.10 \\
+conventional (z-score norm.)          & &         4.15  &         6.27  &         4.83  &         6.32  &         4.34  &         5.84 \\
+conventional (robust scaling)         & &         4.20  &         6.29  &         4.84  &         6.31  &         4.35  &         5.84 \\
+Raymaekers-Rousseeuw                  & &         4.50  &         3.56  &         5.39  &         3.69  &         6.30  &         5.80 \\ 
+Raymaekers-Rousseeuw (z-score norm.)  & &         6.23  &         3.80  &         4.93  &         3.85  &         4.48  &         3.50 \\ 
+Raymaekers-Rousseeuw (robust scaling) & &         6.12  &         3.80  &         4.99  &         3.87  &         4.53  &         3.51 \\
+invariant                             & & \textbf{2.96} &         5.59  & \textbf{3.62} &         6.01  & \textbf{3.51} &         5.58 \\
+robust invariant                      & &         6.10  & \textbf{2.76} &         3.68  & \textbf{2.19} & \textbf{3.51} & \textbf{2.00} \\
 
 \bottomrule
 \end{tabular}
 \end{center}
 \end{table}
 
+
+\FloatBarrier
+
+## Ranking Yeo-Johnson transformations: residual errors
+
+In the main manuscript, transformation methods are compared by ranking within
+each experiment, defined by the combination of sequence and absence/presence of
+outliers. This allows for direct comparison of methods between different
+experiments.
+
+Table \ref{tab:comparison_methods_simulations_yeo_johnson_avg_residual} shows
+the average normalised residual error for these transformation methods. This
+metric is computed from the residual error and the residual error of the central
+portion ($\kappa = 0.80$) for sequences without and with outliers, respectively.
+In each experiment, the respective residual error was normalised by dividing with
+the sequence length, and can be interpreted as the average residual error of a
+single sample. This reduces the effect of sequence length on the residual error.
+
+Table \ref{tab:comparison_methods_simulations_yeo_johnson_avg_residual_diff} shows
+the average normalised difference in residual error between the best method for each
+experiment and the individual methods. As above, normalisation was done by
+division by the length of the sequence corresponding to each experiment.
+
+Both tables show that the differences between best-performing methods on each
+dataset are relatively small.
+
+```{r include = FALSE, eval = FALSE}
+
+# Yeo-Johnson on clean and dirty data.
+clean_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "clean")
+dirty_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "dirty")
+shifted_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "dirty_shifted")
+
+data <- rbind(clean_data, dirty_data, shifted_data, fill = TRUE)
+data$dataset <- factor(data$dataset, levels = c("clean", "dirty", "dirty_shifted"))
+
+# Add rank based on residual error for central normality.
+data[outlier == FALSE, "method_rank" := rank(residuals), by = c("experiment_id", "outlier", "dataset")]
+data[outlier == TRUE, "method_rank" := rank(residuals_central), by = c("experiment_id", "outlier", "dataset")]
+data[outlier == FALSE, "norm_residuals" := residuals / n_samples]
+data[outlier == TRUE, "norm_residuals" := residuals_central / (0.8 * n_samples)]
+
+data[outlier == FALSE, "min_residual" := min(residuals), by = c("experiment_id", "outlier", "dataset")]
+data[outlier == TRUE, "min_residual" := min(residuals_central), by = c("experiment_id", "outlier", "dataset")]
+data[outlier == FALSE, "residual_delta" := (residuals - min_residual) / n_samples]
+data[outlier == TRUE, "residual_delta" := (residuals_central - min_residual) / (0.8 * n_samples)]
+
+table_data <- data[
+  ,
+  list(
+    "avg." = round(mean(method_rank), digits = 2L),
+    "10%" = quantile(method_rank, 0.10),
+    "50%" = quantile(method_rank, 0.50),
+    "90%" = quantile(method_rank, 0.90),
+    "avg. norm. res." = round(mean(norm_residuals), digits = 3),
+    "avg. res. diff." = round(mean(residual_delta), digits = 3)
+  ),
+  by = c("transformation", "outlier", "dataset")
+]
+
+# Table with average rank --> this was already presented in the main manuscript.
+data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.var = "avg.")
+
+# Table with average normalised residuals.
+data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.var = "avg. norm. res.")
+
+# Table with difference with best-performing method in an experiment.
+data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.var = "avg. res. diff.")
+```
+
+\begin{table}
+\begin{center}
+\caption{
+Comparison of average normalised residual error between Yeo-Johnson transformation methods based on either the residual error (without outliers) or the residual error of the central portion
+(with outliers; $\kappa = 0.80$) over 3 datasets with 100000 sequences each. Residual errors were normalised by sequence length to reduce the effect of sequence length on the residual error.
+The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
+A lower normalised residual error is better. Discrepancies with the rank-based method may occur, as even with normalisation residual errors 
+are not fully comparable between experiments, whereas the ranks achieved within each experiment are.
+}
+\label{tab:comparison_methods_simulations_yeo_johnson_avg_residual}
+\begin{tabular}{l | l r r r r r r}
+
+\toprule
+& dataset: & \multicolumn{2}{c}{clean} & \multicolumn{2}{c}{dirty} & \multicolumn{2}{c}{shifted} \\
+transformation & outliers: & no & yes & no & yes & no & yes \\
+
+\midrule
+
+none                                  & & 0.202 & 0.112 & 0.128 & 0.080 & 0.129 & 0.080 \\
+conventional                          & & 0.058 & 0.094 & 0.085 & 0.078 & 0.129 & 0.080 \\
+conventional (z-score norm.)          & & 0.061 & 0.094 & 0.091 & 0.073 & 0.091 & 0.073 \\
+conventional (robust scaling)         & & 0.058 & 0.094 & 0.090 & 0.073 & 0.090 & 0.073 \\
+Raymaekers-Rousseeuw                  & & 0.071 & 0.055 & 0.092 & 0.279 & 0.129 & 0.080 \\
+Raymaekers-Rousseeuw (z-score norm.)  & & 0.087 & 0.057 & 0.097 & 0.060 & 0.097 & 0.060 \\
+Raymaekers-Rousseeuw (robust scaling) & & 0.071 & 0.056 & 0.095 & 0.059 & 0.095 & 0.059 \\
+invariant                             & & 0.057 & 0.099 & 0.083 & 0.075 & 0.083 & 0.075 \\
+robust invariant                      & & 0.069 & 0.066 & 0.084 & 0.058 & 0.084 & 0.058 \\
+
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+
+
+\begin{table}
+\begin{center}
+\caption{
+Comparison of average difference in residual error between Yeo-Johnson
+transformation methods and the best transformation method within each
+experiment, normalised by the corresponding sequence length. This is based on
+either the residual error (without outliers) or the residual error of the
+central portion (with outliers; $\kappa = 0.80$) over 3 datasets with 100000
+sequences each. Residual errors were normalised by sequence length to reduce the
+effect of sequence length on the residual error. The clean dataset consists of
+sequences derived through inverse Yeo-Johnson transformation of data sampled
+from a standard normal distribution. The dirty dataset contains sequences
+sampled from asymmetric generalised normal distributions, centred at 0. The
+shifted dataset also contains sequences sampled from asymmetric generalised
+normal distributions, but centred at 100, and scaled by 0.001. Several
+transformation methods include normalisation before transformation, indicated by
+z-score normalisation (norm.) or robust scaling. A lower difference is better,
+with a minimum value of 0.0. Discrepancies with the rank-based method may occur,
+as normalised differences in residual error are not fully comparable between
+experiments, whereas the ranks achieved within each experiment are.
+}
+\label{tab:comparison_methods_simulations_yeo_johnson_avg_residual_diff}
+\begin{tabular}{l | l r r r r r r}
+
+\toprule
+& dataset: & \multicolumn{2}{c}{clean} & \multicolumn{2}{c}{dirty} & \multicolumn{2}{c}{shifted} \\
+transformation & outliers: & no & yes & no & yes & no & yes \\
+
+\midrule
+
+none                                  & & 0.150 & 0.068 & 0.050 & 0.033 & 0.049 & 0.033 \\
+conventional                          & & 0.005 & 0.049 & 0.006 & 0.032 & 0.049 & 0.033 \\
+conventional (z-score norm.)          & & 0.008 & 0.049 & 0.013 & 0.026 & 0.011 & 0.025 \\
+conventional (robust scaling)         & & 0.005 & 0.050 & 0.012 & 0.026 & 0.010 & 0.026 \\
+Raymaekers-Rousseeuw                  & & 0.018 & 0.011 & 0.014 & 0.233 & 0.049 & 0.033 \\
+Raymaekers-Rousseeuw (z-score norm.)  & & 0.034 & 0.012 & 0.018 & 0.014 & 0.017 & 0.013 \\
+Raymaekers-Rousseeuw (robust scaling) & & 0.018 & 0.011 & 0.017 & 0.012 & 0.015 & 0.011 \\
+invariant                             & & 0.004 & 0.054 & 0.005 & 0.029 & 0.003 & 0.028 \\
+robust invariant                      & & 0.016 & 0.021 & 0.006 & 0.011 & 0.004 & 0.010 \\
+
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+\FloatBarrier
+
+## Ranking Yeo-Johnson transformations: effect of sequence length
+
+The main manuscript shows the overall ranking of different Yeo-Johnson-based power transformation methods across three
+sets of problems.
+To assess the effect of limited sequence lengths, we perform ranking on subsets of the experiment.
+The results for ranking the subset of sequences with 30 samples or fewer ($n = 16001$) 
+is shown in Table \ref{tab:comparison_methods_simulations_yeo_johnson_10_30}.
+In the clean dataset without outliers, where all sequences were sampled from a normal distribution and 
+then underwent an inverse Yeo-Johnson transformation,
+conventional and location- and scale-invariant are ranked similarly, with no clear advantage
+to any method. For the remaining datasets, the robust location- and scale-invariant
+method ranked best. It slightly outperformed (robustly scaled) conventional Yeo-Johnson transformations
+and (z-score normalised) robust transformations [@Raymaekers2024-zf], in datasets without and with outliers, respectively.
+
+In the subset for larger sequence lengths, with at least 1000 samples per sequence ($n = 33037$),
+the cost of making the location- and scale-invariant transformation robust against outliers
+becomes more apparent (Table \ref{tab:comparison_methods_simulations_yeo_johnson_1000_10000}).
+In the clean dataset without outliers, down-weighting of the tails of the distribution by
+the robust location- and scale-invariant method leads to larger residuals compared 
+to other methods (Table \ref{tab:comparison_methods_simulations_yeo_johnson_1000_10000_avg_residual}.
+
+
+```{r include = FALSE, eval = FALSE}
+
+# Yeo-Johnson on clean and dirty data.
+clean_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "clean")
+dirty_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "dirty")
+shifted_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "dirty_shifted")
+
+data <- rbind(clean_data, dirty_data, shifted_data, fill = TRUE)
+data$dataset <- factor(data$dataset, levels = c("clean", "dirty", "dirty_shifted"))
+
+# 30 samples or fewer
+data <- data[n_samples <= 30L, ]
+
+# Add rank based on residual error for central normality.
+data[outlier == FALSE, "method_rank" := rank(residuals), by = c("experiment_id", "outlier", "dataset")]
+data[outlier == TRUE, "method_rank" := rank(residuals_central), by = c("experiment_id", "outlier", "dataset")]
+data[outlier == FALSE, "norm_residuals" := residuals / n_samples]
+data[outlier == TRUE, "norm_residuals" := residuals_central / (0.8 * n_samples)]
+
+table_data <- data[
+  ,
+  list(
+    "avg." = round(mean(method_rank), digits = 2L),
+    "10%" = quantile(method_rank, 0.10),
+    "50%" = quantile(method_rank, 0.50),
+    "90%" = quantile(method_rank, 0.90),
+    "avg. norm. res." = round(mean(norm_residuals), digits = 3)
+  ),
+  by = c("transformation", "outlier", "dataset")
+]
+
+# Table with average rank.
+data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.var = "avg.")
+
+# Table with average normalised residuals.
+data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.var = "avg. norm. res.")
+
+```
+
+
+\begin{table}
+\begin{center}
+\caption{
+Comparison of average rank between Yeo-Johnson transformation methods based on either residual error (without outliers) or residual error of the central portion
+(with outliers; $\kappa = 0.80$) over 3 datasets with 16001 sequences each. Each sequence contained 30 samples or fewer. 
+The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
+A rank of 1 is the best and a rank of 9 the worst. For each dataset, the best ranking transformation is marked in bold.
+}
+\label{tab:comparison_methods_simulations_yeo_johnson_10_30}
+\begin{tabular}{l | l r r r r r r}
+
+\toprule
+& dataset: & \multicolumn{2}{c}{clean} & \multicolumn{2}{c}{dirty} & \multicolumn{2}{c}{shifted} \\
+transformation & outliers: & no & yes & no & yes & no & yes \\
+
+\midrule
+
+none                                  & &         7.75  &         6.81  &         7.27  &         6.40  &         7.45  &         6.60 \\
+conventional                          & &         4.19  &         5.47  &         4.48  &         5.78  &         6.55  &         5.94 \\
+conventional (z-score norm.)          & &         4.36  &         5.12  &         5.01  &         4.99  &         4.35  &         4.70 \\
+conventional (robust scaling)         & & \textbf{4.05} &         5.63  &         4.38  &         5.49  &         3.76  &         5.20 \\
+Raymaekers-Rousseeuw                  & &         5.36  &         4.19  &         5.14  &         4.62  &         6.32  &         5.83 \\
+Raymaekers-Rousseeuw (z-score norm.)  & &         5.56  &         4.08  &         5.67  &         4.05  &         5.03  &         3.81 \\
+Raymaekers-Rousseeuw (robust scaling) & &         5.33  &         4.14  &         5.15  &         4.15  &         4.55  &         3.94 \\
+invariant                             & &         4.11  &         5.92  &         4.12  &         5.67  &         3.62  &         5.37 \\
+robust invariant                      & &         4.28  & \textbf{3.65} & \textbf{3.79} & \textbf{3.85} & \textbf{3.37} & \textbf{3.61} \\
+
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+
+
+\begin{table}
+\begin{center}
+\caption{
+Comparison of average normalised residual error between Yeo-Johnson transformation methods based on either the residual error (without outliers) or the residual error of the central portion
+(with outliers; $\kappa = 0.80$) over 3 datasets with 16001 sequences each. Residual errors were normalised by sequence length to reduce the effect of sequence length on the residual error.
+Each sequence contained 30 samples or fewer. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
+A lower normalised residual error is better. Discrepancies with the rank-based method may occur, as even with normalisation residual errors 
+are not fully comparable between experiments, whereas the ranks achieved within each experiment are.
+}
+\label{tab:comparison_methods_simulations_yeo_johnson_10_30_avg_residual}
+\begin{tabular}{l | l r r r r r r}
+
+\toprule
+& dataset: & \multicolumn{2}{c}{clean} & \multicolumn{2}{c}{dirty} & \multicolumn{2}{c}{shifted} \\
+transformation & outliers: & no & yes & no & yes & no & yes \\
+
+\midrule
+
+none                                  & & 0.246 & 0.173 & 0.186 & 0.156 & 0.187 & 0.157 \\
+conventional                          & & 0.139 & 0.142 & 0.142 & 0.132 & 0.187 & 0.157 \\
+conventional (z-score norm.)          & & 0.139 & 0.142 & 0.142 & 0.130 & 0.142 & 0.130 \\
+conventional (robust scaling)         & & 0.139 & 0.142 & 0.141 & 0.130 & 0.141 & 0.130 \\
+Raymaekers-Rousseeuw                  & & 0.211 & 0.151 & 0.183 & 1.515 & 0.187 & 0.157 \\
+Raymaekers-Rousseeuw (z-score norm.)  & & 0.295 & 0.161 & 0.175 & 0.156 & 0.175 & 0.156 \\
+Raymaekers-Rousseeuw (robust scaling) & & 0.209 & 0.155 & 0.172 & 0.144 & 0.172 & 0.144 \\
+invariant                             & & 0.141 & 0.144 & 0.140 & 0.132 & 0.140 & 0.132 \\
+robust invariant                      & & 0.141 & 0.125 & 0.140 & 0.119 & 0.140 & 0.119 \\
+
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+
+```{r include = FALSE, eval = FALSE}
+
+# Yeo-Johnson on clean and dirty data.
+clean_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "clean")
+dirty_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "dirty")
+shifted_data <- .assess_simulated_data(manuscript_dir = manuscript_dir, data_type = "dirty_shifted")
+
+data <- rbind(clean_data, dirty_data, shifted_data, fill = TRUE)
+data$dataset <- factor(data$dataset, levels = c("clean", "dirty", "dirty_shifted"))
+
+# 30 samples or fewer
+data <- data[n_samples >= 1000L, ]
+
+# Add rank based on residual error for central normality.
+data[outlier == FALSE, "method_rank" := rank(residuals), by = c("experiment_id", "outlier", "dataset")]
+data[outlier == TRUE, "method_rank" := rank(residuals_central), by = c("experiment_id", "outlier", "dataset")]
+data[outlier == FALSE, "norm_residuals" := residuals / n_samples]
+data[outlier == TRUE, "norm_residuals" := residuals_central / (0.8 * n_samples)]
+
+table_data <- data[
+  ,
+  list(
+    "avg." = round(mean(method_rank), digits = 2L),
+    "10%" = quantile(method_rank, 0.10),
+    "50%" = quantile(method_rank, 0.50),
+    "90%" = quantile(method_rank, 0.90),
+    "avg. norm. res." = round(mean(norm_residuals), digits = 3)
+  ),
+  by = c("transformation", "outlier", "dataset")
+]
+
+# Table with average rank.
+data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.var = "avg.")
+
+# Table with average normalised residuals.
+data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.var = "avg. norm. res.")
+
+
+```
+
+\begin{table}
+\begin{center}
+\caption{
+Comparison of average rank between Yeo-Johnson transformation methods based on either residual error (without outliers) or residual error of the central portion
+(with outliers; $\kappa = 0.80$) over 3 datasets with 33037 sequences each. Each sequence contained between 1000 and 10000 samples.
+The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
+A rank of 1 is the best and a rank of 9 the worst. For each dataset, the best ranking transformation is marked in bold.
+}
+\label{tab:comparison_methods_simulations_yeo_johnson_1000_10000}
+\begin{tabular}{l | l r r r r r r}
+
+\toprule
+& dataset: & \multicolumn{2}{c}{clean} & \multicolumn{2}{c}{dirty} & \multicolumn{2}{c}{shifted} \\
+transformation & outliers: & no & yes & no & yes & no & yes \\
+
+\midrule
+
+none                                  & &         8.85  &         8.14  &         7.35  &         6.29  &         7.41  &         6.87 \\
+conventional                          & &         3.50  &         5.65  &         3.52  &         7.78  &         6.42  &         6.05 \\
+conventional (z-score norm.)          & &         5.24  &         5.94  &         7.34  &         4.98  &         6.26  &         4.79 \\
+conventional (robust scaling)         & &         3.53  &         6.98  &         5.97  &         5.79  &         4.87  &         5.65 \\
+Raymaekers-Rousseeuw                  & &         4.15  &         2.81  &         3.37  &         3.72  &         6.19  &         5.79 \\
+Raymaekers-Rousseeuw (z-score norm.)  & &         5.34  & \textbf{1.86} &         6.57  &         3.39  &         5.49  &         3.30 \\
+Raymaekers-Rousseeuw (robust scaling) & &         4.20  &         2.33  &         5.21  &         3.36  &         4.12  &         3.23 \\
+invariant                             & & \textbf{2.36} &         7.59  & \textbf{2.66} &         6.82  & \textbf{1.98} &         6.81 \\
+robust invariant                      & &         7.83  &         3.70  &         3.01  & \textbf{2.88} &         2.26  & \textbf{2.51} \\
+
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+
+\begin{table}
+\begin{center}
+\caption{
+Comparison of average normalised residual error between Yeo-Johnson transformation methods based on either the residual error (without outliers) or the residual error of the central portion
+(with outliers; $\kappa = 0.80$) over 3 datasets with 16001 sequences each. Residual errors were normalised by sequence length to reduce the effect of sequence length on the residual error.
+Each sequence contained between 1000 and 10000 samples. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
+A lower normalised residual error is better. Discrepancies with the rank-based method may occur, as even with normalisation residual errors 
+are not fully comparable between experiments, whereas the ranks achieved within each experiment are.
+}
+\label{tab:comparison_methods_simulations_yeo_johnson_1000_10000_avg_residual}
+\begin{tabular}{l | l r r r r r r}
+
+\toprule
+& dataset: & \multicolumn{2}{c}{clean} & \multicolumn{2}{c}{dirty} & \multicolumn{2}{c}{shifted} \\
+transformation & outliers: & no & yes & no & yes & no & yes \\
+
+\midrule
+
+none                                  & & 0.186 & 0.091 & 0.106 & 0.053 & 0.106 & 0.053 \\
+conventional                          & & 0.014 & 0.076 & 0.060 & 0.057 & 0.106 & 0.053 \\
+conventional (z-score norm.)          & & 0.021 & 0.076 & 0.070 & 0.050 & 0.070 & 0.050 \\
+conventional (robust scaling)         & & 0.014 & 0.076 & 0.069 & 0.050 & 0.069 & 0.050 \\
+Raymaekers-Rousseeuw                  & & 0.015 & 0.021 & 0.060 & 0.030 & 0.106 & 0.053 \\
+Raymaekers-Rousseeuw (z-score norm.)  & & 0.021 & 0.020 & 0.070 & 0.030 & 0.070 & 0.030 \\
+Raymaekers-Rousseeuw (robust scaling) & & 0.015 & 0.020 & 0.068 & 0.030 & 0.068 & 0.030 \\
+invariant                             & & 0.013 & 0.084 & 0.059 & 0.055 & 0.059 & 0.055 \\
+robust invariant                      & & 0.034 & 0.042 & 0.061 & 0.032 & 0.061 & 0.032 \\
+
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
 
 \FloatBarrier
 
@@ -787,7 +1131,7 @@ robust invariant                      & & 0.5 & 1.1 & 1.5 & -0.1 & 0.7 & 1.7 &  
 \begin{table}
 \begin{center}
 \caption{
-p-values of empirical central normality tests for features from simulated clean data without outliers after Yeo-Johnson transformation to normality.
+p-values of empirical central normality tests ($\kappa = 0.80$) for features from simulated clean data without outliers after Yeo-Johnson transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
 \label{tab:clean-transformation-appendix-p-value-yj}
 \small{
@@ -799,15 +1143,15 @@ transformation & $\lambda$: & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.
 
 \midrule
 
-none                                  & & 0.981 & 0.816 & 0.576 & $<0.001$ & 0.099 & 0.011 & $<0.001$ & 0.993 & $<0.001$ \\
-conventional                          & & 0.979 & 0.614 & 0.617 &   0.722  & 0.221 & 0.782 &   0.946  & 0.997 &   0.637 \\
-conventional (z-score norm.)          & & 0.970 & 0.594 & 0.645 &   0.251  & 0.224 & 0.895 &   0.529  & 0.998 &   0.828 \\
-conventional (robust scaling)         & & 0.974 & 0.593 & 0.640 &   0.538  & 0.207 & 0.837 &   0.933  & 0.998 &   0.810 \\
-Raymaekers-Rousseeuw                  & & 0.983 & 0.614 & 0.617 &   0.722  & 0.622 & 0.782 &   0.927  & 0.985 &   0.831 \\
-Raymaekers-Rousseeuw (z-score norm.)  & & 0.985 & 0.594 & 0.645 &   0.251  & 0.623 & 0.895 &   0.564  & 0.984 &   0.807 \\
-Raymaekers-Rousseeuw (robust scaling) & & 0.987 & 0.593 & 0.640 &   0.538  & 0.599 & 0.837 &   0.935  & 0.984 &   0.875 \\
-invariant                             & & 0.987 & 0.487 & 0.573 &   0.778  & 0.241 & 0.683 &   0.963  & 0.997 &   0.865 \\
-robust invariant                      & & 0.992 & 0.753 & 0.667 &   0.909  & 0.739 & 0.628 &   0.968  & 0.994 &   0.680 \\
+none                                  & & 0.968 & 0.742 & 0.450 & $<0.001$ & 0.058 & 0.004 & $<0.001$ & 0.963 & $<0.001$ \\
+conventional                          & & 0.966 & 0.494 & 0.498 &   0.632  & 0.145 & 0.707 &   0.828  & 0.986 &   0.358 \\
+conventional (z-score norm.)          & & 0.955 & 0.471 & 0.529 &   0.169  & 0.147 & 0.853 &   0.260  & 0.986 &   0.603 \\
+conventional (robust scaling)         & & 0.957 & 0.470 & 0.523 &   0.674  & 0.146 & 0.775 &   0.828  & 0.986 &   0.347 \\
+Raymaekers-Rousseeuw                  & & 0.972 & 0.494 & 0.498 &   0.632  & 0.518 & 0.707 &   0.785  & 0.939 &   0.609 \\
+Raymaekers-Rousseeuw (z-score norm.)  & & 0.974 & 0.471 & 0.529 &   0.169  & 0.519 & 0.853 &   0.289  & 0.935 &   0.568 \\
+Raymaekers-Rousseeuw (robust scaling) & & 0.968 & 0.470 & 0.523 &   0.674  & 0.536 & 0.775 &   0.762  & 0.935 &   0.609 \\
+invariant                             & & 0.978 & 0.353 & 0.448 &   0.701  & 0.161 & 0.588 &   0.872  & 0.984 &   0.667 \\
+robust invariant                      & & 0.985 & 0.660 & 0.556 &   0.871  & 0.652 & 0.525 &   0.888  & 0.968 &   0.411 \\
 
 \bottomrule
 \end{tabular}
@@ -898,7 +1242,7 @@ robust invariant                      & & 0.5 & 0.8 & 0.4 & 0.0 &  0.2 & 0.7 & 0
 \begin{table}
 \begin{center}
 \caption{
-p-values of empirical central normality tests for features from simulated clean data without outliers after Box-Cox transformation to normality.
+p-values of empirical central normality tests ($\kappa = 0.80$) for features from simulated clean data without outliers after Box-Cox transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
 \label{tab:clean-transformation-appendix-p-value-bc}
 \small{
@@ -909,16 +1253,15 @@ Several transformation methods include normalisation before transformation, indi
 transformation & $\lambda$: & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 & 0.1 & 1.0 & 1.9 \\
 
 \midrule
-
-none                                  & & 0.940 & 0.816 & 0.498 & $<0.001$ & 0.098 & 0.714 & $<0.001$ & 0.993 & 0.928 \\
-conventional                          & & 0.948 & 0.695 & 0.603 &   0.798  & 0.163 & 0.791 &   0.931  & 0.997 & 0.658 \\
-conventional (z-score norm.)          & & 0.947 & 0.777 & 0.624 &   0.611  & 0.182 & 0.788 &   0.969  & 0.991 & 0.822 \\
-conventional (robust scaling)         & & 0.947 & 0.777 & 0.624 &   0.611  & 0.182 & 0.788 &   0.969  & 0.991 & 0.822 \\
-Raymaekers-Rousseeuw                  & & 0.948 & 0.695 & 0.603 &   0.798  & 0.768 & 0.806 &   0.816  & 0.962 & 0.782 \\
-Raymaekers-Rousseeuw (z-score norm.)  & & 0.947 & 0.777 & 0.753 &   0.913  & 0.255 & 0.784 &   0.775  & 0.866 & 0.921 \\
-Raymaekers-Rousseeuw (robust scaling) & & 0.947 & 0.777 & 0.753 &   0.913  & 0.255 & 0.784 &   0.807  & 0.866 & 0.921 \\
-invariant                             & & 0.947 & 0.661 & 0.624 &   0.611  & 0.182 & 0.789 &   0.956  & 0.997 & 0.664 \\
-robust invariant                      & & 0.969 & 0.824 & 0.750 &   0.972  & 0.779 & 0.775 &   0.956  & 0.934 & 0.840 \\
+none                                  & & 0.911 & 0.742 & 0.365 & $<0.001$ & 0.057 & 0.623 & $<0.001$ & 0.962 & 0.789 \\
+conventional                          & & 0.922 & 0.590 & 0.482 &   0.726  & 0.100 & 0.718 &   0.794  & 0.984 & 0.380 \\
+conventional (z-score norm.)          & & 0.920 & 0.690 & 0.506 &   0.505  & 0.114 & 0.714 &   0.888  & 0.957 & 0.594 \\
+conventional (robust scaling)         & & 0.920 & 0.690 & 0.506 &   0.504  & 0.114 & 0.714 &   0.887  & 0.957 & 0.594 \\
+Raymaekers-Rousseeuw                  & & 0.922 & 0.590 & 0.482 &   0.726  & 0.689 & 0.736 &   0.582  & 0.869 & 0.531 \\
+Raymaekers-Rousseeuw (z-score norm.)  & & 0.920 & 0.690 & 0.660 &   0.876  & 0.172 & 0.710 &   0.521  & 0.670 & 0.774 \\
+Raymaekers-Rousseeuw (robust scaling) & & 0.920 & 0.690 & 0.660 &   0.876  & 0.172 & 0.710 &   0.568  & 0.670 & 0.774 \\
+invariant                             & & 0.921 & 0.549 & 0.506 &   0.505  & 0.114 & 0.715 &   0.853  & 0.986 & 0.387 \\
+robust invariant                      & & 0.954 & 0.752 & 0.656 &   0.956  & 0.699 & 0.698 &   0.852  & 0.801 & 0.623 \\
 
 \bottomrule
 \end{tabular}
@@ -972,10 +1315,10 @@ feature & age & AWT & FE & latitude & PBM \\
 none                                  & 16.5 & 110.1 & 54.5 & 328.4 & 48.0 \\
 conventional                          & 11.5 &  30.0 & 55.3 & 319.0 & 32.2 \\
 conventional (z-score norm.)          & 11.5 &  19.3 & 49.0 & 326.2 & 33.3 \\
-conventional (robust scaling)         & 11.3 &  31.8 & 53.3 & 324.5 & 32.2 \\
+conventional (robust scaling)         & 11.3 &  33.3 & 55.9 & 326.5 & 31.5 \\
 Raymaekers-Rousseeuw                  & 11.5 & 136.7 & 47.7 & 315.1 & 32.2 \\
 Raymaekers-Rousseeuw (z-score norm.)  & 13.2 & 214.5 & 57.4 & 326.2 & 33.3 \\
-Raymaekers-Rousseeuw (robust scaling) & 11.7 & 281.3 & 57.0 & 324.5 & 32.0 \\
+Raymaekers-Rousseeuw (robust scaling) & 13.4 & 202.9 & 56.9 & 326.4 & 31.5 \\
 invariant                             &  8.8 &  12.2 & 44.0 & 326.4 & 26.8 \\
 robust invariant                      &  9.3 &  30.2 & 55.8 & 308.1 & 22.0 \\
 
@@ -1000,10 +1343,10 @@ feature & age & AWT & FE & latitude & PBM \\
 \midrule
 conventional                          & 2.0 & -0.7 & -0.1 & 62.1 & -0.5 \\
 conventional (z-score norm.)          & 1.2 & -1.7 & -0.1 &  1.3 &  0.6 \\
-conventional (robust scaling)         & 1.3 &  0.0 &  0.2 &  1.4 &  0.4 \\
+conventional (robust scaling)         & 1.2 &  0.0 &  0.3 &  1.3 &  0.6 \\
 Raymaekers-Rousseeuw                  & 2.0 &  1.1 &  0.8 & 95.4 & -0.5 \\
 Raymaekers-Rousseeuw (z-score norm.)  & 1.3 &  1.4 &  1.0 &  1.3 &  0.6 \\
-Raymaekers-Rousseeuw (robust scaling) & 1.4 &  1.3 &  1.0 &  1.4 &  0.4 \\
+Raymaekers-Rousseeuw (robust scaling) & 1.3 &  1.2 &  1.0 &  1.3 &  0.6 \\
 invariant                             & 1.3 &  0.2 & -1.3 &  1.5 &  0.5 \\
 robust invariant                      & 1.3 & -0.3 &  1.0 &  1.1 &  0.3 \\
 \bottomrule
@@ -1016,7 +1359,7 @@ robust invariant                      & 1.3 & -0.3 &  1.0 &  1.1 &  0.3 \\
 \begin{table}
 \begin{center}
 \caption{
-p-values of empirical central normality tests for features from real-world datasets after Yeo-Johnson transformation to normality.
+p-values of empirical central normality tests ($\kappa = 0.80$) for features from real-world datasets after Yeo-Johnson transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
 \label{tab:experimental-results-appendix-p-value}
@@ -1027,15 +1370,15 @@ feature & age & AWT & FE & latitude & PBM \\
 
 \midrule
 
-none                                  & 0.694 & 0.832     & 0.727     & $< 0.001$ & $< 0.001$ \\
-conventional                          & 0.961 & 0.003     & $< 0.001$ & $< 0.001$ & 0.101 \\
-conventional (z-score norm.)          & 0.919 & 0.021     & $< 0.001$ & $< 0.001$ & 0.099 \\
-conventional (robust scaling)         & 0.933 & $< 0.001$ & $< 0.001$ & $< 0.001$ & 0.129 \\
-Raymaekers-Rousseeuw                  & 0.961 & 0.881     & 0.373     & $< 0.001$ & 0.101 \\
-Raymaekers-Rousseeuw (z-score norm.)  & 0.694 & 0.899     & 0.809     & $< 0.001$ & 0.099 \\
-Raymaekers-Rousseeuw (robust scaling) & 0.900 & 0.880     & 0.811     & $< 0.001$ & 0.144 \\
-invariant                             & 0.976 & 0.147     & $< 0.001$ & $< 0.001$ & 0.276 \\
-robust invariant                      & 0.933 & 0.178     & 0.759     & $< 0.001$ & 0.688 \\
+none                                  & 0.541 &    0.731  &    0.546  & $< 0.001$ & $< 0.001$ \\
+conventional                          & 0.919 & $< 0.001$ & $< 0.001$ & $< 0.001$ &    0.032 \\
+conventional (z-score norm.)          & 0.845 &    0.007  & $< 0.001$ & $< 0.001$ &    0.031 \\
+conventional (robust scaling)         & 0.847 & $< 0.001$ & $< 0.001$ & $< 0.001$ &    0.063 \\
+Raymaekers-Rousseeuw                  & 0.919 &    0.802  &    0.205  & $< 0.001$ &    0.032 \\
+Raymaekers-Rousseeuw (z-score norm.)  & 0.540 &    0.830  &    0.655  & $< 0.001$ &    0.031 \\
+Raymaekers-Rousseeuw (robust scaling) & 0.438 &    0.878  &    0.669  & $< 0.001$ &    0.064 \\
+invariant                             & 0.947 &    0.071  & $< 0.001$ & $< 0.001$ &    0.123 \\
+robust invariant                      & 0.867 &    0.091  &    0.587  & $< 0.001$ &    0.477 \\
 
 \bottomrule
 \end{tabular}
@@ -1085,7 +1428,7 @@ conventional (z-score norm.)          & 12.9 &  44.5 &  58.8 & 305.3 & 27.3 \\
 conventional (robust scaling)         & 12.9 &  44.7 &  59.0 & 305.3 & 27.3 \\
 Raymaekers-Rousseeuw                  & 11.5 & 127.1 &  47.6 & 314.8 & 32.2 \\ 
 Raymaekers-Rousseeuw (z-score norm.)  & 13.1 &  54.8 & 127.5 & 510.2 & 23.6 \\
-Raymaekers-Rousseeuw (robust scaling) & 18.9 & 100.2 & 113.7 & 510.2 & 23.6 \\
+Raymaekers-Rousseeuw (robust scaling) & 13.1 & 100.2 &  44.9 & 423.2 & 23.6 \\
 invariant                             & 11.6 &  28.0 &  48.4 & 311.8 & 27.3 \\
 robust invariant                      & 12.8 & 150.1 &  60.5 & 646.0 & 27.4 \\
 
@@ -1114,7 +1457,7 @@ conventional (z-score norm.)          & 1.2 &  0.1 &  0.2 &  1.2 &  0.5 \\
 conventional (robust scaling)         & 1.2 &  0.1 &  0.1 &  1.2 &  0.5 \\
 Raymaekers-Rousseeuw                  & 1.9 &  1.1 &  0.8 & 95.9 & -0.5 \\
 Raymaekers-Rousseeuw (z-score norm.)  & 1.2 &  0.6 & -0.5 &  0.6 &  0.3 \\
-Raymaekers-Rousseeuw (robust scaling) & 0.9 &  1.0 & -0.5 &  0.6 &  0.3 \\
+Raymaekers-Rousseeuw (robust scaling) & 1.2 &  1.0 &  0.8 &  0.7 &  0.3 \\
 invariant                             & 1.7 & -1.0 & -0.7 &  1.9 &  0.5 \\
 robust invariant                      & 1.3 &  1.2 &  1.1 &  0.4 &  0.1 \\
 
@@ -1128,7 +1471,7 @@ robust invariant                      & 1.3 &  1.2 &  1.1 &  0.4 &  0.1 \\
 \begin{table}
 \begin{center}
 \caption{
-p-values of empirical central normality tests for features from real-world datasets after Box-Cox transformation to normality.
+p-values of empirical central normality tests ($\kappa = 0.80$) for features from real-world datasets after Box-Cox transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
 \label{tab:experimental-results-appendix-p-value-bc}
@@ -1139,15 +1482,15 @@ feature & age & AWT & FE & latitude & PBM \\
 
 \midrule
 
-none                                  & 0.694 & 0.832 & 0.727     & $< 0.001$ & $< 0.001$ \\
-conventional                          & 0.961 & 0.002 & $< 0.001$ & $< 0.001$ & 0.101 \\
-conventional (z-score norm.)          & 0.901 & 0.005 & $< 0.001$ & $< 0.001$ & 0.154 \\
-conventional (robust scaling)         & 0.901 & 0.005 & $< 0.001$ & $< 0.001$ & 0.154 \\
-Raymaekers-Rousseeuw                  & 0.961 & 0.871 & 0.365     & $< 0.001$ & 0.101 \\
-Raymaekers-Rousseeuw (z-score norm.)  & 0.891 & 0.268 & $< 0.001$ & $< 0.001$ &	0.495 \\
-Raymaekers-Rousseeuw (robust scaling) & 0.562 & 0.789 & $< 0.001$ & $< 0.001$ &	0.492 \\
-invariant                             & 0.962 & 0.004 & $< 0.001$ & $< 0.001$ &	0.154 \\
-robust invariant                      & 0.899 & 0.890 & 0.866     & $< 0.001$ & 0.622 \\
+none                                  & 0.541 &    0.731  &    0.546  & $< 0.001$ & $< 0.001$ \\
+conventional                          & 0.919 & $< 0.001$ & $< 0.001$ & $< 0.001$ &    0.032 \\
+conventional (z-score norm.)          & 0.815 &    0.001  & $< 0.001$ & $< 0.001$ &    0.057 \\
+conventional (robust scaling)         & 0.815 &    0.001  & $< 0.001$ & $< 0.001$ &    0.057 \\
+Raymaekers-Rousseeuw                  & 0.919 &    0.787  &    0.200  & $< 0.001$ &    0.032 \\
+Raymaekers-Rousseeuw (z-score norm.)  & 0.799 &    0.152  & $< 0.001$ & $< 0.001$ &    0.285 \\
+Raymaekers-Rousseeuw (robust scaling) & 0.799 &    0.674  &    0.060  & $< 0.001$ &    0.285 \\
+invariant                             & 0.919 &    0.001  & $< 0.001$ & $< 0.001$ &    0.057 \\
+robust invariant                      & 0.813 &    0.817  &    0.736  & $< 0.001$ &    0.403 \\
 
 \bottomrule
 \end{tabular}

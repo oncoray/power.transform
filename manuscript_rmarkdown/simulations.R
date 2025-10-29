@@ -1098,7 +1098,7 @@
   if (file.exists(file_name)) return(readRDS(file_name))
 
   # Generate distributions to assess.
-  n_distributions <- 10000L
+  n_distributions <- 1E5
 
   # Generate alpha, beta and n.
   n <- stats::runif(n = n_distributions, min = 1.0, max = 4.0)
@@ -1112,6 +1112,35 @@
   # Note that Yeo-Johnson is only directly invertible for lambda between 0 and
   # 2, and Box-Cox only if lambda > 0.
   lambda <- stats::runif(n = n_distributions, min = 0.00, max = 2.00)
+
+  .compute_wrapper <- function(
+    ii,
+    n,
+    alpha,
+    beta,
+    conf_lambda,
+    data_type,
+    method,
+    k
+  ) {
+    return(
+      mapply(
+        FUN = ..compute,
+        ii = ii,
+        n = n,
+        alpha = alpha,
+        beta = beta,
+        conf_lambda = conf_lambda,
+        MoreArgs = list(
+          "data_type" = data_type,
+          "method" = method,
+          "k" = k
+        ),
+        SIMPLIFY = FALSE,
+        USE.NAMES = FALSE
+      )
+    )
+  }
 
   ..compute <- function(
     ii,
@@ -1241,19 +1270,39 @@
     return(data)
   }
 
-  cl <- parallel::makeCluster(18L)
+  n_threads <- 18L
+  cl <- parallel::makeCluster(n_threads)
   on.exit(parallel::stopCluster(cl))
 
+  parallel::clusterExport(cl = cl, "..compute", envir = rlang::current_env())
   parallel::clusterExport(cl = cl, "..standardisation_before_transformation")
+
+  assignment_id <- rep_len(seq_len(n_threads), n_distributions)
+
+  # data <- mapply(
+  #   FUN = .compute_wrapper,
+  #   ii = split(seq_len(n_distributions), assignment_id),
+  #   n = split(n, assignment_id),
+  #   alpha = split(alpha, assignment_id),
+  #   beta = split(beta, assignment_id),
+  #   conf_lambda = split(lambda, assignment_id),
+  #   MoreArgs = list(
+  #     "data_type" = data_type,
+  #     "method" = method,
+  #     "k" = k
+  #   ),
+  #   SIMPLIFY = FALSE,
+  #   USE.NAMES = FALSE
+  # )
 
   data <- parallel::clusterMap(
     cl = cl,
-    fun = ..compute,
-    ii = seq_len(n_distributions),
-    n = n,
-    alpha = alpha,
-    beta = beta,
-    conf_lambda = lambda,
+    fun = .compute_wrapper,
+    ii = split(seq_len(n_distributions), assignment_id),
+    n = split(n, assignment_id),
+    alpha = split(alpha, assignment_id),
+    beta = split(beta, assignment_id),
+    conf_lambda = split(lambda, assignment_id),
     MoreArgs = list(
       "data_type" = data_type,
       "method" = method,
@@ -1262,7 +1311,7 @@
     SIMPLIFY = FALSE,
     USE.NAMES = FALSE
   )
-  data <- data.table::rbindlist(data)
+  data <- data.table::rbindlist(unlist(data, recursive = FALSE, use.names = FALSE))
 
   # Cache data.
   saveRDS(data, file_name)
@@ -1400,7 +1449,8 @@
       x <- (x - mean(x)) / stats::sd(x)
 
     } else if (endsWith(transformation_method, "(robust scaling)")) {
-      x <- (x - stats::median(x)) / stats::IQR(x)
+      x <- (x - stats::median(x)) / robustbase::Qn(x)
+
     }
 
     if (startsWith(transformation_method, "none")) {
@@ -1508,38 +1558,58 @@
 
 
 
-.get_test_statistics_data <- function(manuscript_dir, with_outliers = FALSE) {
+.get_test_statistics_data <- function(manuscript_dir) {
   n_rep <- 30000L  # number of distributions drawn.
-  k <- 0.10  # outlier fraction
-  kappa <- c(0.60, 0.70, 0.80, 0.90, 0.95, 1.00)  # central portion of distribution.
+  # n_rep <- 10L  # number of distributions drawn.
+  kappa <- c(0.50, 0.60, 0.70, 0.80, 0.90, 0.95, 1.00)  # central portion of distribution.
 
   # From 5 to 10000 in equal steps (log 10 scale)
-  n <- unique(floor(10^(seq(from = 0.75, to = 4.0, by = 0.0625))))
+  n <- unique(floor(10^(seq(from = 0.75, to = 4.0, by = 0.05))))
 
-  if (with_outliers) {
-    file_name <- file.path(manuscript_dir, "raw_ecn_statistics_w_outlier.RDS")
-  } else {
-    file_name <- file.path(manuscript_dir, "raw_ecn_statistics.RDS")
+  # Wrapper for multi-processing.
+  .compute_wrapper <- function(
+    n,
+    n_rep,
+    kappa
+  ) {
+    return(
+      lapply(
+        X = n,
+        FUN = ..get_test_statistics_data,
+        n_rep = n_rep,
+        kappa = kappa
+      )
+    )
   }
 
-  if (!file.exists(file_name)) {
+  file_name <- file.path(manuscript_dir, "raw_ecn_statistics.RDS")
 
-    cl <- parallel::makeCluster(18L)
+  if (!file.exists(file_name)) {
+    n_threads <- 18L
+    assignment_id <- rep_len(seq_len(n_threads), length(n))
+
+    cl <- parallel::makeCluster(n_threads)
     on.exit(parallel::stopCluster(cl))
 
-    data <- parallel::parLapplyLB(
+    parallel::clusterExport(cl = cl, "..get_test_statistics_data")
+
+    # data <- lapply(
+    #   X = split(n, assignment_id),
+    #   FUN = .compute_wrapper,
+    #   n_rep = n_rep,
+    #   kappa = kappa
+    # )
+
+    data <- parallel::parLapply(
       cl = cl,
-      X = seq_along(n),
-      fun = ..get_test_statistics_data,
-      n = n,
+      X = split(n, assignment_id),
+      fun = .compute_wrapper,
       n_rep = n_rep,
-      k = k,
-      kappa = kappa,
-      with_outliers = with_outliers
+      kappa = kappa
     )
 
     # Aggregate to single table.
-    data <- data.table::rbindlist(data)
+    data <- data.table::rbindlist(unlist(data, recursive = FALSE))
     data <- data[order(n, kappa, mean_residual_error)]
 
     # Store
@@ -1553,82 +1623,64 @@
 }
 
 
-..get_test_statistics_data <- function(ii, n, n_rep, k, kappa, with_outliers = FALSE) {
-  set.seed(19L + ii)
+..get_test_statistics_data <- function(n, n_rep, kappa) {
+  set.seed(19L + n)
 
   data <- list()
-  # Repeat 1000 times.
+  result_index <- 1L
+
+  # Repeat n_rep times.
   for (jj in seq_len(n_rep)) {
-    x <- power.transform::ragn(floor(n[ii]), location = 0, scale = 1 / sqrt(2), alpha = 0.5, beta = 2)
+    # Standard normal distribution -- we will only assess the central portion
+    # kappa
+    x <- power.transform::ragn(
+      floor(n),
+      location = 0.0,
+      scale = 1.0 / sqrt(2.0),
+      alpha = 0.5,
+      beta = 2.0
+    )
 
-    # Compute upper and lower quartiles, and IQR.
-    q_lower <- stats::quantile(x, probs = 0.25, names = FALSE)
-    q_upper <- stats::quantile(x, probs = 0.75, names = FALSE)
-    interquartile_range <- stats::IQR(x)
-
-    if (with_outliers) {
-      # Set data where the outliers will be copied into.
-      x_outlier <- x
-
-      # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
-      # than Q3 + 1.5 IQR.
-      n_draw <- ceiling(k * length(x))
-      x_random <- stats::runif(n_draw, min = -2.0, max = 2.0)
-
-      outlier <- numeric(n_draw)
-      if (any(x_random < 0)) {
-        outlier[x_random < 0] <- q_lower - 1.5 * interquartile_range + x_random[x_random < 0] * interquartile_range
-      }
-
-      if (any(x_random >= 0)) {
-        outlier[x_random >= 0] <- q_upper + 1.5 * interquartile_range + x_random[x_random >= 0] * interquartile_range
-      }
-
-      # Randomly insert outlier values.
-      x_outlier[sample(seq_along(x), size = n_draw, replace = FALSE)] <- outlier
-      x_outlier <- sort(x_outlier)
-
-    } else {
-      # Use data without outlier.
-      x_outlier <- sort(x)
-    }
+    # Sort in ascending order.
+    x <- sort(x)
 
     # Compute the expected z-score.
-    z_expected <- power.transform:::compute_expected_z(x = x_outlier)
-
-    # Compute M-estimates for locality and scale
-    robust_estimates <- power.transform::huber_estimate(x_outlier, tol = 1E-3)
-
-    # Avoid division by 0.0.
-    if (robust_estimates$sigma == 0.0) robust_estimates$sigma <- 1.0
-
-    # Compute the observed z-score.
-    z_observed <- (x_outlier - robust_estimates$mu) / robust_estimates$sigma
-
-    # Compute residuals.
-    residual <- z_observed - z_expected
-    residual_data <- data.table::data.table(
-      "z_expected" = z_expected,
-      "z_observed" = z_observed,
-      "residual" = residual,
-      "p_observed" = (seq_along(x) - 1 / 3) / (length(x) + 1 / 3)
-    )
+    z_expected <- power.transform:::compute_expected_z(x = x)
 
     # Compute mean residual error for all kappa.
     mean_residual_error <- numeric(length(kappa))
     for (kk in seq_along(kappa)) {
-      p_lower <- 0.50 - kappa[kk] / 2
-      p_upper <- 0.50 + kappa[kk] / 2
+      p_lower <- 0.50 - kappa[kk] / 2.0
+      p_upper <- 0.50 + kappa[kk] / 2.0
+
+      # Compute M-estimates for locality and scale
+      cutoff_k <- stats::qnorm(p_upper)
+      if (is.infinite(cutoff_k)) cutoff_k <- 9.0
+      robust_estimates <- power.transform::huber_estimate(x, k = cutoff_k, tol = 1E-3)
+      if (robust_estimates$sigma == 0.0) robust_estimates$sigma <- 1.0
+
+      # Compute the observed z-score.
+      z_observed <- (x - robust_estimates$mu) / robust_estimates$sigma
+      p_observed <- (seq_along(x) - 1.0 / 3.0) / (length(x) + 1.0 / 3.0)
+
+      # Compute residuals.
+      residual_data <- data.table::data.table(
+        "z_expected" = z_expected,
+        "z_observed" = z_observed,
+        "residual" = z_observed - z_expected,
+        "p_observed" = p_observed
+      )
 
       mean_residual_error[kk] <- mean(abs(residual_data[p_observed >= p_lower & p_observed <= p_upper]$residual))
     }
 
     # Set data.
-    data[[jj]] <- data.table::data.table(
-      "n" = n[ii],
+    data[[result_index]] <- list(
+      "n" = n,
       "kappa" = kappa,
       "mean_residual_error" = mean_residual_error
     )
+    result_index <- result_index + 1L
   }
 
   data <- data.table::rbindlist(data)
@@ -1638,50 +1690,96 @@
 
 
 .get_test_statistic_lookup_table <- function(
-    manuscript_dir,
-    k = 0.80,
-    for_manuscript = TRUE,
-    with_outliers = FALSE
+    manuscript_dir
 ) {
-  if (for_manuscript) {
-    alpha_levels <- rev(1.0 - c(0.10, 0.20, 0.50, 0.80, 0.90, 0.95, 0.975, 0.99, 0.999))
-    n <- c(5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000)
-  } else {
-    alpha_levels <- rev(1.0 - c(
-      0.00, 0.01, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55,
-      0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.91, 0.92, 0.93, 0.94, 0.95,
-      0.96, 0.97, 0.975, 0.98, 0.9825, 0.985, 0.9875, 0.99,
-      0.991, 0.992, 0.993, 0.994, 0.995, 0.996, 0.997, 0.998, 0.999, 0.9995
-    ))
-    n <- c(
-      5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 180, 200,
-      225, 250, 275, 300, 340, 380, 420, 460, 500,
-      560, 620, 680, 740, 800, 900, 1000, 1100, 1200, 1500,
-      2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000)
-  }
 
-  data <- .get_test_statistics_data(manuscript_dir, with_outliers = with_outliers)
-  data <- data[kappa == k]
-  data[, "kappa" := NULL]
+  alpha_levels <- rev(1.0 - c(
+    0.00, 0.01, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55,
+    0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.91, 0.92, 0.93, 0.94, 0.95,
+    0.96, 0.97, 0.975, 0.98, 0.9825, 0.985, 0.9875, 0.99,
+    0.991, 0.992, 0.993, 0.994, 0.995, 0.996, 0.997, 0.998, 0.999, 0.9995
+  ))
+
+  data <- .get_test_statistics_data(manuscript_dir)
 
   # Compute alpha. Higher alpha yields higher tau (with n constant).
-  data[, "alpha" := 1.0 - (seq_len(.N) - 1L) / (.N - 1L), by = c("n")]
+  data[, "alpha" := 1.0 - (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa")]
 
-  # Define all combinations.
-  new_data <- data.table::as.data.table(expand.grid(list("alpha" = alpha_levels, "n" = n)))
-  interp_list <- apply(new_data, function(ii) as.list(ii), MARGIN = 1L, simplify = FALSE)
+  # Compute tau at the specified confidence levels.
+  data <- data[
+    ,
+    list(
+      "tau" = stats::spline(
+        x = alpha,
+        y = mean_residual_error,
+        method = "fmm",
+        xout = alpha_levels)$y,
+      "alpha" = alpha_levels
+    ),
+    by = c("n", "kappa")
+  ]
 
-  # Interpolate critical statistic values.
-  interp_tau <- sapply(interp_list, power.transform:::.interpolate_2d, data = data)
-  new_data[, "tau" := interp_tau]
+  data$n <- factor(data$n, ordered = TRUE)
+  data$kappa <- factor(data$kappa, ordered = TRUE)
+  data$alpha <- factor(data$alpha, ordered = TRUE)
 
-  if (for_manuscript) {
-    # Represent as 10^-2 for better interpretability.
-    new_data[, "tau" := round(tau * 100.0, 2L)]
-    return(data.table::dcast(data = new_data, formula = n ~ alpha, value.var = "tau"))
-
-  } else {
-    return(new_data)
-  }
+  return(data)
 }
 
+
+
+.get_test_statistic_lookup_table_manuscript <- function(
+    manuscript_dir,
+    kappa_lookup = 0.80
+) {
+  alpha_levels <- rev(1.0 - c(0.10, 0.20, 0.50, 0.80, 0.90, 0.95, 0.975, 0.99, 0.999))
+  n <- c(5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000)
+
+  data <- .get_test_statistics_data(manuscript_dir)
+  data <- data[kappa == kappa_lookup]
+
+  # Compute alpha. Higher alpha yields higher tau (with n constant).
+  data[, "alpha" := 1.0 - (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa")]
+
+  # Compute tau at the specified confidence levels.
+  data <- data[
+    ,
+    list(
+      "tau" = stats::spline(
+        x = alpha,
+        y = mean_residual_error,
+        method = "fmm",
+        xout = alpha_levels)$y,
+      "alpha" = alpha_levels
+    ),
+    by = c("n", "kappa")
+  ]
+
+  # Convert to factor to make it easier to parse.
+  data$alpha <- factor(data$alpha, ordered = TRUE)
+
+  new_data <- lapply(
+    split(data, data$alpha),
+    function(data, n) {
+      x <- stats::spline(
+        x = data$n,
+        y = data$tau,
+        method = "fmm",
+        xout = n
+      )$y
+
+      return(list("n" = n, "tau" = x, "alpha" = data$alpha[1L]))
+    },
+    n = n
+  )
+
+  new_data <- data.table::rbindlist(new_data)
+
+  # Represent as 10^-2 for better interpretability.
+  new_data[, "tau" := round(tau * 100.0, 2L)]
+  return(data.table::dcast(
+    data = new_data,
+    formula = n ~ alpha,
+    value.var = "tau"
+  ))
+}

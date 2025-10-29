@@ -190,6 +190,39 @@ Cram{\'e}r, H.%
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
+Croux%
+\ \BBA {} Rousseeuw%
+}{%
+Croux%
+\ \BBA {} Rousseeuw%
+}{%
+{\protect \APACyear {1992}}%
+}]{%
+Croux1992-zz}
+\APACinsertmetastar {%
+Croux1992-zz}%
+\begin{APACrefauthors}%
+Croux, C.%
+\BCBT {}\ \BBA {} Rousseeuw, P.J.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{1992}{{\APACmonth{01}}}{}.
+\newblock
+{\BBOQ}\APACrefatitle {A class of high-breakdown scale estimators based on
+  subranges} {A class of high-breakdown scale estimators based on
+  subranges}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Commun. Stat. Theory Methods}{21}{7}{1935--1951,}
+\newblock
+\begin{APACrefDOI} \doi{10.1080/03610929208830889} \end{APACrefDOI}
+\newblock
+
+\newblock
+
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
 D'Agostino%
 \ \BBA {} Belanger%
 }{%
@@ -316,6 +349,29 @@ Gorman, K.B.%
 
 \newblock
 
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Griffin%
+}{%
+Griffin%
+}{%
+{\protect \APACyear {2018}}%
+}]{%
+Griffin2018-bf}
+\APACinsertmetastar {%
+Griffin2018-bf}%
+\begin{APACrefauthors}%
+Griffin, M.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2018}{{\APACmonth{01}}}{}.
+\newblock
+\APACrefbtitle {gnorm: Generalized Normal/Exponential Power Distribution.}
+  {gnorm: Generalized normal/exponential power distribution.}
+\newblock
+\APACaddressPublisher{}{The R Foundation}.
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
@@ -560,6 +616,38 @@ Romano, J.D.%
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
+Rousseeuw%
+\ \BBA {} Croux%
+}{%
+Rousseeuw%
+\ \BBA {} Croux%
+}{%
+{\protect \APACyear {1993}}%
+}]{%
+Rousseeuw1993-it}
+\APACinsertmetastar {%
+Rousseeuw1993-it}%
+\begin{APACrefauthors}%
+Rousseeuw, P.J.%
+\BCBT {}\ \BBA {} Croux, C.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{1993}{{\APACmonth{12}}}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Alternatives to the median absolute deviation}
+  {Alternatives to the median absolute deviation}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{J. Am. Stat. Assoc.}{88}{424}{1273,}
+\newblock
+\begin{APACrefDOI} \doi{10.2307/2291267} \end{APACrefDOI}
+\newblock
+
+\newblock
+
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
 Shapiro%
 \ \BBA {} Wilk%
 }{%
@@ -793,7 +881,7 @@ Zwanenburg%
 Zwanenburg%
 \ \BBA {} Löck%
 }{%
-{\protect \APACyear {2024}}%
+{\protect \APACyear {2025}}%
 {\protect \APACexlab {{\protect \BCnt {1}}}}}]{%
 Zwanenburg2021-so}
 \APACinsertmetastar {%
@@ -804,13 +892,13 @@ Zwanenburg, A.%
 \end{APACrefauthors}%
 \unskip\
 \newblock
-\APACrefYearMonthDay{2024{\protect \BCnt {1}}}{{\APACmonth{02}}}{}.
+\APACrefYearMonthDay{2025{\protect \BCnt {1}}}{}{}.
 \newblock
-\APACrefbtitle {familiar: end-to-end automated machine learning and model
-  evaluation.} {familiar: end-to-end automated machine learning and model
+\APACrefbtitle {familiar: End-to-End Automated Machine Learning and Model
+  Evaluation.} {familiar: End-to-end automated machine learning and model
   evaluation.}
 \newblock
-\APACaddressPublisher{}{The R Foundation}.
+\begin{APACrefURL} {https://github.com/oncoray/familiar} \end{APACrefURL}
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
@@ -820,7 +908,7 @@ Zwanenburg%
 Zwanenburg%
 \ \BBA {} Löck%
 }{%
-{\protect \APACyear {2024}}%
+{\protect \APACyear {2025}}%
 {\protect \APACexlab {{\protect \BCnt {2}}}}}]{%
 Zwanenburg2024-kq}
 \APACinsertmetastar {%
@@ -831,13 +919,14 @@ Zwanenburg, A.%
 \end{APACrefauthors}%
 \unskip\
 \newblock
-\APACrefYearMonthDay{2024{\protect \BCnt {2}}}{{\APACmonth{09}}}{}.
+\APACrefYearMonthDay{2025{\protect \BCnt {2}}}{}{}.
 \newblock
-\APACrefbtitle {power.transform: location and scale invariant power
-  transformations.} {power.transform: location and scale invariant power
+\APACrefbtitle {power.transform: Location and Scale Invariant Power
+  Transformations.} {power.transform: Location and scale invariant power
   transformations.}
 \newblock
-\APACaddressPublisher{}{The R Foundation}.
+\begin{APACrefURL} {https://github.com/oncoray/power.transform}
+  \end{APACrefURL}
 \PrintBackRefs{\CurrentBib}
 
 \end{thebibliography}

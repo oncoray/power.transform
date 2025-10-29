@@ -684,7 +684,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   # Update plot theme
   plot_theme$plot.tag.position <- "top"
-  plot_theme$plot.tag$margin <- grid::unit(c(0, 0, 5, 0), "points")
+  plot_theme$plot.tag$margin <- ggplot2::margin(0, 0, 5, 0)
   plot_theme$plot.tag$face <- "bold"
 
   ..create_plot <- function(
@@ -1074,7 +1074,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     location_shift = 0.0,
     plot_theme,
     limits = c(-7.0, 7.0),
-    drop_qq_y_axis = TRUE) {
+    drop_qq_y_axis = TRUE
+  ) {
     # Prevent warnings due to non-standard evaluation.
     distribution <- NULL
 
@@ -1125,20 +1126,25 @@ get_annotation_settings <- function(ggtheme = NULL) {
         x = x,
         y = ggplot2::after_stat(scaled),
         fill = distribution,
-        colour = distribution),
-      alpha = 0.2)
+        colour = distribution
+      ),
+      alpha = 0.2
+    )
     p <- p + ggplot2::geom_density(
       mapping = ggplot2::aes(
         x = x,
-        y = ggplot2::after_stat(scaled)),
-      colour = "grey10")
+        y = ggplot2::after_stat(scaled)
+      ),
+      colour = "grey10"
+    )
 
     p <- p + ggplot2::geom_segment(
       x = -location_shift / 2.0,
       xend = location_shift / 2.0,
       y = 0.10,
       yend = 0.10,
-      colour = "grey40")
+      colour = "grey40"
+    )
     p <- p + ggplot2::annotate(
       geom = "text",
       x = 0.0,
@@ -1153,14 +1159,14 @@ get_annotation_settings <- function(ggtheme = NULL) {
     )
 
     p <- p + ggplot2::coord_cartesian(xlim = limits)
-
-    p <- p + ggplot2::facet_grid(cols = vars(paste0("d = ", location_shift)))
+    p <- p + ggplot2::ggtitle(paste0("d = ", location_shift))
 
     p <- p + ggplot2::theme(
       axis.text.x = ggplot2::element_blank(),
       axis.title.x = ggplot2::element_blank(),
       axis.text.y = ggplot2::element_blank(),
-      axis.title.y = ggplot2::element_blank()
+      axis.title.y = ggplot2::element_blank(),
+      axis.ticks.y =  ggplot2::element_blank()
     )
 
     p <- p + paletteer::scale_color_paletteer_d(
@@ -2346,25 +2352,36 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 
 
+.plot_test_statistic_combined <- function(manuscript_dir, plot_theme) {
+  p_kappa <- .plot_test_statistic_centrality(
+    manuscript_dir = manuscript_dir,
+    plot_theme = plot_theme
+  )
+
+  p_alpha <- .plot_test_statistic_tau(
+    manuscript_dir = manuscript_dir,
+    plot_theme = plot_theme
+  )
+
+  p <- p_kappa + p_alpha + patchwork::plot_layout(
+    ncol = 2L,
+    guides = "keep"
+  )
+
+  return(p)
+}
+
+
+
 .plot_test_statistic_centrality <- function(manuscript_dir, plot_theme) {
   # Plots data that allows us to select the fitting centrality parameter kappa.
 
-  data_w_outliers <- .get_test_statistics_data(
-    manuscript_dir = manuscript_dir,
-    with_outliers = TRUE
+  data <- .get_test_statistics_data(
+    manuscript_dir = manuscript_dir
   )
-  data_w_outliers[, "outlier" := TRUE]
-
-  data_wo_outliers <- .get_test_statistics_data(
-    manuscript_dir = manuscript_dir,
-    with_outliers = FALSE
-  )
-  data_wo_outliers[, "outlier" := FALSE]
-
-  data <- rbind(data_w_outliers, data_wo_outliers)
 
   # Compute alpha
-  data[, "alpha" := 1.0 - (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa", "outlier")]
+  data[, "alpha" := 1.0 - (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa")]
 
   # Compute alpha = 0.95
   data <- data[, list("tau" = stats::spline(
@@ -2373,12 +2390,12 @@ get_annotation_settings <- function(ggtheme = NULL) {
     method = "fmm",
     xout = 0.05
   )$y),
-  by = c("n", "kappa", "outlier")]
+  by = c("n", "kappa")]
 
   data$kappa <- factor(
     x = data$kappa,
-    levels = c(0.60, 0.70, 0.80, 0.90, 0.95, 1.00),
-    labels = c("60 %", "70 %", "80 %", "90 %", "95 %", "100 %")
+    levels = c(0.50, 0.60, 0.70, 0.80, 0.90, 0.95, 1.00),
+    labels = c("50 %", "60 %", "70 %", "80 %", "90 %", "95 %", "100 %")
   )
 
   p <- ggplot2::ggplot(
@@ -2392,62 +2409,38 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p <- p + ggplot2::scale_x_log10(name = "n")
   p <- p + ggplot2::ylab(latex2exp::TeX("test statistic $\\tau_{\\alpha = 0.05, n, \\kappa}$"))
   p <- p + ggplot2::scale_colour_discrete(
-    name = "central portion κ",
+    name = "central\nportion κ",
     type = c(
-      "60 %" = "#bacbde",
-      "70 %" = "#537dac",
-      "80 %" = "#324b67",
-      "90 %" = "#f9c59f",
-      "95 %" = "#f06d0f",
-      "100 %" = "#904109"
+      "50 %" = "#1E3C5C",
+      "60 %" = "#2C5077",
+      "70 %" = "#3C6590",
+      "80 %" = "#4E79A7",
+      "90 %" = "#799DC3",
+      "95 %" = "#A7C0DC",
+      "100 %" = "#D8E4F1"
     )
   )
 
-  p_no_outliers <- p + ggplot2::geom_line(
-    data = data[outlier == FALSE])
-  p_no_outliers <- p_no_outliers + ggplot2::ggtitle("central normality test")
-
-    p_outliers <- p + ggplot2::geom_line(data = data[outlier == TRUE])
-  p_outliers <- p_outliers + ggplot2::ggtitle("emp. central normality test")
-  p_outliers <- p_outliers + ggplot2::theme(
-    axis.text.y = ggplot2::element_blank(),
-    axis.title.y = ggplot2::element_blank(),
-    axis.ticks.y = ggplot2::element_blank()
-  )
-
-  # Patch all the plots together.
-  p <- p_no_outliers + p_outliers + patchwork::plot_layout(
-    ncol = 2,
-    guides = "collect"
-  )
+  p <- p + ggplot2::geom_line(data = data)
+  p <- p + ggplot2::ggtitle(latex2exp::TeX("central portion $\\kappa$"))
 
   return(p)
 }
 
 
 
-.plot_test_statistic_tau <- function(manuscript_dir, plot_theme, k = 0.80) {
+.plot_test_statistic_tau <- function(manuscript_dir, plot_theme, kappa_lookup = 0.80) {
   # Plots critical tau for several alpha levels.
 
-  data_w_outliers <- .get_test_statistics_data(
-    manuscript_dir = manuscript_dir,
-    with_outliers = TRUE
+  data <- .get_test_statistics_data(
+    manuscript_dir = manuscript_dir
   )
-  data_w_outliers[, "outlier" := TRUE]
-
-  data_wo_outliers <- .get_test_statistics_data(
-    manuscript_dir = manuscript_dir,
-    with_outliers = FALSE
-  )
-  data_wo_outliers[, "outlier" := FALSE]
-
-  data <- rbind(data_w_outliers, data_wo_outliers)
-  data <- data[kappa == k]
+  data <- data[kappa == kappa_lookup]
 
   alpha_levels <- 1.0 - c(0.80, 0.90, 0.95, 0.975, 0.99, 0.999)
 
   # Compute alpha
-  data[, "alpha" := 1.0 - (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa", "outlier")]
+  data[, "alpha" := 1.0 - (seq_len(.N) - 1L) / (.N - 1L), by = c("n", "kappa")]
 
   # Compute tau at the specified confidence levels.
   data <- data[
@@ -2460,7 +2453,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
         xout = alpha_levels)$y,
       "alpha" = alpha_levels
     ),
-    by = c("n", "outlier")
+    by = c("n")
   ]
 
   data$alpha <- factor(
@@ -2480,7 +2473,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p <- p + ggplot2::scale_x_log10(name = "n")
   p <- p + ggplot2::ylab(latex2exp::TeX("test statistic $\\tau_{\\alpha, n, \\kappa = 0.80}$"))
   p <- p + ggplot2::scale_colour_discrete(
-    name = "significance level",
+    name = "significance\nlevel α",
     type = c(
       "20.0 %" = "#bacbde",
       "10.0 %" = "#537dac",
@@ -2491,23 +2484,8 @@ get_annotation_settings <- function(ggtheme = NULL) {
     )
   )
 
-  p_no_outliers <- p + ggplot2::geom_line(
-    data = data[outlier == FALSE])
-  p_no_outliers <- p_no_outliers + ggplot2::ggtitle("central normality test")
-
-  p_outliers <- p + ggplot2::geom_line(data = data[outlier == TRUE])
-  p_outliers <- p_outliers + ggplot2::ggtitle("emp. central normality test")
-  p_outliers <- p_outliers + ggplot2::theme(
-    axis.text.y = ggplot2::element_blank(),
-    axis.title.y = ggplot2::element_blank(),
-    axis.ticks.y = ggplot2::element_blank()
-  )
-
-  # Patch all the plots together.
-  p <- p_no_outliers + p_outliers + patchwork::plot_layout(
-    ncol = 2,
-    guides = "collect"
-  )
+  p <- p + ggplot2::geom_line(data = data)
+  p <- p + ggplot2::ggtitle(latex2exp::TeX("significance level $\\alpha$"))
 
   return(p)
 }
@@ -2515,66 +2493,124 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
 
 .plot_test_dependency_sample_size <- function(manuscript_dir, plot_theme) {
-  n_rep <- 1000L
-  k <- 0.10
+
+  .compute_wrapper <- function(
+    n
+  ) {
+    return(
+      unlist(
+        lapply(
+          X = n,
+          FUN = ..compute
+        ),
+        recursive = FALSE
+      )
+    )
+  }
+
+  ..compute <- function(
+    n
+  ) {
+    set.seed(n)
+
+    kappa <- c(1.0, 0.8, 0.6)
+    n_rep <- 10000L
+    data <- list()
+
+    for (jj in seq_len(n_rep)) {
+      x_data <- list()
+      x <- power.transform::ragn(floor(n), location = 0, scale = 1 / sqrt(2), alpha = 0.5, beta = 2)
+
+      # Sort in ascending order.
+      x <- sort(x)
+
+      # Compute quantiles empirically
+      p <- (seq_along(x) - 1.0 / 3.0) / (length(x) + 1.0 / 3.0)
+
+      # Compute mean residual error for all kappa.
+      for (kk in seq_along(kappa)) {
+        x_kappa <- x
+
+        p_lower <- 0.50 - kappa[kk] / 2.0
+        p_upper <- 0.50 + kappa[kk] / 2.0
+
+        # Determine specific parts of the distribution.
+        lower_tail <- p < p_lower
+        central <- p >= p_lower & p <= p_upper
+        upper_tail <- p > p_upper
+
+        if (any(lower_tail)) {
+          x_kappa[lower_tail] <- stats::runif(sum(lower_tail), -10.0, min(x_kappa[central]))
+        }
+
+        if (any(upper_tail)) {
+          x_kappa[upper_tail] <- stats::runif(sum(upper_tail), max(x_kappa[central]), 10.0)
+        }
+
+        # Ensure that the sequence is sorted.
+        x_kappa <- sort(x_kappa)
+        x_data[[kk]] <- x_kappa
+      }
+
+
+      data[[jj]] <- data.table::data.table(
+        "n" = n,
+        "p_value" = c(
+          power.transform::ecn_test(x = x_data[[1L]], kappa = 1.00)$p_value,
+          power.transform::ecn_test(x = x_data[[1L]], kappa = 0.80)$p_value,
+          power.transform::ecn_test(x = x_data[[1L]], kappa = 0.60)$p_value,
+          shapiro.test(x_data[[1L]])$p.value,
+          power.transform::ecn_test(x = x_data[[2L]], kappa = 1.00)$p_value,
+          power.transform::ecn_test(x = x_data[[2L]], kappa = 0.80)$p_value,
+          power.transform::ecn_test(x = x_data[[2L]], kappa = 0.60)$p_value,
+          shapiro.test(x_data[[2L]])$p.value,
+          power.transform::ecn_test(x = x_data[[3L]], kappa = 1.00)$p_value,
+          power.transform::ecn_test(x = x_data[[3L]], kappa = 0.80)$p_value,
+          power.transform::ecn_test(x = x_data[[3L]], kappa = 0.60)$p_value,
+          shapiro.test(x_data[[3L]])$p.value
+        ),
+        "kappa" = c(1.0, 1.0, 1.0, 1.0, 0.8, 0.8, 0.8, 0.8, 0.6, 0.6, 0.6, 0.6),
+        "test" = factor(
+          c(
+            "ECN (κ = 1.0)", "ECN (κ = 0.8)", "ECN (κ = 0.6)", "SW",
+            "ECN (κ = 1.0)", "ECN (κ = 0.8)", "ECN (κ = 0.6)", "SW",
+            "ECN (κ = 1.0)", "ECN (κ = 0.8)", "ECN (κ = 0.6)", "SW"
+          ),
+          levels = c("SW", "ECN (κ = 1.0)", "ECN (κ = 0.8)", "ECN (κ = 0.6)")
+        )
+      )
+    }
+
+    return(data)
+  }
 
   # From 5 to 1000 in equal steps (log 10 scale)
   n <- 10^(seq(from = 0.75, to = 3.0, by = 0.125))
+  n <- floor(n)
 
   file_name <- file.path(manuscript_dir, "sample_size_dependency.RDS")
   if (!file.exists(file_name)) {
-    set.seed(19L)
+    n_threads <- 18L
+    assignment_id <- rep_len(seq_len(n_threads), length(n))
 
-    data <- list()
-    for (ii in seq_along(n)) {
-      # Repeat 1000 times.
-      for (jj in seq_len(n_rep)) {
-        x <- power.transform::ragn(floor(n[ii]), location = 0, scale = 1 / sqrt(2), alpha = 0.5, beta = 2)
+    cl <- parallel::makeCluster(n_threads)
+    on.exit(parallel::stopCluster(cl))
 
-        # Compute upper and lower quartiles, and IQR.
-        q_lower <- stats::quantile(x, probs = 0.25, names = FALSE)
-        q_upper <- stats::quantile(x, probs = 0.75, names = FALSE)
-        interquartile_range <- stats::IQR(x)
+    parallel::clusterExport(cl = cl, "..compute", envir = rlang::current_env())
 
-        # Set data where the outliers will be copied into.
-        x_outlier <- x
+    # data <- lapply(
+    #   split(n, assignment_id),
+    #   FUN = .compute_wrapper
+    # )
 
-        # Generate outlier values that are smaller than Q1 - 1.5 IQR or larger
-        # than Q3 + 1.5 IQR.
-        n_draw <- ceiling(k * length(x))
-        x_random <- stats::runif(n_draw, min = -2.0, max = 2.0)
-
-
-        outlier <- numeric(n_draw)
-        if (any(x_random < 0)) {
-          outlier[x_random < 0] <- q_lower - 1.5 * interquartile_range + x_random[x_random < 0] * interquartile_range
-        }
-
-        if (any(x_random >= 0)) {
-          outlier[x_random >= 0] <- q_upper + 1.5 * interquartile_range + x_random[x_random >= 0] * interquartile_range
-        }
-
-        # Randomly insert outlier values.
-        x_outlier[sample(seq_along(x), size = n_draw, replace = FALSE)] <- outlier
-
-        data[[jj + (ii - 1L) * n_rep]] <- data.table::data.table(
-          "n" = n[ii],
-          "p_value" = c(
-            power.transform::cn.test(x = x)$p_value,
-            power.transform::cn.test(x = x_outlier)$p_value,
-            power.transform::ecn.test(x = x)$p_value,
-            power.transform::ecn.test(x = x_outlier)$p_value,
-            shapiro.test(x)$p.value,
-            shapiro.test(x_outlier)$p.value
-          ),
-          "outlier" = c(FALSE, TRUE, FALSE, TRUE, FALSE, TRUE),
-          "test" = factor(c("CN", "CN", "ECN", "ECN", "SW", "SW"), levels = c("SW", "CN", "ECN"))
-        )
-      }
-    }
+    data <- parallel::parLapply(
+      cl = cl,
+      X = split(n, assignment_id),
+      fun = .compute_wrapper
+    )
 
     # Aggregate to single table.
-    data <- data.table::rbindlist(data)
+    data <- data.table::rbindlist(unlist(data, recursive = FALSE))
 
     saveRDS(data, file_name)
 
@@ -2585,7 +2621,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
   # Compute type I error rate (i.e. fraction of distributions that are centrally
   # normal are rejected by the test).
   data[, "rejected" := p_value <= 0.05]
-  data <- data[, list("type_1_error_rate" = sum(rejected) / .N), by = c("n", "outlier", "test")]
+  data <- data[, list("type_1_error_rate" = sum(rejected) / .N), by = c("n", "kappa", "test")]
 
   p <- ggplot2::ggplot(
     mapping = ggplot2::aes(
@@ -2608,32 +2644,43 @@ get_annotation_settings <- function(ggtheme = NULL) {
   p <- p + ggplot2::scale_colour_discrete(
     name = "central normality test",
     type = c(
-      "CN" = "#A0CBE8",
-      "ECN" = "#4E79A7",
+      "ECN (κ = 1.0)" = "#bacbde",
+      "ECN (κ = 0.8)" = "#537dac",
+      "ECN (κ = 0.6)" = "#324b67",
       "SW" = "#F28E2B"
     ),
-    breaks = c("ECN", "CN", "SW"),
-    labels = c("ECN test", "CN test", "Shapiro-Wilk test")
+    breaks = c("ECN (κ = 1.0)", "ECN (κ = 0.8)", "ECN (κ = 0.6)", "SW"),
+    labels = c("ECN (κ = 1.0)", "ECN (κ = 0.8)", "ECN (κ = 0.6)", "Shapiro-Wilk test")
   )
 
 
-  # W/O outliers ---------------------------------------------------------------
-  p_no_outliers <- p + ggplot2::geom_line(
-    data = data[outlier == FALSE])
-  p_no_outliers <- p_no_outliers + ggplot2::ggtitle("without outliers")
+  # 100% central normality -----------------------------------------------------
+  p_100 <- p + ggplot2::geom_line(
+    data = data[kappa == 1.0]
+  )
+  p_100 <- p_100 + ggplot2::ggtitle(latex2exp::TeX("$\\kappa = 1.0$"))
 
-  # W outliers -----------------------------------------------------------------
-  p_outliers <- p + ggplot2::geom_line(data = data[outlier == TRUE])
-  p_outliers <- p_outliers + ggplot2::ggtitle("with outliers")
-  p_outliers <- p_outliers + ggplot2::theme(
+  # 80% central normality ------------------------------------------------------
+  p_80 <- p + ggplot2::geom_line(data = data[kappa == 0.8])
+  p_80 <- p_80 + ggplot2::ggtitle(latex2exp::TeX("$\\kappa = 0.8$"))
+  p_80 <- p_80 + ggplot2::theme(
+    axis.text.y = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank()
+  )
+
+  # 60% central normality ------------------------------------------------------
+  p_60 <- p + ggplot2::geom_line(data = data[kappa == 0.60])
+  p_60 <- p_60 + ggplot2::ggtitle(latex2exp::TeX("$\\kappa = 0.6$"))
+  p_60 <- p_60 + ggplot2::theme(
     axis.text.y = ggplot2::element_blank(),
     axis.title.y = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank()
   )
 
   # Patch all the plots together.
-  p <- p_no_outliers + p_outliers + patchwork::plot_layout(
-    ncol = 2,
+  p <- p_100 + p_80 + p_60 + patchwork::plot_layout(
+    ncol = 3,
     guides = "collect"
   )
 

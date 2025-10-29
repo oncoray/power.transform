@@ -71,3 +71,6 @@ manuscript_latex/elsarticle.cls
 manuscript_latex/elsarticle.log
 /manuscript_latex/template
 manuscript_rmarkdown/deprecated_residual_plot.RDS
+manuscript_rmarkdown/raw_ecn_statistics_R2_depr.RDS
+manuscript_latex/sn-jnl.log
+manuscript_latex/manuscript.synctex.gz

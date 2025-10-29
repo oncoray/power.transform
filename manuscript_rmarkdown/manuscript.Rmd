@@ -6,6 +6,7 @@ date: "`r Sys.Date()`"
 output:
   pdf_document:
     latex_engine: lualatex
+    citation_package: natbib
     keep_tex: true
 papersize: a4
 bibliography: refs.bib
@@ -14,6 +15,7 @@ header-includes:
 - \usepackage{amsthm}
 - \usepackage{booktabs}
 - \newtheorem*{definition}{Definition}
+- \newtheorem*{corollary}{Corollary}
 - \DeclareMathOperator*{\argmax}{argmax}
 - \DeclareMathOperator*{\argmin}{argmin}
 - \DeclareMathOperator{\sgn}{sgn}
@@ -185,7 +187,9 @@ A numeric feature is a finite sequence $\mathbf{X} = \left\{x_1, x_2, \ldots, x_
 
 ## Location- and scale-invariant power transformation
 
-Box-Cox and Yeo-Johnson transformations are modified by introducing
+@Box1964-mz originally included a shift parameter in their transformation, but
+for their formal analysis set it to $0$, whereas @Yeo2000-vw did not include
+a shift or scale parameter. Here, Box-Cox and Yeo-Johnson transformations are modified by introducing
 shift parameter $x_0$ and scale parameter $s$ into equations \ref{eqn:box-cox-original} and \ref{eqn:yeo-johnson-original}.
 The location- and scale-invariant Box-Cox transformation of a feature value 
 $x_i$ of feature $\mathbf{X}$ under transformation parameter $\lambda$, shift parameter $x_0$ and scale parameter $s$ 
@@ -470,13 +474,13 @@ F_{\alpha}^{-1}(p; \mu, \sigma, \beta) =
 \end{definition}
 
 
-## Central normality test
+## Empirical central normality test
 
 Power transformations aim to transform features to a normal distribution.
 However, this may not always be successful or possible.
 Deviations from normality can be detected by normality tests, such as the Shapiro-Wilk test [@Shapiro1965-zd].
 In practice, normality tests may be too stringent with large sample sizes, outliers, or both.
-Here we develop a test for central normality.
+Here we develop an empirical test for central normality.
 
 \begin{definition}[Central portion of a sequence]
 Let $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i \in \mathbb{R}\right\}$ be a finite sequence of length $n > 0$,
@@ -504,29 +508,40 @@ $\mathbf{R}_{\text{c}} = \left\{ r_i \in \left\{ r_1, r_2, \ldots, r_n\right\} \
 
 \end{definition}
 
-\begin{definition}[Central normality of a sequence]
+\begin{definition}[Central normal distribution]
 
-The central portion of a sequence is normally distributed if the sum of residual
-errors is equal to zero:
-$\sum_{r_j \in \mathbf{R}_{\text{c}}} r_j = 0$
+A central normal distribution is any distribution whose quantile function is 
+defined by $F^{-1}_{\mathcal{N}}$ for $\frac{1-\kappa}{2} \leq  p \leq \frac{1 + \kappa}{2}$,
+with $\mathcal{N}$ any normal distribution.
 
 \end{definition}
 
-In practice, a finite sequence sampled from a normal distribution $\mathcal{N}(\mu, \sigma)$ will have a non-zero sum of residual errors.
+\begin{corollary}
+
+For $\kappa = 1.0$, the central normal distribution is a normal distribution.
+
+\end{corollary}
+
+\begin{corollary}
+
+By the Glivenko-Cantelli theorem, if a sequence $\mathbf{X}$ was sampled from a
+central normal distribution, then almost surely
+$\lim_{n \rightarrow \infty} \sum_{r_j \in \mathbf{R}_{\text{c}}} r_j = 0$,
+
+\end{corollary}
 
 \begin{definition}[Central normality test]
-The null-hypothesis is defined as: $\mathcal{H}_0: \sum_{r_j \in \mathbf{R}_{\text{c}}}r_j = 0$
+The null-hypothesis $\mathcal{H}_0$ is that the sequence $\mathbf{X}$ was sampled
+from a population that is distributed according to a central normal distribution.
 
-The alternative hypothesis is defined as: $\mathcal{H}_1: \sum_{r_j \in \mathbf{R}_{\text{c}}}r_j > 0$
+The alternative hypothesis is that the sequence $\mathbf{X}$ was sampled from a
+population that is not distributed according to a central normal distribution.
 \end{definition}
 
-The null-hypothesis $\mathcal{H}_0$ is that the central portion of sequence $\mathbf{X}$
-is normally distributed, with the alternative hypothesis $\mathcal{H}_1$ that it
-is not normally distributed. To test this hypothesis, a test statistic is computed
-and compared against a critical value.
+To test this hypothesis, a test statistic is computed and compared against a critical value.
 
 \begin{definition}[Central normality test statistic]
-Let $m$ be the number of elements of $\mathbf{R}_{\text{c}}$
+Let $m$ be the number of elements of $\mathbf{R}_{\text{c}}$.
 
 The test statistic is then $\tau_{n, \kappa} = \frac{1}{m}\sum_{r_j \in \mathbf{R}_{\text{c}}}r_j$.
 
@@ -534,10 +549,8 @@ The test statistic is then $\tau_{n, \kappa} = \frac{1}{m}\sum_{r_j \in \mathbf{
 
 The null-hypothesis should be rejected at significance level $\alpha$ if 
 $\tau_{n, \kappa} \geq \tau_{\alpha, n, \kappa, \text{critical}}$.
-
-The central portion of the data needs to be defined and the Type 1 error rates determined to provide critical test statistics.
-We will do so in the [Simulation](#simulation) section.
-
+Critical test statistic values are determined in 
+the [Simulation](#simulation-ecn-test) section.
 
 # Simulation
 
@@ -547,7 +560,7 @@ The $\lambda$ parameter for conventional power transformations (Eqn. \ref{eqn:bo
 as well as $\lambda$, $x_0$ and $s$ parameters for location- and scale-invariant power transformations 
 (Eqn. \ref{eqn:box-cox-invariant} and \ref{eqn:yeo-johnson-invariant}) were estimated using the BOBYQA algorithm 
 for derivative-free bound constraint optimisation [@Powell2009-zb] through maximum likelihood estimation.
-The required algorithms were implemented in the `power.transform` R software package [@Zwanenburg2024-kq] (version 1.0.1).
+The required algorithms were implemented in the `power.transform` R software package [@Zwanenburg2024-kq] (version 1.0.2).
 Of note, the `power.transform` package shifts feature values into the positive domain if negative or zero values are present for Box-Cox power transformations.
 
 
@@ -582,91 +595,84 @@ For each distribution, transformation parameter $\lambda$ varied with $d_{\text{
 In contrast, estimation of $\lambda$ for invariant power transformations was invariant to both $d_{\text{shift}}$ and $d_{\text{scale}}$.
 
 
-## Central normality and empirical central normality test
+## Empirical central normality test {#simulation-ecn-test}
 
-To develop a test for central normality we need to consider two
-parameters: the central portion $\kappa$ as a fixed parameter, and test
-statistic $\tau_{\text{ecn}}$. We will first define the central portion
-$\kappa$.
+The critical test statistic for the empirical central normality test depends on 
+the significance level $\alpha$, sequence length $n$ and central portion $\kappa$.
+Critical test statistic values were set through simulation, as described below.
 
 For each number of samples $n \in \left\{\lfloor 10^\nu \rfloor | \nu \in \left\{0.7500, 0.8125, \ldots, 4.0000 \right \} \right\}$
-we randomly drew $m_d = 30000$ ordered sequences $\mathbf{X}$ from $\mathcal{N}(0,1)$.
-This dataset was used to compute the critical test statistic values for the central normality test.
-Additionally, we added $10 \%$ outliers by randomly replacing elements of each ordered sequence.
-The dataset with outliers was used to compute the critical test statistic values for the empirical variant of the central normality test.
-For each sequence we then computed $\tau_{n, \kappa}$ for $\kappa \in \left\{0.60, 0.70, 0.80, 0.90, 0.95, 1.00\right\}$.
+we randomly sampled $m_d = 30000$ ordered sequences $\mathbf{X}$ from $\mathcal{N}(0,1)$.
+For each sequence we then computed $\tau_{\kappa}$ for 
+$\kappa \in \left\{0.50, 0.60, 0.70, 0.80, 0.90, 0.95, 1.00\right\}$.
 
 ```{r include = FALSE, eval = FALSE}
 # This creates and sets the lookup table for critical test statistic.
 load(file = "./R/sysdata.rda")
 
-central_normality_lookup_table <- .get_test_statistic_lookup_table(
-  manuscript_dir = manuscript_dir,
-  k = 0.80,
-  for_manuscript = FALSE
-)
-
-empirical_central_normality_lookup_table <- .get_test_statistic_lookup_table(
-  manuscript_dir = manuscript_dir,
-  k = 0.80,
-  for_manuscript = FALSE,
-  with_outliers = TRUE
+ecn_lookup_table <- .get_test_statistic_lookup_table(
+  manuscript_dir = manuscript_dir
 )
 
 usethis::use_data(
-  central_normality_lookup_table,
-  empirical_central_normality_lookup_table,
+  ecn_lookup_table,
   two_sided_function_parameters, 
   internal = TRUE, 
   overwrite = TRUE
 )
 ```
 
-Figure \ref{fig:empirical-central-normality-kappa} shows $\tau_{\alpha = 0.05, n, \kappa}$
-as a function of $n$ for different values of $\kappa$. With decreasing
-$\kappa$, the test statistic curve decreases. The curves
-for $\kappa = 0.60$, $\kappa = 0.70$ and $\kappa = 0.80$ are similar, whereas curves for 
-$\kappa \geq 0.90$ are affected by outliers, as can be observed by comparing curves
-of the central normality test with those of the empirical variant.
+Figure \ref{fig:empirical-central-normality-combined} shows the critical test statistic
+$\tau_{\alpha, n, \kappa}$ as a function of $n$ for different values of $\kappa$ and $\alpha$. 
+For larger central portion $\kappa$, critical test statistic values increase.
+Similarly, critical test statistic values increase for lower significance levels.
 
-Since the (empirical) central normality tests assesses whether the central part of a sequence is normally distributed,
-we used $\kappa = 0.80$. Critical statistic values for central normality and empirical central
-normality tests are shown are shown in Table \ref{tab:central-normality-critical-statistic} and Table 
-\ref{tab:empirical-central-normality-critical-statistic}, respectively.
-
-```{r empirical-central-normality-kappa, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
+```{r empirical-central-normality-combined, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
 cap <- paste0(
-  "Critical test statistic $\\tau_{\\alpha = 0.05, n, \\kappa}$ of the (empirical) ",
-  "central normality test as function of $n$ for several values of central portion $\\kappa$. ",
-  "The critical test statistics for central normality test are determined using fully normal data, ",
-  "whereas the statistics for the empirical variant are determined using centrally normal data, ",
-  "i.e. with fully normal data where 10% of elements are replaced by outliers. ",
-  "emp: empirical"
+  "Critical test statistic $\\tau_{\\alpha = 0.05, n, \\kappa}$ of the empirical ",
+  "central normality test as function of $n$ for several values of central portion $\\kappa$ (left) ",
+  "and several values of significance level $\\alpha$ (right)."
 )
 
-.plot_test_statistic_centrality(
+.plot_test_statistic_combined(
   plot_theme = plot_theme,
   manuscript_dir = manuscript_dir
 )
 
 ```
 
-To assess type I error rates for the (empirical) central normality test and compare
-these to the Shapiro-Wilk test for normality, we randomly drew another 1000 sequences from a
-standard normal distribution ($\mathcal{N}(0,1)$ for each 
+To assess type I error rates for the empirical central normality test and compare
+these to the Shapiro-Wilk test for normality, we randomly drew another 10000 sequences from a
+central normal distribution for each 
 $n \in \left\{\lfloor 10^\nu \rfloor | \nu \in \left\{0.7500, 0.8125, \ldots, 3.0000 \right \} \right\}$.
-A second dataset was created by replacing elements with randomly drawn outliers, as described above.
+
+Each sequence was created as follows: first $n$ values are sampled from $\mathcal{N}(0, 1)$.
+Then, the elements outside the central portion of the sequence (i.e. $\mathbf{X} \setminus \mathbf{X}_{\text{c}}$) are replaced.
+Elements with $p_i < \frac{1-\kappa}{2}$ are replaced with values sampled from $\mathcal{U}(-10,\min(\mathbf{X}_{\text{c}}))$,
+and elements with $p_i > \frac{1 + \kappa}{2}$ are replaced with values sampled from $\mathcal{U}(\max(\mathbf{X}_{\text{c}}), 10)$.
+
 For each sequence, the p-value for the respective test was used to reject the null
-hypothesis that the sequence is (centrally) normal. The null hypothesis was rejected if $p \leq 0.05$.
-The type I error rate was determined by computing the fraction of centrally normal sequences rejected this way.
-Figure \ref{fig:empirical-central-normality-error_rate} shows that the empirical central normality test had the expected type I error rate for
-centrally normal data (with tails of the distribution not being normally distributed),
-whereas the central normality test and Shapiro-Wilk test overestimated type I error rates.
+hypothesis that sequences were derived from a population with a (central) normal distribution.
+The null hypothesis was rejected if $p \leq 0.05$.
+The type I error rate was determined by computing the fraction of sequences rejected this way.
+Figure \ref{fig:empirical-central-normality-error_rate} shows that when the
+central portion $\kappa$ of the central normal distribution is equal or greater
+than the $\kappa$ parameter for the empirical central normality test, the tests 
+are accurate. If $\kappa$ of the empirical central normality test exceeds that 
+the central portion $\kappa$ for the underlying distribution, 
+tests are conservative. The Shapiro-Wilk test behaves similar to the empirical
+central normality test with $\kappa = 1.0$, which is expected. For $n < 10$,
+the empirical central normality test can be optimistic.
 
 ```{r empirical-central-normality-error_rate, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
 cap <- paste0(
-  "Observed type I error rates for (central) normality tests in the presence of data derived from normal distributions with and without outliers. ",
-  "The empirical central normality (ECN) test uses $\\kappa = 0.80$. CN: central normality"
+  "Observed type I error rates for central normality tests in the presence of data sampled from ",
+  "central normal distributions with $\\kappa \\in \\left\\{0.6, 0.8, 1.0\\right\\}$. ",
+  "Three empirical central normality (ECN) tests were performed, parameterised with same value for the central portion $\\kappa$. ",
+  "Additionally, the Shapiro-Wilk test was assessed. ",
+  "The dashed line indicates the expected type I error rate for rejecting the null hypothesis ",
+  "at significance level $\\alpha = 0.05$. ",
+  "ECN: empirical central normality"
 )
 
 .plot_test_dependency_sample_size(
@@ -677,19 +683,19 @@ cap <- paste0(
 ```
 
 In Figure \ref{fig:empirical-central-normality-examples} we apply the empirical
-central normality test to assess central normality of features that are composed
+central normality test (with $\kappa = 0.80$) to assess central normality of features that are composed
 of a mixture of samples drawn from two normal distributions ($n = 100$ each).
-With increased separation of the underlying normal distributions, the probability of the
-feature being centrally normal decreases, as expected.
+With increased separation of the underlying normal distributions, 
+the test's p-value decreases, as expected.
 
 ```{r empirical-central-normality-examples, warning=FALSE, message=FALSE, fig.cap=cap, fig.height=2.5}
 cap <- paste0(
   "Bi-modal distributions and empirical central normality test results. ",
   "The feature (black) is a mixture of two identical sample sets (blue and orange, $n = 100$) ",
   "drawn from normal distributions that are offset by a distance $d$. ",
-  "We use the empirical centrally normality test to compute the probability for the hypothesis that ",
-  "the distribution is centrally normal. As may be observed, with increasing offset $d$ ",
-  "the probability that the feature is centrally normal decreases. ",
+  "The empirical central normality test ($\\kappa = 0.80$) is used to test the hypothesis that the mixture is sampled from ",
+  "a central normal distribution. As may be observed, with increasing offset $d$ ",
+  "the test's p-value decreases. ",
   "Quantile-quantile plots are drawn below each distribution."
 )
 
@@ -700,6 +706,12 @@ cap <- paste0(
 
 ```
 
+
+We use $\kappa = 0.80$ for the empirical central normality tests 
+in the remainder of the manuscript, unless noted otherwise.
+Critical statistic values of the empirical central normality test for 
+$\kappa = 0.80$ are shown in Table 
+\ref{tab:empirical-central-normality-critical-statistic}.
 
 ## Robust transformations
 
@@ -720,13 +732,13 @@ and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$.
 Location and scale parameters were set as $\mu = 0$ and $\sigma = 1$, respectively.
 To form each sequence $\mathbf{X}_i$, $n = \lceil 10^\gamma \rceil$ instances were then randomly drawn, 
 with $\gamma \sim U\left(\log_{10}50, 3\right)$, resulting in a set of sequences with between $50$ and $1000$ elements each.
-
 Outlier values were then drawn to randomly replace 10 percent of the elements of $\mathbf{X}_i$.
-Outlier values were set according to @Tukey1977-xm, as follows.
+These values were set according to @Tukey1977-xm, as follows.
 Let $x^{*} \sim U\left(-2, 2\right)$.
 Then the corresponding outlier value was:
 
 \begin{equation}
+\label{eqn:outlier_rate}
 x_{out} =
 \begin{cases}
 Q_1 - \left(1.5 - x^{*} \right) \text{IQR} & \text{if } x^{*} < 0 \\
@@ -734,8 +746,7 @@ Q_3 + \left(1.5 + x^{*} \right) \text{IQR} & \text{if } x^{*} \geq 0
 \end{cases}
 \end{equation}
 
-$Q_1$, $Q_3$ and $\text{IQR}$ are the first quartile, third quartile and interquartile range of $\mathbf{X}_i$, respectively.
-Outlier values randomly replaced elements in $\mathbf{X}_i$.
+Here, $Q_1$, $Q_3$ and $\text{IQR}$ are the first quartile, third quartile and interquartile range of $\mathbf{X}_i$, respectively.
 
 To find the optimal values for the weighting function parameters $\delta_1$ and $\delta_2$ (if applicable),
 we minimised a composite loss $L = \sum_{i=1}^{m_d} L_{\text{cn},i} + 0.1 \sum_{i=1}^{m_d} L_{\lambda,i}$.
@@ -763,8 +774,7 @@ two_sided_function_parameters <- .get_optimised_weighting_function_parameters(
 )
 
 usethis::use_data(
-  central_normality_lookup_table,
-  empirical_central_normality_lookup_table,
+  ecn_lookup_table,
   two_sided_function_parameters, 
   internal = TRUE, 
   overwrite = TRUE
@@ -845,7 +855,7 @@ $r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.06 & 1.00 & $(0, 10]$ & 1.07 & 6
 
 ## Assessing transformations using simulated data
 
-Three datasets with 10000 sequences each were created to assess transformation
+Three datasets with 100000 sequences each were created to assess transformation
 to normality. For each sequence $\mathbf{X}_i$, $n = \lceil 10^\gamma \rceil$
 elements were randomly drawn, with $\gamma \sim U\left(1, 4\right)$, 
 resulting in sequences with between $10$ and $10000$ elements. 
@@ -876,8 +886,8 @@ the following two methods:
 
 1. z-standardisation: $x^{\prime}_{i} = \left(x_i - \mu \right) / \sigma$, with $\mu$ and $\sigma$ the mean and standard deviation of sequence $\mathbf{X}$.
 
-2. robust scaling: $x^{\prime}_{i} = \left(x_i - \text{median}\left(\mathbf{X}\right) \right) / \text{IQR}\left(\mathbf{X}\right)$,
-   with $\text{IQR}$ representing the interquartile range of $\mathbf{X}$.
+2. robust scaling: $x^{\prime}_{i} = \left(x_i - \text{median}\left(\mathbf{X}\right) \right) / Q_n\left(\mathbf{X}\right)$,
+   with $Q_n$ representing the robust $Q_n$ scale estimator of $\mathbf{X}$ [@Croux1992-zz; @Rousseeuw1993-it].
 
 This results in nine types of power transformation. Transformation parameters
 were optimised for each sequence. Subsequently the sum of residual errors 
@@ -885,9 +895,9 @@ and sum of residual errors of the central portion ($\kappa = 0.80$) were compute
 for each sequence after transformation. Then, each method was ranked according 
 to the sum of residual errors (data without outliers) or the sum of residual
 errors of the central portion (data with outliers). The average rank of each
-transformation method was computed over all 10000 sequences in each dataset.
+transformation method was computed over all 100000 sequences in each dataset.
 Average ranks for Yeo-Johnson transformations are shown in Table
-\ref{tab:comparison_methods_simulation_yeo_johnson}.
+\ref{tab:comparison_methods_simulations_yeo_johnson}.
 Location and shift-invariant Yeo-Johnson transformation ranked best for
 all datasets without outliers. The robust variant ranked best in dirty and shifted
 datasets with outliers, but not in the clean dataset.
@@ -927,7 +937,7 @@ data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.v
 \begin{center}
 \caption{
 Comparison of average rank between Yeo-Johnson transformation methods based on either residual error (without outliers) or residual error of the central portion
-(with outliers; $\kappa = 0.80$) over 3 datasets with 10000 sequences each. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
+(with outliers; $\kappa = 0.80$) over 3 datasets with 100000 sequences each. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
 of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
 The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
@@ -942,15 +952,15 @@ transformation & outliers: & no & yes & no & yes & no & yes \\
 
 \midrule
 
-none                                  & &         8.51  &         7.60  &         7.33  &         6.15  &         7.44  &         6.60 \\
-conventional                          & &         3.70  &         5.70  &         3.87  &         7.06  &         6.49  &         5.93 \\
-conventional (z-score norm.)          & &         4.72  &         5.68  &         6.38  &         5.01  &         5.43  &         4.87 \\
-conventional (robust scaling)         & &         4.06  &         6.77  &         5.37  &         5.75  &         4.41  &         5.63 \\
-Raymaekers-Rousseeuw                  & &         4.50  &         3.20  &         4.01  &         4.13  &         6.27  &         5.65 \\
-Raymaekers-Rousseeuw (z-score norm.)  & &         5.27  & \textbf{2.66} &         6.23  &         3.59  &         5.28  &         3.48 \\
-Raymaekers-Rousseeuw (robust scaling) & &         4.70  &         2.95  &         5.32  &         3.77  &         4.36  &         3.66 \\
-invariant                             & & \textbf{3.13} &         6.77  & \textbf{3.22} &         6.12  & \textbf{2.64} &         6.03 \\
-robust invariant                      & &         6.41  &         3.66  &         3.27  & \textbf{3.41} &         2.68  & \textbf{3.10} \\
+none                                  & &         8.52  &         7.62  &         7.35  &         6.17  &         7.46  &         6.62 \\
+conventional                          & &         3.82  &         5.78  &         3.86  &         7.08  &         6.51  &         5.95 \\
+conventional (z-score norm.)          & &         4.70  &         5.75  &         6.44  &         5.07  &         5.48  &         4.93 \\
+conventional (robust scaling)         & &         3.83  &         6.61  &         5.36  &         5.72  &         4.41  &         5.59 \\
+Raymaekers-Rousseeuw                  & &         4.64  &         3.22  &         4.01  &         4.11  &         6.28  &         5.67 \\
+Raymaekers-Rousseeuw (z-score norm.)  & &         5.24  & \textbf{2.66} &         6.25  &         3.62  &         5.29  &         3.50 \\
+Raymaekers-Rousseeuw (robust scaling) & &         4.70  &         2.99  &         5.22  &         3.69  &         4.27  &         3.57 \\
+invariant                             & & \textbf{3.11} &         6.74  & \textbf{3.24} &         6.13  & \textbf{2.63} &         6.03 \\
+robust invariant                      & &         6.44  &         3.64  &         3.27  & \textbf{3.40} &         2.65  & \textbf{3.14} \\
 
 \bottomrule
 \end{tabular}
@@ -1003,15 +1013,15 @@ A common feature in health-related datasets is age.
 Here we use data on 228 patients with lung cancer that was collected and published by Loprinzi et al. [@Loprinzi1994-cd].
 The age in the cohort was $62.4 \pm 9.1$ (mean ± standard deviation) years.
 Applying conventional and invariant Yeo-Johnson transformations to patient age yielded the following results, see Figure \ref{fig:experimental-results-invariance}:
-no transformation ($\sum r_i = 16.5$, $p = 0.69$);
-conventional transformation ($\lambda = 2.0$, $\sum r_i = 11.5$, $\mu_{YJ} = 1.8 \cdot 10^3$, $\sigma_{YJ} = 0.5 \cdot 10^3$, $p = 0.96$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = 2.0$, $\sum r_i = 11.5$, $\mu_{YJ} = 1.8 \cdot 10^3$, $\sigma_{YJ} = 0.5 \cdot 10^3$, $p = 0.96$);
-location- and scale-invariant transformation ($\lambda = 1.3$, $\sum r_i = 8.8$, $\mu_{YJ} = -1.2$, $\sigma_{YJ} = 1.1$, $p = 0.98$);
-and robust location- and scale-invariant transformation ($\lambda = 1.3$, $\sum r_i = 9.3$, $\mu_{YJ} = -1.0$, $\sigma_{YJ} = 1.1$, $p = 0.93$).
+no transformation ($\sum r_i = 16.5$, $p = 0.54$);
+conventional transformation ($\lambda = 2.0$, $\sum r_i = 11.5$, $\mu_{YJ} = 1.8 \cdot 10^3$, $\sigma_{YJ} = 0.5 \cdot 10^3$, $p = 0.92$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 2.0$, $\sum r_i = 11.5$, $\mu_{YJ} = 1.8 \cdot 10^3$, $\sigma_{YJ} = 0.5 \cdot 10^3$, $p = 0.92$);
+location- and scale-invariant transformation ($\lambda = 1.3$, $\sum r_i = 8.8$, $\mu_{YJ} = -1.2$, $\sigma_{YJ} = 1.1$, $p = 0.95$);
+and robust location- and scale-invariant transformation ($\lambda = 1.3$, $\sum r_i = 9.3$, $\mu_{YJ} = -1.0$, $\sigma_{YJ} = 1.1$, $p = 0.87$).
 
 Location- and scale-invariant transformation led to a lower overall residual error, indicating a better transformation to normality.
 Conventional transformations inflated the mean $\mu_{YJ}$ and standard deviation $\sigma_{YJ}$ of the age feature after transformation.
-The empirical central normality test did not detect any statistically significant deviations from central normality for any transformation (all $p \geq 0.93$).
+The empirical central normality test did not detect any statistically significant deviations from central normality for any transformation (all $p \geq 0.87$).
 
 
 ### Penguin body mass
@@ -1020,14 +1030,15 @@ Gorman, Williams and Fraser recorded body mass (in grams) of 342 penguins of thr
 The body mass was $(4.2 \pm 0.8) \cdot 10^3$ (mean ± standard deviation) grams, and not centrally normal ($p < 0.001$).
 Applying conventional and invariant Yeo-Johnson transformations to body mass yielded the following results, see Figure \ref{fig:experimental-results-invariance}:
 no transformation (residual sum $\sum r_i = 48.0$, $p < 0.001$);
-conventional transformation ($\lambda = -0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.1$, $\sigma_{YJ} = 4 \cdot 10^{-3}$, $p = 0.10$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = -0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.1$, $\sigma_{YJ} = 4 \cdot 10^{-3}$, $p = 0.10$);
-location- and scale-invariant transformation ($\lambda = 0.5$, $\sum r_i = 26.8$, $\mu_{YJ} = 0.9$, $\sigma_{YJ} = 0.9$, $p = 0.28$);
-and robust location- and scale-invariant transformation ($\lambda = 0.3$, $\sum r_i = 22.0$, $\mu_{YJ} = 0.7$, $\sigma_{YJ} = 0.9$, $p = 0.69$).
+conventional transformation ($\lambda = -0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.1$, $\sigma_{YJ} = 4 \cdot 10^{-3}$, $p = 0.03$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = -0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.1$, $\sigma_{YJ} = 4 \cdot 10^{-3}$, $p = 0.03$);
+location- and scale-invariant transformation ($\lambda = 0.5$, $\sum r_i = 26.8$, $\mu_{YJ} = 0.9$, $\sigma_{YJ} = 0.9$, $p = 0.12$);
+and robust location- and scale-invariant transformation ($\lambda = 0.3$, $\sum r_i = 22.0$, $\mu_{YJ} = 0.7$, $\sigma_{YJ} = 0.9$, $p = 0.48$).
 
-Location- and scale-invariant transformation produced a lower overall residual errors, indicating a better transformation.
-Moreover, conventional transformations led to low standard deviation $\sigma_{YJ}$ of the body mass feature after transformation.
-The empirical central normality test did not detect any statistically significant deviations from central normality for any transformation (all $p \geq 0.10$).
+Location- and scale-invariant transformation yielded lower overall residual errors, indicating a better transformation to central normality,
+which is reflected by the empirical central normality test results. 
+Conventional transformations led to low standard deviation $\sigma_{YJ}$ of the body mass feature after transformation,
+and the null hypothesis of the empirical central normality test was rejected (at significance level $\alpha = 0.05$) in both cases.
 
 
 ### Latitude in the Ames housing dataset
@@ -1042,7 +1053,7 @@ Raymaekers and Rousseeuw's robust adaptation ($\lambda = 95.4$, $\sum r_i = 315$
 location- and scale-invariant transformation ($\lambda = 1.5$, $\sum r_i = 326$, $\mu_{YJ} = -1.2$, $\sigma_{YJ} = 0.8$, $p < 0.001$);
 and robust location- and scale-invariant transformation ($\lambda = 1.1$, $\sum r_i = 308$, $\mu_{YJ} = -1.3$, $\sigma_{YJ} = 1.2$, $p < 0.001$).
 
-Every transformation reduced the residual sum.
+Every transformation reduced the residual sum compared to the original data.
 None of the transformations yielded a centrally normal distribution.
 Conventional transformations had high values for the $\lambda$ parameter, which could lead to numerical issues.
 
@@ -1074,15 +1085,14 @@ data$plot
 The Top Gear dataset contains data on 297 vehicles that appeared on the BBC television show *Top Gear* [@Alfons2021-kc].
 Within this dataset, the fuel consumption feature contains outliers due to highly fuel-efficient vehicles.
 Applying conventional and invariant Yeo-Johnson transformations to the fuel consumption feature yielded the following results, see Figure \ref{fig:experimental-results-outlier-robustness}:
-no transformation (residual sum $\sum r_i = 54$, $p=0.72$);
+no transformation (residual sum $\sum r_i = 54$, $p=0.55$);
 conventional transformation ($\lambda = -0.1$, $\sum r_i = 55$, $\mu_{YJ} = 3.0$, $\sigma_{YJ} = 0.3$, $p < 0.001$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = 0.8$, $\sum r_i = 48$, $\mu_{YJ} = 29$, $\sigma_{YJ} = 15$, $p=0.37$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 0.8$, $\sum r_i = 48$, $\mu_{YJ} = 29$, $\sigma_{YJ} = 15$, $p=0.21$);
 location- and scale-invariant transformation ($\lambda = -1.3$, $\sum r_i = 44$, $\mu_{YJ} = 0.5$, $\sigma_{YJ} = 0.1$, $p < 0.001$);
-and robust location- and scale-invariant transformation ($\lambda = 1.0$, $\sum r_i = 56$, $\mu_{YJ} = 1.7$, $\sigma_{YJ} = 1.0$, $p=0.76$).
+and robust location- and scale-invariant transformation ($\lambda = 1.0$, $\sum r_i = 56$, $\mu_{YJ} = 1.7$, $\sigma_{YJ} = 1.0$, $p=0.59$).
 
-Outliers cause non-robust transformations to fail to transform the data to a centrally normal distribution
-(empirical central normality test $p < 0.001$ for conventional and invariant transformations).
-Robust transformations produce distributions that are centrally normal (empirical central normality test $p > 0.05$).
+Outliers caused non-robust transformations to fail the empirical central normality test for
+transforming the feature to a centrally normal distribution.
 
 ### Maximum arterial wall thickness in an ischemic stroke dataset
 
@@ -1091,14 +1101,14 @@ These patients underwent Computed Tomography Angiography to characterize the car
 Angiography imaging was then assessed, and various characteristics related to the blood vessels and the disease are measured.
 The maximum arterial wall thickness feature contains several instances with outlier values.
 Applying conventional and invariant Yeo-Johnson transformations to this feature yielded the following results, see Figure \ref{fig:experimental-results-outlier-robustness}:
-no transformation (residual sum $\sum r_i = 110$, $p=0.83$);
-conventional transformation ($\lambda = -0.7$, $\sum r_i = 30$, $\mu_{YJ} = 1.0$, $\sigma_{YJ} = 0.1$, $p=0.003$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = 1.1$, $\sum r_i = 136$, $\mu_{YJ} = 7.2$, $\sigma_{YJ} = 14.3$, $p=0.88$);
-location- and scale-invariant transformation ($\lambda = 0.2$, $\sum r_i = 12$, $\mu_{YJ} = -11.8$, $\sigma_{YJ} = 6.9$, $p=0.15$);
-and robust location- and scale-invariant transformation ($\lambda = -0.3$, $\sum r_i = 30$, $\mu_{YJ} = 0.8$, $\sigma_{YJ} = 0.2$, $p=0.18$).
+no transformation (residual sum $\sum r_i = 110$, $p=0.73$);
+conventional transformation ($\lambda = -0.7$, $\sum r_i = 30$, $\mu_{YJ} = 1.0$, $\sigma_{YJ} = 0.1$, $p < 0.001$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 1.1$, $\sum r_i = 136$, $\mu_{YJ} = 7.2$, $\sigma_{YJ} = 14.3$, $p=0.80$);
+location- and scale-invariant transformation ($\lambda = 0.2$, $\sum r_i = 12$, $\mu_{YJ} = -11.8$, $\sigma_{YJ} = 6.9$, $p=0.07$);
+and robust location- and scale-invariant transformation ($\lambda = -0.3$, $\sum r_i = 30$, $\mu_{YJ} = 0.8$, $\sigma_{YJ} = 0.2$, $p=0.09$).
 
-The conventional non-robust transformation failed to produce a centrally normal distribution (empirical central normality test $p=0.003$).
-Robust transformations produce distributions that are centrally normal (empirical central normality test $p > 0.05$).
+For conventional non-robust transformation the null hypothesis was rejected (at $\alpha = 0.05$), indicating
+that they failed to produce a transformed feature that followed a central normal distribution.
 
 ## Integration into end-to-end machine learning
 
@@ -1314,12 +1324,13 @@ Methods that relied on the empirical probability did not suffer from this issue,
 
 We introduced an empirical test for central normality to assess whether sequences
 deviate from normality in a way that might require closer inspection prior to further processing.
-The empirical test for central normality differs from other tests for normality, 
+The empirical central normality test differs from other tests for normality, 
 such as the Shapiro-Wilk test [@Shapiro1965-zd], as it assesses normality of the central portion
 of a feature, instead of the entire feature. 
-Compared to the central normality test and the Shapiro-Wilk test, the empirical central
-normality test remains consistent in the presence of outliers, although the former
-tests are more powerful when outliers are absent.
+Compared to the Shapiro-Wilk test, the empirical central
+normality test remains consistent when a feature was not sampled from a normal distribution,
+such as a central normal distribution with $\kappa < 1.0$. This enables assessing
+reasonable normality of (transformed) features in the presence of outliers.
 
 This work has the following limitation: We observed several numerical stability
 issues for optimisation criteria other than MLE (Appendix B). These appear in regions

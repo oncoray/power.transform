@@ -1,6 +1,6 @@
 Package: power.transform
 Title: Location and Scale Invariant Power Transformations
-Version: 1.0.1
+Version: 1.0.2
 Authors@R: 
     c(
       person("Alex", "Zwanenburg",
@@ -23,7 +23,7 @@ BugReports: https://github.com/oncoray/power.transform/issues
 License: EUPL
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Imports: 
     data.table,
     methods,
@@ -52,6 +52,7 @@ Collate:
     'Utilities.R'
     'WeightingFunctions.R'
     'WeightingFunctionParameters.R'
+    'aaa.R'
     'power.transform-package.R'
 Suggests: 
     ggplot2 (>= 3.4.0),
