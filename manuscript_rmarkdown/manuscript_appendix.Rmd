@@ -498,7 +498,7 @@ cap <- paste0(
 .plot_shifted_distributions_appendix(manuscript_dir = manuscript_dir, plot_theme = plot_theme)
 ```
 
-# Appendix C: Central normality test and empirical central normality test critical values
+# Appendix C: Empirical central normality test critical values
 
 Critical values for the empirical central normality test at $\kappa = 0.80$ are
 found in Table \ref{tab:empirical-central-normality-critical-statistic}.

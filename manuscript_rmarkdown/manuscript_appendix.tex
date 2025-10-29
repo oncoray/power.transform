@@ -94,7 +94,7 @@ following transformations. The location- and scale-invariant Box-Cox
 transformation is:
 
 \begin{equation}
-\phi_{\text{BC}}^{\lambda, x_0, s} (x_i) = 
+\phi_{\text{BC}}^{\lambda, x_0, s} (x_i) =
 \begin{cases}
 \left( \left(\frac{x_i - x_0}{s} \right)^\lambda - 1 \right) / \lambda & \text{if } \lambda \neq 0\\
 \log\left[\frac{x_i - x_0}{s}\right] & \text{if } \lambda = 0
@@ -105,7 +105,7 @@ where \(x_i - x_0 > 0\). The location- and scale-invariant Yeo-Johnson
 transformation is:
 
 \begin{equation}
-\phi_{\text{YJ}}^{\lambda, x_0, s} (x_i) = 
+\phi_{\text{YJ}}^{\lambda, x_0, s} (x_i) =
 \begin{cases}
 \left( \left( 1 + \frac{x_i - x_0}{s}\right)^\lambda - 1\right) / \lambda & \text{if } \lambda \neq 0 \text{ and } x_i - x_0 \geq 0\\
 \log\left[1 + \frac{x_i - x_0}{s}\right] & \text{if } \lambda = 0 \text{ and } x_i - x_0 \geq 0\\
@@ -537,16 +537,15 @@ The results are shown in Figure
 
 \begin{figure}
 
-{\centering \includegraphics{manuscript_appendix_files/figure-latex/shifted-distributions-appendix-1} 
+{\centering \includegraphics{manuscript_appendix_files/figure-latex/shifted-distributions-appendix-1}
 
 }
 
 \caption{Invariant power transformation produces transformation parameters that are invariant to location and scale. Samples were drawn from normal, right-skewed and left-skewed distributions, respectively, which then underwent a shift $d_{\text{shift}}$ or multiplication by $d_{\text{scale}}$. Estimates of the transformation parameter $\lambda$ for the conventional power transformations show strong dependency on the overall location and scale of the distribution and the optimisation criterion, whereas estimates obtained for the location- and scale-invariant power transformations are constant. For location- and scale-invariant power transformations, the Anderson-Darling criterion leads to unstable estimates of $\lambda$ for skewed distributions, possibly due to large weights being assigned to samples at the upper and lower ends of the distribution.}\label{fig:shifted-distributions-appendix}
 \end{figure}
 
-\section{Appendix C: Central normality test and empirical central
-normality test critical
-values}\label{appendix-c-central-normality-test-and-empirical-central-normality-test-critical-values}
+\section{Appendix C: Empirical central normality test critical
+values}\label{appendix-c}
 
 Critical values for the empirical central normality test at
 \(\kappa = 0.80\) are found in Table
@@ -555,7 +554,7 @@ Critical values for the empirical central normality test at
 \begin{table}
 \begin{center}
 \caption{Critical values of test statistic $\tau_{\alpha, n, \kappa = 0.80}$ for
-central normality at $\kappa = 0.80$, as a function of significance 
+central normality at $\kappa = 0.80$, as a function of significance
 level $\alpha$ and number of instances $n$. The values in this table should be divided by $100$ before use.}
 \label{tab:empirical-central-normality-critical-statistic}
 \begin{tabular}{l | r r r r r r r r r}
@@ -572,7 +571,7 @@ $n$ \textbackslash $\alpha$ & 0.001 & 0.01 & 0.025 & 0.05 & 0.1 & 0.2 & 0.5 & 0.
   200 &   8.65 &  7.05 &  6.37 &  5.80 &  5.22 &  4.57 &  3.57 &  2.84 &  2.54 \\
   500 &   5.54 &  4.47 &  4.03 &  3.69 &  3.30 &  2.90 &  2.27 &  1.81 &  1.63 \\
  1000 &   3.88 &  3.17 &  2.86 &  2.60 &  2.34 &  2.05 &  1.61 &  1.28 &  1.15 \\
- 2000 &   2.79 &  2.24 &  2.03 &  1.84 &  1.66 &  1.45 &  1.14 &  0.91 &  0.82 \\ 
+ 2000 &   2.79 &  2.24 &  2.03 &  1.84 &  1.66 &  1.45 &  1.14 &  0.91 &  0.82 \\
  5000 &   1.75 &  1.41 &  1.27 &  1.17 &  1.05 &  0.92 &  0.72 &  0.58 &  0.52 \\
 10000 &   1.21 &  1.00 &  0.90 &  0.82 &  0.74 &  0.65 &  0.51 &  0.41 &  0.36 \\
 \bottomrule
@@ -599,7 +598,7 @@ Comparison of average rank between Box-Cox transformation methods based on eithe
 (with outliers; $\kappa = 0.80$) over 3 datasets with 100000 sequences each. The clean dataset consists of sequences derived through inverse Box-Cox transformation
 of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions.
 The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
-If necessary, each sequence was shifted so that every element had a strictly positive value. 
+If necessary, each sequence was shifted so that every element had a strictly positive value.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 A rank of 1 is the best and a rank of 9 the worst. For each dataset, the best ranking transformation is marked in bold.
 }
@@ -616,8 +615,8 @@ none                                  & &         7.63  &         6.95  &       
 conventional                          & &         3.11  &         5.98  &         5.41  &         6.18  &         6.51  &         6.10 \\
 conventional (z-score norm.)          & &         4.15  &         6.27  &         4.83  &         6.32  &         4.34  &         5.84 \\
 conventional (robust scaling)         & &         4.20  &         6.29  &         4.84  &         6.31  &         4.35  &         5.84 \\
-Raymaekers-Rousseeuw                  & &         4.50  &         3.56  &         5.39  &         3.69  &         6.30  &         5.80 \\ 
-Raymaekers-Rousseeuw (z-score norm.)  & &         6.23  &         3.80  &         4.93  &         3.85  &         4.48  &         3.50 \\ 
+Raymaekers-Rousseeuw                  & &         4.50  &         3.56  &         5.39  &         3.69  &         6.30  &         5.80 \\
+Raymaekers-Rousseeuw (z-score norm.)  & &         6.23  &         3.80  &         4.93  &         3.85  &         4.48  &         3.50 \\
 Raymaekers-Rousseeuw (robust scaling) & &         6.12  &         3.80  &         4.99  &         3.87  &         4.53  &         3.51 \\
 invariant                             & & \textbf{2.96} &         5.59  & \textbf{3.62} &         6.01  & \textbf{3.51} &         5.58 \\
 robust invariant                      & &         6.10  & \textbf{2.76} &         3.68  & \textbf{2.19} & \textbf{3.51} & \textbf{2.00} \\
@@ -666,7 +665,7 @@ The clean dataset consists of sequences derived through inverse Yeo-Johnson tran
 of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
 The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
-A lower normalised residual error is better. Discrepancies with the rank-based method may occur, as even with normalisation residual errors 
+A lower normalised residual error is better. Discrepancies with the rank-based method may occur, as even with normalisation residual errors
 are not fully comparable between experiments, whereas the ranks achieved within each experiment are.
 }
 \label{tab:comparison_methods_simulations_yeo_johnson_avg_residual}
@@ -773,7 +772,7 @@ larger residuals compared to other methods (Table
 \begin{center}
 \caption{
 Comparison of average rank between Yeo-Johnson transformation methods based on either residual error (without outliers) or residual error of the central portion
-(with outliers; $\kappa = 0.80$) over 3 datasets with 16001 sequences each. Each sequence contained 30 samples or fewer. 
+(with outliers; $\kappa = 0.80$) over 3 datasets with 16001 sequences each. Each sequence contained 30 samples or fewer.
 The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
 of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
 The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
@@ -813,7 +812,7 @@ Each sequence contained 30 samples or fewer. The clean dataset consists of seque
 of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
 The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
-A lower normalised residual error is better. Discrepancies with the rank-based method may occur, as even with normalisation residual errors 
+A lower normalised residual error is better. Discrepancies with the rank-based method may occur, as even with normalisation residual errors
 are not fully comparable between experiments, whereas the ranks achieved within each experiment are.
 }
 \label{tab:comparison_methods_simulations_yeo_johnson_10_30_avg_residual}
@@ -884,7 +883,7 @@ Each sequence contained between 1000 and 10000 samples. The clean dataset consis
 of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
 The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
-A lower normalised residual error is better. Discrepancies with the rank-based method may occur, as even with normalisation residual errors 
+A lower normalised residual error is better. Discrepancies with the rank-based method may occur, as even with normalisation residual errors
 are not fully comparable between experiments, whereas the ranks achieved within each experiment are.
 }
 \label{tab:comparison_methods_simulations_yeo_johnson_1000_10000_avg_residual}
@@ -1143,8 +1142,8 @@ Additional results for Yeo-Johnson transformations are shown in Tables
 
 \begin{table}
 \begin{center}
-\caption{Residual errors for features from real-world datasets after Yeo-Johnson transformation to normality. 
-Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
+\caption{Residual errors for features from real-world datasets after Yeo-Johnson transformation to normality.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
 \label{tab:experimental-results-appendix-residuals}
 \begin{tabular}{l | r r r r r}
@@ -1170,8 +1169,8 @@ robust invariant                      &  9.3 &  30.2 & 55.8 & 308.1 & 22.0 \\
 
 \begin{table}
 \begin{center}
-\caption{Transformation parameter $\lambda$ for features from real-world datasets after Yeo-Johnson transformation to normality. 
-Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
+\caption{Transformation parameter $\lambda$ for features from real-world datasets after Yeo-Johnson transformation to normality.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
 \label{tab:experimental-results-appendix-lambda}
 \begin{tabular}{l | r r r r r}
@@ -1197,7 +1196,7 @@ robust invariant                      & 1.3 & -0.3 &  1.0 &  1.1 &  0.3 \\
 \begin{center}
 \caption{
 p-values of empirical central normality tests ($\kappa = 0.80$) for features from real-world datasets after Yeo-Johnson transformation to normality.
-Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
 \label{tab:experimental-results-appendix-p-value}
 \begin{tabular}{l | r r r r r}
@@ -1233,8 +1232,8 @@ Results for Box-Cox transformations are shown in Tables
 
 \begin{table}
 \begin{center}
-\caption{Residual errors for features from real-world datasets after Box-Cox transformation to normality. 
-Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
+\caption{Residual errors for features from real-world datasets after Box-Cox transformation to normality.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
 \label{tab:experimental-results-appendix-residuals-bc}
 \begin{tabular}{l | r r r r r}
@@ -1247,7 +1246,7 @@ none                                  & 16.5 & 110.1 &  54.5 & 328.4 & 48.0 \\
 conventional                          & 11.5 &  33.5 &  55.7 & 318.9 & 32.2 \\
 conventional (z-score norm.)          & 12.9 &  44.5 &  58.8 & 305.3 & 27.3 \\
 conventional (robust scaling)         & 12.9 &  44.7 &  59.0 & 305.3 & 27.3 \\
-Raymaekers-Rousseeuw                  & 11.5 & 127.1 &  47.6 & 314.8 & 32.2 \\ 
+Raymaekers-Rousseeuw                  & 11.5 & 127.1 &  47.6 & 314.8 & 32.2 \\
 Raymaekers-Rousseeuw (z-score norm.)  & 13.1 &  54.8 & 127.5 & 510.2 & 23.6 \\
 Raymaekers-Rousseeuw (robust scaling) & 13.1 & 100.2 &  44.9 & 423.2 & 23.6 \\
 invariant                             & 11.6 &  28.0 &  48.4 & 311.8 & 27.3 \\
@@ -1260,8 +1259,8 @@ robust invariant                      & 12.8 & 150.1 &  60.5 & 646.0 & 27.4 \\
 
 \begin{table}
 \begin{center}
-\caption{Transformation parameter $\lambda$ for features from real-world datasets after Box-Cox transformation to normality. 
-Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
+\caption{Transformation parameter $\lambda$ for features from real-world datasets after Box-Cox transformation to normality.
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
 \label{tab:experimental-results-appendix-lambda-bc}
 \begin{tabular}{l | r r r r r}
@@ -1289,7 +1288,7 @@ robust invariant                      & 1.3 &  1.2 &  1.1 &  0.4 &  0.1 \\
 \begin{center}
 \caption{
 p-values of empirical central normality tests ($\kappa = 0.80$) for features from real-world datasets after Box-Cox transformation to normality.
-Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling. 
+Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
 \label{tab:experimental-results-appendix-p-value-bc}
 \begin{tabular}{l | r r r r r}
