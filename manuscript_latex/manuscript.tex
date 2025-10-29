@@ -1384,6 +1384,8 @@ of conventional Yeo-Johnson transformation.
 \caption{Estimated marginal effect of learners, normalisation and transformation methods on ranked model performance scores in 36960 machine learning experiments on 231 datasets. The four top-left panels shows the marginal effect of learners vs. the average, i.e. generalised linear models (GLM), L1-regularised LM (Lasso), gradient-boosted LM and random forest. Random forests outperform the average. The top-right panel shows the marginal effect of feature normalisation methods, i.e. no normalisation and z-standardisation. z-standardisation is generally beneficial, but the estimated effect is marginal. The bottom panel shows the marginal effects of different transformation methods, split by normalisation method. The estimated effects are similar in size to the effect of normalisation and marginal. Note that the ranges of the $x$-axes of the three main panels differ. ECNT: empirical central normality test.}\label{fig:marginal-effect-plot}
 \end{figure}
 
+\FloatBarrier
+
 \section{Discussion}\label{discussion}
 
 In their work on power transformation, Box and Cox already mention
@@ -1723,14 +1725,14 @@ that are closely related to test statistics for normality tests.
 Let \(\mathbf{X}\) be a feature with ordered feature values, and
 \(\mathbf{Y}^\lambda =\phi^{\lambda} \left(\mathbf{X} \right)\) and
 \(\mathbf{Y}^{\lambda, x_0, s} =\phi^{\lambda, x_0, s} \left(\mathbf{X} \right)\)
-its transformed values using conventional and shift and scale invariant
-power transformations, respectively. Since power transformations are
-monotonic, \(\mathbf{Y}\) will likewise be ordered.
+its transformed values using conventional and location- and
+scale-invariant power transformations, respectively. Since power
+transformations are monotonic, \(\mathbf{Y}\) will likewise be ordered.
 
 Below we will focus on criteria based on the empirical density function
-and those based on skewness and kurtosis of the transformed featured.
+and those based on skewness and kurtosis of the transformed feature.
 Other potential criteria, such as the Shapiro-Wilk test statistic
-\citet{Raymaekers2024-zf} are not investigated here. In the case of the
+\citep{Shapiro1965-zd} are not investigated here. In the case of the
 Shapiro-Wilk test statistic this is because of lack of scalability to
 features with many (\(> 5000\)) instances, and because adapting the test
 statistic to include weights is not straightforward.
@@ -1771,14 +1773,14 @@ approximating) an integral function, contains an extra scalar
 multiplication term, and does not include weights. The Anderson-Darling
 criterion seeks to minimise the squared Euclidean distance between the
 EDF and the normal CDF, with differences at the upper and lower end of
-the normal CDF receiving more weight than those at the the centre of the
+the normal CDF receiving more weight than those at the centre of the
 CDF.
 
-\subsubsection{Cram\'{e}r-von Mises
-criterion}\label{cramer-von-mises-criterion}
+\subsubsection{Cramér-von Mises
+criterion}\label{cramuxe9r-von-mises-criterion}
 
-The Cram\'{e}r-von Mises criterion is also based on the empirical
-distribution function of \(\mathbf{X}\). We define the Cram\'{e}r-von Mises
+The Cramér-von Mises criterion is also based on the empirical
+distribution function of \(\mathbf{X}\). We define the Cramér-von Mises
 criterion as follows:
 
 \begin{equation}
@@ -1787,24 +1789,24 @@ U_{\text{CvM}} \left(\mathbf{X}, \lambda, x_0 \right) = \frac{1}{\sum_{i=1}^n w_
 
 Here \(w_i\) are weights, and \(\mu\) and \(\sigma\) are location and
 scale parameters. For non-robust power transformations, all \(w_i = 1\).
-The criterion is similar to the Cram\'{e}r-von Mises test statistic
-\citep{Cramer1928-rc, Von_Mises1928-ef}, aside from a additive scalar value and the introduction of
-weights. This criterion, like the Anderson-Darling criterion, seeks to
-minimise the squared Euclidean distance between the EDF and the normal
-CDF. Unlike the Anderson-Darling criterion, this criterion weights all
-instances equally.
+The criterion is similar to the Cramér-von Mises test statistic
+\citep[\citet{Von_Mises1928-ef}]{Cramer1928-rc}, aside from an additive
+scalar value and the introduction of weights. This criterion, like the
+Anderson-Darling criterion, seeks to minimise the squared Euclidean
+distance between the EDF and the normal CDF. Unlike the Anderson-Darling
+criterion, this criterion weights all instances equally.
 
 For conventional power transformations with a fixed shift parameter, the
 transformation \(\phi^{\lambda, x_0, s} (\mathbf{X})\) may be
 substituted by \(\phi^{\lambda} (\mathbf{X})\) in the definition of the
-Cram\'{e}r-von Mises criterion.
+Cramér-von Mises criterion.
 
 \subsection{Skewness-kurtosis-based
 criteria}\label{skewness-kurtosis-based-criteria}
 
 The second class of criteria seeks to reduce skewness and (excess)
 kurtosis of the transformed feature \(\mathbf{Y}\). We will first define
-the location \(\mu\) and scale \(\sigma\) of the the transformed as
+the location \(\mu\) and scale \(\sigma\) of the transformed feature as
 these are required for computing skewness and kurtosis. Here, \(\mu\) is
 defined as:
 
@@ -1812,8 +1814,10 @@ defined as:
 \mu = \frac{\sum_{i=1}^n \phi^{\lambda, x_0, s} \left(x_i \right)} {\sum_{i=1}^n w_i}
 \end{equation}
 
-The location, or mean, is weighted using weights \(w_i\). For non-robust
-transformations, \(w_i = 1\). Then, \(\sigma^2\) is defined as:
+The location, or mean, is weighted by \(w_i\), which equals \(1\) for
+non-robust transformations.
+
+Then, \(\sigma^2\) is defined as:
 
 \begin{equation}
 \sigma^2 = \frac{\sum_{i=1}^n w_i \left(\phi^{\lambda, x_0, s} \left( x_i \right) - \mu \right)^2}{\sum_{i=1}^n w_i}
@@ -1834,13 +1838,14 @@ k = \frac{\sum_{i=1}^n w_i \left(\phi^{\lambda, x_0, s} \left( x_i \right) - \mu
 \subsubsection{D'Agostino criterion}\label{dagostino-criterion}
 
 The D'Agostino criterion defined here follows the D'Agostino \(K^2\)
-test statistic \citep{DAgostino1990-kp}. This test statistic is
-composed of two separate test statistics, one of which is related to
-skewness, and the other to kurtosis. Both test statistics are computed
-in several steps. Let us first define \(\nu=\sum_{i=1}^n w_i\). Thus for
-non-robust power transformations, \(\nu = n\).
+test statistic \citep{DAgostino1990-kp}. This test statistic is composed
+of two separate test statistics, one of which is related to skewness,
+and the other to kurtosis. Both test statistics are computed in several
+steps. Let us first define \(\nu=\sum_{i=1}^n w_i\). Thus for non-robust
+power transformations, \(\nu = n\).
 
-For the skewness test statistic we first compute \citep{DAgostino1990-kp}:
+For the skewness test statistic we first compute
+\citep{DAgostino1990-kp}:
 
 \begin{equation}
 \beta_1 = s \sqrt{ \frac{\left(\nu + 1\right) \left(\nu + 3\right)} {6 \left(\nu - 2\right)} }
@@ -1864,7 +1869,8 @@ The skewness test statistic is then:
 Z_s = \delta \log\left[\frac{\beta_1}{\alpha} + \sqrt{\frac{\beta_1^2}{\alpha^2} + 1} \right]
 \end{equation}
 
-For the kurtosis test statistic we first compute \citep{Anscombe1983-nz, DAgostino1990-kp}:
+For the kurtosis test statistic we first compute
+\citep{DAgostino1990-kp, Anscombe1983-nz}:
 
 \begin{equation}
 \beta_1 = 3 \frac{\nu - 1}{\nu + 1}
@@ -1967,7 +1973,7 @@ The results are shown in Figure
 
 \begin{figure}
 
-{\centering \includegraphics[width=1\linewidth]{appendix_figure_1}
+{\centering \includegraphics{manuscript_appendix_files/figure-latex/shifted-distributions-appendix-1}
 
 }
 
