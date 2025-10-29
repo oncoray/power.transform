@@ -670,7 +670,7 @@ $\mathbf{X}_{\text{c}} = \left\{x_i \in \mathbf{X} \, | \,  \frac{1-\kappa}{2} \
 \begin{definition}[Residual errors of the central portion of a sequence]
 
 Let the residual error for each element of $\mathbf{X}$ be $r_i =\left| \frac{x_i - \mu_M}{\sigma_M} - F^{-1}_{\mathcal{N}}(p_i) \right|$,
-with $\mu_M$ and $\sigma_M$ robust Huber M-estimates of location and scale of $\mathbf{X}$ [@Huber1981-su],
+with $\mu_M$ and $\sigma_M$ robust Huber M-estimates of location and scale of $\mathbf{X}$ \citep{Huber1981-su},
 and $F^{-1}_{\mathcal{N}}$ the quantile function of the normal distribution $\mathcal{N}(0, 1)$.
 
 Then, the set of residual errors of the central portion of $\mathbf{X}$ (i.e. $\mathbf{X}_{\text{c}}$) is
@@ -942,7 +942,6 @@ and scale-invariant Box-Cox and Yeo-Johnson transformations,
 respectively.
 
 \begin{table}
-\begin{center}
 \caption{Optimal weighting parameters and corresponding loss for location- and scale-invariant Box-Cox power transformations.
 $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values,
 and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution.
@@ -973,11 +972,9 @@ $r$ (triangle)           & 0.50 & $(0, 10]$ & 0.80 & 0.81 & $(0, 10]$ & 0.84 & 5
 $r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 0.76 & 0.77 & $(0, 10]$ & 0.76 & 53.2 \\
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{Optimal weighting parameters and corresponding loss for location- and scale-invariant Yeo-Johnson power transformations.
 $p^{*}$ indicates use of the empirical distribution of feature values, $z$ the z-score of the transformed feature values,
 and $r$ the residual error between the z-score of transformed feature values and the expected z-score according to the normal distribution.
@@ -1007,7 +1004,6 @@ $r$ (triangle)           & 0.50 & $(0, 10]$ & 0.87 & 1.00 & $(0, 10]$ & 0.87 & 6
 $r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.06 & 1.00 & $(0, 10]$ & 1.07 & 67.1 \\
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \subsection{Assessing transformations using simulated
@@ -1077,7 +1073,7 @@ residual errors (data without outliers) or the sum of residual errors of
 the central portion (data with outliers). The average rank of each
 transformation method was computed over all 100000 sequences in each
 dataset. Average ranks for Yeo-Johnson transformations are shown in
-Table \ref{tab:comparison_methods_simulation_yeo_johnson}. Location and
+Table \ref{tab:comparison_methods_simulations_yeo_johnson}. Location and
 shift-invariant Yeo-Johnson transformation ranked best for all datasets
 without outliers. The robust variant ranked best in dirty and shifted
 datasets with outliers, but not in the clean dataset. Results for
@@ -1085,7 +1081,6 @@ Box-Cox transformations are shown in Table
 \ref{tab:comparison_methods_simulations_box_cox}.
 
 \begin{table}
-\begin{center}
 \caption{
 Comparison of average rank between Yeo-Johnson transformation methods based on either residual error (without outliers) or residual error of the central portion
 (with outliers; $\kappa = 0.80$) over 3 datasets with 100000 sequences each. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
@@ -1115,7 +1110,6 @@ robust invariant                      & &         6.44  &         3.64  &       
 
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \section{Experimental Results}\label{experimental-results}
@@ -1319,7 +1313,6 @@ we computed the median performance score over all models for each
 dataset and assigned one the following categories:
 
 \begin{itemize}
-\tightlist
 \item
   very easy: \(\text{AUC} \geq 0.90\) or \(\text{RRSE} \leq 0.10\) (57
   datasets)
@@ -1992,7 +1985,6 @@ Critical values for the empirical central normality test at
 \ref{tab:empirical-central-normality-critical-statistic}.
 
 \begin{table}
-\begin{center}
 \caption{Critical values of test statistic $\tau_{\alpha, n, \kappa = 0.80}$ for
 central normality at $\kappa = 0.80$, as a function of significance
 level $\alpha$ and number of instances $n$. The values in this table should be divided by $100$ before use.}
@@ -2016,7 +2008,6 @@ $n$ \textbackslash $\alpha$ & 0.001 & 0.01 & 0.025 & 0.05 & 0.1 & 0.2 & 0.5 & 0.
 10000 &   1.21 &  1.00 &  0.90 &  0.82 &  0.74 &  0.65 &  0.51 &  0.41 &  0.36 \\
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \FloatBarrier
@@ -2034,7 +2025,6 @@ transformations. The results are shown in Table
 \ref{tab:comparison_methods_simulations_box_cox}.
 
 \begin{table}
-\begin{center}
 \caption{
 Comparison of average rank between Box-Cox transformation methods based on either residual error (without outliers) or residual error of the central portion
 (with outliers; $\kappa = 0.80$) over 3 datasets with 100000 sequences each. The clean dataset consists of sequences derived through inverse Box-Cox transformation
@@ -2065,7 +2055,6 @@ robust invariant                      & &         6.10  & \textbf{2.76} &       
 
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \FloatBarrier
@@ -2099,7 +2088,6 @@ Both tables show that the differences between best-performing methods on
 each dataset are relatively small.
 
 \begin{table}
-\begin{center}
 \caption{
 Comparison of average normalised residual error between Yeo-Johnson transformation methods based on either the residual error (without outliers) or the residual error of the central portion
 (with outliers; $\kappa = 0.80$) over 3 datasets with 100000 sequences each. Residual errors were normalised by sequence length to reduce the effect of sequence length on the residual error.
@@ -2131,11 +2119,9 @@ robust invariant                      & & 0.069 & 0.066 & 0.084 & 0.058 & 0.084 
 
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{
 Comparison of average difference in residual error between Yeo-Johnson
 transformation methods and the best transformation method within each
@@ -2176,7 +2162,6 @@ robust invariant                      & & 0.016 & 0.021 & 0.006 & 0.011 & 0.004 
 
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \FloatBarrier
@@ -2211,7 +2196,6 @@ larger residuals compared to other methods (Table
 \ref{tab:comparison_methods_simulations_yeo_johnson_1000_10000_avg_residual}.
 
 \begin{table}
-\begin{center}
 \caption{
 Comparison of average rank between Yeo-Johnson transformation methods based on either residual error (without outliers) or residual error of the central portion
 (with outliers; $\kappa = 0.80$) over 3 datasets with 16001 sequences each. Each sequence contained 30 samples or fewer.
@@ -2242,11 +2226,9 @@ robust invariant                      & &         4.28  & \textbf{3.65} & \textb
 
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{
 Comparison of average normalised residual error between Yeo-Johnson transformation methods based on either the residual error (without outliers) or the residual error of the central portion
 (with outliers; $\kappa = 0.80$) over 3 datasets with 16001 sequences each. Residual errors were normalised by sequence length to reduce the effect of sequence length on the residual error.
@@ -2278,11 +2260,9 @@ robust invariant                      & & 0.141 & 0.125 & 0.140 & 0.119 & 0.140 
 
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{
 Comparison of average rank between Yeo-Johnson transformation methods based on either residual error (without outliers) or residual error of the central portion
 (with outliers; $\kappa = 0.80$) over 3 datasets with 33037 sequences each. Each sequence contained between 1000 and 10000 samples.
@@ -2313,11 +2293,9 @@ robust invariant                      & &         7.83  &         3.70  &       
 
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{
 Comparison of average normalised residual error between Yeo-Johnson transformation methods based on either the residual error (without outliers) or the residual error of the central portion
 (with outliers; $\kappa = 0.80$) over 3 datasets with 16001 sequences each. Residual errors were normalised by sequence length to reduce the effect of sequence length on the residual error.
@@ -2349,7 +2327,6 @@ robust invariant                      & & 0.034 & 0.042 & 0.061 & 0.032 & 0.061 
 
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \FloatBarrier
@@ -2391,7 +2368,6 @@ tails of a distribution. This is also shown in Tables
 outliers.
 
 \begin{table}
-\begin{center}
 \caption{Residual errors for features from simulated clean data without outliers after Yeo-Johnson transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
 \label{tab:clean-transformation-appendix-residuals-yj}
@@ -2417,11 +2393,9 @@ robust invariant                      & & 3.0 & 3.4 & 3.6 &  5.5 & 10.1 &  6.2 &
 \bottomrule
 \end{tabular}
 }
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{Transformation parameter $\lambda$ for features from simulated clean data without outliers after Yeo-Johnson transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
 \label{tab:clean-transformation-appendix-lambda-yj}
@@ -2445,11 +2419,9 @@ robust invariant                      & & 0.5 & 1.1 & 1.5 & -0.1 & 0.7 & 1.7 &  
 \bottomrule
 \end{tabular}
 }
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{
 p-values of empirical central normality tests ($\kappa = 0.80$) for features from simulated clean data without outliers after Yeo-Johnson transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
@@ -2476,11 +2448,9 @@ robust invariant                      & & 0.985 & 0.660 & 0.556 &   0.871  & 0.6
 \bottomrule
 \end{tabular}
 }
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{Residual errors for features from simulated clean data without outliers after Box-Cox transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
 \label{tab:clean-transformation-appendix-residuals-bc}
@@ -2506,11 +2476,9 @@ robust invariant                      & & 2.4 & 4.3 & 4.7 &  8.9 & 20.4 & 6.7 & 
 \bottomrule
 \end{tabular}
 }
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{Transformation parameter $\lambda$ for features from simulated clean data without outliers after Box-Cox transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
 \label{tab:clean-transformation-appendix-lambda-bc}
@@ -2535,11 +2503,9 @@ robust invariant                      & & 0.5 & 0.8 & 0.4 & 0.0 &  0.2 & 0.7 & 0
 \bottomrule
 \end{tabular}
 }
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{
 p-values of empirical central normality tests ($\kappa = 0.80$) for features from simulated clean data without outliers after Box-Cox transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.}
@@ -2565,7 +2531,6 @@ robust invariant                      & & 0.954 & 0.752 & 0.656 &   0.956  & 0.6
 \bottomrule
 \end{tabular}
 }
-\end{center}
 \end{table}
 
 \FloatBarrier
@@ -2588,7 +2553,6 @@ Additional results for Yeo-Johnson transformations are shown in Tables
 \ref{tab:experimental-results-appendix-p-value}.
 
 \begin{table}
-\begin{center}
 \caption{Residual errors for features from real-world datasets after Yeo-Johnson transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
@@ -2611,11 +2575,9 @@ robust invariant                      &  9.3 &  30.2 & 55.8 & 308.1 & 22.0 \\
 
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{Transformation parameter $\lambda$ for features from real-world datasets after Yeo-Johnson transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
@@ -2636,11 +2598,9 @@ invariant                             & 1.3 &  0.2 & -1.3 &  1.5 &  0.5 \\
 robust invariant                      & 1.3 & -0.3 &  1.0 &  1.1 &  0.3 \\
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{
 p-values of empirical central normality tests ($\kappa = 0.80$) for features from real-world datasets after Yeo-Johnson transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
@@ -2665,7 +2625,6 @@ robust invariant                      & 0.867 &    0.091  &    0.587  & $< 0.001
 
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \FloatBarrier
@@ -2678,7 +2637,6 @@ Results for Box-Cox transformations are shown in Tables
 \ref{tab:experimental-results-appendix-p-value-bc}.
 
 \begin{table}
-\begin{center}
 \caption{Residual errors for features from real-world datasets after Box-Cox transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
@@ -2701,11 +2659,9 @@ robust invariant                      & 12.8 & 150.1 &  60.5 & 646.0 & 27.4 \\
 
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{Transformation parameter $\lambda$ for features from real-world datasets after Box-Cox transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 AWT: arterial wall thickness; FE: fuel efficiency; PBM: penguin body mass}
@@ -2728,11 +2684,9 @@ robust invariant                      & 1.3 &  1.2 &  1.1 &  0.4 &  0.1 \\
 
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \begin{table}
-\begin{center}
 \caption{
 p-values of empirical central normality tests ($\kappa = 0.80$) for features from real-world datasets after Box-Cox transformation to normality.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
@@ -2757,7 +2711,6 @@ robust invariant                      & 0.813 &    0.817  &    0.736  & $< 0.001
 
 \bottomrule
 \end{tabular}
-\end{center}
 \end{table}
 
 \FloatBarrier

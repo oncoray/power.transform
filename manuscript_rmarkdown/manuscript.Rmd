@@ -897,7 +897,7 @@ to the sum of residual errors (data without outliers) or the sum of residual
 errors of the central portion (data with outliers). The average rank of each
 transformation method was computed over all 100000 sequences in each dataset.
 Average ranks for Yeo-Johnson transformations are shown in Table
-\ref{tab:comparison_methods_simulation_yeo_johnson}.
+\ref{tab:comparison_methods_simulations_yeo_johnson}.
 Location and shift-invariant Yeo-Johnson transformation ranked best for
 all datasets without outliers. The robust variant ranked best in dirty and shifted
 datasets with outliers, but not in the clean dataset.
