@@ -99,7 +99,7 @@ ecn_test <- function(
     kappa = 0.8
 ) {
   # Prevent CRAN NOTE due to non-standard use of variables by data.table.
-  p_observed <- alpha <- NULL
+  p_observed <- alpha <- alpha_filter <- NULL
 
   # Checks on input data.
   if (!is.numeric(x) && !is.null(x)) {
