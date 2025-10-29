@@ -684,7 +684,7 @@ get_annotation_settings <- function(ggtheme = NULL) {
 
   # Update plot theme
   plot_theme$plot.tag.position <- "top"
-  plot_theme$plot.tag$margin <- grid::unit(c(0, 0, 5, 0), "points")
+  plot_theme$plot.tag$margin <- ggplot2::margin(0, 0, 5, 0)
   plot_theme$plot.tag$face <- "bold"
 
   ..create_plot <- function(
