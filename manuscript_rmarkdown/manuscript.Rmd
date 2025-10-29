@@ -560,7 +560,7 @@ The $\lambda$ parameter for conventional power transformations (Eqn. \ref{eqn:bo
 as well as $\lambda$, $x_0$ and $s$ parameters for location- and scale-invariant power transformations 
 (Eqn. \ref{eqn:box-cox-invariant} and \ref{eqn:yeo-johnson-invariant}) were estimated using the BOBYQA algorithm 
 for derivative-free bound constraint optimisation [@Powell2009-zb] through maximum likelihood estimation.
-The required algorithms were implemented in the `power.transform` R software package [@Zwanenburg2024-kq] (version 1.0.1).
+The required algorithms were implemented in the `power.transform` R software package [@Zwanenburg2024-kq] (version 1.0.2).
 Of note, the `power.transform` package shifts feature values into the positive domain if negative or zero values are present for Box-Cox power transformations.
 
 
@@ -648,7 +648,7 @@ $n \in \left\{\lfloor 10^\nu \rfloor | \nu \in \left\{0.7500, 0.8125, \ldots, 3.
 
 Each sequence was created as follows: first $n$ values are sampled from $\mathcal{N}(0, 1)$.
 Then, the elements outside the central portion of the sequence (i.e. $\mathbf{X} \setminus \mathbf{X}_{\text{c}}$) are replaced.
-Elements with $pi < \frac{1-\kappa}{2}$ are replaced with values sampled from $\mathcal{U}(-10,\min(\mathbf{X}_{\text{c}}))$,
+Elements with $p_i < \frac{1-\kappa}{2}$ are replaced with values sampled from $\mathcal{U}(-10,\min(\mathbf{X}_{\text{c}}))$,
 and elements with $p_i > \frac{1 + \kappa}{2}$ are replaced with values sampled from $\mathcal{U}(\max(\mathbf{X}_{\text{c}}), 10)$.
 
 For each sequence, the p-value for the respective test was used to reject the null
@@ -670,6 +670,8 @@ cap <- paste0(
   "central normal distributions with $\\kappa \\in \\left\\{0.6, 0.8, 1.0\\right\\}$. ",
   "Three empirical central normality (ECN) tests were performed, parameterised with same value for the central portion $\\kappa$. ",
   "Additionally, the Shapiro-Wilk test was assessed. ",
+  "The dashed line indicates the expected type I error rate for rejecting the null hypothesis ",
+  "at significance level $\\alpha = 0.05$. ",
   "ECN: empirical central normality"
 )
 
@@ -691,7 +693,7 @@ cap <- paste0(
   "Bi-modal distributions and empirical central normality test results. ",
   "The feature (black) is a mixture of two identical sample sets (blue and orange, $n = 100$) ",
   "drawn from normal distributions that are offset by a distance $d$. ",
-  "The empirical central normality ($\\kappa = 0.80$) is used to test the hypothesis that the mixture is sampled from ",
+  "The empirical central normality test ($\\kappa = 0.80$) is used to test the hypothesis that the mixture is sampled from ",
   "a central normal distribution. As may be observed, with increasing offset $d$ ",
   "the test's p-value decreases. ",
   "Quantile-quantile plots are drawn below each distribution."
@@ -1011,15 +1013,15 @@ A common feature in health-related datasets is age.
 Here we use data on 228 patients with lung cancer that was collected and published by Loprinzi et al. [@Loprinzi1994-cd].
 The age in the cohort was $62.4 \pm 9.1$ (mean ± standard deviation) years.
 Applying conventional and invariant Yeo-Johnson transformations to patient age yielded the following results, see Figure \ref{fig:experimental-results-invariance}:
-no transformation ($\sum r_i = 16.5$, $p = 0.69$);
-conventional transformation ($\lambda = 2.0$, $\sum r_i = 11.5$, $\mu_{YJ} = 1.8 \cdot 10^3$, $\sigma_{YJ} = 0.5 \cdot 10^3$, $p = 0.96$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = 2.0$, $\sum r_i = 11.5$, $\mu_{YJ} = 1.8 \cdot 10^3$, $\sigma_{YJ} = 0.5 \cdot 10^3$, $p = 0.96$);
-location- and scale-invariant transformation ($\lambda = 1.3$, $\sum r_i = 8.8$, $\mu_{YJ} = -1.2$, $\sigma_{YJ} = 1.1$, $p = 0.98$);
-and robust location- and scale-invariant transformation ($\lambda = 1.3$, $\sum r_i = 9.3$, $\mu_{YJ} = -1.0$, $\sigma_{YJ} = 1.1$, $p = 0.93$).
+no transformation ($\sum r_i = 16.5$, $p = 0.54$);
+conventional transformation ($\lambda = 2.0$, $\sum r_i = 11.5$, $\mu_{YJ} = 1.8 \cdot 10^3$, $\sigma_{YJ} = 0.5 \cdot 10^3$, $p = 0.92$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 2.0$, $\sum r_i = 11.5$, $\mu_{YJ} = 1.8 \cdot 10^3$, $\sigma_{YJ} = 0.5 \cdot 10^3$, $p = 0.92$);
+location- and scale-invariant transformation ($\lambda = 1.3$, $\sum r_i = 8.8$, $\mu_{YJ} = -1.2$, $\sigma_{YJ} = 1.1$, $p = 0.95$);
+and robust location- and scale-invariant transformation ($\lambda = 1.3$, $\sum r_i = 9.3$, $\mu_{YJ} = -1.0$, $\sigma_{YJ} = 1.1$, $p = 0.87$).
 
 Location- and scale-invariant transformation led to a lower overall residual error, indicating a better transformation to normality.
 Conventional transformations inflated the mean $\mu_{YJ}$ and standard deviation $\sigma_{YJ}$ of the age feature after transformation.
-The empirical central normality test did not detect any statistically significant deviations from central normality for any transformation (all $p \geq 0.93$).
+The empirical central normality test did not detect any statistically significant deviations from central normality for any transformation (all $p \geq 0.87$).
 
 
 ### Penguin body mass
@@ -1028,14 +1030,15 @@ Gorman, Williams and Fraser recorded body mass (in grams) of 342 penguins of thr
 The body mass was $(4.2 \pm 0.8) \cdot 10^3$ (mean ± standard deviation) grams, and not centrally normal ($p < 0.001$).
 Applying conventional and invariant Yeo-Johnson transformations to body mass yielded the following results, see Figure \ref{fig:experimental-results-invariance}:
 no transformation (residual sum $\sum r_i = 48.0$, $p < 0.001$);
-conventional transformation ($\lambda = -0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.1$, $\sigma_{YJ} = 4 \cdot 10^{-3}$, $p = 0.10$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = -0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.1$, $\sigma_{YJ} = 4 \cdot 10^{-3}$, $p = 0.10$);
-location- and scale-invariant transformation ($\lambda = 0.5$, $\sum r_i = 26.8$, $\mu_{YJ} = 0.9$, $\sigma_{YJ} = 0.9$, $p = 0.28$);
-and robust location- and scale-invariant transformation ($\lambda = 0.3$, $\sum r_i = 22.0$, $\mu_{YJ} = 0.7$, $\sigma_{YJ} = 0.9$, $p = 0.69$).
+conventional transformation ($\lambda = -0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.1$, $\sigma_{YJ} = 4 \cdot 10^{-3}$, $p = 0.03$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = -0.5$, $\sum r_i = 32.2$, $\mu_{YJ} = 2.1$, $\sigma_{YJ} = 4 \cdot 10^{-3}$, $p = 0.03$);
+location- and scale-invariant transformation ($\lambda = 0.5$, $\sum r_i = 26.8$, $\mu_{YJ} = 0.9$, $\sigma_{YJ} = 0.9$, $p = 0.12$);
+and robust location- and scale-invariant transformation ($\lambda = 0.3$, $\sum r_i = 22.0$, $\mu_{YJ} = 0.7$, $\sigma_{YJ} = 0.9$, $p = 0.48$).
 
-Location- and scale-invariant transformation produced a lower overall residual errors, indicating a better transformation.
-Moreover, conventional transformations led to low standard deviation $\sigma_{YJ}$ of the body mass feature after transformation.
-The empirical central normality test did not detect any statistically significant deviations from central normality for any transformation (all $p \geq 0.10$).
+Location- and scale-invariant transformation yielded lower overall residual errors, indicating a better transformation to central normality,
+which is reflected by the empirical central normality test results. 
+Conventional transformations led to low standard deviation $\sigma_{YJ}$ of the body mass feature after transformation,
+and the null hypothesis of the empirical central normality test was rejected (at significance level $\alpha = 0.05$) in both cases.
 
 
 ### Latitude in the Ames housing dataset
@@ -1050,7 +1053,7 @@ Raymaekers and Rousseeuw's robust adaptation ($\lambda = 95.4$, $\sum r_i = 315$
 location- and scale-invariant transformation ($\lambda = 1.5$, $\sum r_i = 326$, $\mu_{YJ} = -1.2$, $\sigma_{YJ} = 0.8$, $p < 0.001$);
 and robust location- and scale-invariant transformation ($\lambda = 1.1$, $\sum r_i = 308$, $\mu_{YJ} = -1.3$, $\sigma_{YJ} = 1.2$, $p < 0.001$).
 
-Every transformation reduced the residual sum.
+Every transformation reduced the residual sum compared to the original data.
 None of the transformations yielded a centrally normal distribution.
 Conventional transformations had high values for the $\lambda$ parameter, which could lead to numerical issues.
 
@@ -1082,15 +1085,14 @@ data$plot
 The Top Gear dataset contains data on 297 vehicles that appeared on the BBC television show *Top Gear* [@Alfons2021-kc].
 Within this dataset, the fuel consumption feature contains outliers due to highly fuel-efficient vehicles.
 Applying conventional and invariant Yeo-Johnson transformations to the fuel consumption feature yielded the following results, see Figure \ref{fig:experimental-results-outlier-robustness}:
-no transformation (residual sum $\sum r_i = 54$, $p=0.72$);
+no transformation (residual sum $\sum r_i = 54$, $p=0.55$);
 conventional transformation ($\lambda = -0.1$, $\sum r_i = 55$, $\mu_{YJ} = 3.0$, $\sigma_{YJ} = 0.3$, $p < 0.001$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = 0.8$, $\sum r_i = 48$, $\mu_{YJ} = 29$, $\sigma_{YJ} = 15$, $p=0.37$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 0.8$, $\sum r_i = 48$, $\mu_{YJ} = 29$, $\sigma_{YJ} = 15$, $p=0.21$);
 location- and scale-invariant transformation ($\lambda = -1.3$, $\sum r_i = 44$, $\mu_{YJ} = 0.5$, $\sigma_{YJ} = 0.1$, $p < 0.001$);
-and robust location- and scale-invariant transformation ($\lambda = 1.0$, $\sum r_i = 56$, $\mu_{YJ} = 1.7$, $\sigma_{YJ} = 1.0$, $p=0.76$).
+and robust location- and scale-invariant transformation ($\lambda = 1.0$, $\sum r_i = 56$, $\mu_{YJ} = 1.7$, $\sigma_{YJ} = 1.0$, $p=0.59$).
 
-Outliers cause non-robust transformations to fail to transform the data to a centrally normal distribution
-(empirical central normality test $p < 0.001$ for conventional and invariant transformations).
-Robust transformations produce distributions that are centrally normal (empirical central normality test $p > 0.05$).
+Outliers caused non-robust transformations to fail the empirical central normality test for
+transforming the feature to a centrally normal distribution.
 
 ### Maximum arterial wall thickness in an ischemic stroke dataset
 
@@ -1099,14 +1101,14 @@ These patients underwent Computed Tomography Angiography to characterize the car
 Angiography imaging was then assessed, and various characteristics related to the blood vessels and the disease are measured.
 The maximum arterial wall thickness feature contains several instances with outlier values.
 Applying conventional and invariant Yeo-Johnson transformations to this feature yielded the following results, see Figure \ref{fig:experimental-results-outlier-robustness}:
-no transformation (residual sum $\sum r_i = 110$, $p=0.83$);
-conventional transformation ($\lambda = -0.7$, $\sum r_i = 30$, $\mu_{YJ} = 1.0$, $\sigma_{YJ} = 0.1$, $p=0.003$);
-Raymaekers and Rousseeuw's robust adaptation ($\lambda = 1.1$, $\sum r_i = 136$, $\mu_{YJ} = 7.2$, $\sigma_{YJ} = 14.3$, $p=0.88$);
-location- and scale-invariant transformation ($\lambda = 0.2$, $\sum r_i = 12$, $\mu_{YJ} = -11.8$, $\sigma_{YJ} = 6.9$, $p=0.15$);
-and robust location- and scale-invariant transformation ($\lambda = -0.3$, $\sum r_i = 30$, $\mu_{YJ} = 0.8$, $\sigma_{YJ} = 0.2$, $p=0.18$).
+no transformation (residual sum $\sum r_i = 110$, $p=0.73$);
+conventional transformation ($\lambda = -0.7$, $\sum r_i = 30$, $\mu_{YJ} = 1.0$, $\sigma_{YJ} = 0.1$, $p < 0.001$);
+Raymaekers and Rousseeuw's robust adaptation ($\lambda = 1.1$, $\sum r_i = 136$, $\mu_{YJ} = 7.2$, $\sigma_{YJ} = 14.3$, $p=0.80$);
+location- and scale-invariant transformation ($\lambda = 0.2$, $\sum r_i = 12$, $\mu_{YJ} = -11.8$, $\sigma_{YJ} = 6.9$, $p=0.07$);
+and robust location- and scale-invariant transformation ($\lambda = -0.3$, $\sum r_i = 30$, $\mu_{YJ} = 0.8$, $\sigma_{YJ} = 0.2$, $p=0.09$).
 
-The conventional non-robust transformation failed to produce a centrally normal distribution (empirical central normality test $p=0.003$).
-Robust transformations produce distributions that are centrally normal (empirical central normality test $p > 0.05$).
+For conventional non-robust transformation the null hypothesis was rejected (at $\alpha = 0.05$), indicating
+that they failed to produce a transformed feature that followed a central normal distribution.
 
 ## Integration into end-to-end machine learning
 
