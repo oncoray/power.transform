@@ -1194,8 +1194,8 @@
       # Dirty data that is shifted and scaled to be far from 0.0.
       x <- power.transform::ragn(
         n,
-        location = 100.0,
-        scale = 0.001 * 1 / sqrt(2),
+        location = 1000.0,
+        scale = 1 / sqrt(2),
         alpha = alpha,
         beta = beta
       )
