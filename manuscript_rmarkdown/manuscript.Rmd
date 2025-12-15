@@ -872,7 +872,7 @@ resulting in sequences with between $10$ and $10000$ elements.
   with randomly drawn skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ 
   and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$.
   The sequences are drawn from a range of skewed, unimodal, but not necessarily 
-  normal, distributions, to reflect less \textit{clean} data then that presented in the first dataset.
+  normal, distributions, to reflect less \textit{clean} data than presented in the first dataset.
   
 - A \textit{shifted} dataset with each sequence drawn from $\mathcal{AGN}\left(\mu = 1000, \sigma = 1/\sqrt{2} , \alpha, \beta \right)$,
   with randomly drawn skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ 
