@@ -182,7 +182,7 @@ First, we define a (numeric) feature. Throughout this work, whenever reference i
 a numeric feature is meant unless noted otherwise.
 
 \begin{definition}[Numeric feature]
-A numeric feature is a vector $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i \in  \right\}$ of length $n$.
+A numeric feature is a vector $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i \in \mathcal{R} \right\}$ of length $n$.
 \end{definition}
 
 ## Location- and scale-invariant power transformation
