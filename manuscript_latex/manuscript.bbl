@@ -379,6 +379,35 @@ Huber%
 }{%
 Huber%
 }{%
+{\protect \APACyear {1964}}%
+}]{%
+Huber1964-xk}
+\APACinsertmetastar {%
+Huber1964-xk}%
+\begin{APACrefauthors}%
+Huber, P.J.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{1964}{{\APACmonth{03}}}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Robust estimation of a location parameter} {Robust
+  estimation of a location parameter}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Ann. Math. Stat.}{35}{1}{73--101,}
+\newblock
+\begin{APACrefDOI} \doi{10.1214/aoms/1177703732} \end{APACrefDOI}
+\newblock
+
+\newblock
+
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Huber%
+}{%
+Huber%
+}{%
 {\protect \APACyear {1981}}%
 }]{%
 Huber1981-su}
@@ -648,6 +677,38 @@ Rousseeuw, P.J.%
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
+Rousseeuw%
+\ \BBA {} Croux%
+}{%
+Rousseeuw%
+\ \BBA {} Croux%
+}{%
+{\protect \APACyear {1994}}%
+}]{%
+Rousseeuw1994-ur}
+\APACinsertmetastar {%
+Rousseeuw1994-ur}%
+\begin{APACrefauthors}%
+Rousseeuw, P.J.%
+\BCBT {}\ \BBA {} Croux, C.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{1994}{{\APACmonth{08}}}{}.
+\newblock
+{\BBOQ}\APACrefatitle {The bias of k-step {M}-estimators} {The bias of k-step
+  {M}-estimators}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Stat. Probab. Lett.}{20}{5}{411--420,}
+\newblock
+\begin{APACrefDOI} \doi{10.1016/0167-7152(94)90133-3} \end{APACrefDOI}
+\newblock
+
+\newblock
+
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
 Shapiro%
 \ \BBA {} Wilk%
 }{%
@@ -783,6 +844,32 @@ Tukey, J.W.%
 \APACrefbtitle {Exploratory Data Analysis} {Exploratory data analysis}.
 \newblock
 \APACaddressPublisher{}{Addison-Wesley Publishing Company}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+van~der Vaart%
+}{%
+van~der Vaart%
+}{%
+{\protect \APACyear {1998}}%
+}]{%
+van-der-Vaart1998-xu}
+\APACinsertmetastar {%
+van-der-Vaart1998-xu}%
+\begin{APACrefauthors}%
+van~der Vaart, A.W.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{1998}{{\APACmonth{10}}}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Quantiles and Order Statistics} {Quantiles and order
+  statistics}.{\BBCQ}
+\newblock
+ \APACrefbtitle {Asymptotic Statistics} {Asymptotic statistics}\ (\BPGS\
+  304--315).
+\newblock
+\APACaddressPublisher{Cambridge}{Cambridge University Press}.
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%

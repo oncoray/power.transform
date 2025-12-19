@@ -182,7 +182,7 @@ First, we define a (numeric) feature. Throughout this work, whenever reference i
 a numeric feature is meant unless noted otherwise.
 
 \begin{definition}[Numeric feature]
-A numeric feature is a vector $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i \in \mathcal{R} \right\}$ of length $n$.
+A numeric feature is a vector $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i \in \mathbb{R} \right\}$ of length $n$.
 \end{definition}
 
 ## Location- and scale-invariant power transformation
@@ -548,7 +548,7 @@ $\sup_{r_j \in \mathbf{R}_{\text{c}}} r_j \rightarrow 0$, if and only if
 for all $x_i \in \mathbf{X}_c$, $\frac{x_i - \mu_M}{\sigma_M} \rightarrow \hat{F}^{-1}_{\mathcal{N}}(p_i)$.
 Thus, the requirement is that the estimators for location and scale $\mu_M$ and $\sigma_M$
 are bias-free. M-estimators for location and scale satisfy this condition, if $\mathbf{X}$ 
-follows a normal distribution without contamination [Huber1964-xk; @Huber1981-su].
+follows a normal distribution without contamination [@Huber1964-xk; @Huber1981-su].
 
 \begin{definition}[Central normality test]
 The null-hypothesis $\mathcal{H}_0$ is that $\mathbf{X}$ was randomly sampled
