@@ -587,10 +587,10 @@ data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.v
 \begin{center}
 \caption{
 Comparison of average rank between Box-Cox transformation methods based on either residual error (without outliers) or residual error of the central portion
-(with outliers; $\kappa = 0.80$) over 3 datasets with 100000 sequences each. The clean dataset consists of sequences derived through inverse Box-Cox transformation
-of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions.
-The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 1000.
-If necessary, each sequence was shifted so that every element had a strictly positive value. 
+(with outliers; $\kappa = 0.80$) over 3 datasets with 100000 features each. The clean dataset consists of features derived through inverse Box-Cox transformation
+of data sampled from a standard normal distribution. The dirty dataset contains features sampled from asymmetric generalised normal distributions.
+The shifted dataset also contains features sampled from asymmetric generalised normal distributions, but centred at 1000.
+If necessary, each feature was shifted so that every element had a strictly positive value. 
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 A rank of 1 is the best and a rank of 9 the worst. For each dataset, the best ranking transformation is marked in bold.
 }
@@ -624,22 +624,22 @@ robust invariant                      & &         6.10  & \textbf{2.76} &       
 ## Ranking Yeo-Johnson transformations: residual errors
 
 In the main manuscript, transformation methods are compared by ranking within
-each experiment, defined by the combination of sequence and absence/presence of
+each experiment, defined by the combination of feature and absence/presence of
 outliers. This allows for direct comparison of methods between different
 experiments.
 
 Table \ref{tab:comparison_methods_simulations_yeo_johnson_avg_residual} shows
 the average normalised residual error for these transformation methods. This
 metric is computed from the residual error and the residual error of the central
-portion ($\kappa = 0.80$) for sequences without and with outliers, respectively.
+portion ($\kappa = 0.80$) for features without and with outliers, respectively.
 In each experiment, the respective residual error was normalised by dividing with
-the sequence length, and can be interpreted as the average residual error of a
-single sample. This reduces the effect of sequence length on the residual error.
+the feature length, and can be interpreted as the average residual error of a
+single sample. This reduces the effect of feature length on the residual error.
 
 Table \ref{tab:comparison_methods_simulations_yeo_johnson_avg_residual_diff} shows
 the average normalised difference in residual error between the best method for each
 experiment and the individual methods. As above, normalisation was done by
-division by the length of the sequence corresponding to each experiment.
+division by the length of the feature corresponding to each experiment.
 
 Both tables show that the differences between best-performing methods on each
 dataset are relatively small.
@@ -692,10 +692,10 @@ data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.v
 \begin{center}
 \caption{
 Comparison of average normalised residual error between Yeo-Johnson transformation methods based on either the residual error (without outliers) or the residual error of the central portion
-(with outliers; $\kappa = 0.80$) over 3 datasets with 100000 sequences each. Residual errors were normalised by sequence length to reduce the effect of sequence length on the residual error.
-The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
-of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
-The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 1000.
+(with outliers; $\kappa = 0.80$) over 3 datasets with 100000 features each. Residual errors were normalised by feature length to reduce the effect of feature length on the residual error.
+The clean dataset consists of features derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains features sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains features sampled from asymmetric generalised normal distributions, but centred at 1000.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 A lower normalised residual error is better. Discrepancies with the rank-based method may occur, as even with normalisation residual errors 
 are not fully comparable between experiments, whereas the ranks achieved within each experiment are.
@@ -731,15 +731,15 @@ robust invariant                      & & 0.069 & 0.066 & 0.084 & 0.058 & 0.084 
 \caption{
 Comparison of average difference in residual error between Yeo-Johnson
 transformation methods and the best transformation method within each
-experiment, normalised by the corresponding sequence length. This is based on
+experiment, normalised by the corresponding feature length. This is based on
 either the residual error (without outliers) or the residual error of the
 central portion (with outliers; $\kappa = 0.80$) over 3 datasets with 100000
-sequences each. Residual errors were normalised by sequence length to reduce the
-effect of sequence length on the residual error. The clean dataset consists of
-sequences derived through inverse Yeo-Johnson transformation of data sampled
-from a standard normal distribution. The dirty dataset contains sequences
+features each. Residual errors were normalised by feature length to reduce the
+effect of feature length on the residual error. The clean dataset consists of
+features derived through inverse Yeo-Johnson transformation of data sampled
+from a standard normal distribution. The dirty dataset contains features
 sampled from asymmetric generalised normal distributions, centred at 0. The
-shifted dataset also contains sequences sampled from asymmetric generalised
+shifted dataset also contains features sampled from asymmetric generalised
 normal distributions, but centred at 1000. Several
 transformation methods include normalisation before transformation, indicated by
 z-score normalisation (norm.) or robust scaling. A lower difference is better,
@@ -773,21 +773,21 @@ robust invariant                      & & 0.016 & 0.021 & 0.006 & 0.011 & 0.004 
 
 \FloatBarrier
 
-## Ranking Yeo-Johnson transformations: effect of sequence length
+## Ranking Yeo-Johnson transformations: effect of feature length
 
 The main manuscript shows the overall ranking of different Yeo-Johnson-based power transformation methods across three
 sets of problems.
-To assess the effect of limited sequence lengths, we perform ranking on subsets of the experiment.
-The results for ranking the subset of sequences with 30 samples or fewer ($n = 16001$) 
+To assess the effect of limited feature lengths, we perform ranking on subsets of the experiment.
+The results for ranking the subset of features with 30 samples or fewer ($n = 16001$) 
 is shown in Table \ref{tab:comparison_methods_simulations_yeo_johnson_10_30}.
-In the clean dataset without outliers, where all sequences were sampled from a normal distribution and 
+In the clean dataset without outliers, where all features were sampled from a normal distribution and 
 then underwent an inverse Yeo-Johnson transformation,
 conventional and location- and scale-invariant are ranked similarly, with no clear advantage
 to any method. For the remaining datasets, the robust location- and scale-invariant
 method ranked best. It slightly outperformed (robustly scaled) conventional Yeo-Johnson transformations
 and (z-score normalised) robust transformations [@Raymaekers2024-zf], in datasets without and with outliers, respectively.
 
-In the subset for larger sequence lengths, with at least 1000 samples per sequence ($n = 33037$),
+In the subset for larger feature lengths, with at least 1000 samples per feature ($n = 33037$),
 the cost of making the location- and scale-invariant transformation robust against outliers
 becomes more apparent (Table \ref{tab:comparison_methods_simulations_yeo_johnson_1000_10000}).
 In the clean dataset without outliers, down-weighting of the tails of the distribution by
@@ -839,10 +839,10 @@ data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.v
 \begin{center}
 \caption{
 Comparison of average rank between Yeo-Johnson transformation methods based on either residual error (without outliers) or residual error of the central portion
-(with outliers; $\kappa = 0.80$) over 3 datasets with 16001 sequences each. Each sequence contained 30 samples or fewer. 
-The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
-of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
-The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 1000.
+(with outliers; $\kappa = 0.80$) over 3 datasets with 16001 features each. Each feature contained 30 samples or fewer. 
+The clean dataset consists of features derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains features sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains features sampled from asymmetric generalised normal distributions, but centred at 1000.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 A rank of 1 is the best and a rank of 9 the worst. For each dataset, the best ranking transformation is marked in bold.
 }
@@ -876,10 +876,10 @@ robust invariant                      & &         4.28  & \textbf{3.65} & \textb
 \begin{center}
 \caption{
 Comparison of average normalised residual error between Yeo-Johnson transformation methods based on either the residual error (without outliers) or the residual error of the central portion
-(with outliers; $\kappa = 0.80$) over 3 datasets with 16001 sequences each. Residual errors were normalised by sequence length to reduce the effect of sequence length on the residual error.
-Each sequence contained 30 samples or fewer. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
-of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
-The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 1000.
+(with outliers; $\kappa = 0.80$) over 3 datasets with 16001 features each. Residual errors were normalised by feature length to reduce the effect of feature length on the residual error.
+Each feature contained 30 samples or fewer. The clean dataset consists of features derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains features sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains features sampled from asymmetric generalised normal distributions, but centred at 1000.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 A lower normalised residual error is better. Discrepancies with the rank-based method may occur, as even with normalisation residual errors 
 are not fully comparable between experiments, whereas the ranks achieved within each experiment are.
@@ -953,10 +953,10 @@ data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.v
 \begin{center}
 \caption{
 Comparison of average rank between Yeo-Johnson transformation methods based on either residual error (without outliers) or residual error of the central portion
-(with outliers; $\kappa = 0.80$) over 3 datasets with 33037 sequences each. Each sequence contained between 1000 and 10000 samples.
-The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
-of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
-The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 1000.
+(with outliers; $\kappa = 0.80$) over 3 datasets with 33037 features each. Each feature contained between 1000 and 10000 samples.
+The clean dataset consists of features derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains features sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains features sampled from asymmetric generalised normal distributions, but centred at 1000.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 A rank of 1 is the best and a rank of 9 the worst. For each dataset, the best ranking transformation is marked in bold.
 }
@@ -989,10 +989,10 @@ robust invariant                      & &         7.83  &         3.70  &       
 \begin{center}
 \caption{
 Comparison of average normalised residual error between Yeo-Johnson transformation methods based on either the residual error (without outliers) or the residual error of the central portion
-(with outliers; $\kappa = 0.80$) over 3 datasets with 16001 sequences each. Residual errors were normalised by sequence length to reduce the effect of sequence length on the residual error.
-Each sequence contained between 1000 and 10000 samples. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
-of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
-The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 1000.
+(with outliers; $\kappa = 0.80$) over 3 datasets with 16001 features each. Residual errors were normalised by feature length to reduce the effect of feature length on the residual error.
+Each feature contained between 1000 and 10000 samples. The clean dataset consists of features derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains features sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains features sampled from asymmetric generalised normal distributions, but centred at 1000.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 A lower normalised residual error is better. Discrepancies with the rank-based method may occur, as even with normalisation residual errors 
 are not fully comparable between experiments, whereas the ranks achieved within each experiment are.
@@ -1026,15 +1026,15 @@ robust invariant                      & & 0.034 & 0.042 & 0.061 & 0.032 & 0.061 
 ## Examples using clean data
 
 Robust transformations are hypothesised to have a cost in efficiency for data
-without outliers, i.e. clean data. Here we draw nine sequences with elements randomly drawn from a standard normal
+without outliers, i.e. clean data. Here we draw nine features with elements randomly drawn from a standard normal
 distribution $\mathcal{N}(0,1)$. Subsequently, we perform an inverse transformation
 $\left(\phi^{\lambda, 0, 1}\right)^{-1}$, with $\lambda \in \left(0, 2\right)$.
 
-The sequences drawn resulted from the permutations of the number of elements of each
-sequence ($n \in \{30, 100, 500\}$) and transformation parameter for the
-inverse transformation $\lambda \in \{0.1, 1.0, 1.9\}$. Each sequence then underwent
+The features drawn resulted from the permutations of the number of elements of each
+feature ($n \in \{30, 100, 500\}$) and transformation parameter for the
+inverse transformation $\lambda \in \{0.1, 1.0, 1.9\}$. Each feature then underwent
 power transformation using Box-Cox and Yeo-Johnson transformations. For Box-Cox
-transformations, each sequence was shifted prior to inverse transformation
+transformations, each feature was shifted prior to inverse transformation
 ensuring all elements were strictly positive after inverse transformation.
 
 Results for Box-Cox transformations are shown in Table

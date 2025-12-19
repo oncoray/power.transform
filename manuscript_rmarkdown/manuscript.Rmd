@@ -101,7 +101,7 @@ The two most commonly used transformations are that of @Box1964-mz and @Yeo2000-
 The Box-Cox transformation is defined as:
 
 \begin{definition}[Box-Cox power transformation]
-Let $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i > 0 \right\}$ be a finite sequence of length $n > 0$.
+Let $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i > 0 \right\}$ be a vector of length $n > 0$.
 Let $\lambda \in \mathcal{R}$ be a transformation parameter.
 Then the Box-Cox power transformation of element $x_i$ is defined as:
 \begin{equation}
@@ -118,7 +118,7 @@ One limitation of the Box-Cox transformation is that it is only defined for $x_i
 In contrast, the Yeo-Johnson transformation under the transformation parameter $\lambda$ is defined for any $x_i \in \mathbb{R}$, as follows:
 
 \begin{definition}[Yeo-Johnson power transformation]
-Let $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i \in \mathbb{R} \right\}$ be a finite sequence of length $n > 0$.
+Let $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i \in \mathbb{R} \right\}$ be a vector of length $n > 0$.
 Let $\lambda \in \mathcal{R}$ be a transformation parameter.
 \begin{equation}
 \label{eqn:yeo-johnson-original}
@@ -182,7 +182,7 @@ First, we define a (numeric) feature. Throughout this work, whenever reference i
 a numeric feature is meant unless noted otherwise.
 
 \begin{definition}[Numeric feature]
-A numeric feature is a finite sequence $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i \in  \right\}$ of length $n$.
+A numeric feature is a vector $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i \in  \right\}$ of length $n$.
 \end{definition}
 
 ## Location- and scale-invariant power transformation
@@ -198,7 +198,7 @@ is then defined as:
 \begin{definition}[Location- and scale- invariant Box-Cox power transformation]
 Let $\lambda \in \mathcal{R}$ be a transformation parameter.
 Let $x_0 \in \mathcal{R}$ and $s > 0$ be location and scale parameters.
-Let $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i - x_0 > 0 \right\}$ be a finite sequence of length $n > 0$.
+Let $\mathbf{X}$ be a numeric feature of length $n > 0$.
 
 Then the location- and scale-invariant Box-Cox power transformation of element $x_i$ is defined as:
 
@@ -218,7 +218,7 @@ under transformation parameter $\lambda$, shift parameter $x_0$ and scale parame
 \begin{definition}[Location- and scale- invariant Yeo-Johnson power transformation]
 Let $\lambda \in \mathcal{R}$ be a transformation parameter.
 Let $x_0 \in \mathcal{R}$ and $s > 0$ be location and scale parameters.
-Let $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i \in \mathcal{R} \right\}$ be a finite sequence of length $n > 0$.
+Let $\mathbf{X}$ be a numeric feature of length $n > 0$.
 
 Then the location- and scale-invariant Yeo-Johnson power transformation of element $x_i$ is defined as:
 
@@ -241,7 +241,7 @@ The location- and scale-invariant Box-Cox log-likelihood function is:
 
 \begin{definition} [Log-likelihood function of the location- and scale- invariant Box-Cox power transformation]
 Let $\mathbf{X}$, $\lambda$, $x_0$, and $s$ be defined as earlier (Eqn. \ref{eqn:box-cox-invariant}).
-Let $\mu$ and $\sigma^2$ be the mean and variance of the transformed sequence $\phi_{\text{BC}}^{\lambda, x_0, s} (\mathbf{X})$, respectively.
+Let $\mu$ and $\sigma^2$ be the mean and variance of the transformed feature $\phi_{\text{BC}}^{\lambda, x_0, s} (\mathbf{X})$, respectively.
 
 Then the log-likelihood function of the location- and scale- invariant Box-Cox power transformation is defined as:
 \begin{equation}
@@ -257,7 +257,7 @@ Similarly, the location- and scale-invariant Yeo-Johnson log-likelihood function
 
 \begin{definition}[Log-likelihood function of the location- and scale- invariant Yeo-Johnson power transformation]
 Let $\mathbf{X}$, $\lambda$, $x_0$, and $s$ be defined as earlier (Eqn. \ref{eqn:yeo-johnson-invariant}).
-Let $\mu$ and $\sigma^2$ be the mean and variance of the transformed sequence $\phi_{\text{YJ}}^{\lambda, x_0, s} (\mathbf{X})$, respectively.
+Let $\mu$ and $\sigma^2$ be the mean and variance of the transformed feature $\phi_{\text{YJ}}^{\lambda, x_0, s} (\mathbf{X})$, respectively.
 
 Then the log-likelihood function of the location- and scale- invariant Yeo-Johnson power transformation is defined as:
 \begin{equation}
@@ -288,12 +288,12 @@ The weighted location- and scale-invariant Box-Cox log-likelihood function is:
 \begin{definition}[Weighted log-likelihood function of the location- and scale- invariant Box-Cox power transformation]
 Let $\mathbf{X}$, $\lambda$, $x_0$, and $s$ be defined as earlier (Eqn. \ref{eqn:box-cox-invariant}).
 Let $w_i \geq 0$ be the weight corresponding to each element of $\mathbf{X}$.
-Let $\mu_w$ be the weighted mean of the Box-Cox transformed sequence:
+Let $\mu_w$ be the weighted mean of the Box-Cox transformed feature:
 \begin{equation*}
 \mu_w = \frac{\sum_{i=1}^n w_i \phi_{\text{BC}}^{\lambda, x_0, s} (x_i)} {\sum_{i=1}^n w_i}
 \end{equation*}
 
-Let $\sigma^2_w$ be the weighted variance of the Box-Cox transformed sequence:
+Let $\sigma^2_w$ be the weighted variance of the Box-Cox transformed feature:
 \begin{equation*}
 \sigma_w^2 = \frac{\sum_{i=1}^n w_i \left(\phi_{\text{BC}}^{\lambda, x_0, s} (x_i) - \mu_w \right)^2}{\sum_{i=1}^n w_i}
 \end{equation*}
@@ -317,12 +317,12 @@ Analogously, the weighted location- and scale-invariant Yeo-Johnson log-likeliho
 
 Let $\mathbf{X}$, $\lambda$, $x_0$, and $s$ be defined as earlier (Eqn. \ref{eqn:yeo-johnson-invariant}).
 Let $w_i \geq 0$ be the weight corresponding to each element of $\mathbf{X}$.
-Let $\mu_w$ be the weighted mean of the Yeo-Johnson transformed sequence:
+Let $\mu_w$ be the weighted mean of the Yeo-Johnson transformed feature:
 \begin{equation*}
 \mu_w = \frac{\sum_{i=1}^n w_i \phi_{\text{YJ}}^{\lambda, x_0, s} (x_i)} {\sum_{i=1}^n w_i}
 \end{equation*}
 
-Let $\sigma^2_w$ be the weighted variance of the Yeo-Johnson transformed sequence:
+Let $\sigma^2_w$ be the weighted variance of the Yeo-Johnson transformed feature:
 \begin{equation*}
 \sigma_w^2 = \frac{\sum_{i=1}^n w_i \left(\phi_{\text{YJ}}^{\lambda, x_0, s} (x_i) - \mu_w \right)^2}{\sum_{i=1}^n w_i}
 \end{equation*}
@@ -482,8 +482,8 @@ Deviations from normality can be detected by normality tests, such as the Shapir
 In practice, normality tests may be too stringent with large sample sizes, outliers, or both.
 Here we develop an empirical test for central normality.
 
-\begin{definition}[Central portion of a sequence]
-Let $\mathbf{X} = \left\{x_1, x_2, \ldots, x_n | x_i \in \mathbb{R}\right\}$ be a finite sequence of length $n > 0$,
+\begin{definition}[Central portion of a numeric feature]
+Let $\mathbf{X}$ be a numeric feature of length $n > 0$, as before,
 ordered so that $x_1 \leq x_2 \leq \ldots \leq x_n$.
 Let $p_i = \frac{i - 1/3}{n + 1/3}$, with $i = 1, 2, \ldots n$ be the percentile value
 corresponding to each element in $\mathbf{X}$. For elements with tied values in $\mathbf{X}$,
@@ -497,7 +497,7 @@ $\mathbf{X}_{\text{c}} = \left\{x_i \in \mathbf{X} \, | \,  \frac{1-\kappa}{2} \
 
 \end{definition}
 
-\begin{definition}[Residual errors of the central portion of a sequence]
+\begin{definition}[Residual errors of the central portion of a feature]
 
 Let the residual error for each element of $\mathbf{X}$ be $r_i =\left| \frac{x_i - \mu_M}{\sigma_M} - F^{-1}_{\mathcal{N}}(p_i) \right|$, 
 with $\mu_M$ and $\sigma_M$ robust Huber M-estimates of location and scale of $\mathbf{X}$ [@Huber1981-su], 
@@ -510,31 +510,51 @@ $\mathbf{R}_{\text{c}} = \left\{ r_i \in \left\{ r_1, r_2, \ldots, r_n\right\} \
 
 \begin{definition}[Central normal distribution]
 
-A central normal distribution is any distribution whose quantile function is 
-defined by $F^{-1}_{\mathcal{N}}$ for $\frac{1-\kappa}{2} \leq  p \leq \frac{1 + \kappa}{2}$,
+A central normal distribution is any distribution whose quantile function 
+satisfies $F^{-1}_{\mathcal{N}}$ for $\frac{1-\kappa}{2} \leq  p \leq \frac{1 + \kappa}{2}$,
 with $\mathcal{N}$ any normal distribution.
 
 \end{definition}
 
 \begin{corollary}
 
-For $\kappa = 1.0$, the central normal distribution is a normal distribution.
+A normal distribution is a central normal distribution.
 
 \end{corollary}
 
 \begin{corollary}
 
-By the Glivenko-Cantelli theorem, if a sequence $\mathbf{X}$ was sampled from a
-central normal distribution, then almost surely
-$\lim_{n \rightarrow \infty} \sum_{r_j \in \mathbf{R}_{\text{c}}} r_j = 0$,
+For $\kappa = 1.0$, a central normal distribution is a normal distribution.
 
 \end{corollary}
 
+\begin{corollary}
+
+If $\mathbf{X}$ is randomly sampled from a normal distribution,
+$\sup_{r_j \in \mathbf{R}_{\text{c}}} r_j \rightarrow 0$, almost surely.
+That is, every residual of the central portion of $\mathbf{X}$ will asymptotically
+converge to 0.
+
+\end{corollary}
+
+The latter corollary follows from the definition of the residuals and the restriction
+to normal distributions. Residuals were defined using 
+$\frac{x_i - \mu_M}{\sigma_M} \approx \hat{F}^{-1}_{\mathcal{N}}(p_i)$, with
+$\hat{F}^{-1}_{\mathcal{N}}(p_i)$ the empirical quantile function resembling
+the quantile function of the normal distribution $\mathcal{N}(0, 1)$.
+Since $\hat{F}^{-1}_{\mathcal{N}}(p) \rightarrow F^{-1}_{\mathcal{N}}(p)$ with
+$\frac{1-\kappa}{2} \leq  p \leq \frac{1 + \kappa}{2}$ [@van-der-Vaart1998-xu],
+$\sup_{r_j \in \mathbf{R}_{\text{c}}} r_j \rightarrow 0$, if and only if
+for all $x_i \in \mathbf{X}_c$, $\frac{x_i - \mu_M}{\sigma_M} \rightarrow \hat{F}^{-1}_{\mathcal{N}}(p_i)$.
+Thus, the requirement is that the estimators for location and scale $\mu_M$ and $\sigma_M$
+are bias-free. M-estimators for location and scale satisfy this condition, if $\mathbf{X}$ 
+follows a normal distribution without contamination [Huber1964-xk; @Huber1981-su].
+
 \begin{definition}[Central normality test]
-The null-hypothesis $\mathcal{H}_0$ is that the sequence $\mathbf{X}$ was sampled
+The null-hypothesis $\mathcal{H}_0$ is that $\mathbf{X}$ was randomly sampled
 from a population that is distributed according to a central normal distribution.
 
-The alternative hypothesis is that the sequence $\mathbf{X}$ was sampled from a
+The alternative hypothesis is that $\mathbf{X}$ was randomly sampled from a
 population that is not distributed according to a central normal distribution.
 \end{definition}
 
@@ -567,7 +587,7 @@ Of note, the `power.transform` package shifts feature values into the positive d
 ## Invariance to location and scale
 
 To assess whether the proposed power transformations lead to values of $\lambda$ 
-that are invariant to location and scale of the distribution, we simulated three different sequences.
+that are invariant to location and scale of the distribution, we simulated three different numeric features.
 We first randomly drew $10000$ values from a normal distribution: 
 $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{N}\left(0, 1\right)$, 
 or equivalently $\mathbf{X}_{\text{normal}} = \left\{x_1, x_2, \ldots, x_{10000} \right\} \sim \mathcal{AGN}\left(0, 1/\sqrt{2}, 0.5, 2\right)$.
@@ -598,12 +618,12 @@ In contrast, estimation of $\lambda$ for invariant power transformations was inv
 ## Empirical central normality test {#simulation-ecn-test}
 
 The critical test statistic for the empirical central normality test depends on 
-the significance level $\alpha$, sequence length $n$ and central portion $\kappa$.
+the significance level $\alpha$, feature length $n$ and central portion $\kappa$.
 Critical test statistic values were set through simulation, as described below.
 
 For each number of samples $n \in \left\{\lfloor 10^\nu \rfloor | \nu \in \left\{0.7500, 0.8125, \ldots, 4.0000 \right \} \right\}$
-we randomly sampled $m_d = 30000$ ordered sequences $\mathbf{X}$ from $\mathcal{N}(0,1)$.
-For each sequence we then computed $\tau_{\kappa}$ for 
+we randomly sampled $m_d = 30000$ ordered numeric features $\mathbf{X}$ from $\mathcal{N}(0,1)$.
+For each feature we then computed $\tau_{\kappa}$ for 
 $\kappa \in \left\{0.50, 0.60, 0.70, 0.80, 0.90, 0.95, 1.00\right\}$.
 
 ```{r include = FALSE, eval = FALSE}
@@ -642,19 +662,19 @@ cap <- paste0(
 ```
 
 To assess type I error rates for the empirical central normality test and compare
-these to the Shapiro-Wilk test for normality, we randomly drew another 10000 sequences from a
+these to the Shapiro-Wilk test for normality, we randomly drew another 10000 numeric features from a
 central normal distribution for each 
 $n \in \left\{\lfloor 10^\nu \rfloor | \nu \in \left\{0.7500, 0.8125, \ldots, 3.0000 \right \} \right\}$.
 
-Each sequence was created as follows: first $n$ values are sampled from $\mathcal{N}(0, 1)$.
-Then, the elements outside the central portion of the sequence (i.e. $\mathbf{X} \setminus \mathbf{X}_{\text{c}}$) are replaced.
+Each feature was created as follows: first $n$ values are sampled from $\mathcal{N}(0, 1)$.
+Then, the elements outside the central portion of the feature (i.e. $\mathbf{X} \setminus \mathbf{X}_{\text{c}}$) are replaced.
 Elements with $p_i < \frac{1-\kappa}{2}$ are replaced with values sampled from $\mathcal{U}(-10,\min(\mathbf{X}_{\text{c}}))$,
 and elements with $p_i > \frac{1 + \kappa}{2}$ are replaced with values sampled from $\mathcal{U}(\max(\mathbf{X}_{\text{c}}), 10)$.
 
-For each sequence, the p-value for the respective test was used to reject the null
-hypothesis that sequences were derived from a population with a (central) normal distribution.
+For each feature, the p-value for the respective test was used to reject the null
+hypothesis that features were derived from a population with a (central) normal distribution.
 The null hypothesis was rejected if $p \leq 0.05$.
-The type I error rate was determined by computing the fraction of sequences rejected this way.
+The type I error rate was determined by computing the fraction of features rejected this way.
 Figure \ref{fig:empirical-central-normality-error_rate} shows that when the
 central portion $\kappa$ of the central normal distribution is equal or greater
 than the $\kappa$ parameter for the empirical central normality test, the tests 
@@ -725,13 +745,13 @@ the z-score of the transformed feature values,
 or the residual error between the z-score of the transformed feature values and their expected z-score based on the normal distribution.
 
 To determine the weighting function parameters for each of the nine combinations,
-$m_d=500$ sequences $\mathbf{X}_i$ ($i \in \{1, 2, \ldots, m_d\}$) were randomly 
+$m_d=500$ numeric features $\mathbf{X}_i$ ($i \in \{1, 2, \ldots, m_d\}$) were randomly 
 drawn from randomly parametrised asymmetric generalised normal distributions.
 Each distribution was parametrised with a random skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ 
 and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$.
 Location and scale parameters were set as $\mu = 0$ and $\sigma = 1$, respectively.
-To form each sequence $\mathbf{X}_i$, $n = \lceil 10^\gamma \rceil$ instances were then randomly drawn, 
-with $\gamma \sim U\left(\log_{10}50, 3\right)$, resulting in a set of sequences with between $50$ and $1000$ elements each.
+To form each feature $\mathbf{X}_i$, $n = \lceil 10^\gamma \rceil$ instances were then randomly drawn, 
+with $\gamma \sim U\left(\log_{10}50, 3\right)$, resulting in a set of features with between $50$ and $1000$ elements each.
 Outlier values were then drawn to randomly replace 10 percent of the elements of $\mathbf{X}_i$.
 These values were set according to @Tukey1977-xm, as follows.
 Let $x^{*} \sim U\left(-2, 2\right)$.
@@ -751,13 +771,13 @@ Here, $Q_1$, $Q_3$ and $\text{IQR}$ are the first quartile, third quartile and i
 To find the optimal values for the weighting function parameters $\delta_1$ and $\delta_2$ (if applicable),
 we minimised a composite loss $L = \sum_{i=1}^{m_d} L_{\text{cn},i} + 0.1 \sum_{i=1}^{m_d} L_{\lambda,i}$.
 The composite loss consisted of two components: a loss term $L_{\text{cn},i} = \tau_{n_i, \kappa = 0.80,i}$, i.e. the mean of residual 
-errors of the central 80% of elements of each sequence $\mathbf{X}_i$, which aimed at optimising central normality; 
+errors of the central 80% of elements of each feature $\mathbf{X}_i$, which aimed at optimising central normality; 
 and a loss term $L_{\lambda,i} = \max\left(0.0,|\lambda_{0,i} - \lambda_{i}| - \xi \right)$,
 with $\lambda_{0,i}$ and $\lambda_{i}$ transformation parameters found
-for sequence $\mathbf{X}_i$ prior to and after adding outliers, respectively, 
+for feature $\mathbf{X}_i$ prior to and after adding outliers, respectively, 
 and tolerance parameter $\xi = 0.5$ for Box-Cox and $\xi = 0.3$ for Yeo-Johnson power transformations.
 This second term aimed to prevent solutions that provide small improvements in central normality
-at the cost of a poor fit of the tails of sequences.
+at the cost of a poor fit of the tails of features.
 
 Minimisation was conducted using the BOBYQA algorithm for derivative-free bound constraint optimisation [@Powell2009-zb].
 The resulting weighting function parameters for weighted MLE are shown in Tables
@@ -855,52 +875,55 @@ $r$ (tapered cosine)     & 0.50 & $(0, 10]$ & 1.06 & 1.00 & $(0, 10]$ & 1.07 & 6
 
 ## Assessing transformations using simulated data
 
-Three datasets with 100000 sequences each were created to assess transformation
-to normality. For each sequence $\mathbf{X}_i$, $n = \lceil 10^\gamma \rceil$
+Three datasets with 100000 numeric features each were created to assess transformation
+to normality. For each feature $\mathbf{X}_i$, $n = \lceil 10^\gamma \rceil$
 elements were randomly drawn, with $\gamma \sim U\left(1, 4\right)$, 
-resulting in sequences with between $10$ and $10000$ elements. 
+resulting in features with between $10$ and $10000$ elements. 
 
-- A \textit{clean} dataset with each sequence drawn from $\mathcal{N}(0, 1)$ and
+- A \textit{clean} dataset with each feature drawn from $\mathcal{N}(0, 1)$ and
   transformed using an inverse power transformation with randomly drawn 
   transformation parameter $\lambda \sim U\left(0.00, 2.00 \right)$. 
   $\left(\phi_{\text{BC}}^\lambda\right)^{-1}$ and $\left(\phi_{\text{YJ}}^\lambda\right)^{-1}$
   were used as inverse transformations for assessing Box-Cox and Yeo-Johnson transformations,
-  respectively. Prior to inverse transformation, sequences for Box-Cox transformations
+  respectively. Prior to inverse transformation, features for Box-Cox transformations
   were shifted into the positive domain, with minimum value $1$.
   
-- A \textit{dirty} dataset with each sequence drawn from $\mathcal{AGN}\left(\mu = 0, \sigma = 1/\sqrt{2}, \alpha, \beta \right)$,
+- A \textit{dirty} dataset with each feature drawn from $\mathcal{AGN}\left(\mu = 0, \sigma = 1/\sqrt{2}, \alpha, \beta \right)$,
   with randomly drawn skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ 
   and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$.
-  The sequences are drawn from a range of skewed, unimodal, but not necessarily 
-  normal, distributions, to reflect less \textit{clean} data than presented in the first dataset.
+  The features are drawn from a range of asymmetric unimodal distributions 
+  to reflect a wider range of generating distributions than for the 
+  data presented in the first dataset.
   
-- A \textit{shifted} dataset with each sequence drawn from $\mathcal{AGN}\left(\mu = 1000, \sigma = 1/\sqrt{2} , \alpha, \beta \right)$,
+- A \textit{shifted} dataset with each feature drawn from
+  $\mathcal{AGN}\left(\mu = 1000, \sigma = 1/\sqrt{2} , \alpha, \beta \right)$,
   with randomly drawn skewness parameter $\alpha \sim U\left(0.01, 0.99\right)$ 
   and shape parameter $\beta \sim U\left(1.00, 5.00 \right)$.
-  The generating process creates sequences similar to that in the \textit{dirty}
+  The generating process creates features similar to those in the \textit{dirty}
   dataset, but shifted to a location that leads to normalisation issues observed
   for conventional power transformation methods, as shown in Figure \ref{fig:decreased-normality}.
 
 A dataset with outliers was created for each of the above datasets by replacing
-10 percent of elements in each sequence, as described earlier.
+10 percent of elements in each feature, as described earlier.
   
 In addition to no power transformation and location- and scale-invariant power transformations,
 conventional and Raymaekers and Rousseeuw's robust adaptation [@Raymaekers2024-zf] were assessed.
 For the latter two methods, normalisation before standardisation using was additionally assessed using
 the following two methods:
 
-1. z-standardisation: $x^{\prime}_{i} = \left(x_i - \mu \right) / \sigma$, with $\mu$ and $\sigma$ the mean and standard deviation of sequence $\mathbf{X}$.
+1. z-standardisation: $x^{\prime}_{i} = \left(x_i - \mu \right) / \sigma$, with $\mu$ and $\sigma$ the 
+  mean and standard deviation of $\mathbf{X}$.
 
 2. robust scaling: $x^{\prime}_{i} = \left(x_i - \text{median}\left(\mathbf{X}\right) \right) / Q_n\left(\mathbf{X}\right)$,
    with $Q_n$ representing the robust $Q_n$ scale estimator of $\mathbf{X}$ [@Croux1992-zz; @Rousseeuw1993-it].
 
 This results in nine types of power transformation. Transformation parameters
-were optimised for each sequence. Subsequently the sum of residual errors 
+were optimised for each feature. Subsequently the sum of residual errors 
 and sum of residual errors of the central portion ($\kappa = 0.80$) were computed
-for each sequence after transformation. Then, each method was ranked according 
+for each feature after transformation. Then, each method was ranked according 
 to the sum of residual errors (data without outliers) or the sum of residual
 errors of the central portion (data with outliers). The average rank of each
-transformation method was computed over all 100000 sequences in each dataset.
+transformation method was computed over all 100000 features in each dataset.
 Average ranks for Yeo-Johnson transformations are shown in Table
 \ref{tab:comparison_methods_simulations_yeo_johnson}.
 Location and shift-invariant Yeo-Johnson transformation ranked best for
@@ -942,9 +965,9 @@ data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.v
 \begin{center}
 \caption{
 Comparison of average rank between Yeo-Johnson transformation methods based on either residual error (without outliers) or residual error of the central portion
-(with outliers; $\kappa = 0.80$) over 3 datasets with 100000 sequences each. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
-of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
-The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 1000.
+(with outliers; $\kappa = 0.80$) over 3 datasets with 100000 features each. The clean dataset consists of features derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains features sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains features sampled from asymmetric generalised normal distributions, but centred at 1000.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 A rank of 1 is the best and a rank of 9 the worst. For each dataset, the best ranking transformation is marked in bold.
 }
@@ -1327,7 +1350,7 @@ Consequently, their weights change at each iteration in the MLE optimisation pro
 This increases local variance in the log-likelihood function and creates local optima that the optimiser may not handle well.
 Methods that relied on the empirical probability did not suffer from this issue, as weights remained fixed during MLE.
 
-We introduced an empirical test for central normality to assess whether sequences
+We introduced an empirical test for central normality to assess whether features
 deviate from normality in a way that might require closer inspection prior to further processing.
 The empirical central normality test differs from other tests for normality, 
 such as the Shapiro-Wilk test [@Shapiro1965-zd], as it assesses normality of the central portion
@@ -1337,10 +1360,14 @@ normality test remains consistent when a feature was not sampled from a normal d
 such as a central normal distribution with $\kappa < 1.0$. This enables assessing
 reasonable normality of (transformed) features in the presence of outliers.
 
-This work has the following limitation: We observed several numerical stability
+This work has the following limitations: We observed several numerical stability
 issues for optimisation criteria other than MLE (Appendix B). These appear in regions
 where transformation parameters would lead to very large or small numbers when using conventional power transformations.
 For MLE stability issues were not observed.
+Moreover, the definition of central normal distribution does not constrain the
+distribution of the non-central tails. Thus, the test may be conservative for 
+central normal distributions other than uncontaminated normal distributions, because the 
+location and scale estimators are not generally bias-free [@Rousseeuw1994-ur].
 
 # Conclusion
 
