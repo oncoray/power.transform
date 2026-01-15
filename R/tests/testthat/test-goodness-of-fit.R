@@ -11,7 +11,7 @@ transformer <- power.transform::find_transformation_parameters(
 
 # Compute the p-value.
 p_value <- suppressMessages(power.transform::assess_transformation(
-  x = x_normal,
+  x = x,
   transformer = transformer
 ))
 
