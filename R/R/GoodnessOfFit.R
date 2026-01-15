@@ -47,17 +47,23 @@ assess_transformation <- function(
   # Perform test. Note that assess_transformation is interested only on the
   # p-value of the test, hence we try to capture any errors, and handle them
   # gracefully.
-  h <- tryCatch(
+  # h <- tryCatch(
+  #   ecn_test(
+  #     x = x,
+  #     transformer = transformer,
+  #     kappa = kappa,
+  #     ...
+  #   ),
+  #   error = identity
+  # )
+
+  h <-
     ecn_test(
       x = x,
       transformer = transformer,
       kappa = kappa,
       ...
-    ),
-    error = identity
-  )
-
-  if (is(h, "simpleError")) rlang::abort(h)
+    )
 
   if (is(h, "simpleError")) h <- list("p_value" = NA_real_)
 
