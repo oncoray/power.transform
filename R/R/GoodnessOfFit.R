@@ -255,8 +255,8 @@ ecn_test <- function(
 
     # Find those elements that are closest to tau_lookup.
     y <- tau - tau_lookup
-    x[which(y == min(y[y >= 0.0]))] <- TRUE
-    x[which(y == max(y[y <= 0.0]))] <- TRUE
+    if (any(y >= 0.0)) x[which(y == min(y[y >= 0.0]))] <- TRUE
+    if (any(y <= 0.0)) x[which(y == max(y[y <= 0.0]))] <- TRUE
 
     return(x)
   }
