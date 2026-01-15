@@ -587,10 +587,10 @@ data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.v
 \begin{center}
 \caption{
 Comparison of average rank between Box-Cox transformation methods based on either residual error (without outliers) or residual error of the central portion
-(with outliers; $\kappa = 0.80$) over 3 datasets with 100000 sequences each. The clean dataset consists of sequences derived through inverse Box-Cox transformation
-of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions.
-The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
-If necessary, each sequence was shifted so that every element had a strictly positive value. 
+(with outliers; $\kappa = 0.80$) over 3 datasets with 100000 features each. The clean dataset consists of features derived through inverse Box-Cox transformation
+of data sampled from a standard normal distribution. The dirty dataset contains features sampled from asymmetric generalised normal distributions.
+The shifted dataset also contains features sampled from asymmetric generalised normal distributions, but centred at 1000.
+If necessary, each feature was shifted so that every element had a strictly positive value. 
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 A rank of 1 is the best and a rank of 9 the worst. For each dataset, the best ranking transformation is marked in bold.
 }
@@ -603,15 +603,15 @@ transformation & outliers: & no & yes & no & yes & no & yes \\
 
 \midrule
 
-none                                  & &         7.63  &         6.95  &         7.29  &         6.59  &         7.47  &         6.78 \\
-conventional                          & &         3.11  &         5.98  &         5.41  &         6.18  &         6.51  &         6.10 \\
-conventional (z-score norm.)          & &         4.15  &         6.27  &         4.83  &         6.32  &         4.34  &         5.84 \\
-conventional (robust scaling)         & &         4.20  &         6.29  &         4.84  &         6.31  &         4.35  &         5.84 \\
-Raymaekers-Rousseeuw                  & &         4.50  &         3.56  &         5.39  &         3.69  &         6.30  &         5.80 \\ 
-Raymaekers-Rousseeuw (z-score norm.)  & &         6.23  &         3.80  &         4.93  &         3.85  &         4.48  &         3.50 \\ 
-Raymaekers-Rousseeuw (robust scaling) & &         6.12  &         3.80  &         4.99  &         3.87  &         4.53  &         3.51 \\
-invariant                             & & \textbf{2.96} &         5.59  & \textbf{3.62} &         6.01  & \textbf{3.51} &         5.58 \\
-robust invariant                      & &         6.10  & \textbf{2.76} &         3.68  & \textbf{2.19} & \textbf{3.51} & \textbf{2.00} \\
+none                                  & &         7.63  &         6.95  &         7.29  &         6.59  &         7.46  &         6.77 \\
+conventional                          & &         3.11  &         5.98  &         5.41  &         6.18  &         6.51  &         6.26 \\
+conventional (z-score norm.)          & &         4.15  &         6.27  &         4.83  &         6.32  &         4.39  &         5.96 \\
+conventional (robust scaling)         & &         4.20  &         6.29  &         4.84  &         6.31  &         4.40  &         5.96 \\
+Raymaekers-Rousseeuw                  & &         4.50  &         3.56  &         5.39  &         3.69  &         6.29  &         5.35 \\ 
+Raymaekers-Rousseeuw (z-score norm.)  & &         6.23  &         3.80  &         4.93  &         3.85  &         4.53  &         3.51 \\ 
+Raymaekers-Rousseeuw (robust scaling) & &         6.12  &         3.80  &         4.99  &         3.87  &         4.58  &         3.52 \\
+invariant                             & & \textbf{2.96} &         5.59  & \textbf{3.62} &         6.01  & \textbf{3.53} &         5.67 \\
+robust invariant                      & &         6.10  & \textbf{2.76} &         3.68  & \textbf{2.19} &         3.55  & \textbf{2.00} \\
 
 \bottomrule
 \end{tabular}
@@ -624,22 +624,22 @@ robust invariant                      & &         6.10  & \textbf{2.76} &       
 ## Ranking Yeo-Johnson transformations: residual errors
 
 In the main manuscript, transformation methods are compared by ranking within
-each experiment, defined by the combination of sequence and absence/presence of
+each experiment, defined by the combination of feature and absence/presence of
 outliers. This allows for direct comparison of methods between different
 experiments.
 
 Table \ref{tab:comparison_methods_simulations_yeo_johnson_avg_residual} shows
 the average normalised residual error for these transformation methods. This
 metric is computed from the residual error and the residual error of the central
-portion ($\kappa = 0.80$) for sequences without and with outliers, respectively.
+portion ($\kappa = 0.80$) for features without and with outliers, respectively.
 In each experiment, the respective residual error was normalised by dividing with
-the sequence length, and can be interpreted as the average residual error of a
-single sample. This reduces the effect of sequence length on the residual error.
+the feature length, and can be interpreted as the average residual error of a
+single sample. This reduces the effect of feature length on the residual error.
 
 Table \ref{tab:comparison_methods_simulations_yeo_johnson_avg_residual_diff} shows
 the average normalised difference in residual error between the best method for each
 experiment and the individual methods. As above, normalisation was done by
-division by the length of the sequence corresponding to each experiment.
+division by the length of the feature corresponding to each experiment.
 
 Both tables show that the differences between best-performing methods on each
 dataset are relatively small.
@@ -692,10 +692,10 @@ data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.v
 \begin{center}
 \caption{
 Comparison of average normalised residual error between Yeo-Johnson transformation methods based on either the residual error (without outliers) or the residual error of the central portion
-(with outliers; $\kappa = 0.80$) over 3 datasets with 100000 sequences each. Residual errors were normalised by sequence length to reduce the effect of sequence length on the residual error.
-The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
-of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
-The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
+(with outliers; $\kappa = 0.80$) over 3 datasets with 100000 features each. Residual errors were normalised by feature length to reduce the effect of feature length on the residual error.
+The clean dataset consists of features derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains features sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains features sampled from asymmetric generalised normal distributions, but centred at 1000.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 A lower normalised residual error is better. Discrepancies with the rank-based method may occur, as even with normalisation residual errors 
 are not fully comparable between experiments, whereas the ranks achieved within each experiment are.
@@ -710,10 +710,10 @@ transformation & outliers: & no & yes & no & yes & no & yes \\
 \midrule
 
 none                                  & & 0.202 & 0.112 & 0.128 & 0.080 & 0.129 & 0.080 \\
-conventional                          & & 0.058 & 0.094 & 0.085 & 0.078 & 0.129 & 0.080 \\
+conventional                          & & 0.058 & 0.094 & 0.085 & 0.078 & 0.126 & 0.080 \\
 conventional (z-score norm.)          & & 0.061 & 0.094 & 0.091 & 0.073 & 0.091 & 0.073 \\
 conventional (robust scaling)         & & 0.058 & 0.094 & 0.090 & 0.073 & 0.090 & 0.073 \\
-Raymaekers-Rousseeuw                  & & 0.071 & 0.055 & 0.092 & 0.279 & 0.129 & 0.080 \\
+Raymaekers-Rousseeuw                  & & 0.071 & 0.055 & 0.092 & 0.279 & 0.126 & 0.079 \\
 Raymaekers-Rousseeuw (z-score norm.)  & & 0.087 & 0.057 & 0.097 & 0.060 & 0.097 & 0.060 \\
 Raymaekers-Rousseeuw (robust scaling) & & 0.071 & 0.056 & 0.095 & 0.059 & 0.095 & 0.059 \\
 invariant                             & & 0.057 & 0.099 & 0.083 & 0.075 & 0.083 & 0.075 \\
@@ -731,16 +731,16 @@ robust invariant                      & & 0.069 & 0.066 & 0.084 & 0.058 & 0.084 
 \caption{
 Comparison of average difference in residual error between Yeo-Johnson
 transformation methods and the best transformation method within each
-experiment, normalised by the corresponding sequence length. This is based on
+experiment, normalised by the corresponding feature length. This is based on
 either the residual error (without outliers) or the residual error of the
 central portion (with outliers; $\kappa = 0.80$) over 3 datasets with 100000
-sequences each. Residual errors were normalised by sequence length to reduce the
-effect of sequence length on the residual error. The clean dataset consists of
-sequences derived through inverse Yeo-Johnson transformation of data sampled
-from a standard normal distribution. The dirty dataset contains sequences
+features each. Residual errors were normalised by feature length to reduce the
+effect of feature length on the residual error. The clean dataset consists of
+features derived through inverse Yeo-Johnson transformation of data sampled
+from a standard normal distribution. The dirty dataset contains features
 sampled from asymmetric generalised normal distributions, centred at 0. The
-shifted dataset also contains sequences sampled from asymmetric generalised
-normal distributions, but centred at 100, and scaled by 0.001. Several
+shifted dataset also contains features sampled from asymmetric generalised
+normal distributions, but centred at 1000. Several
 transformation methods include normalisation before transformation, indicated by
 z-score normalisation (norm.) or robust scaling. A lower difference is better,
 with a minimum value of 0.0. Discrepancies with the rank-based method may occur,
@@ -757,10 +757,10 @@ transformation & outliers: & no & yes & no & yes & no & yes \\
 \midrule
 
 none                                  & & 0.150 & 0.068 & 0.050 & 0.033 & 0.049 & 0.033 \\
-conventional                          & & 0.005 & 0.049 & 0.006 & 0.032 & 0.049 & 0.033 \\
+conventional                          & & 0.005 & 0.049 & 0.006 & 0.032 & 0.046 & 0.032 \\
 conventional (z-score norm.)          & & 0.008 & 0.049 & 0.013 & 0.026 & 0.011 & 0.025 \\
 conventional (robust scaling)         & & 0.005 & 0.050 & 0.012 & 0.026 & 0.010 & 0.026 \\
-Raymaekers-Rousseeuw                  & & 0.018 & 0.011 & 0.014 & 0.233 & 0.049 & 0.033 \\
+Raymaekers-Rousseeuw                  & & 0.018 & 0.011 & 0.014 & 0.233 & 0.046 & 0.031 \\
 Raymaekers-Rousseeuw (z-score norm.)  & & 0.034 & 0.012 & 0.018 & 0.014 & 0.017 & 0.013 \\
 Raymaekers-Rousseeuw (robust scaling) & & 0.018 & 0.011 & 0.017 & 0.012 & 0.015 & 0.011 \\
 invariant                             & & 0.004 & 0.054 & 0.005 & 0.029 & 0.003 & 0.028 \\
@@ -773,21 +773,21 @@ robust invariant                      & & 0.016 & 0.021 & 0.006 & 0.011 & 0.004 
 
 \FloatBarrier
 
-## Ranking Yeo-Johnson transformations: effect of sequence length
+## Ranking Yeo-Johnson transformations: effect of feature length
 
 The main manuscript shows the overall ranking of different Yeo-Johnson-based power transformation methods across three
 sets of problems.
-To assess the effect of limited sequence lengths, we perform ranking on subsets of the experiment.
-The results for ranking the subset of sequences with 30 samples or fewer ($n = 16001$) 
+To assess the effect of limited feature lengths, we perform ranking on subsets of the experiment.
+The results for ranking the subset of features with 30 samples or fewer ($n = 16001$) 
 is shown in Table \ref{tab:comparison_methods_simulations_yeo_johnson_10_30}.
-In the clean dataset without outliers, where all sequences were sampled from a normal distribution and 
+In the clean dataset without outliers, where all features were sampled from a normal distribution and 
 then underwent an inverse Yeo-Johnson transformation,
 conventional and location- and scale-invariant are ranked similarly, with no clear advantage
 to any method. For the remaining datasets, the robust location- and scale-invariant
 method ranked best. It slightly outperformed (robustly scaled) conventional Yeo-Johnson transformations
 and (z-score normalised) robust transformations [@Raymaekers2024-zf], in datasets without and with outliers, respectively.
 
-In the subset for larger sequence lengths, with at least 1000 samples per sequence ($n = 33037$),
+In the subset for larger feature lengths, with at least 1000 samples per feature ($n = 33037$),
 the cost of making the location- and scale-invariant transformation robust against outliers
 becomes more apparent (Table \ref{tab:comparison_methods_simulations_yeo_johnson_1000_10000}).
 In the clean dataset without outliers, down-weighting of the tails of the distribution by
@@ -839,10 +839,10 @@ data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.v
 \begin{center}
 \caption{
 Comparison of average rank between Yeo-Johnson transformation methods based on either residual error (without outliers) or residual error of the central portion
-(with outliers; $\kappa = 0.80$) over 3 datasets with 16001 sequences each. Each sequence contained 30 samples or fewer. 
-The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
-of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
-The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
+(with outliers; $\kappa = 0.80$) over 3 datasets with 16001 features each. Each feature contained 30 samples or fewer. 
+The clean dataset consists of features derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains features sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains features sampled from asymmetric generalised normal distributions, but centred at 1000.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 A rank of 1 is the best and a rank of 9 the worst. For each dataset, the best ranking transformation is marked in bold.
 }
@@ -855,15 +855,15 @@ transformation & outliers: & no & yes & no & yes & no & yes \\
 
 \midrule
 
-none                                  & &         7.75  &         6.81  &         7.27  &         6.40  &         7.45  &         6.60 \\
-conventional                          & &         4.19  &         5.47  &         4.48  &         5.78  &         6.55  &         5.94 \\
-conventional (z-score norm.)          & &         4.36  &         5.12  &         5.01  &         4.99  &         4.35  &         4.70 \\
-conventional (robust scaling)         & & \textbf{4.05} &         5.63  &         4.38  &         5.49  &         3.76  &         5.20 \\
-Raymaekers-Rousseeuw                  & &         5.36  &         4.19  &         5.14  &         4.62  &         6.32  &         5.83 \\
-Raymaekers-Rousseeuw (z-score norm.)  & &         5.56  &         4.08  &         5.67  &         4.05  &         5.03  &         3.81 \\
-Raymaekers-Rousseeuw (robust scaling) & &         5.33  &         4.14  &         5.15  &         4.15  &         4.55  &         3.94 \\
-invariant                             & &         4.11  &         5.92  &         4.12  &         5.67  &         3.62  &         5.37 \\
-robust invariant                      & &         4.28  & \textbf{3.65} & \textbf{3.79} & \textbf{3.85} & \textbf{3.37} & \textbf{3.61} \\
+none                                  & &         7.75  &         6.81  &         7.27  &         6.40  &         7.44  &         6.59 \\
+conventional                          & &         4.19  &         5.47  &         4.48  &         5.78  &         6.35  &         6.00 \\
+conventional (z-score norm.)          & &         4.36  &         5.12  &         5.01  &         4.99  &         4.36  &         4.71 \\
+conventional (robust scaling)         & & \textbf{4.05} &         5.63  &         4.38  &         5.49  &         3.77  &         5.21 \\
+Raymaekers-Rousseeuw                  & &         5.36  &         4.19  &         5.14  &         4.62  &         6.47  &         5.72 \\
+Raymaekers-Rousseeuw (z-score norm.)  & &         5.56  &         4.08  &         5.67  &         4.05  &         5.04  &         3.82 \\
+Raymaekers-Rousseeuw (robust scaling) & &         5.33  &         4.14  &         5.15  &         4.15  &         4.56  &         3.95 \\
+invariant                             & &         4.11  &         5.92  &         4.12  &         5.67  &         3.64  &         5.38 \\
+robust invariant                      & &         4.28  & \textbf{3.65} & \textbf{3.79} & \textbf{3.85} & \textbf{3.37} & \textbf{3.62} \\
 
 \bottomrule
 \end{tabular}
@@ -876,10 +876,10 @@ robust invariant                      & &         4.28  & \textbf{3.65} & \textb
 \begin{center}
 \caption{
 Comparison of average normalised residual error between Yeo-Johnson transformation methods based on either the residual error (without outliers) or the residual error of the central portion
-(with outliers; $\kappa = 0.80$) over 3 datasets with 16001 sequences each. Residual errors were normalised by sequence length to reduce the effect of sequence length on the residual error.
-Each sequence contained 30 samples or fewer. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
-of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
-The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
+(with outliers; $\kappa = 0.80$) over 3 datasets with 16001 features each. Residual errors were normalised by feature length to reduce the effect of feature length on the residual error.
+Each feature contained 30 samples or fewer. The clean dataset consists of features derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains features sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains features sampled from asymmetric generalised normal distributions, but centred at 1000.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 A lower normalised residual error is better. Discrepancies with the rank-based method may occur, as even with normalisation residual errors 
 are not fully comparable between experiments, whereas the ranks achieved within each experiment are.
@@ -894,10 +894,10 @@ transformation & outliers: & no & yes & no & yes & no & yes \\
 \midrule
 
 none                                  & & 0.246 & 0.173 & 0.186 & 0.156 & 0.187 & 0.157 \\
-conventional                          & & 0.139 & 0.142 & 0.142 & 0.132 & 0.187 & 0.157 \\
+conventional                          & & 0.139 & 0.142 & 0.142 & 0.132 & 0.184 & 0.155 \\
 conventional (z-score norm.)          & & 0.139 & 0.142 & 0.142 & 0.130 & 0.142 & 0.130 \\
 conventional (robust scaling)         & & 0.139 & 0.142 & 0.141 & 0.130 & 0.141 & 0.130 \\
-Raymaekers-Rousseeuw                  & & 0.211 & 0.151 & 0.183 & 1.515 & 0.187 & 0.157 \\
+Raymaekers-Rousseeuw                  & & 0.211 & 0.151 & 0.183 & 1.515 & 0.185 & 0.155 \\
 Raymaekers-Rousseeuw (z-score norm.)  & & 0.295 & 0.161 & 0.175 & 0.156 & 0.175 & 0.156 \\
 Raymaekers-Rousseeuw (robust scaling) & & 0.209 & 0.155 & 0.172 & 0.144 & 0.172 & 0.144 \\
 invariant                             & & 0.141 & 0.144 & 0.140 & 0.132 & 0.140 & 0.132 \\
@@ -953,10 +953,10 @@ data.table::dcast(transformation ~ dataset + outlier, data = table_data, value.v
 \begin{center}
 \caption{
 Comparison of average rank between Yeo-Johnson transformation methods based on either residual error (without outliers) or residual error of the central portion
-(with outliers; $\kappa = 0.80$) over 3 datasets with 33037 sequences each. Each sequence contained between 1000 and 10000 samples.
-The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
-of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
-The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
+(with outliers; $\kappa = 0.80$) over 3 datasets with 33037 features each. Each feature contained between 1000 and 10000 samples.
+The clean dataset consists of features derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains features sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains features sampled from asymmetric generalised normal distributions, but centred at 1000.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 A rank of 1 is the best and a rank of 9 the worst. For each dataset, the best ranking transformation is marked in bold.
 }
@@ -969,15 +969,15 @@ transformation & outliers: & no & yes & no & yes & no & yes \\
 
 \midrule
 
-none                                  & &         8.85  &         8.14  &         7.35  &         6.29  &         7.41  &         6.87 \\
-conventional                          & &         3.50  &         5.65  &         3.52  &         7.78  &         6.42  &         6.05 \\
-conventional (z-score norm.)          & &         5.24  &         5.94  &         7.34  &         4.98  &         6.26  &         4.79 \\
-conventional (robust scaling)         & &         3.53  &         6.98  &         5.97  &         5.79  &         4.87  &         5.65 \\
-Raymaekers-Rousseeuw                  & &         4.15  &         2.81  &         3.37  &         3.72  &         6.19  &         5.79 \\
-Raymaekers-Rousseeuw (z-score norm.)  & &         5.34  & \textbf{1.86} &         6.57  &         3.39  &         5.49  &         3.30 \\
-Raymaekers-Rousseeuw (robust scaling) & &         4.20  &         2.33  &         5.21  &         3.36  &         4.12  &         3.23 \\
-invariant                             & & \textbf{2.36} &         7.59  & \textbf{2.66} &         6.82  & \textbf{1.98} &         6.81 \\
-robust invariant                      & &         7.83  &         3.70  &         3.01  & \textbf{2.88} &         2.26  & \textbf{2.51} \\
+none                                  & &         8.85  &         8.14  &         7.35  &         6.29  &         7.40  &         6.86 \\
+conventional                          & &         3.50  &         5.65  &         3.52  &         7.78  &         6.24  &         6.45 \\
+conventional (z-score norm.)          & &         5.24  &         5.94  &         7.34  &         4.98  &         6.29  &         4.92 \\
+conventional (robust scaling)         & &         3.53  &         6.98  &         5.97  &         5.79  &         4.90  &         5.79 \\
+Raymaekers-Rousseeuw                  & &         4.15  &         2.81  &         3.37  &         3.72  &         6.22  &         5.04 \\
+Raymaekers-Rousseeuw (z-score norm.)  & &         5.34  & \textbf{1.86} &         6.57  &         3.39  &         5.52  &         3.35 \\
+Raymaekers-Rousseeuw (robust scaling) & &         4.20  &         2.33  &         5.21  &         3.36  &         4.16  &         3.27 \\
+invariant                             & & \textbf{2.36} &         7.59  & \textbf{2.66} &         6.82  & \textbf{1.99} &         6.82 \\
+robust invariant                      & &         7.83  &         3.70  &         3.01  & \textbf{2.88} &         2.27  & \textbf{2.52} \\
 
 \bottomrule
 \end{tabular}
@@ -989,10 +989,10 @@ robust invariant                      & &         7.83  &         3.70  &       
 \begin{center}
 \caption{
 Comparison of average normalised residual error between Yeo-Johnson transformation methods based on either the residual error (without outliers) or the residual error of the central portion
-(with outliers; $\kappa = 0.80$) over 3 datasets with 16001 sequences each. Residual errors were normalised by sequence length to reduce the effect of sequence length on the residual error.
-Each sequence contained between 1000 and 10000 samples. The clean dataset consists of sequences derived through inverse Yeo-Johnson transformation
-of data sampled from a standard normal distribution. The dirty dataset contains sequences sampled from asymmetric generalised normal distributions, centred at 0.
-The shifted dataset also contains sequences sampled from asymmetric generalised normal distributions, but centred at 100, and scaled by 0.001.
+(with outliers; $\kappa = 0.80$) over 3 datasets with 16001 features each. Residual errors were normalised by feature length to reduce the effect of feature length on the residual error.
+Each feature contained between 1000 and 10000 samples. The clean dataset consists of features derived through inverse Yeo-Johnson transformation
+of data sampled from a standard normal distribution. The dirty dataset contains features sampled from asymmetric generalised normal distributions, centred at 0.
+The shifted dataset also contains features sampled from asymmetric generalised normal distributions, but centred at 1000.
 Several transformation methods include normalisation before transformation, indicated by z-score normalisation (norm.) or robust scaling.
 A lower normalised residual error is better. Discrepancies with the rank-based method may occur, as even with normalisation residual errors 
 are not fully comparable between experiments, whereas the ranks achieved within each experiment are.
@@ -1007,10 +1007,10 @@ transformation & outliers: & no & yes & no & yes & no & yes \\
 \midrule
 
 none                                  & & 0.186 & 0.091 & 0.106 & 0.053 & 0.106 & 0.053 \\
-conventional                          & & 0.014 & 0.076 & 0.060 & 0.057 & 0.106 & 0.053 \\
+conventional                          & & 0.014 & 0.076 & 0.060 & 0.057 & 0.103 & 0.053 \\
 conventional (z-score norm.)          & & 0.021 & 0.076 & 0.070 & 0.050 & 0.070 & 0.050 \\
 conventional (robust scaling)         & & 0.014 & 0.076 & 0.069 & 0.050 & 0.069 & 0.050 \\
-Raymaekers-Rousseeuw                  & & 0.015 & 0.021 & 0.060 & 0.030 & 0.106 & 0.053 \\
+Raymaekers-Rousseeuw                  & & 0.015 & 0.021 & 0.060 & 0.030 & 0.103 & 0.051 \\
 Raymaekers-Rousseeuw (z-score norm.)  & & 0.021 & 0.020 & 0.070 & 0.030 & 0.070 & 0.030 \\
 Raymaekers-Rousseeuw (robust scaling) & & 0.015 & 0.020 & 0.068 & 0.030 & 0.068 & 0.030 \\
 invariant                             & & 0.013 & 0.084 & 0.059 & 0.055 & 0.059 & 0.055 \\
@@ -1026,15 +1026,15 @@ robust invariant                      & & 0.034 & 0.042 & 0.061 & 0.032 & 0.061 
 ## Examples using clean data
 
 Robust transformations are hypothesised to have a cost in efficiency for data
-without outliers, i.e. clean data. Here we draw nine sequences with elements randomly drawn from a standard normal
+without outliers, i.e. clean data. Here we draw nine features with elements randomly drawn from a standard normal
 distribution $\mathcal{N}(0,1)$. Subsequently, we perform an inverse transformation
 $\left(\phi^{\lambda, 0, 1}\right)^{-1}$, with $\lambda \in \left(0, 2\right)$.
 
-The sequences drawn resulted from the permutations of the number of elements of each
-sequence ($n \in \{30, 100, 500\}$) and transformation parameter for the
-inverse transformation $\lambda \in \{0.1, 1.0, 1.9\}$. Each sequence then underwent
+The features drawn resulted from the permutations of the number of elements of each
+feature ($n \in \{30, 100, 500\}$) and transformation parameter for the
+inverse transformation $\lambda \in \{0.1, 1.0, 1.9\}$. Each feature then underwent
 power transformation using Box-Cox and Yeo-Johnson transformations. For Box-Cox
-transformations, each sequence was shifted prior to inverse transformation
+transformations, each feature was shifted prior to inverse transformation
 ensuring all elements were strictly positive after inverse transformation.
 
 Results for Box-Cox transformations are shown in Table

@@ -1194,8 +1194,8 @@
       # Dirty data that is shifted and scaled to be far from 0.0.
       x <- power.transform::ragn(
         n,
-        location = 100.0,
-        scale = 0.001 * 1 / sqrt(2),
+        location = 1000.0,
+        scale = 1 / sqrt(2),
         alpha = alpha,
         beta = beta
       )
@@ -1782,4 +1782,159 @@
     formula = n ~ alpha,
     value.var = "tau"
   ))
+}
+
+
+
+.assess_gc_theorem <- function(manuscript_dir) {
+  n_rep <- 100L  # number of distributions drawn.
+  # n_rep <- 10L  # number of distributions drawn.
+  kappa <- c(0.50, 0.60, 0.70, 0.80, 0.90, 0.95, 1.00)  # central portion of distribution.
+
+  # From 5 to 10000000 in equal steps (log 10 scale)
+  n <- unique(floor(10^(seq(from = 0.75, to = 7.0, by = 0.25))))
+
+  # Wrapper for multi-processing.
+  .compute_wrapper <- function(
+    n,
+    n_rep,
+    kappa
+  ) {
+    return(
+      lapply(
+        X = n,
+        FUN = ..assess_gc_theorem,
+        n_rep = n_rep,
+        kappa = kappa
+      )
+    )
+  }
+
+  file_name <- file.path(manuscript_dir, "gc_theorem_data.RDS")
+
+  if (!file.exists(file_name)) {
+    n_threads <- 18L
+    assignment_id <- rep_len(seq_len(n_threads), length(n))
+
+    cl <- parallel::makeCluster(n_threads)
+    on.exit(parallel::stopCluster(cl))
+
+    parallel::clusterExport(cl = cl, "..assess_gc_theorem")
+
+    # data <- lapply(
+    #   X = split(n, assignment_id),
+    #   FUN = .compute_wrapper,
+    #   n_rep = n_rep,
+    #   kappa = kappa
+    # )
+
+    data <- parallel::parLapply(
+      cl = cl,
+      X = split(n, assignment_id),
+      fun = .compute_wrapper,
+      n_rep = n_rep,
+      kappa = kappa
+    )
+
+    # Aggregate to single table.
+    data <- data.table::rbindlist(unlist(data, recursive = FALSE))
+    data <- data[order(n, kappa, sum_residual_error)]
+
+    # Store
+    saveRDS(data, file_name)
+
+  } else {
+    data <- readRDS(file_name)
+  }
+
+  return(data)
+}
+
+
+..assess_gc_theorem <- function(n, n_rep, kappa) {
+  set.seed(19L + n)
+
+  data <- list()
+  result_index <- 1L
+
+  # Repeat n_rep times.
+  for (jj in seq_len(n_rep)) {
+    # Standard normal distribution -- we will only assess the central portion
+    # kappa
+    x <- power.transform::ragn(
+      floor(n),
+      location = 0.0,
+      scale = 1.0 / sqrt(2.0),
+      alpha = 0.5,
+      beta = 2.0
+    )
+
+    # Sort in ascending order.
+    x <- sort(x)
+
+    # Compute the expected z-score.
+    z_expected <- power.transform:::compute_expected_z(x = x)
+
+    # Compute mean residual error for all kappa.
+    sum_residual_error <- numeric(length(kappa))
+    robust_mu <- numeric(length(kappa))
+    robust_sigma <- numeric(length(kappa))
+
+    for (kk in seq_along(kappa)) {
+      p_lower <- 0.50 - kappa[kk] / 2.0
+      p_upper <- 0.50 + kappa[kk] / 2.0
+
+      p_observed <- (seq_along(x) - 1.0 / 3.0) / (length(x) + 1.0 / 3.0)
+
+      # Use local copy of x.
+      x_c <- x
+
+      # Add in random values for x outside p_lower and p_upper
+      lower_tail <- p_observed < p_lower
+      if (sum(lower_tail) > 0L) {
+        lower_range <- max(x[lower_tail])
+        x_c[lower_tail] <- sort(stats::runif(sum(lower_tail), min = lower_range - 20.0, max = lower_range))
+      }
+
+      upper_tail <- p_observed > p_upper
+      if (sum(upper_tail) > 0L) {
+        upper_range <- min(x[upper_tail])
+        x_c[upper_tail] <- sort(stats::runif(sum(upper_tail), min = upper_range, max = upper_range + 20.0))
+      }
+
+      # Compute M-estimates for locality and scale
+      cutoff_k <- stats::qnorm(p_upper)
+      if (is.infinite(cutoff_k)) cutoff_k <- 9.0
+      robust_estimates <- power.transform::huber_estimate(x, k = cutoff_k, tol = 1E-3)
+      if (robust_estimates$sigma == 0.0) robust_estimates$sigma <- 1.0
+
+      # Compute the observed z-score.
+      z_observed <- (x_c - robust_estimates$mu) / robust_estimates$sigma
+
+      # Compute residuals.
+      residual_data <- data.table::data.table(
+        "z_expected" = z_expected,
+        "z_observed" = z_observed,
+        "residual" = z_observed - z_expected,
+        "p_observed" = p_observed
+      )
+
+      sum_residual_error[kk] <- sum(abs(residual_data[p_observed >= p_lower & p_observed <= p_upper]$residual))
+      robust_mu[kk] <- robust_estimates$mu
+      robust_sigma[kk] <- robust_estimates$sigma
+    }
+
+    # Set data.
+    data[[result_index]] <- list(
+      "n" = n,
+      "kappa" = kappa,
+      "sum_residual_error" = sum_residual_error,
+      "robust_mu" = robust_mu,
+      "robust_sigma" = robust_sigma
+    )
+    result_index <- result_index + 1L
+  }
+
+  data <- data.table::rbindlist(data)
+  return(data)
 }
