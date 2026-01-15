@@ -61,7 +61,7 @@ assess_transformation <- function(
 
   if (is.na(h$p_value)) {
     message("p-value could not be determined.")
-  } else if (h$p_value > 0.0001 && verbose) {
+  } else if (h$p_value < 0.0001 && verbose) {
     message("p-value is smaller than 0.0001")
   }
 
