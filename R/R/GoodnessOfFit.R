@@ -57,6 +57,8 @@ assess_transformation <- function(
     error = identity
   )
 
+  if (is(h, "simpleError")) rlang::abort(h)
+
   if (is(h, "simpleError")) h <- list("p_value" = NA_real_)
 
   if (is.na(h$p_value)) {
