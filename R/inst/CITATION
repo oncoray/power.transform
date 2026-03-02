@@ -2,7 +2,7 @@ bibentry(
   bibtype = "Article",
   title = "Location and scale-invariant power transformations for transforming data to normality",
   author = c(person("Alex", "Zwanenburg"),
-             person("Steffen", "Löck")),
+             person("Steffen", 'L{\\"o}ck')),
   journal = "Machine Learning",
   year = 2026,
   volume = 115,
