@@ -8,5 +8,10 @@ Additionally, R CMD was run with `_R_CHECK_DEPENDS_ONLY_ = True`
 
 0 errors | 0 warnings | 1 notes
 
-❯ checking for future file timestamps ... NOTE
-  unable to verify current time
+─  checking CRAN incoming feasibility ... [10s] NOTE (10.3s)
+   Maintainer: 'Alex Zwanenburg <alex.zwanenburg@outlook.com>'
+   
+   New maintainer:
+     Alex Zwanenburg <alex.zwanenburg@outlook.com>
+   Old maintainer(s):
+     Alex Zwanenburg <alexander.zwanenburg@nct-dresden.de>

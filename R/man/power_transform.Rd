@@ -26,7 +26,7 @@ values.
 This argument has no effect for Yeo-Johnson transformations.}
 
 \item{...}{
-  Arguments passed on to \code{\link[=find_transformation_parameters]{find_transformation_parameters}}
+  Arguments passed on to \code{\link{find_transformation_parameters}}
   \describe{
     \item{\code{method}}{One of the following methods for power transformation:
 \itemize{

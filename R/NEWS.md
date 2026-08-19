@@ -1,3 +1,7 @@
+# Version 1.0.5
+
+- Update maintainer email.
+
 # Version 1.0.4
 
 ## Changes
