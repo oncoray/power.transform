@@ -54,6 +54,11 @@ plot_residual_plot <- function(
   # Check that packages are present.
   require_package(c("ggplot2", "rlang"), purpose = "to create a residual plot")
 
+  # Limit data.table thread usage according to CRAN policy,
+  external_data_table_threads <- data.table::getDTthreads(verbose = FALSE)
+  data.table::setDTthreads(1L)
+  on.exit(data.table::setDTthreads(external_data_table_threads), add = TRUE)
+
   # Perform checks on x.
   .check_data(x)
 

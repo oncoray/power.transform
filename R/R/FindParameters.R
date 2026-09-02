@@ -67,6 +67,11 @@ find_transformation_parameters <- function(
     empirical_gof_normality_p_value = NULL,
     ...) {
 
+  # Limit data.table thread usage according to CRAN policy,
+  external_data_table_threads <- data.table::getDTthreads(verbose = FALSE)
+  data.table::setDTthreads(1L)
+  on.exit(data.table::setDTthreads(external_data_table_threads), add = TRUE)
+
   # Check transformation methods.
   if (!method %in% c("box_cox", "yeo_johnson", "none")) {
     stop(paste0(

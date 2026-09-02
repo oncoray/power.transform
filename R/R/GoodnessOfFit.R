@@ -101,6 +101,11 @@ ecn_test <- function(
   # Prevent CRAN NOTE due to non-standard use of variables by data.table.
   p_observed <- alpha <- alpha_filter <- NULL
 
+  # Limit data.table thread usage according to CRAN policy,
+  external_data_table_threads <- data.table::getDTthreads(verbose = FALSE)
+  data.table::setDTthreads(1L)
+  on.exit(data.table::setDTthreads(external_data_table_threads), add = TRUE)
+
   # Checks on input data.
   if (!is.numeric(x) && !is.null(x)) {
     rlang::abort(paste0(
